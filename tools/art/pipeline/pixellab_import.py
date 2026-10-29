@@ -19,6 +19,7 @@ import argparse
 import io
 import json
 import os
+import re
 import sys
 import urllib.request
 import zipfile
@@ -75,6 +76,67 @@ def download_character(char_id, dest_dir):
         z.extractall(dest_dir)
     with open(os.path.join(dest_dir, "metadata.json")) as f:
         return json.load(f)
+
+
+LISTING_ROT = re.compile(r"^\s*(south|north|east|west|south-east|south-west|north-east|north-west):\s+(https?://\S+)\s*$")
+LISTING_ANIM = re.compile(r"^\s*(\S.*?) — \d+ dir .*?\[type=([^\]]+)\] \[group: ([0-9a-f-]+)\]")
+LISTING_FRAMES = re.compile(r"^\s*(south|north|east|west|south-east|south-west|north-east|north-west):\s+(https?://\S+\{i\}\S*)\s+\(i=0\.\.(\d+)\)")
+
+
+def import_listing(text, char_id, dest_dir, only=None):
+    """Build the same folder layout as the download zip from a pasted get_character listing, fetching every
+    frame URL it names. Works while jobs are still pending (the zip endpoint is locked then). `only`
+    limits the animations fetched (by display name)."""
+    os.makedirs(dest_dir, exist_ok=True)
+    rotations, animations = {}, {}
+    current = None
+    for line in text.splitlines():
+        m = LISTING_ANIM.match(line)
+        if m:
+            current = m.group(1).strip()
+            animations.setdefault(current, {})
+            continue
+        m = LISTING_FRAMES.match(line)
+        if m and current is not None:
+            animations[current][m.group(1)] = (m.group(2), int(m.group(3)) + 1)
+            continue
+        m = LISTING_ROT.match(line)
+        if m and current is None and "{i}" not in m.group(2):
+            rotations[m.group(1)] = m.group(2)
+    meta_path = os.path.join(dest_dir, "metadata.json")
+    meta = {"group_id": "", "states": [{"character": {"id": char_id, "name": "Idle"}, "folder": "Idle",
+                                        "frames": {"rotations": {}, "animations": {}}}], "export_version": "listing"}
+    if os.path.exists(meta_path):
+        with open(meta_path) as f:
+            old = json.load(f)
+        if old.get("states"):
+            meta = old
+    frames = meta["states"][0]["frames"]
+    frames.setdefault("rotations", {})
+    frames.setdefault("animations", {})
+    for d, url in rotations.items():
+        rel = f"Idle/rotations/{d}.png"
+        path = os.path.join(dest_dir, rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        if not os.path.exists(path):
+            fetch(url, path)
+        frames["rotations"][d] = rel
+    for name, dirs in animations.items():
+        if only and name not in only:
+            continue
+        for d, (tmpl, count) in dirs.items():
+            paths = []
+            for i in range(count):
+                rel = f"Idle/animations/{name}/{d}/{i:02d}.png"
+                path = os.path.join(dest_dir, rel)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                if not os.path.exists(path):
+                    fetch(tmpl.replace("{i}", str(i)), path)
+                paths.append(rel)
+            frames["animations"].setdefault(name, {})[d] = paths
+    with open(meta_path, "w") as f:
+        json.dump(meta, f, indent=1)
+    return meta
 
 
 def load_state(meta, src_dir, state_index=0):
@@ -338,10 +400,14 @@ def main():
     ap.add_argument("--map", default="", help="game=pixellab,... animation name overrides")
     ap.add_argument("--no-mirror", action="store_true", help="never mirror a missing direction")
     ap.add_argument("--skip-download", action="store_true")
+    ap.add_argument("--listing", default="", help="a saved get_character listing to fetch frames from (zip locked)")
     args = ap.parse_args()
     anim_map = dict(kv.split("=") for kv in args.map.split(",") if "=" in kv)
     src = os.path.join(ROOT, "source_art", args.group, args.game_id, "pixellab")
-    if args.skip_download and os.path.exists(os.path.join(src, "metadata.json")):
+    if args.listing:
+        with open(args.listing) as f:
+            meta = import_listing(f.read(), args.character_id, src)
+    elif args.skip_download and os.path.exists(os.path.join(src, "metadata.json")):
         with open(os.path.join(src, "metadata.json")) as f:
             meta = json.load(f)
     else:

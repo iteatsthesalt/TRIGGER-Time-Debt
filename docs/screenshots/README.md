@@ -1,12 +1,14 @@
 # Screenshots
 
-Progress captures for Nich, refreshed after every visual milestone. Newest state first. **Everything visible
-here is placeholder art**: code-generated sprites, primitive-box rooms and procedural textures standing in
-until the real art pipeline (PixelLab characters, image-model textures and backdrops) is wired in. See
-`docs/DECISIONS.md`, "All current art is placeholder".
+Progress captures for Nich, refreshed after every visual milestone. Newest state first. Rooms and textures
+in captures 01–06 are placeholders (primitive-box rooms, procedural tiles) until the studio assistant's
+textures land in `assets/textures/generated/`; from capture 07 on, the characters are the real PixelLab
+sprites (see `docs/ART_PIPELINE.md`).
 
 | File | What it shows | Date |
 |---|---|---|
+| `07_crono_pixellab_8_directions.jpg` | **First real character art.** Crono (41) generated with PixelLab pro mode from his catalog painting, imported by `tools/art/pipeline/`, standing in all eight facings on the lit test stage (`scenes/test/lineup.tscn`). Chrono Trigger proportions, gauntlet and katana on the right arm in every view, lit with shadows by the HD-2D sprite shader. The wall and floor are still placeholder textures. | 2026-10-29 |
+| `08_crono_pixellab_walk.jpg` | The same lineup mid walk cycle (6-frame PixelLab template walk, 8 directions). | 2026-10-29 |
 | `04_prologue_kitchen_dialogue.jpg` | The Prologue kitchen (Guardia Atrium wing): Crono, Marle and Sera as lit billboard sprites in a textured-primitive room with stained glass, the dialogue box at the 640×360 UI scale. Playable: breakfast, first Chronoslip, the fall choice, the Fracture Gate, the Atrium Cradle. | 2026-10-29 |
 | `05_title_screen.jpg` | Title screen with New Game / Continue / Options / Quit. The backdrop is design plate-00 for now. | 2026-10-29 |
 | `06_cast_lineup_placeholders.jpg` | The code-generated placeholder cast (Crono, Sera, Krona, Marle, Glenn, Magus, townsfolk): correct proportions and palettes, not the Toriyama-grade target. | 2026-10-29 |

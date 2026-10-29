@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TechResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/tech_resource.gd" id="1_26bli"]
+
+[resource]
+script = ExtResource("1_26bli")
+tech_id = &"x_strike"
+display_name = "X Strike"
+tier = 1
+required_actor_ids = Array[StringName]([&"crono", &"frog"])
+mp_cost_per_actor = 4
+damage_tags = Array[int]([0])
+uses_elemental_attack = false
+base_multiplier = 1.8
+synergy_multiplier = 1.25
+hit_count = 2
+shape_type = 1

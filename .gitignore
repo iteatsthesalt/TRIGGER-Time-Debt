@@ -1,0 +1,14 @@
+# Godot
+.godot/
+*.tmp
+# Local tool downloads (tools/setup_godot.sh puts Godot here)
+.tools/
+# Build outputs
+/build/
+/exports/
+# Python
+__pycache__/
+*.pyc
+# OS
+.DS_Store
+Thumbs.db

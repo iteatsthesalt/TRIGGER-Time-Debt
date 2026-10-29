@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TechResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/tech_resource.gd" id="1_4y6la"]
+
+[resource]
+script = ExtResource("1_4y6la")
+tech_id = &"cyclone"
+display_name = "Cyclone"
+required_actor_ids = Array[StringName]([&"crono"])
+mp_cost_per_actor = 2
+damage_tags = Array[int]([0])
+uses_elemental_attack = false
+base_multiplier = 1.2
+shape_type = 2

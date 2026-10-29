@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TechResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/tech_resource.gd" id="1_wir6n"]
+
+[resource]
+script = ExtResource("1_wir6n")
+tech_id = &"slurp_cut"
+display_name = "Slurp Cut"
+required_actor_ids = Array[StringName]([&"frog"])
+mp_cost_per_actor = 2
+damage_tags = Array[int]([0])
+uses_elemental_attack = false
+base_multiplier = 1.4

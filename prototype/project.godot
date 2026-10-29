@@ -1,0 +1,22 @@
+; Engine configuration file.
+; Trigger — HD-2D Chrono/Octopath hybrid combat prototype.
+
+config_version=5
+
+[application]
+
+config/name="Trigger"
+config/description="Fan sequel prototype: hybrid ATB + Break/Boost combat on HD-2D era maps."
+run/main_scene="res://scenes/combat_sandbox.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+
+[layer_names]
+
+3d_physics/layer_1="world"
+3d_physics/layer_2="party"
+3d_physics/layer_3="enemies"
+3d_physics/layer_4="encounter_triggers"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0

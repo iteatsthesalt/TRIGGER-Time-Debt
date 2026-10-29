@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TechResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/tech_resource.gd" id="1_0vxp6"]
+
+[resource]
+script = ExtResource("1_0vxp6")
+tech_id = &"flame_toss"
+display_name = "Flame Toss"
+required_actor_ids = Array[StringName]([&"lucca"])
+mp_cost_per_actor = 1
+damage_tags = Array[int]([6])
+base_multiplier = 1.1
+shape_type = 1

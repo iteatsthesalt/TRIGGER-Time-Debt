@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TechResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/tech_resource.gd" id="1_plvbl"]
+
+[resource]
+script = ExtResource("1_plvbl")
+tech_id = &"delta_force"
+display_name = "Delta Force"
+tier = 2
+required_actor_ids = Array[StringName]([&"crono", &"lucca", &"frog"])
+mp_cost_per_actor = 8
+damage_tags = Array[int]([0, 6, 7])
+base_multiplier = 2.2
+synergy_multiplier = 1.5
+hit_count = 3
+shape_type = 3

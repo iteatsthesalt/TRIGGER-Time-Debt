@@ -86,15 +86,15 @@ def build() -> dict:
     for sec, prog in (("a", prog_a), ("bridge", prog_br), ("b", prog_b), ("coda", prog_coda)):
         for i, name in enumerate(prog):
             b0 = tr.bar(sec, i)
-            r = roots[name] - 12
+            r = C.sub_register(roots[name])
             bass_ev.append((tr.s(b0), r, 1.0))
             if sec in ("b", "a") and i % 2 == 1:
                 bass_ev.append((tr.s(b0 + 2.5), r, 0.7))
             if sec == "b":
                 bass_ev.append((tr.s(b0 + 3.5), r + 7 if i % 2 == 0 else r, 0.5))
     # the intro: a single 808 on D, then the box answers
-    bass_ev.insert(0, (tr.s(tr.bar("intro", 0)), 26, 0.9))
-    bass_ev.insert(1, (tr.s(tr.bar("intro", 2)), 26, 0.7))
+    bass_ev.insert(0, (tr.s(tr.bar("intro", 0)), 38, 0.9))
+    bass_ev.insert(1, (tr.s(tr.bar("intro", 2)), 38, 0.7))
 
     # ---- the broken box: the Time cell at pitch (all notes live in D Dorian), every 4 bars ----
     box_ev = []

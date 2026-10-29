@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://u0kitchen000001"]
+
+[ext_resource type="Script" path="res://scripts/locations/guardia_kitchen.gd" id="1"]
+
+[node name="GuardiaKitchen" type="Node3D"]
+script = ExtResource("1")

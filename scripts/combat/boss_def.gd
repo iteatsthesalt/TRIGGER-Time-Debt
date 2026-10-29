@@ -69,7 +69,7 @@ func phase_def(i: int) -> EnemyDef:
 	var sh: Dictionary = p.get("shield", {})
 	var d: Dictionary = {
 		"id": String(id), "key": String(id), "name": display_name, "universe": universe, "level": level,
-		"kind": "boss", "hp": hp, "sprite": String(sprite), "size": size, "body_radius": body_radius, "fps": fps,
+		"kind": "boss", "hp": hp, "xp": int(raw.get("xp", 0)), "sprite": String(sprite), "size": size, "body_radius": body_radius, "fps": fps,
 		"is_metal": is_metal,
 		"tags": p.get("tags", CombatTags.to_names(raw.get("tags", []))),
 		"weak": sh.get("weak", []), "resist": sh.get("resist", resist), "nullify": sh.get("nullify", []),

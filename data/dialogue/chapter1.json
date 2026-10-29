@@ -1,0 +1,261 @@
+{
+  "ch1_arrival": [
+    {
+      "set_flag": "Ch1_Arrived"
+    },
+    {
+      "music": "mus_u0_wind_scene_1024"
+    },
+    {
+      "say": "The Atrium Horologe. Porre's gutted clocktower in Truce, grown through by Robo. A moss garden on the floor, a ring of workbenches, a ring of gates, and in the middle, ten feet of porcelain clock face looking down with one blue eye and one black.",
+      "who": "narrator"
+    },
+    {
+      "say": "[WELCOME HOME. I HAVE HELD THE ROOM STRAIGHT. THE DEBT DOES NOT COLLAPSE HERE. IT ONLY WAITS.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "say": "Sera built this. The loft is a wall of your old house, Crono. She wanted you to have the window.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "say": "She designed a terrarium for her father. She is seventeen.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[The hub. Talk to Robo to rest, save and check the Debt. The pool resets the smear, never the Debt. The dummy in the north-west corner teaches shields. Gates open as the story finds them.]"
+    },
+    {
+      "checkpoint": "atrium_hub"
+    },
+    {
+      "save": 0
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_robo": [
+    {
+      "say": "[CRONO UNIT. INTEGRITY {integrity}%. SERA UNIT. SOLIDITY DEBT {debt}%. DO YOU WISH TO REST?]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "choice": [
+        {
+          "text": "Rest and save.",
+          "goto": "rest"
+        },
+        {
+          "text": "Show me the galaxy.",
+          "goto": "galaxy"
+        },
+        {
+          "text": "Not now.",
+          "goto": "leave"
+        }
+      ],
+      "who": "crono",
+      "prompt": "..."
+    },
+    {
+      "label": "rest"
+    },
+    {
+      "call": "heal_party"
+    },
+    {
+      "save": 0
+    },
+    {
+      "say": "[REST LOGGED. THE CLOCK KEEPS YOU WOUND. I KEEP THE CLOCK.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "galaxy"
+    },
+    {
+      "camera": "truth",
+      "focus": "crono"
+    },
+    {
+      "say": "The watercolour drains out of him under the pillar's blue eye. Hairline gold across the skull. The lit seam at the left wrist. Under the paint, porcelain; under the porcelain, far down, something that turns.",
+      "who": "narrator"
+    },
+    {
+      "wait": 1.2
+    },
+    {
+      "camera": "explore"
+    },
+    {
+      "say": "[THE SAME STARS AS MINE. I DID NOT CHOOSE THEM EITHER.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "leave"
+    },
+    {
+      "say": "[UNDERSTOOD. I WILL BE HERE. I AM THE HERE.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_pool": [
+    {
+      "say": "A well lifted whole out of a drowned cathedral and set into the moss. The water runs clear or dark with the house's mood. Crono's smear trail washes out in it. The Debt does not.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_seed": [
+    {
+      "if": {
+        "counter_min": "seed_waters",
+        "value": 1
+      },
+      "then": "watered",
+      "else": "dry"
+    },
+    {
+      "label": "dry"
+    },
+    {
+      "say": "A pot of black earth. In it, a mercury orb wound in tungsten wire, cold. A tag in Lucca's hand: DOAN. REFUSED TO BE A CORE. WATER WHEN TIME HAS PASSED.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "watered"
+    },
+    {
+      "say": "A sprout. Where its first leaf should be there is a tiny gramophone horn, and from it, very faintly, a tune Crono knows played backwards.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_gramophone": [
+    {
+      "say": "A gramophone at six o'clock on the floor's clock face. The record on it is the Wind Scene, 1024 pressing. Every eighth tick of the tower is a silent click; the cylinder is missing a tooth.",
+      "who": "narrator"
+    },
+    {
+      "sfx": "ui/gramophone_needle"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_workbench": [
+    {
+      "say": "Lucca's bench, moved here plank by plank. Solder, a loupe, a jar of tungsten scrap, and on a shelf a small doll with red felt hair: a Crono-shaped toy Sera won at a Fair when she was six.",
+      "who": "narrator"
+    },
+    {
+      "if": {
+        "not_flag": "Bekkler_Doll_Taken"
+      },
+      "then": "offer",
+      "else": "end"
+    },
+    {
+      "label": "offer"
+    },
+    {
+      "choice": [
+        {
+          "text": "Take the little doll.",
+          "set": {
+            "flag": "Bekkler_Doll_Taken",
+            "state": "set"
+          },
+          "goto": "take"
+        },
+        {
+          "text": "Leave it.",
+          "goto": "end"
+        }
+      ],
+      "who": "crono",
+      "prompt": "..."
+    },
+    {
+      "label": "take"
+    },
+    {
+      "key_item": "bekkler_doll_small"
+    },
+    {
+      "caption": "[Obtained: the little Bekkler doll. It has his hair and none of his cracks.]"
+    },
+    {
+      "label": "end"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_dummy": [
+    {
+      "say": "Belthasar's first Bekkler doll: a failed copy of Crono, made before the one who lived, that Lucca refitted with a thoracic ring. Its brass plate is half-scraped: PROPERTY OF BELTHASAR — BEKKLER ASSEMBLY — 1999/2300 — SERIAL: CRONO-0…",
+      "who": "narrator"
+    },
+    {
+      "say": "It shows nine hundred and ninety-nine shields. It giggles when you look too long.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[The dummy lab opens in Chapter 1 once Sera is awake.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_gate_locked": [
+    {
+      "say": "The gate is dark. The copper vine that should feed it hangs slack. Nothing on the other side has asked for them yet.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_gate_unbuilt": [
+    {
+      "caption": "[This gate's universe is not built yet.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_marle": [
+    {
+      "say": "The ledger says Guardia can run without a queen for a week. The ledger is lying, and I signed it.",
+      "who": "marle",
+      "portrait": "neutral"
+    },
+    {
+      "end": true
+    }
+  ]
+}

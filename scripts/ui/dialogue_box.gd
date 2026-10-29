@@ -27,23 +27,26 @@ var _vaelos_style: bool = false
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Created by an autoload before the window settles, so no anchors: sized to the viewport by hand.
+	set_anchors_preset(Control.PRESET_TOP_LEFT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_fit_viewport()
+	get_viewport().size_changed.connect(_fit_viewport)
 	panel = PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	panel.anchor_top = 1.0
-	panel.offset_top = -118
+	panel.offset_top = -96
 	panel.offset_bottom = -8
-	panel.offset_left = 24
-	panel.offset_right = -24
+	panel.offset_left = 20
+	panel.offset_right = -20
 	panel.add_theme_stylebox_override("panel", _frame_style())
 	add_child(panel)
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 10)
 	panel.add_child(h)
 	portrait = TextureRect.new()
-	portrait.custom_minimum_size = Vector2(96, 96)
+	portrait.custom_minimum_size = Vector2(72, 72)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -53,7 +56,7 @@ func _ready() -> void:
 	h.add_child(v)
 	name_label = Label.new()
 	name_label.add_theme_color_override("font_color", PALE)
-	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.add_theme_font_size_override("font_size", 9)
 	v.add_child(name_label)
 	text_label = RichTextLabel.new()
 	text_label.bbcode_enabled = true
@@ -61,7 +64,7 @@ func _ready() -> void:
 	text_label.scroll_active = false
 	text_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	text_label.add_theme_color_override("default_color", CREAM)
-	text_label.add_theme_font_size_override("normal_font_size", 12)
+	text_label.add_theme_font_size_override("normal_font_size", 11)
 	v.add_child(text_label)
 	choice_box = VBoxContainer.new()
 	choice_box.add_theme_constant_override("separation", 2)
@@ -69,24 +72,33 @@ func _ready() -> void:
 	prompt_arrow = Label.new()
 	prompt_arrow.text = "▼"
 	prompt_arrow.add_theme_color_override("font_color", PALE)
-	prompt_arrow.add_theme_font_size_override("font_size", 10)
+	prompt_arrow.add_theme_font_size_override("font_size", 9)
 	prompt_arrow.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	prompt_arrow.offset_left = -40
-	prompt_arrow.offset_top = -26
-	prompt_arrow.offset_right = -30
+	prompt_arrow.offset_left = -34
+	prompt_arrow.offset_top = -24
+	prompt_arrow.offset_right = -24
 	prompt_arrow.offset_bottom = -12
 	prompt_arrow.visible = false
 	add_child(prompt_arrow)
 	caption_label = Label.new()
 	caption_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	caption_label.offset_top = 14
-	caption_label.offset_left = -200
-	caption_label.offset_right = 200
+	caption_label.offset_top = 12
+	caption_label.offset_left = -220
+	caption_label.offset_right = 220
 	caption_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	caption_label.add_theme_color_override("font_color", PALE)
-	caption_label.add_theme_font_size_override("font_size", 10)
+	caption_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	caption_label.add_theme_constant_override("shadow_offset_y", 1)
+	caption_label.add_theme_font_size_override("font_size", 9)
 	caption_label.visible = false
 	add_child(caption_label)
+
+
+func _fit_viewport() -> void:
+	var r: Rect2 = get_viewport().get_visible_rect()
+	position = r.position
+	size = r.size
 
 
 func _frame_style() -> StyleBoxFlat:
@@ -158,7 +170,11 @@ func say(who: String, text: String, expression: String = "neutral", style: Strin
 	_typing = true
 	_wait_advance = true
 	if auto_advance > 0.0:
-		var t: float = auto_advance + float(text.length()) / TYPE_CPS
+		# Probes and smoke runs: very short auto-advance means instant text.
+		var t: float = auto_advance + (float(text.length()) / TYPE_CPS if auto_advance >= 0.5 else 0.0)
+		if auto_advance < 0.5:
+			text_label.visible_characters = -1
+			_typing = false
 		get_tree().create_timer(t).timeout.connect(func() -> void:
 			if _wait_advance:
 				_wait_advance = false
@@ -193,7 +209,7 @@ func choose(who: String, prompt: String, options: Array, auto: int = -1) -> int:
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.add_theme_color_override("font_color", CREAM)
 		b.add_theme_color_override("font_hover_color", Color(1, 0.9, 0.6))
-		b.add_theme_font_size_override("font_size", 12)
+		b.add_theme_font_size_override("font_size", 10)
 		b.focus_mode = Control.FOCUS_NONE
 		b.pressed.connect(_pick.bind(i))
 		choice_box.add_child(b)

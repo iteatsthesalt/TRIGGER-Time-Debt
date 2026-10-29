@@ -74,7 +74,15 @@ func _ready() -> void:
 		Audio.play_ambience(ambience)
 	Story.battle_requested.connect(_on_story_battle)
 	Story.camera_requested.connect(_on_story_camera)
-	after_ready()
+	_start_after_ready()
+
+
+## after_ready() runs once the script that brought us here (a "go" command) has finished.
+func _start_after_ready() -> void:
+	while Story.is_running():
+		await get_tree().process_frame
+	if is_inside_tree():
+		after_ready()
 
 
 func _exit_tree() -> void:
@@ -145,31 +153,124 @@ func add_zone(encounter_id: StringName, pos: Vector3, radius: float = 6.0, boss:
 	return z
 
 
-## Place an NPC with a painted or generated sprite; returns the holder node (a CombatActor-less Node3D).
-func add_npc(id: StringName, sprite_id: String, pos: Vector3, facing: String = "s", fps: float = 60.0, script: StringName = &"", prompt: String = "Talk") -> Node3D:
-	var holder := CharacterBody3D.new()
-	holder.name = String(id)
-	holder.collision_layer = 1
-	holder.collision_mask = 0
-	var cs := CollisionShape3D.new()
-	var cap := CapsuleShape3D.new()
-	cap.radius = 0.35
-	cap.height = 1.6
-	cs.shape = cap
-	cs.position = Vector3(0, 0.8, 0)
-	holder.add_child(cs)
-	var s := ActorSprite.new()
-	s.name = "Sprite"
-	holder.add_child(s)
-	SpriteLibrary.apply(s, sprite_id, fps)
-	s.set_facing(StringName(facing))
-	holder.position = pos
-	add_child(holder)
-	npc_actors[id] = holder
+## Place an NPC with a generated or painted sprite; returns the FieldNPC (walk_to/face/play_anim for scripts).
+func add_npc(id: StringName, sprite_id: String, pos: Vector3, facing: String = "s", fps: float = 60.0, script: StringName = &"", prompt: String = "Talk", wander: float = 0.0) -> FieldNPC:
+	var n: FieldNPC = FieldNPC.make(id, sprite_id, fps)
+	n.position = pos
+	n.wander_radius = wander
+	add_child(n)
+	n.sprite.set_facing(StringName(facing))
+	npc_actors[id] = n
 	if script != &"":
-		var it := Interactable.make(holder, "Talk", Vector3(0, 0.8, 0), script, prompt, 0.9)
-		it.set_meta("npc", holder)
-	return holder
+		var it := Interactable.make(n, "Talk", Vector3(0, 0.8, 0), script, prompt, 0.9)
+		it.set_meta("npc", n)
+	return n
+
+
+## A cast member standing in the scene before (or without) joining the party: a full CombatActor built
+## from data/characters, so the same sprite, porcelain state and cutscene verbs apply.
+func add_cast(id: StringName, pos: Vector3, facing: String = "s", script: StringName = &"", prompt: String = "Talk") -> CombatActor:
+	var a: CombatActor = CombatActor.create_party_member(id)
+	a.name = "Cast_" + String(id)
+	a.collision_layer = 1
+	add_child(a)
+	a.global_position = pos
+	a.face(facing)
+	npc_actors[id] = a
+	if script != &"":
+		var it := Interactable.make(a, "Talk", Vector3(0, 0.8, 0), script, prompt, 0.9)
+		it.set_meta("npc", a)
+	return a
+
+
+## Replace the field party (after a recruit or a guest joining mid-scene). Cast actors with the same id
+## are removed; the new party appears at `at` (a marker name) or where the old leader stood.
+func rebuild_party(ids: Array[StringName], at: StringName = &"") -> void:
+	var here: Vector3 = party_actors[0].global_position if not party_actors.is_empty() else Vector3.ZERO
+	var facing: StringName = party_actors[0].sprite.facing if not party_actors.is_empty() else &"s"
+	Game.set_party(ids)
+	for a in party_actors:
+		a.queue_free()
+	party_actors.clear()
+	for id in ids:
+		if npc_actors.has(id):
+			var n: Node = npc_actors[id]
+			npc_actors.erase(id)
+			n.queue_free()
+	_spawn_party()
+	var p: Variant = get_marker(at) if at != &"" else null
+	var origin: Vector3 = p if p != null else here
+	for i in party_actors.size():
+		party_actors[i].global_position = origin + Vector3(0, 0.05, 1.1 * float(i))
+		party_actors[i].face(String(facing))
+	rig.target = party_actors[0]
+	controller.attach(party_actors[0])
+	follow.set_party(party_actors[0], party_actors.slice(1))
+	follow.snap_behind()
+
+
+## Chronoslip residue (Story Bible, Prologue beat 7): a U1 ink puddle. Inside it the leader moves at
+## 24 fps and the whole canvas leans to sumi-e; framerate as lore.
+func add_ink_puddle(pos: Vector3, radius: float = 1.2) -> Area3D:
+	var area := Area3D.new()
+	area.name = "InkPuddle"
+	area.collision_layer = 0
+	area.collision_mask = 2
+	var cs := CollisionShape3D.new()
+	var cyl := CylinderShape3D.new()
+	cyl.radius = radius
+	cyl.height = 1.0
+	cs.shape = cyl
+	area.add_child(cs)
+	var mi := MeshInstance3D.new()
+	var pm := PlaneMesh.new()
+	pm.size = Vector2(radius * 2.0, radius * 2.0)
+	mi.mesh = pm
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.08, 0.08, 0.1, 0.85)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.roughness = 0.2
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	if ResourceLoader.exists("res://assets/textures/ink_puddle.png"):
+		mat.albedo_texture = load("res://assets/textures/ink_puddle.png")
+		mat.albedo_color = Color(1, 1, 1, 0.92)
+	mi.material_override = mat
+	mi.position = Vector3(0, 0.02, 0)
+	area.add_child(mi)
+	area.position = pos
+	add_child(area)
+	area.body_entered.connect(func(b: Node3D) -> void:
+		if b == (party_actors[0] if not party_actors.is_empty() else null):
+			_ink_slow(true))
+	area.body_exited.connect(func(b: Node3D) -> void:
+		if b == (party_actors[0] if not party_actors.is_empty() else null):
+			_ink_slow(false))
+	return area
+
+
+func _ink_slow(on: bool) -> void:
+	if controller:
+		controller.speed = CombatActor.WALK_SPEED * (0.55 if on else 1.0)
+	for a in party_actors:
+		a.sprite.canvas_fps = 24.0 if on else a.canvas_fps
+		a.sprite.material.set_shader_parameter("canvas_fps", 24.0 if on else a.canvas_fps)
+		if on:
+			a.sprite.set_tint(Color(0.75, 0.75, 0.78))
+		else:
+			a.sprite.set_tint(Color.WHITE)
+	Universe.leaks[1] = 0.6 if on else 0.0
+	if world:
+		world.set_leak(1, 0.6 if on else 0.0)
+	if on:
+		Audio.play_sfx("time/ink_puddle_enter")
+
+
+## A door or exit: an interactable that runs a script (or goes straight to a location) when used.
+func add_door(name: String, pos: Vector3, to_location: StringName, spawn: StringName = &"start", prompt: String = "Leave", script: StringName = &"") -> Interactable:
+	var it := Interactable.make(self, name, pos, script, prompt, 1.0)
+	if script == &"":
+		it.callback = func(_by: Node) -> void: Router.go(to_location, spawn)
+	return it
 
 
 func shake(amount: float) -> void:
@@ -182,7 +283,7 @@ func _build_ui() -> void:
 	_ui_layer.layer = 20
 	add_child(_ui_layer)
 	prompt_label = Label.new()
-	prompt_label.add_theme_font_size_override("font_size", 11)
+	prompt_label.add_theme_font_size_override("font_size", 9)
 	prompt_label.add_theme_color_override("font_color", Color("#F2EAD7"))
 	prompt_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	prompt_label.offset_top = -40
@@ -321,8 +422,11 @@ func _on_battle_finished(victory: bool, summary: Dictionary, zone: EncounterZone
 		battle = null
 	battle_finished.emit(victory)
 	Story.report_battle_result(summary)
-	if not victory and not bool(summary.get("story", false)):
-		_on_defeat()
+	if not victory:
+		if bool(summary.get("story", false)):
+			_revive_party(0.5)
+		else:
+			_on_defeat()
 
 
 func _write_back_party() -> void:
@@ -340,12 +444,21 @@ func _write_back_party() -> void:
 ## Defeat: no Game Over. Sera jumps the party back to the moment before the encounter (§16.1).
 func _on_defeat() -> void:
 	Audio.tape_stop()
+	_revive_party(0.3)
+	place_party(Game.spawn_point)
+
+
+func _revive_party(ratio: float) -> void:
 	for a in party_actors:
 		if not a.stats.is_alive():
-			a.stats.revive(0.3)
+			a.stats.revive(ratio)
+		else:
+			a.stats.hp = maxi(a.stats.hp, roundi(float(a.stats.max_hp()) * ratio))
 		a.visible = true
 		a.frozen = false
-	place_party(Game.spawn_point)
+		a.sprite.set_opacity(1.0)
+		a.sprite.set_tint(Color.WHITE)
+		a.sprite.play(&"idle")
 
 
 func _on_story_camera(mode: String, focus: Node) -> void:

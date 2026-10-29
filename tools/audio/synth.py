@@ -58,6 +58,12 @@ def rng(seed: int) -> np.random.Generator:
     return np.random.default_rng(seed)
 
 
+def stable_seed(name: str) -> int:
+    """A process-independent seed from a name (Python's hash() is randomised per run)."""
+    import zlib
+    return zlib.crc32(name.encode("utf-8")) % 100000
+
+
 # ----------------------------------------------------------------------------------------------
 # oscillators and noise
 # ----------------------------------------------------------------------------------------------
@@ -266,8 +272,13 @@ def one_pole_lp(x: np.ndarray, fc: float) -> np.ndarray:
     return signal.lfilter([1 - a], [1, -a], x, axis=0)
 
 
-def dc_block(x: np.ndarray) -> np.ndarray:
-    return signal.lfilter([1, -1], [1, -0.995], x, axis=0)
+def dc_block(x: np.ndarray, loop: bool = False) -> np.ndarray:
+    """Remove DC (pole at 0.9997 ≈ 2.3 Hz, so sub-bass is untouched). For loops the filter is
+    warmed up on a second copy so its state matches at both ends of the seam."""
+    if loop:
+        y = signal.lfilter([1, -1], [1, -0.9997], np.concatenate([x, x], axis=0), axis=0)
+        return y[len(x):]
+    return signal.lfilter([1, -1], [1, -0.9997], x, axis=0)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -372,6 +383,29 @@ def delay(x: np.ndarray, time_s: float, feedback: float = 0.3, mix: float = 0.3,
         echo = lowpass(echo, damping_hz, 1) * feedback if k > 1 else echo * feedback
         a = k * d
         out[a: a + len(echo)] += echo * mix / max(feedback, 1e-6)
+    return out if x.ndim == 2 else out[:, 0]
+
+
+def comb(x: np.ndarray, delay_s: float, feedback: float = 0.5, damping_hz: float = 6000.0) -> np.ndarray:
+    """A feedback comb with a damped loop (block-wise, so long delays stay cheap). Four of these in
+    parallel plus two short all-passes is the classic Schroeder room; reverb() uses an IR instead."""
+    d = max(1, samples(delay_s))
+    x2 = _ensure_2d(x)
+    n = len(x2)
+    out = np.zeros_like(x2)
+    a = math.exp(-TWO_PI * damping_hz / SR)
+    state = np.zeros(x2.shape[1])
+    for start in range(0, n, d):
+        end = min(n, start + d)
+        if start == 0:
+            out[start:end] = x2[start:end]
+            continue
+        prev = out[start - d: end - d]
+        damped = np.empty_like(prev)
+        for c in range(x2.shape[1]):
+            damped[:, c], z = signal.lfilter([1 - a], [1, -a], prev[:, c], zi=[state[c]])
+            state[c] = z[0]
+        out[start:end] = x2[start:end] + feedback * damped[: end - start]
     return out if x.ndim == 2 else out[:, 0]
 
 
@@ -598,14 +632,10 @@ def limiter(x: np.ndarray, ceiling_db: float = -1.0, lookahead_s: float = 0.003,
         padded = np.pad(peak, (0, la), mode="edge")
         peak = sliding_window_view(padded, la + 1).max(axis=1)[: len(x2)]
     need = np.minimum(1.0, ceiling / np.maximum(peak, 1e-9))
-    # release smoothing: gain can drop instantly, recovers slowly
+    # release: the gain drops instantly and recovers along a one-pole curve (vectorised approximation)
     a = math.exp(-1.0 / (release_s * SR))
-    g = np.empty_like(need)
-    cur = 1.0
-    # a vectorised approximation: minimum filter followed by one-pole smoothing towards 1
     smooth = signal.lfilter([1 - a], [1, -a], need)
-    g = np.minimum(need, smooth)
-    g = np.minimum(g, 1.0)
+    g = np.minimum(np.minimum(need, smooth), 1.0)
     out = x2 * g[:, None]
     return out if x.ndim == 2 else out[:, 0]
 
@@ -752,7 +782,9 @@ def write_ogg(path: str, x: np.ndarray, quality: int = 6) -> None:
     with tempfile.TemporaryDirectory() as td:
         tmp = os.path.join(td, "tmp.wav")
         wavfile.write(tmp, SR, np.clip(x, -1.0, 1.0).astype(np.float32))
-        cmd = [ffmpeg, "-y", "-loglevel", "error", "-i", tmp, "-c:a", "libvorbis", "-q:a", str(quality), "-ar", str(SR), path]
+        # bitexact: a fixed Ogg serial number and no encoder tag, so rebuilds are byte-identical
+        cmd = [ffmpeg, "-y", "-loglevel", "error", "-i", tmp, "-c:a", "libvorbis", "-q:a", str(quality), "-ar", str(SR),
+               "-fflags", "+bitexact", "-flags", "+bitexact", path]
         subprocess.run(cmd, check=True)
 
 

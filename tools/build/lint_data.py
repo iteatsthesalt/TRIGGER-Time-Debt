@@ -68,7 +68,7 @@ for p in sorted((ROOT/"data/dialogue").rglob("*.json")):
                 if key in c and c[key] and c[key] not in labels: errors.append(f"{sid}: missing label {c[key]}")
             for o in c.get("choice", []):
                 if "goto" in o and o["goto"] not in labels: errors.append(f"{sid}: missing label {o['goto']}")
-            if "battle" in c and c["battle"] not in encounters: errors.append(f"{sid}: unknown encounter {c['battle']}")
+            if "battle" in c and c["battle"] != "" and c["battle"] not in encounters: errors.append(f"{sid}: unknown encounter {c['battle']}")
             if "learn" in c and c["learn"] not in techs: errors.append(f"{sid}: unknown tech {c['learn']}")
 print(f"data lint: {len(techs)} techs, {len(enemies)} enemies, {len(chars)} characters, {len(flags)} flags, {len(encounters)} encounters, {len(dialogue)} scripts")
 for e in errors: print("  ERROR:", e)

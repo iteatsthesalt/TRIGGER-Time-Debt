@@ -21,6 +21,7 @@ var auto_choice: int = -1
 var skip_waits: bool = false
 var _battle_waiting: bool = false
 var _depth: int = 0
+var _in_run_cmd: bool = false
 var _history: Array[Dictionary] = []
 var _vars: Dictionary = {}
 
@@ -41,7 +42,7 @@ func is_running() -> bool:
 ## Run a script by id (from Data.dialogue) or an inline array of commands. A script may start while
 ## another is waiting on a battle (a boss phase beat): it runs nested and the outer one resumes after.
 func run(id: StringName, inline: Array = []) -> void:
-	if running and not _battle_waiting:
+	if running and not _battle_waiting and not _in_run_cmd:
 		push_warning("Story: script %s requested while %s is running" % [id, current_id])
 		return
 	var cmds: Array = inline if not inline.is_empty() else Data.dialogue_script(id)
@@ -174,6 +175,10 @@ func _exec(cmd: Dictionary) -> String:
 		var scene: Node = get_tree().current_scene
 		if scene != null and scene.has_method("shake"):
 			scene.call("shake", float(cmd["shake"]))
+	if cmd.has("run"):
+		_in_run_cmd = true
+		await run(StringName(String(cmd["run"])))
+		_in_run_cmd = false
 	if cmd.has("call"):
 		var scene2: Node = get_tree().current_scene
 		if scene2 != null and scene2.has_method(String(cmd["call"])):

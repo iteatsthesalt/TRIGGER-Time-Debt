@@ -1,199 +1,799 @@
 {
   "prologue_wake": [
-    {"caption": "Truce Canyon. The rain falls as ink strokes where it hits stone, clay drops on metal, torn parchment on cloth."},
-    {"music": "mus_u0_guardia_morning"},
-    {"say": "Crono wakes sitting up, the way he always does. The castle is too quiet and too clean. The brass tube by the bed crackles.", "who": "narrator"},
-    {"say": "[GOOD MORNING, CRONO. CASTLE TIMELINE: STABLE. MY TOWER IS HOLDING THE REST. TODAY IS THE ANNIVERSARY. SERA UNIT HAS NOT YET RISEN.]", "who": "robo", "style": "robo"},
-    {"say": "He touches his left wrist under the sleeve. Old habit. Nothing there that anyone can see.", "who": "narrator"},
-    {"say": "Marle's voice, passing in the corridor: Magus still hasn't left the crypts. Breakfast is yours this morning.", "who": "narrator"},
-    {"end": true}
+    {
+      "caption": "Truce Canyon. The rain falls as ink strokes where it hits stone, clay drops on metal, torn parchment on cloth."
+    },
+    {
+      "music": "mus_u0_guardia_morning"
+    },
+    {
+      "say": "Crono wakes sitting up, the way he always does. The castle is too quiet and too clean. The brass tube by the bed crackles.",
+      "who": "narrator"
+    },
+    {
+      "say": "[GOOD MORNING, CRONO. CASTLE TIMELINE: STABLE. MY TOWER IS HOLDING THE REST. TODAY IS THE ANNIVERSARY. SERA UNIT HAS NOT YET RISEN.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "say": "He touches his left wrist under the sleeve. Old habit. Nothing there that anyone can see.",
+      "who": "narrator"
+    },
+    {
+      "say": "Marle's voice, passing in the corridor: Magus still hasn't left the crypts. Breakfast is yours this morning.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
   ],
-
   "prologue_breakfast": [
-    {"music": "mus_u0_guardia_morning"},
-    {"say": "The family kitchen, in the Guardia Atrium wing. Copper pots. A stone counter. Stained glass nobody has cleaned since the year 1000, throwing someone else's colours on the floor.", "who": "narrator"},
-    {"say": "Crono makes porridge. Seven stirs, clockwise. A tap on the rim. It is not habit.", "who": "narrator"},
-    {"call": "stir_ritual"},
-    {"caption": "[the house clock skips a half-second tick]"},
-    {"say": "Marle comes in barefoot, in ceremonial blue, a ledger under her arm. She doesn't sit. She leans close enough to steal his heat.", "who": "narrator"},
-    {"say": "You're up before the clock again. Did Robo wake you or did you wake Robo?", "who": "marle", "portrait": "neutral"},
-    {"choice": [
-      {"text": "[Nod]", "goto": "marle_nod"},
-      {"text": "[Look Away]", "goto": "marle_away"},
-      {"text": "[Say Sera's Name]", "goto": "marle_sera"}
-    ], "who": "crono", "prompt": "..."},
-    {"label": "marle_nod"},
-    {"say": "Mm. Twenty-four years and you still answer with your chin.", "who": "marle", "portrait": "smile"},
-    {"goto": "sera_enters"},
-    {"label": "marle_away"},
-    {"say": "She watches the steam off the pot. It curls around his hands and never fogs his skin. She has watched it not fog for seventeen years.", "who": "narrator"},
-    {"goto": "sera_enters"},
-    {"label": "marle_sera"},
-    {"say": "Sera...", "who": "crono"},
-    {"say": "Still asleep. She was talking in her sleep again. Not words. Brush sounds.", "who": "marle", "portrait": "sad"},
-    {"label": "sera_enters"},
-    {"sfx": "ui/door"},
-    {"move": "sera", "to": "sera_seat", "speed": 4.0},
-    {"say": "Late, late, I know, I know. Don't say it with your face.", "who": "sera", "portrait": "smile"},
-    {"say": "Sera storms in with Crono's old bandana around her wrist and her hair standing up with static. She has been dreaming in sumi-e again: ink washing faces away.", "who": "narrator"},
-    {"say": "Papa, the pots are doing the thing. The wobbling thing. And your spoon's reflection is... stepping.", "who": "sera", "portrait": "surprised"},
-    {"caption": "[the spoon's reflection stutters at twelve frames a second; the copper pots wobble in a clean, drawn line]"},
-    {"say": "Sit. Eat. Then we talk about the dreams.", "who": "marle"},
-    {"say": "Sera reaches for her bowl.", "who": "narrator"},
-    {"call": "first_chronoslip"},
-    {"say": "Her forearm drains of colour mid-air. The watercolour goes to ink. Her edges turn to brush bristle, and the porridge in the spoon goes grey and cold and smells of burnt paper.", "who": "narrator"},
-    {"say": "Dad—", "who": "sera", "portrait": "hurt"},
-    {"say": "Crono lunges. His wrist kisses the stone counter. A soft tap. Ching.", "who": "narrator"},
-    {"sfx": "porcelain/crack_small"},
-    {"caption": "[a hairline crack opens on the inside of his forearm; light passes through it]"},
-    {"say": "Dad— you're—", "who": "sera", "portrait": "surprised"},
-    {"say": "You kept stirring.", "who": "marle", "portrait": "sad"},
-    {"choice": [
-      {"text": "Burn. Old burn.", "set": {"flag": "Crono_First_Lie", "state": "Told", "affinity": {"dark": 5}}, "goto": "after_lie"},
-      {"text": "[Cover it with your sleeve]", "set": {"flag": "Crono_First_Lie", "state": "Covered", "affinity": {"dark": 5}}, "goto": "after_lie"},
-      {"text": "[Hold the wrist out]", "set": {"flag": "Crono_First_Lie", "state": "Shown", "affinity": {"light": 5}}, "goto": "after_shown"}
-    ], "who": "crono", "prompt": "The seam is open. Both of them are looking."},
-    {"label": "after_lie"},
-    {"say": "Burn. Old burn.", "who": "crono"},
-    {"say": "Marle's hand goes to her mouth. Not shocked. Confirmed.", "who": "narrator"},
-    {"goto": "the_bowl"},
-    {"label": "after_shown"},
-    {"say": "He holds it out. There is no blood. Layers of translucent porcelain, a faint blue inside, and under that, smaller, a second face.", "who": "narrator"},
-    {"say": "Marle doesn't look surprised. That is the worst part.", "who": "narrator"},
-    {"label": "the_bowl"},
-    {"say": "The bowl lies on the counter cut in two. Half porridge. Half ash. Sera's nose is bleeding ink.", "who": "narrator"},
-    {"say": "You never taught her how to fall.", "who": "marle", "portrait": "angry"},
-    {"say": "You taught her sword forms. You taught her to travel light. You never taught her how to stop a slip. How to land without breaking something. Because you never learned.", "who": "marle", "portrait": "sad"},
-    {"say": "She pulls Sera to herself. Not to him. Porcelain breaks if you grip it tight.", "who": "narrator"},
-    {"say": "Sera's eyes roll gold. Metallic flecks swim in them. A voice lays itself over hers like a second track: something learning vowels.", "who": "narrator"},
-    {"say": "She slipped well. Like you did. You left atoms. I kept them. I learned to hold a spoon.", "who": "vaelos", "style": "clean"},
-    {"caption": "[for one frame the kitchen is drawn in rubber-hose ink, and snaps back]"},
-    {"say": "Sera collapses.", "who": "narrator"},
-    {"call": "sera_collapses"},
-    {"choice": [
-      {"text": "Catch her. Gently.", "set": {"flag": "Prologue_Fall", "state": "Teach_Her_To_Land"}, "set_integrity": 60, "goto": "fall_light"},
-      {"text": "Catch her and hide the wrist.", "set": {"flag": "Prologue_Fall", "state": "Hold_The_Copy_Together"}, "set_integrity": 40, "goto": "fall_dark"},
-      {"text": "[Astral Smear Dash] Catch the bowl.", "set": {"flag": "The_Bowl_Still_Whole", "state": "set"}, "set_integrity": 50, "goto": "fall_prismatic"}
-    ], "who": "crono", "prompt": "She is falling. So is the bowl."},
-    {"label": "fall_light"},
-    {"say": "He catches her the way you catch something that will outlive you. Marle's hand lands on his shoulder, on the moss, and stays.", "who": "narrator"},
-    {"say": "Then we teach her. Both of us. Starting today.", "who": "marle", "portrait": "sad"},
-    {"caption": "[Light rises. A harp, far off. Crono's integrity settles at 60.]"},
-    {"learn": "astral_smear_dash", "who": "crono"},
-    {"goto": "robo_relay"},
-    {"label": "fall_dark"},
-    {"say": "He catches her with the cracked arm and turns it inward, so she falls against the sleeve and not the seam. The inner face shows anyway, for a second, white under white.", "who": "narrator"},
-    {"caption": "[a hydraulic hiss under the music box; something listens closer. Crono's integrity drops to 40.]"},
-    {"learn": "astral_smear_dash", "who": "crono"},
-    {"goto": "robo_relay"},
-    {"label": "fall_prismatic"},
-    {"say": "He moves before he decides to. Paint drags behind him in a red-to-blue smear and the bowl is in his hand, both halves, porridge and ash, and Sera is in the other arm, and nothing has hit the floor.", "who": "narrator"},
-    {"say": "—you remember how to catch—", "who": "vaelos", "style": "clean"},
-    {"caption": "[a needle drops on vinyl. An amber chime. Gold flecks hang in the air where he paid. Crono's integrity settles at 50.]"},
-    {"learn": "astral_smear_dash", "who": "crono"},
-    {"learn": "bekkler_guilt", "who": "crono"},
-    {"goto": "robo_relay"},
-    {"label": "robo_relay"},
-    {"sfx": "ui/tube"},
-    {"say": "[CHRONAL STRAIN EXCEEDED. ATRIUM INTEGRITY 81%. CRONO UNIT: STRUCTURAL FAILURE IMMINENT. SERA UNIT: PARADOX AFFINITY LIGHT UNLOCKED. RECOMMEND: EVACUATE TO U2 TO BLEED INERTIA.]", "who": "robo", "style": "robo"},
-    {"say": "A red string of light runs from Crono's chest to Sera's and holds there, taut, like a thread between two bells.", "who": "narrator"},
-    {"caption": "[TIME DEBT. Its cost is maximum HP he cannot heal.]"},
-    {"say": "Robo. The door.", "who": "marle"},
-    {"say": "[THE FRACTURE GATE IS BEKKLER WORK. IT OPENS FOR PAYMENT ONLY. CRONO UNIT: YOU KNOW THE PRICE.]", "who": "robo", "style": "robo"},
-    {"say": "Marle is already lifting Sera. She does not ask him to explain the wrist. She has never needed to.", "who": "narrator"},
-    {"say": "Get us out. Then we go to Truce. To the tower. It's the only place that doesn't fall apart around you.", "who": "marle", "portrait": "sad"},
-    {"caption": "[Walk with the left stick. Hold FOCUS on Crono to see the crack. The gate at the far wall opens when Crono spends Time Debt.]"},
-    {"end": true}
+    {
+      "music": "mus_u0_guardia_morning"
+    },
+    {
+      "say": "The family kitchen, in the Guardia Atrium wing. Copper pots. A stone counter. Stained glass nobody has cleaned since the year 1000, throwing someone else's colours on the floor.",
+      "who": "narrator"
+    },
+    {
+      "say": "Crono makes porridge. Seven stirs, clockwise. A tap on the rim. It is not habit.",
+      "who": "narrator"
+    },
+    {
+      "call": "stir_ritual"
+    },
+    {
+      "caption": "[the house clock skips a half-second tick]"
+    },
+    {
+      "say": "Marle comes in barefoot, in ceremonial blue, a ledger under her arm. She doesn't sit. She leans close enough to steal his heat.",
+      "who": "narrator"
+    },
+    {
+      "say": "You're up before the clock again. Did Robo wake you or did you wake Robo?",
+      "who": "marle",
+      "portrait": "neutral"
+    },
+    {
+      "choice": [
+        {
+          "text": "[Nod]",
+          "goto": "marle_nod"
+        },
+        {
+          "text": "[Look Away]",
+          "goto": "marle_away"
+        },
+        {
+          "text": "[Say Sera's Name]",
+          "goto": "marle_sera"
+        }
+      ],
+      "who": "crono",
+      "prompt": "..."
+    },
+    {
+      "label": "marle_nod"
+    },
+    {
+      "say": "Mm. Twenty-four years and you still answer with your chin.",
+      "who": "marle",
+      "portrait": "smile"
+    },
+    {
+      "goto": "sera_enters"
+    },
+    {
+      "label": "marle_away"
+    },
+    {
+      "say": "She watches the steam off the pot. It curls around his hands and never fogs his skin. She has watched it not fog for seventeen years.",
+      "who": "narrator"
+    },
+    {
+      "goto": "sera_enters"
+    },
+    {
+      "label": "marle_sera"
+    },
+    {
+      "say": "Sera...",
+      "who": "crono"
+    },
+    {
+      "say": "Still asleep. She was talking in her sleep again. Not words. Brush sounds.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "label": "sera_enters"
+    },
+    {
+      "sfx": "ui/door"
+    },
+    {
+      "move": "sera",
+      "to": "sera_seat",
+      "speed": 4.0
+    },
+    {
+      "say": "Late, late, I know, I know. Don't say it with your face.",
+      "who": "sera",
+      "portrait": "smile"
+    },
+    {
+      "say": "Sera storms in with Crono's old bandana around her wrist and her hair standing up with static. She has been dreaming in sumi-e again: ink washing faces away.",
+      "who": "narrator"
+    },
+    {
+      "say": "Papa, the pots are doing the thing. The wobbling thing. And your spoon's reflection is... stepping.",
+      "who": "sera",
+      "portrait": "surprised"
+    },
+    {
+      "caption": "[the spoon's reflection stutters at twelve frames a second; the copper pots wobble in a clean, drawn line]"
+    },
+    {
+      "say": "Sit. Eat. Then we talk about the dreams.",
+      "who": "marle"
+    },
+    {
+      "say": "Sera reaches for her bowl.",
+      "who": "narrator"
+    },
+    {
+      "call": "first_chronoslip"
+    },
+    {
+      "say": "Her forearm drains of colour mid-air. The watercolour goes to ink. Her edges turn to brush bristle, and the porridge in the spoon goes grey and cold and smells of burnt paper.",
+      "who": "narrator"
+    },
+    {
+      "say": "Dad—",
+      "who": "sera",
+      "portrait": "hurt"
+    },
+    {
+      "say": "Crono lunges. His wrist kisses the stone counter. A soft tap. Ching.",
+      "who": "narrator"
+    },
+    {
+      "sfx": "porcelain/crack_small"
+    },
+    {
+      "caption": "[a hairline crack opens on the inside of his forearm; light passes through it]"
+    },
+    {
+      "say": "Dad— you're—",
+      "who": "sera",
+      "portrait": "surprised"
+    },
+    {
+      "say": "You kept stirring.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "choice": [
+        {
+          "text": "Burn. Old burn.",
+          "set": {
+            "flag": "Crono_First_Lie",
+            "state": "Told",
+            "affinity": {
+              "dark": 5
+            }
+          },
+          "goto": "after_lie"
+        },
+        {
+          "text": "[Cover it with your sleeve]",
+          "set": {
+            "flag": "Crono_First_Lie",
+            "state": "Covered",
+            "affinity": {
+              "dark": 5
+            }
+          },
+          "goto": "after_lie"
+        },
+        {
+          "text": "[Hold the wrist out]",
+          "set": {
+            "flag": "Crono_First_Lie",
+            "state": "Shown",
+            "affinity": {
+              "light": 5
+            }
+          },
+          "goto": "after_shown"
+        }
+      ],
+      "who": "crono",
+      "prompt": "The seam is open. Both of them are looking."
+    },
+    {
+      "label": "after_lie"
+    },
+    {
+      "say": "Burn. Old burn.",
+      "who": "crono"
+    },
+    {
+      "say": "Marle's hand goes to her mouth. Not shocked. Confirmed.",
+      "who": "narrator"
+    },
+    {
+      "goto": "the_bowl"
+    },
+    {
+      "label": "after_shown"
+    },
+    {
+      "say": "He holds it out. There is no blood. Layers of translucent porcelain, a faint blue inside, and under that, smaller, a second face.",
+      "who": "narrator"
+    },
+    {
+      "say": "Marle doesn't look surprised. That is the worst part.",
+      "who": "narrator"
+    },
+    {
+      "label": "the_bowl"
+    },
+    {
+      "say": "The bowl lies on the counter cut in two. Half porridge. Half ash. Sera's nose is bleeding ink.",
+      "who": "narrator"
+    },
+    {
+      "say": "You never taught her how to fall.",
+      "who": "marle",
+      "portrait": "angry"
+    },
+    {
+      "say": "You taught her sword forms. You taught her to travel light. You never taught her how to stop a slip. How to land without breaking something. Because you never learned.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "say": "She pulls Sera to herself. Not to him. Porcelain breaks if you grip it tight.",
+      "who": "narrator"
+    },
+    {
+      "say": "Sera's eyes roll gold. Metallic flecks swim in them. A voice lays itself over hers like a second track: something learning vowels.",
+      "who": "narrator"
+    },
+    {
+      "say": "She slipped well. Like you did. You left atoms. I kept them. I learned to hold a spoon.",
+      "who": "vaelos",
+      "style": "clean"
+    },
+    {
+      "caption": "[for one frame the kitchen is drawn in rubber-hose ink, and snaps back]"
+    },
+    {
+      "say": "Sera collapses.",
+      "who": "narrator"
+    },
+    {
+      "call": "sera_collapses"
+    },
+    {
+      "choice": [
+        {
+          "text": "Catch her. Gently.",
+          "set": {
+            "flag": "Prologue_Fall",
+            "state": "Teach_Her_To_Land"
+          },
+          "set_integrity": 60,
+          "goto": "fall_light"
+        },
+        {
+          "text": "Catch her and hide the wrist.",
+          "set": {
+            "flag": "Prologue_Fall",
+            "state": "Hold_The_Copy_Together"
+          },
+          "set_integrity": 40,
+          "goto": "fall_dark"
+        },
+        {
+          "text": "[Astral Smear Dash] Catch the bowl.",
+          "set": {
+            "flag": "The_Bowl_Still_Whole",
+            "state": "set"
+          },
+          "set_integrity": 50,
+          "goto": "fall_prismatic"
+        }
+      ],
+      "who": "crono",
+      "prompt": "She is falling. So is the bowl."
+    },
+    {
+      "label": "fall_light"
+    },
+    {
+      "say": "He catches her the way you catch something that will outlive you. Marle's hand lands on his shoulder, on the moss, and stays.",
+      "who": "narrator"
+    },
+    {
+      "call": "after_fall",
+      "args": [
+        "light"
+      ]
+    },
+    {
+      "say": "Then we teach her. Both of us. Starting today.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "caption": "[Light rises. A harp, far off. Crono's integrity settles at 60.]"
+    },
+    {
+      "learn": "astral_smear_dash",
+      "who": "crono"
+    },
+    {
+      "goto": "robo_relay"
+    },
+    {
+      "label": "fall_dark"
+    },
+    {
+      "say": "He catches her with the cracked arm and turns it inward, so she falls against the sleeve and not the seam. The inner face shows anyway, for a second, white under white.",
+      "who": "narrator"
+    },
+    {
+      "call": "after_fall",
+      "args": [
+        "dark"
+      ]
+    },
+    {
+      "caption": "[a hydraulic hiss under the music box; something listens closer. Crono's integrity drops to 40.]"
+    },
+    {
+      "learn": "astral_smear_dash",
+      "who": "crono"
+    },
+    {
+      "goto": "robo_relay"
+    },
+    {
+      "label": "fall_prismatic"
+    },
+    {
+      "say": "He moves before he decides to. Paint drags behind him in a red-to-blue smear and the bowl is in his hand, both halves, porridge and ash, and Sera is in the other arm, and nothing has hit the floor.",
+      "who": "narrator"
+    },
+    {
+      "call": "after_fall",
+      "args": [
+        "prismatic"
+      ]
+    },
+    {
+      "say": "—you remember how to catch—",
+      "who": "vaelos",
+      "style": "clean"
+    },
+    {
+      "caption": "[a needle drops on vinyl. An amber chime. Gold flecks hang in the air where he paid. Crono's integrity settles at 50.]"
+    },
+    {
+      "learn": "astral_smear_dash",
+      "who": "crono"
+    },
+    {
+      "learn": "bekkler_guilt",
+      "who": "crono"
+    },
+    {
+      "goto": "robo_relay"
+    },
+    {
+      "label": "robo_relay"
+    },
+    {
+      "sfx": "ui/tube"
+    },
+    {
+      "say": "[CHRONAL STRAIN EXCEEDED. ATRIUM INTEGRITY 81%. CRONO UNIT: STRUCTURAL FAILURE IMMINENT. SERA UNIT: PARADOX AFFINITY LIGHT UNLOCKED. RECOMMEND: EVACUATE TO U2 TO BLEED INERTIA.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "say": "A red string of light runs from Crono's chest to Sera's and holds there, taut, like a thread between two bells.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[TIME DEBT. Its cost is maximum HP he cannot heal.]"
+    },
+    {
+      "say": "Robo. The door.",
+      "who": "marle"
+    },
+    {
+      "say": "[THE FRACTURE GATE IS BEKKLER WORK. IT OPENS FOR PAYMENT ONLY. CRONO UNIT: YOU KNOW THE PRICE.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "say": "Marle is already lifting Sera. She does not ask him to explain the wrist. She has never needed to.",
+      "who": "narrator"
+    },
+    {
+      "say": "Get us out. Then we go to Truce. To the tower. It's the only place that doesn't fall apart around you.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "caption": "[Walk with the left stick. Hold FOCUS on Crono to see the crack. The gate at the far wall opens when Crono spends Time Debt.]"
+    },
+    {
+      "end": true
+    }
   ],
-
   "prologue_gate": [
-    {"say": "The kitchen door is sealed under a lattice of Bekkler brass, the kind that holds a doll's joints shut. A hand-shaped plate waits at its centre, palm up.", "who": "narrator"},
-    {"if": {"flag": "Prologue_Fall", "state": "Hold_The_Copy_Together"}, "then": "gate_dark", "else": "gate_light"},
-    {"label": "gate_light"},
-    {"say": "He puts his cracked wrist to the plate. The brass drinks. The gate opens by exactly as much as he gives it.", "who": "narrator"},
-    {"caption": "[HP is currency and key. The seam widens a little. Crono's ceiling is lower now until it is repaired.]"},
-    {"sfx": "porcelain/crack_small"},
-    {"end": true},
-    {"label": "gate_dark"},
-    {"say": "He does not put his wrist to the plate. He puts the Rainbow through the lattice and leans on it until the Bekkler brass screams and gives.", "who": "narrator"},
-    {"caption": "[The crack widens anyway. Behind the music box, something laughs with his own young voice, fifteen percent more often from now on.]"},
-    {"sfx": "porcelain/crack_large"},
-    {"end": true}
+    {
+      "say": "The kitchen door is sealed under a lattice of Bekkler brass, the kind that holds a doll's joints shut. A hand-shaped plate waits at its centre, palm up.",
+      "who": "narrator"
+    },
+    {
+      "if": {
+        "flag": "Prologue_Fall",
+        "state": "Hold_The_Copy_Together"
+      },
+      "then": "gate_dark",
+      "else": "gate_light"
+    },
+    {
+      "label": "gate_light"
+    },
+    {
+      "say": "He puts his cracked wrist to the plate. The brass drinks. The gate opens by exactly as much as he gives it.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[HP is currency and key. The seam widens a little. Crono's ceiling is lower now until it is repaired.]"
+    },
+    {
+      "sfx": "porcelain/crack_small"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "gate_dark"
+    },
+    {
+      "say": "He does not put his wrist to the plate. He puts the Rainbow through the lattice and leans on it until the Bekkler brass screams and gives.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[The crack widens anyway. Behind the music box, something laughs with his own young voice, fifteen percent more often from now on.]"
+    },
+    {
+      "sfx": "porcelain/crack_large"
+    },
+    {
+      "end": true
+    }
   ],
-
   "prologue_cradle_intro": [
-    {"say": "The house moves. Not the walls: the thing under the walls. Six brass legs unfold from the pantry and a ring of eight barrels rises on a slow thoracic turntable, and above it a porcelain face like a theatre mask turns to find them.", "who": "narrator"},
-    {"say": "[WARNING. THE ATRIUM CRADLE IS A PRESERVATION UNIT. IT IS TRYING TO KEEP ITS DOLLS SAFE. PRESERVATION =/= LOVE. ERROR.]", "who": "robo", "style": "robo"},
-    {"say": "Crono! The light plates. Let me take the light plates.", "who": "marle", "portrait": "angry"},
-    {"caption": "[Each plate falls only to its own key. SWORD plates to the sword; LIGHT plates to Marle's Light Bolt. The tag of the last plate decides what the Cradle learns about you.]"},
-    {"end": true}
+    {
+      "say": "The house moves. Not the walls: the thing under the walls. Six brass legs unfold from the pantry and a ring of eight barrels rises on a slow thoracic turntable, and above it a porcelain face like a theatre mask turns to find them.",
+      "who": "narrator"
+    },
+    {
+      "say": "[WARNING. THE ATRIUM CRADLE IS A PRESERVATION UNIT. IT IS TRYING TO KEEP ITS DOLLS SAFE. PRESERVATION =/= LOVE. ERROR.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "say": "Crono! The light plates. Let me take the light plates.",
+      "who": "marle",
+      "portrait": "angry"
+    },
+    {
+      "caption": "[Each plate falls only to its own key. SWORD plates to the sword; LIGHT plates to Marle's Light Bolt. The tag of the last plate decides what the Cradle learns about you.]"
+    },
+    {
+      "end": true
+    }
   ],
-
   "prologue_cradle_phase2": [
-    {"say": "The floor splits down the middle. One half is paper and pigment. The other is clay with thumbprints in it, stepping at twelve frames a second.", "who": "narrator"},
-    {"say": "[DOLLHOUSE SEAL ENGAGED. THE CRADLE CANNOT BE DAMAGED UNTIL A DOLL PAYS.]", "who": "robo", "style": "robo"},
-    {"say": "Sera, grey and standing, looks at the string of light between their chests.", "who": "narrator"},
-    {"say": "Papa. I think I can make the next one cheaper. I don't know how I know that.", "who": "sera", "portrait": "hurt"},
-    {"caption": "[Sera learns FALL BREAK: the ally's next Time Debt cost is halved. The Seal opens only for payment: choose PAY TIME DEBT from Crono's deck. It costs 5% of his integrity. Permanently.]"},
-    {"learn": "fall_break", "who": "sera"},
-    {"end": true}
+    {
+      "say": "The floor splits down the middle. One half is paper and pigment. The other is clay with thumbprints in it, stepping at twelve frames a second.",
+      "who": "narrator"
+    },
+    {
+      "say": "[DOLLHOUSE SEAL ENGAGED. THE CRADLE CANNOT BE DAMAGED UNTIL A DOLL PAYS.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "say": "Sera, grey and standing, looks at the string of light between their chests.",
+      "who": "narrator"
+    },
+    {
+      "say": "Papa. I think I can make the next one cheaper. I don't know how I know that.",
+      "who": "sera",
+      "portrait": "hurt"
+    },
+    {
+      "caption": "[Sera learns FALL BREAK: the ally's next Time Debt cost is halved. The Seal opens only for payment: choose PAY TIME DEBT from Crono's deck. It costs 5% of his integrity. Permanently.]"
+    },
+    {
+      "learn": "fall_break",
+      "who": "sera"
+    },
+    {
+      "end": true
+    }
   ],
-
   "prologue_cradle_phase3": [
-    {"say": "Ash falls in the background, far away, over a castle town that is not Truce. The Cradle's mask slides a crack across its own face and keeps it there, like a smile it found on the floor.", "who": "narrator"},
-    {"say": "[PRESERVATION =/= LOVE. PRESERVATION =/= LOVE. PRESERVATION =/=]", "who": "robo", "style": "robo"},
-    {"say": "—love. I know. I'm learning the word. Hold still, Big Brother Copy.", "who": "vaelos", "style": "clean"},
-    {"end": true}
+    {
+      "say": "Ash falls in the background, far away, over a castle town that is not Truce. The Cradle's mask slides a crack across its own face and keeps it there, like a smile it found on the floor.",
+      "who": "narrator"
+    },
+    {
+      "say": "[PRESERVATION =/= LOVE. PRESERVATION =/= LOVE. PRESERVATION =/=]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "say": "—love. I know. I'm learning the word. Hold still, Big Brother Copy.",
+      "who": "vaelos",
+      "style": "clean"
+    },
+    {
+      "end": true
+    }
   ],
-
   "prologue_cradle_defeat": [
-    {"say": "It does not die. It sits. The six legs fold the way an insect's fold, in six steps, and the barrels tilt down, and the mask closes its one blue eye.", "who": "narrator"},
-    {"say": "Something falls out of its wrist and rolls to Crono's boot: a bracer of tungsten wire wound on an amber cylinder, warm.", "who": "narrator"},
-    {"relic": "tungsten_wire_loom_bracer"},
-    {"caption": "[Obtained: Tungsten Wire Loom Bracer. +10% damage to a target in the first 3 s after its Break.]"},
-    {"end": true}
+    {
+      "say": "It does not die. It sits. The six legs fold the way an insect's fold, in six steps, and the barrels tilt down, and the mask closes its one blue eye.",
+      "who": "narrator"
+    },
+    {
+      "say": "Something falls out of its wrist and rolls to Crono's boot: a bracer of tungsten wire wound on an amber cylinder, warm.",
+      "who": "narrator"
+    },
+    {
+      "relic": "tungsten_wire_loom_bracer"
+    },
+    {
+      "caption": "[Obtained: Tungsten Wire Loom Bracer. +10% damage to a target in the first 3 s after its Break.]"
+    },
+    {
+      "end": true
+    }
   ],
-
   "prologue_courtyard": [
-    {"music": "mus_u0_truce_1024"},
-    {"say": "The courtyard. Rain. Two men who have been waiting since before dawn.", "who": "narrator"},
-    {"say": "Glenn leans on a cane capped with a dead sword's hilt. His left sleeve is pinned at the shoulder and lacquered over so it looks whole at court. Beside him, Magus stands with one eye clouded white, and from the corner of it something thin and silver runs down his cheek, falls, and for a moment falls upward.", "who": "narrator"},
-    {"say": "You look terrible, Crono. Good. Means you were listening when the house fell on you.", "who": "glenn"},
-    {"say": "It was never destroyed.", "who": "magus"},
-    {"say": "Lavos. The thing you killed in the Fair year. It was a spore. Larval. Something a great deal older than it laid it, and we burned the shell, and the shell was the easy part.", "who": "magus"},
-    {"say": "It has metamorphosed, Crono. It has learned to wear a shape. I have seen the shape. It has your face.", "who": "magus"},
-    {"say": "Lucca's journal said the rest, eight years ago, and none of us read it until last week. The bad endings. Every branch we pruned on the way to killing it.", "who": "glenn"},
-    {"say": "They were never pruned. They were quarantined. Under us. Under pressure. Like water behind a dam, and the dam's got a daughter-shaped crack in it.", "who": "glenn"},
-    {"choice": [
-      {"text": "[Nod]", "goto": "court_nod"},
-      {"text": "[Look Away]", "goto": "court_away"},
-      {"text": "[Say Sera's Name]", "goto": "court_sera"}
-    ], "who": "crono", "prompt": "..."},
-    {"label": "court_nod"},
-    {"say": "Glenn's eyes go to Crono's left wrist, under the sleeve, and stay a second too long.", "who": "narrator"},
-    {"say": "Porcelain recognises porcelain, Captain. Say nothing. I didn't.", "who": "glenn"},
-    {"goto": "court_gauntlet"},
-    {"label": "court_away"},
-    {"say": "Magus almost smiles.", "who": "narrator"},
-    {"say": "He does that now. The looking away. Since the Peak.", "who": "magus"},
-    {"goto": "court_gauntlet"},
-    {"label": "court_sera"},
-    {"say": "Sera.", "who": "crono"},
-    {"say": "Aye. Her. The thing with your face wants her, and it isn't shy about it.", "who": "glenn"},
-    {"label": "court_gauntlet"},
-    {"say": "Glenn hands him a gauntlet of heavy brass, dials and cable, built from a wing-core that used to fly: the Epoch gauntlet. The Rainbow slots into its grip and the cable finds the hilt.", "who": "narrator"},
-    {"key_item": "epoch_gauntlet"},
-    {"caption": "[Obtained: Epoch's Wake. The sword and the arm read as one shape now.]"},
-    {"say": "Truce. The clocktower. Robo's grown into it and it's the only ground that doesn't rot under you. Take your family there. We'll follow when the crypt lets him go.", "who": "glenn"},
-    {"say": "Marle is already at the gate with Sera's arm over her shoulder. Sera is awake. She is looking at his wrist.", "who": "narrator"},
-    {"chapter": 1},
-    {"checkpoint": "atrium_arrival"},
-    {"save": 0},
-    {"go": "atrium", "spawn": "arrival"}
+    {
+      "music": "mus_u0_truce_1024"
+    },
+    {
+      "say": "The courtyard. Rain. Two men who have been waiting since before dawn.",
+      "who": "narrator"
+    },
+    {
+      "say": "Glenn leans on a cane capped with a dead sword's hilt. His left sleeve is pinned at the shoulder and lacquered over so it looks whole at court. Beside him, Magus stands with one eye clouded white, and from the corner of it something thin and silver runs down his cheek, falls, and for a moment falls upward.",
+      "who": "narrator"
+    },
+    {
+      "say": "You look terrible, Crono. Good. Means you were listening when the house fell on you.",
+      "who": "glenn"
+    },
+    {
+      "say": "It was never destroyed.",
+      "who": "magus"
+    },
+    {
+      "say": "Lavos. The thing you killed in the Fair year. It was a spore. Larval. Something a great deal older than it laid it, and we burned the shell, and the shell was the easy part.",
+      "who": "magus"
+    },
+    {
+      "say": "It has metamorphosed, Crono. It has learned to wear a shape. I have seen the shape. It has your face.",
+      "who": "magus"
+    },
+    {
+      "say": "Lucca's journal said the rest, eight years ago, and none of us read it until last week. The bad endings. Every branch we pruned on the way to killing it.",
+      "who": "glenn"
+    },
+    {
+      "say": "They were never pruned. They were quarantined. Under us. Under pressure. Like water behind a dam, and the dam's got a daughter-shaped crack in it.",
+      "who": "glenn"
+    },
+    {
+      "choice": [
+        {
+          "text": "[Nod]",
+          "goto": "court_nod"
+        },
+        {
+          "text": "[Look Away]",
+          "goto": "court_away"
+        },
+        {
+          "text": "[Say Sera's Name]",
+          "goto": "court_sera"
+        }
+      ],
+      "who": "crono",
+      "prompt": "..."
+    },
+    {
+      "label": "court_nod"
+    },
+    {
+      "say": "Glenn's eyes go to Crono's left wrist, under the sleeve, and stay a second too long.",
+      "who": "narrator"
+    },
+    {
+      "say": "Porcelain recognises porcelain, Captain. Say nothing. I didn't.",
+      "who": "glenn"
+    },
+    {
+      "goto": "court_gauntlet"
+    },
+    {
+      "label": "court_away"
+    },
+    {
+      "say": "Magus almost smiles.",
+      "who": "narrator"
+    },
+    {
+      "say": "He does that now. The looking away. Since the Peak.",
+      "who": "magus"
+    },
+    {
+      "goto": "court_gauntlet"
+    },
+    {
+      "label": "court_sera"
+    },
+    {
+      "say": "Sera.",
+      "who": "crono"
+    },
+    {
+      "say": "Aye. Her. The thing with your face wants her, and it isn't shy about it.",
+      "who": "glenn"
+    },
+    {
+      "label": "court_gauntlet"
+    },
+    {
+      "say": "Glenn hands him a gauntlet of heavy brass, dials and cable, built from a wing-core that used to fly: the Epoch gauntlet. The Rainbow slots into its grip and the cable finds the hilt.",
+      "who": "narrator"
+    },
+    {
+      "key_item": "epoch_gauntlet"
+    },
+    {
+      "caption": "[Obtained: Epoch's Wake. The sword and the arm read as one shape now.]"
+    },
+    {
+      "say": "Truce. The clocktower. Robo's grown into it and it's the only ground that doesn't rot under you. Take your family there. We'll follow when the crypt lets him go.",
+      "who": "glenn"
+    },
+    {
+      "say": "Marle is already at the gate with Sera's arm over her shoulder. Sera is awake. She is looking at his wrist.",
+      "who": "narrator"
+    },
+    {
+      "set_flag": "Prologue_Courtyard_Done"
+    },
+    {
+      "chapter": 1
+    },
+    {
+      "checkpoint": "atrium_arrival"
+    },
+    {
+      "save": 0
+    },
+    {
+      "go": "atrium",
+      "spawn": "arrival"
+    }
   ],
-
   "prologue_exit_hook": [
-    {"say": "Behind them, in the empty kitchen, the bowl still lies in two halves. In the ash half, where Crono sat, an outline of someone very tall sits at the table, and tries, slowly, to hold a spoon.", "who": "narrator"},
-    {"end": true}
+    {
+      "say": "Behind them, in the empty kitchen, the bowl still lies in two halves. In the ash half, where Crono sat, an outline of someone very tall sits at the table, and tries, slowly, to hold a spoon.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
+  ],
+  "prologue_cradle_sequence": [
+    {
+      "run": "prologue_cradle_intro"
+    },
+    {
+      "label": "fight"
+    },
+    {
+      "battle": "",
+      "boss_id": "atrium_cradle",
+      "boss": true,
+      "at": "cradle",
+      "center": "cradle_center",
+      "music": "mus_boss_atrium_cradle",
+      "on_win": "won",
+      "on_lose": "lost"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "lost"
+    },
+    {
+      "say": "The floor comes up. Then it doesn't. Sera's hand is in the air, fingers spread, and the last two seconds run backwards through the room like water finding a drain.",
+      "who": "narrator"
+    },
+    {
+      "say": "Again. I can do it again. Papa, get up.",
+      "who": "sera",
+      "portrait": "hurt"
+    },
+    {
+      "debt": 5
+    },
+    {
+      "goto": "fight"
+    },
+    {
+      "label": "won"
+    },
+    {
+      "run": "prologue_cradle_defeat"
+    },
+    {
+      "checkpoint": "prologue_cradle_done"
+    },
+    {
+      "save": 0
+    },
+    {
+      "caption": "[The door to the courtyard is open. Glenn and Magus are waiting.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "prologue_exit_locked": [
+    {
+      "say": "The courtyard door is barred from this side by a brass lattice of the same make as the gate. Behind the pantry wall, something large shifts its weight and settles again.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
+  ],
+  "courtyard_glenn_after": [
+    {
+      "say": "Go on. The tower. I'll bring the Marshall's seal round when the crypt lets him go.",
+      "who": "glenn"
+    },
+    {
+      "end": true
+    }
+  ],
+  "courtyard_magus_after": [
+    {
+      "say": "It has your face, Crono. Try not to let it have hers.",
+      "who": "magus"
+    },
+    {
+      "end": true
+    }
   ]
 }

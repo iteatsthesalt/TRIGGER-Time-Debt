@@ -28,6 +28,7 @@ var fps: float = 60.0
 var hp_mult: float = 1.0
 var spd_mult: float = 1.0
 var hp_override: int = 0
+var xp_override: int = 0
 var actions: Array = []
 var behaviour: Dictionary = {}
 var is_metal: bool = false
@@ -64,6 +65,7 @@ static func from_dict(d: Dictionary) -> EnemyDef:
 	e.hp_mult = float(d.get("hp_mult", 1.0))
 	e.spd_mult = float(d.get("spd_mult", 1.0))
 	e.hp_override = int(d.get("hp", 0))
+	e.xp_override = int(d.get("xp", 0))
 	e.actions = d.get("actions", [])
 	e.behaviour = d.get("behaviour", {})
 	e.is_metal = bool(d.get("is_metal", e.tags.has(&"FERRO") or e.tags.has(&"GUN")))

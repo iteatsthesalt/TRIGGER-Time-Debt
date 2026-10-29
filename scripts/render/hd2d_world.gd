@@ -83,7 +83,44 @@ func _ready() -> void:
 
 
 func _on_weights(w: PackedFloat32Array) -> void:
-	canvas_stack.weights = w.duplicate()
+	canvas_stack.weights = _with_leaks(w)
+
+
+## Hub leaks (§2.4): another universe bleeds into the current grade without changing the universe.
+var _leaks: Dictionary = {}
+
+
+func set_leak(universe_id: int, amount: float) -> void:
+	if amount <= 0.001:
+		_leaks.erase(universe_id)
+	else:
+		_leaks[universe_id] = clampf(amount, 0.0, 1.0)
+	if is_instance_valid(Universe):
+		canvas_stack.weights = _with_leaks(Universe.weights)
+
+
+func _with_leaks(w: PackedFloat32Array) -> PackedFloat32Array:
+	var out: PackedFloat32Array = w.duplicate()
+	if _leaks.is_empty():
+		return out
+	var total_leak: float = 0.0
+	for k in _leaks.keys():
+		total_leak += float(_leaks[k])
+	total_leak = minf(total_leak, 0.85)
+	for i in out.size():
+		out[i] *= (1.0 - total_leak)
+	for k in _leaks.keys():
+		var idx: int = int(k)
+		if idx >= 0 and idx < out.size():
+			out[idx] += float(_leaks[k]) * (total_leak / maxf(0.001, _sum_leaks()))
+	return out
+
+
+func _sum_leaks() -> float:
+	var t: float = 0.0
+	for k in _leaks.keys():
+		t += float(_leaks[k])
+	return t
 
 
 func _on_integrity(v: float) -> void:

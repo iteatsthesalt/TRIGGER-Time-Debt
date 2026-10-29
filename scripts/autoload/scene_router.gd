@@ -20,9 +20,18 @@ func _ready() -> void:
 	fade = ColorRect.new()
 	fade.color = Color(0, 0, 0, 0)
 	fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fade.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	_layer.add_child(fade)
+	_fit_fade()
+	get_viewport().size_changed.connect(_fit_fade)
 	_register_defaults()
+
+
+func _fit_fade() -> void:
+	# Autoload UI is created before the window settles; size it by hand.
+	var r: Rect2 = get_viewport().get_visible_rect()
+	fade.position = r.position
+	fade.size = r.size
 
 
 func _register_defaults() -> void:

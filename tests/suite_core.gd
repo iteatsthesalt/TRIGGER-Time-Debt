@@ -1099,7 +1099,7 @@ func test_boss_defs_validate_and_phase_windows() -> void:
 	check(cradle.phase_def(1).weak.has(&"TACHYON") and cradle.phase_def(1).weak.has(&"LIGHT"), "phase 2 weak to TACHYON and LIGHT")
 	var actor: CombatActor = BossController.create_boss_actor(cradle)
 	_track(actor)
-	check_eq(actor.stats.max_hp(), 2400, "boss actor has the 2,400 HP pool")
+	check_eq(actor.stats.max_hp(), cradle.hp, "boss actor carries the HP pool from the file")
 	check(actor.has_meta("boss_id"), "boss actor is tagged for the battle scene")
 
 

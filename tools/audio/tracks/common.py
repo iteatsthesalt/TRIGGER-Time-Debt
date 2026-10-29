@@ -52,6 +52,7 @@ class Track:
         self.notes = ""
         self.rtpc: dict[str, str] = {}
         self.default_off: set[str] = set()
+        self.highpass_hz = 30.0  # rumble below this is removed from every stem (Vaelos lowers it for the 28 Hz drone)
 
     # --- timing helpers ---
     def bar(self, section: str, offset_bars: float = 0.0) -> float:
@@ -86,18 +87,20 @@ class Track:
         for name, x in stems.items():
             x2 = S.to_stereo(x) if x.ndim == 1 else x
             x2 = self.fold(x2) if len(x2) > n else S.fit_length(x2, n)
-            out[name] = S.fit_length(x2, n)
+            out[name] = S.highpass(S.fit_length(x2, n), self.highpass_hz, 2) if self.highpass_hz > 0 else S.fit_length(x2, n)
         defaults = [k for k in out if k not in self.default_off]
         hiss_stem = hiss_stem or ("hiss" if "hiss" in out else ("crackle" if "crackle" in out else defaults[0]))
-        out[hiss_stem] = out[hiss_stem] + S.tape_hiss(self.loop_end_s, hiss_db, seed=hash(self.id) % 1000)
+        out[hiss_stem] = out[hiss_stem] + S.tape_hiss(self.loop_end_s, hiss_db, seed=S.stable_seed(self.id))
         mix = sum(out[k] for k in defaults)
         cur = S.lufs_integrated(mix)
         gain = S.db_to_amp(target_lufs - cur) if math.isfinite(cur) else 1.0
         mix *= gain
         # keep the mix under −1 dBFS: if the gain would clip, pull everything down instead of limiting stems
         pk = S.peak_dbfs(mix)
-        if pk > -1.0:
-            trim = S.db_to_amp(-1.0 - pk)
+        if pk > -1.0 and self.single_file:
+            mix = S.limiter(mix, -1.0)  # one file: a look-ahead limiter can hold the ceiling
+        elif pk > -1.0:
+            trim = S.db_to_amp(-1.0 - pk)  # stems: trim everything the same amount so the sum stays under −1 dBFS
             gain *= trim
             mix *= trim
             if pk > 0.0:
@@ -129,6 +132,8 @@ class Track:
             "sections": [{"name": name, "bar": self.section_bar[name], "bars": bars,
                           "start_s": round(self.section_bar[name] * self.bar_s, 4)} for name, bars in self.sections],
             "stems": files,
+            "director_stem_order": (["mix"] if self.single_file else
+                                    [s for s in ["box", "piano", "strings", "hiss", "bass", "drums", "lead", "pad", "quartet", "crackle", "wind", "tick"] if s in files]),
             "mix": S.measure(mix),
             "rtpc": self.rtpc,
             "notes": self.notes,
@@ -195,6 +200,7 @@ def broken_skin_taiko(x: np.ndarray) -> np.ndarray:
     y = S.pitch_shift(S.to_mono(x), -3.0)
     y = S.saturate(y * 1.8, 2.2)
     y = S.lowpass(y, 2500.0, 2)
+    y = S.highpass(y, 45.0, 2)  # the skin is broken, not the floor
     return S.reverb(y, 1.6, 0.3, 0.01, 2500.0, seed=71)
 
 
@@ -219,6 +225,11 @@ def guitar_post(x: np.ndarray) -> np.ndarray:
     y = S.bandpass(y, 90.0, 5200.0, 1)
     y = S.resonant_bandpass(y, 2400.0, 1.2) * 0.3 + y
     return S.reverb(S.to_stereo(y, 0.4), 0.9, 0.15, 0.008, 3500.0, seed=101)
+
+
+def sub_register(root_midi: int) -> int:
+    """Put an 808 root between about 41 and 82 Hz: the octave below when that stays at E1 or above."""
+    return root_midi - 12 if root_midi - 12 >= 28 else root_midi
 
 
 def sub_808(times_pitches: list[tuple[float, int, float]], length_s: float, decay_s: float = 2.2, warp_cents: float = 18.0,

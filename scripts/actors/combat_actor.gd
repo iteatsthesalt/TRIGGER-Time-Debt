@@ -267,6 +267,8 @@ static func create_enemy(enemy_def: EnemyDef, level_override: int = -1, suffix: 
 	a.stats.actor_id = enemy_def.key
 	a.stats.display_name = enemy_def.display_name
 	a.stats.apply_enemy_curve(lv, enemy_def.kind)
+	if enemy_def.xp_override > 0:
+		a.stats.xp_reward = enemy_def.xp_override
 	if enemy_def.hp_override > 0:
 		a.stats.base_max_hp = enemy_def.hp_override
 	else:

@@ -29,3 +29,22 @@ Each entry: what, why, which bible section it touches.
 ## Story
 
 - **Crono's first lie** in the kitchen is a three-way choice: "Burn. Old burn." (the bible's line), covering the wrist, or holding it out. The first two lean Dark (+5), the third Light (+5). The bible gives only the lie; offering the honest gesture early sets up the Chapter 1 hearth choice. Touches Story Bible Prologue beat 3.
+
+## Atrium Cradle retune (Combat Laws §14.1, Story Bible Prologue)
+The bible lists the Cradle at Lv 3 with 2,400 HP. On the §15 curves a Lv 1–2 party deals ~12 per hit
+through intact plates, so that pool is ~140 hits, and a Lv 3 enemy ATK (30) three-shots Lv 1 Crono
+(120 HP). Headless playthroughs lost every attempt. The Prologue boss is a teaching fight that a careful
+first-time player should win at 60% integrity in three to four minutes, so it now ships at Lv 2 with
+1,200 HP, softened action powers (ring swipe 0.9, Sorrowful Blue 0.5, clamp 1.0, seal pulse 0.7,
+crack-slide 1.25, mask scream 0.8) and at most two Shardlings standing at once. Phase windows,
+plates, mechanics and drops are unchanged.
+
+## The Dollhouse Seal is paid from the deck
+"It can be damaged only by spending Time Debt — 5% of Crono's max HP" is implemented as a real
+command: while the Cradle is sealed, Crono's deck offers PAY TIME DEBT (5% integrity, a free action)
+and the Seal lifts when he pays. The phase script explains it instead of paying silently.
+
+## The Bowl Still Whole has two routes
+The breakfast fall choice offers "[Astral Smear Dash] Catch the bowl" directly (the clearest moment
+for a first-time player), and the Cradle's third phase keeps the bible's route: a perfect parry on the
+Crack-Slide opens a 1.5 s Prismatic window in which Astral Smear Dash grants the flag if it is not set.

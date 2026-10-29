@@ -1,0 +1,88 @@
+{
+  "id": "vaelos",
+  "name": "Vaelos — The Other Father",
+  "universe": 8,
+  "level": 78,
+  "hp": 180000,
+  "kind": "boss",
+  "sprite": "bos_u8_vaelos",
+  "size": 2.0,
+  "body_radius": 0.7,
+  "fps": 15,
+  "is_metal": false,
+  "tags": ["AURA", "ASTRAL", "NULL"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["prismatic_myopia", "time_debt_inheritance", "borrowed_future_echo", "lavic_filial_field", "time_debt_well", "zero_gravity_central_cradle"],
+  "adds": [{"key": "lavic_filament_guardian", "count": 2, "phase": "atom_claim"}],
+  "phases": [
+    {"id": "which_father", "name": "Which Father", "hp_from": 1.0, "hp_to": 0.7,
+     "shield": {"shield": 14, "weak": ["TACHYON", "ASTRAL", "VITREOUS"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["AURA", "ASTRAL", "NULL"],
+     "actions": [
+       {"id": "mend_doll", "name": "Mend the Sera Doll", "tags": ["AURA"], "shape": "SINGLE", "power": 0.0, "hits": 1, "self_target": true, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["he_sits_and_mends_a_tiny_porcelain_sera_doll_no_attacks", "plus_one_weakness_added_per_dialogue_answer", "only_seras_rewind_2_shave_and_cronos_astral_smear_dash_1_2pct_ceiling_can_shave_him", "three_dialogue_forks_you_kept_them_safe_light_you_stole_them_dark_what_if_both_are_real_prismatic", "let_him_finish_the_doll_plus_10_light_shatter_it_plus_10_dark_ask_to_show_both_plus_15_prismatic_amber_rift", "heartbeat_72_bpm"],
+     "on_enter": "",
+     "on_break": "He stops mending and looks up.",
+     "notes": "100-70%. Shield 14, Tags [AURA][ASTRAL][NULL], Weak [TACHYON][ASTRAL][VITREOUS], plus one weakness added per dialogue answer. He does not attack."},
+    {"id": "atom_claim", "name": "Atom Claim", "hp_from": 0.7, "hp_to": 0.4,
+     "shield": {"shield": 18, "shield_by_branch": {"Vaelos_Father=Rejected": 22}, "weak": ["FERRO", "SOUND", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["ASTRAL", "SAURIA", "FIRE", "RUIN"],
+     "actions": [
+       {"id": "perfected_smear_dash", "name": "Perfected Smear Dash", "tags": ["ASTRAL", "SWORD"], "shape": "LINE_PIERCE", "length": 8.0, "width": 1.2, "power": 1.5, "hits": 1, "target": "nearest", "weight": 3},
+       {"id": "atom_claim", "name": "Atom Claim", "tags": ["RUIN", "FIRE"], "shape": "CIRCLE", "radius": 4.0, "power": 1.3, "hits": 1, "wind_up_s": 2.0, "target": "weakest", "weight": 2},
+       {"id": "heirloom_incinerate", "name": "Heirloom Incinerate", "tags": ["FIRE", "ASTRAL"], "shape": "BATTLEFIELD", "power": 1.8, "hits": 1, "wind_up_s": 3.0, "target": "all", "weight": 1},
+       {"id": "summon_guardians", "name": "Summon Filament Guardians", "tags": ["SAURIA"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:lavic_filament_guardian", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["shield_plus_4_if_vaelos_father_rejected", "galaxy_chest_opens_on_the_original_atoms", "uses_cronos_moves_perfected_smear_dash_leaves_gold_leaf_instead_of_a_crack", "summons_two_lavic_filament_guardians", "lavic_filial_field_forces_crono_to_tank_while_sera_under_40pct_hp", "time_debt_well_live_crono_below_20pct_hp_drains_galaxy_heals_vaelos_5pct", "cassias_wire_loom_mend_keeps_him_above", "light_70_hesitates_one_turn_after_any_rewind_that_shows_him_losing", "dark_70_heirloom_incinerate_burns_time_eggs_plus_50pct_damage", "bpm_100"],
+     "on_enter": "Vaelos: I didn't steal. I incubated. You were vapor. You were everywhere and nowhere. I made you a somewhere. Let me make her a somewhere too.",
+     "on_break": "",
+     "notes": "70-40%. Shield 18 (+4 if Vaelos_Father=Rejected). Tags [ASTRAL][SAURIA][FIRE][RUIN]. Weak [FERRO][SOUND][TACHYON]. Heirloom Incinerate is used only with Dark >= 70."},
+    {"id": "porcelain_truth", "name": "Porcelain Truth", "hp_from": 0.4, "hp_to": 0.1,
+     "shield": {"shield": 22, "weak": ["ASTRAL", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "ASTRAL", "AURA", "VITREOUS"],
+     "actions": [
+       {"id": "copy_stars", "name": "Copy Stars", "tags": ["NULL", "ASTRAL"], "shape": "CIRCLE", "radius": 4.0, "power": 1.4, "hits": 1, "wind_up_s": 2.0, "target": "weakest", "weight": 2},
+       {"id": "porcelain_truth", "name": "Porcelain Truth", "tags": ["VITREOUS", "AURA"], "shape": "SINGLE", "power": 1.2, "hits": 1, "target": "crono", "weight": 1}
+     ],
+     "mechanics": ["weak_only_while_sera_is_phased_out", "crono_and_vaelos_both_show_the_20pct_reveal_copy_stars_beside_original_stars", "true_ending_requirement_push_sera_to_voluntary_40pct_phase_out_rewind_twice_then_borrowed_future", "heart_aligns_sera_solidity_60_on_entering_u8_rewind_55_rewind_50_borrowed_future_40", "voluntary_means_gauge_held_at_sync_hold_99_0_for_3s_before_the_threshold_action", "records_sera_phase_voluntary_40_forced_40_avoided", "while_sera_gone_2_turns_crono_and_vaelos_shields_drop_to_4_each", "borrowed_future_duplicate_renders_in_owners_native_art_style", "voluntary_plus_20_prismatic"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "40-10%. Shield 22, Tags [NULL][ASTRAL][AURA][VITREOUS]. Weak [ASTRAL][TACHYON] only while Sera is phased out (no weakness otherwise). Sera: Don't forget me."},
+    {"id": "child_or_empress", "name": "Child or Empress (secret)", "hp_from": 0.1, "hp_to": 0.0,
+     "shield": {"shield": 0, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["AURA", "ASTRAL", "NULL"],
+     "actions": [
+       {"id": "well_absorb", "name": "Absorb the Well", "tags": ["NULL", "ASTRAL"], "shape": "BATTLEFIELD", "power": 1.6, "hits": 1, "wind_up_s": 3.0, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["at_below_10pct_or_on_reaching_an_ending_threshold", "no_ending_threshold_met_vaelos_absorbs_the_well_and_becomes_lavos_standard_debt_collapse_ng_plus_keeps_plus_10_bias", "ending_flagged_phase_4_is_a_dialogue_boss_with_0_plates", "fought_to_the_end_both_sit_again_crono_empty_vaelos_weeping_black_oil_and_blue", "drops_kintsugi_brush"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Below 10% or on reaching an ending threshold. If an ending is flagged this is a dialogue boss with 0 plates; Absorb the Well is only used when no ending threshold is met."}
+  ],
+  "branches": [
+    {"id": "which_father", "after_phase": "which_father", "options": [
+      {"id": "acknowledged", "label": "You kept them safe", "flag": "Vaelos_Father", "state": "Acknowledged", "requires": "Light fork; let him finish the doll +10 Light"},
+      {"id": "rejected", "label": "You stole them", "flag": "Vaelos_Father", "state": "Rejected", "requires": "Dark fork; shatter the doll +10 Dark; Phase 2 shield +4"},
+      {"id": "both", "label": "What if both are real?", "flag": "Vaelos_Father", "state": "Both", "requires": "Prismatic fork; ask him to show both repair and break +15 Prismatic (Amber Rift)"}
+    ], "notes": "Three dialogue forks during Phase 1."},
+    {"id": "sera_phase", "after_phase": "porcelain_truth", "options": [
+      {"id": "voluntary", "label": "Voluntary 40", "flag": "Sera_Phase", "state": "Voluntary_40", "requires": "a gauge held at Sync Hold 99.0 for at least 3 s before the action that crossed 40%; +20 Prismatic"},
+      {"id": "forced", "label": "Forced 40", "flag": "Sera_Phase", "state": "Forced_40", "requires": "crossed 40% without the held gauge"},
+      {"id": "avoided", "label": "Avoided", "flag": "Sera_Phase", "state": "Avoided", "requires": "Sera never crossed 40%"}
+    ], "notes": "The True Ending requirement."},
+    {"id": "time_egg_well", "after_phase": "atom_claim", "options": [
+      {"id": "fed", "label": "Fed", "flag": "Time_Egg_Well", "state": "Fed", "requires": "Crono's galaxy drained into the well"},
+      {"id": "closed", "label": "Closed", "flag": "Time_Egg_Well", "state": "Closed", "requires": "the well never fed"}
+    ], "notes": ""},
+    {"id": "crono_porcelain", "after_phase": "child_or_empress", "options": [
+      {"id": "hollow_light", "label": "Hollow Light", "flag": "Crono_Porcelain", "state": "Hollow_Light", "requires": ""},
+      {"id": "cracked_dark", "label": "Cracked Dark", "flag": "Crono_Porcelain", "state": "Cracked_Dark", "requires": ""},
+      {"id": "kintsugi_pris", "label": "Kintsugi Prismatic", "flag": "Crono_Porcelain", "state": "Kintsugi_Pris", "requires": ""}
+    ], "notes": "The bible lists the flag without spelling out the conditions."}
+  ],
+  "drops": ["kintsugi_brush"],
+  "flags": {"Vaelos_Father": ["Acknowledged", "Rejected", "Both"], "Sera_Phase": ["Voluntary_40", "Forced_40", "Avoided"], "Time_Egg_Well": ["Fed", "Closed"], "Crono_Porcelain": ["Hollow_Light", "Cracked_Dark", "Kintsugi_Pris"]},
+  "notes": "Lv 78-80, scales 1:1 with the party (the only boss that scales). HP 180,000. A spherical womb-museum of Time Eggs, 400 m across; zero gravity in the Central Cradle; the TacticalPositioner uses ShapeCast spheres, and only gold leaf butterflies are solid. He does not start hostile. Phases are gated by Paradox Affinity dialogue checks as well as HP. Heart hazards: Prismatic Myopia, Time Debt Inheritance (Crono's ASTRAL cost rises from 0.4% to 1.2% per cast), Borrowed Future Echo, Lavic Filial Field."
+}

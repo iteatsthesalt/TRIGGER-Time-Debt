@@ -1,0 +1,35 @@
+{
+  "id": "cassia_forge_tendril",
+  "name": "Cassia-09 Forge Tendril",
+  "universe": 2,
+  "level": 60,
+  "hp": 120000,
+  "kind": "boss",
+  "sprite": "enm_pg_cassia_forge_tendril",
+  "size": 4.0,
+  "body_radius": 1.5,
+  "fps": 12,
+  "is_metal": true,
+  "tags": ["FERRO", "FIRE", "MYCELIA"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["klein_workbench", "gramophone_horn_pour_point"],
+  "adds": [{"key": "marrow_umbilical_twin", "count": 2, "phase": "forge"}],
+  "phases": [
+    {"id": "forge", "name": "Forge", "hp_from": 1.0, "hp_to": 0.0,
+     "shield": {"shield": 12, "weak": ["ASTRAL", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "untargetable_until": "both_twins_break_locked_together"},
+     "tags": ["FERRO", "FIRE", "MYCELIA"],
+     "actions": [
+       {"id": "forge_lash", "name": "Forge Lash", "tags": ["FERRO", "FIRE"], "shape": "LINE", "length": 6.0, "width": 1.2, "power": 1.4, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "spore_vent", "name": "Spore Vent", "tags": ["MYCELIA", "FIRE"], "shape": "CIRCLE", "radius": 3.0, "power": 1.0, "hits": 1, "wind_up_s": 1.5, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["two_marrow_umbilical_twins_e80_heal_each_other_2_plates_per_8s_unless_severed_with_a_line_pierce", "tendril_only_becomes_targetable_when_both_twins_are_break_locked_together", "quest_goal_pour_three_waters_through_the_gramophone_horn_while_the_twins_are_frozen", "when_assembled_the_seed_sprouts_at_432hz_the_pristine_time_egg_note"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 12, Tags [FERRO][FIRE][MYCELIA], Weak [ASTRAL][TACHYON]. The Tendril only becomes targetable when both Twins are Break-locked together."}
+  ],
+  "branches": [],
+  "drops": ["assembled_seed"],
+  "flags": {"Seed_of_Doan": ["Grown"]},
+  "notes": "Seed Assembly crafting boss (Chapter 15 side quest, Klein workbench, U2 clay canvas). Lv 60, HP 120,000. Two Marrow-Umbilical Twins (E80) and the Forge Tendril itself. Linking the assembled Seed to Seed_of_Doan=Grown is an assumption (the Combat Laws do not name the flag)."
+}

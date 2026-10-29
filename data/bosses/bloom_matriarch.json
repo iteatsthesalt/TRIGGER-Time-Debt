@@ -1,0 +1,55 @@
+{
+  "id": "bloom_matriarch",
+  "name": "Bloom Matriarch — Negotiation, Not Combat",
+  "universe": 0,
+  "level": 85,
+  "hp": 191250,
+  "kind": "boss",
+  "sprite": "bos_end6_bloom_matriarch",
+  "size": 6.0,
+  "body_radius": 2.0,
+  "fps": 60,
+  "is_metal": false,
+  "tags": ["MYCELIA", "VITREOUS", "DIVINE"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["spore_canopy", "12fps_breathing_rhythm"],
+  "adds": [],
+  "phases": [
+    {"id": "germination_argument", "name": "The Germination Argument", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 10, "plate_material": "MYCELIA", "weak": ["FERRO", "ASTRAL", "RUIN"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "shaved_only_by": ["tether_empathic_pulse", "proof_flags"]},
+     "tags": ["MYCELIA"],
+     "actions": [
+       {"id": "germination_argument", "name": "Germination Argument", "tags": ["MYCELIA"], "shape": "SINGLE", "power": 0.0, "hits": 1, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["10_mycelia_plates_cannot_be_shaved_by_weapons", "pulse_the_tether_in_rhythm_with_her_12fps_breathing_minus_2_per_correct_pulse", "spam_makes_vitreous_harden_and_closes_her", "present_arris_dome_sleeping_proof_minus_5", "ferro_memory_r66y_lullaby_triggers_memory_pulse_minus_7_and_transition_to_phase_2"],
+     "on_enter": "",
+     "on_break": "MEMORY_PULSE: transition to Phase 2.",
+     "notes": "10 [MYCELIA] plates. Each plate is an argument she holds. Weapons cannot shave; only Xyloph's Tether empathic pulse and shown proof (flags)."},
+    {"id": "hyphal_memory", "name": "The Hyphal Memory", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 10, "plate_material": ["VITREOUS", "DIVINE"], "weak": ["FERRO", "ASTRAL", "RUIN"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "shaved_only_by": ["tether_hold_during_chronoslip_listen", "proof_flags"]},
+     "tags": ["VITREOUS", "DIVINE"],
+     "actions": [
+       {"id": "show_timelines", "name": "Show the Timelines Where You Killed", "tags": ["VITREOUS", "DIVINE"], "shape": "PARTY", "power": 0.0, "hits": 1, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["10_vitreous_divine_plates", "she_shows_timelines_where_you_killed", "hold_the_tether_while_chronoslip_is_active_5pct_per_s_and_press_listen_no_damage_action_minus_1_per_3s_held", "showing_moon_sleep_proves_humans_can_rest_without_taking"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "10 [VITREOUS][DIVINE] plates."},
+    {"id": "the_bloom", "name": "The Bloom", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 8, "weak": ["FERRO", "ASTRAL", "RUIN"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "shaved_only_by": ["mercy_flags_shown", "tether_mastery"]},
+     "tags": ["MYCELIA", "VITREOUS", "DIVINE"],
+     "actions": [
+       {"id": "bloom", "name": "Bloom", "tags": ["MYCELIA", "DIVINE"], "shape": "PARTY", "power": 0.0, "hits": 1, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["8_plates", "every_mercy_flag_shown_removes_1_plate_seed_of_doan_grown_azar_scholar_arris_dome_sleeping_r66y_rewound_moon_sleep", "tether_mastery_removes_the_rest", "no_damage_is_ever_dealt", "result_mycelia_global_pool_open_and_permanent_atrium_divinity_field_plus_1_plate_per_5s_plus_0_2_regeneration_carried_into_every_future_new_game"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "8 plates. Mercy flags that each remove 1 plate when shown: Seed_of_Doan=Grown, Azar=Scholar, Arris_Dome=Sleeping, R66Y=Rewound, Moon=Sleep. The result flag MYCELIA_GLOBAL_POOL_OPEN is not in data/flags."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "reads_flags": {"Arris_Dome": "Sleeping", "Moon": "Sleep", "Seed_of_Doan": "Grown", "Azar": "Scholar", "R66Y": "Rewound"},
+  "notes": "Ending 6 — Mycelia Bloom (Chapter 18). 28 plates across three phases (10/10/8); each plate is an argument she holds. Plate types [MYCELIA][VITREOUS][DIVINE] cannot be shaved by weapons, only by Xyloph's Tether empathic pulse and by showing proof (flags). Weak [FERRO][ASTRAL][RUIN] (in negotiation, what she is vulnerable to hearing about). No damage is ever dealt; the hp figure is 2,250 x 85 for the curve only and level is not given (85 used). All phases advance on Break."
+}

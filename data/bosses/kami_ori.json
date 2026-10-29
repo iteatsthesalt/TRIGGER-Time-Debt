@@ -1,0 +1,75 @@
+{
+  "id": "kami_ori",
+  "name": "Kami-Ori",
+  "universe": 7,
+  "level": 68,
+  "hp": 153000,
+  "kind": "boss",
+  "sprite": "bos_u7_kami_ori",
+  "size": 4.0,
+  "body_radius": 1.5,
+  "fps": 24,
+  "is_metal": false,
+  "tags": ["PAPER", "NULL"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["crown_of_horns_lotus_dais", "glaze_erosion", "floor_deleted_95pct_void_from_phase_2", "95pct_white_phase_3"],
+  "adds": [{"key": "kami_ori_arm", "count": 6, "phase": "offering", "def": {"shield": 4, "tags": ["PAPER"], "weak": ["MYCELIA", "VITREOUS"], "notes": "The six arms hold a golden apple, a baby tooth, a lotus, a broken Masamune shard, a blank scroll and a prayer mudra. Each offers to permanently erase every elemental weakness of one ally. Break one arm (4 shave) to move on."}}],
+  "phases": [
+    {"id": "offering", "name": "Offering (erases weaknesses)", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "arm_broken",
+     "shield": {"shield": 18, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["PAPER", "NULL"],
+     "actions": [
+       {"id": "offering", "name": "Offering", "tags": ["PAPER", "DIVINE"], "shape": "SINGLE", "power": 0.0, "hits": 1, "target": "random", "weight": 3},
+       {"id": "mudra_tap", "name": "Mudra Tap", "tags": ["PAPER"], "shape": "SINGLE", "power": 0.8, "hits": 1, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["social_phase", "shield_18_plus_6_arms_4_each_equals_42", "each_arm_offers_to_permanently_erase_every_elemental_weakness_of_one_ally_accepting_makes_them_true_null", "break_one_arm_mycelia_vitreous_4_shave_to_move_on", "each_refusal_plus_15_light_each_acceptance_plus_10_dark_3_3_split_plus_20_prismatic", "sets_offering_made"],
+     "on_enter": "Six hands hold six flaws / will you keep your cracks, small one? / blank scroll is mercy.",
+     "on_break": "",
+     "notes": "Shield 18 + 6 Arms (4 each) = 42. A social phase: no weakness on Kami-Ori herself here; the arms are the targets. The phase ends when one arm Breaks, not on HP."},
+    {"id": "kirie_storm", "name": "Kirie Storm", "hp_from": 1.0, "hp_to": 0.5,
+     "shield": {"shield": 22, "weak": ["MYCELIA", "FERRO", "TACHYON"], "resist": ["NULL", "HZ"], "keyed_plates": [], "regenerating": true, "refill_once": false},
+     "tags": ["PAPER", "NULL", "WIND"],
+     "actions": [
+       {"id": "kirie_gale", "name": "Kirie Gale", "tags": ["WIND", "PAPER"], "shape": "BATTLEFIELD", "power": 0.7, "hits": 1, "wind_up_s": 2.0, "target": "all", "weight": 2},
+       {"id": "origami_snap", "name": "Origami Snap", "tags": ["PAPER", "NULL"], "shape": "CONE", "radius": 4.0, "length": 6.0, "power": 1.3, "hits": 2, "target": "nearest", "weight": 2},
+       {"id": "crane_dive", "name": "Crane Dive", "tags": ["PAPER"], "shape": "LINE_PIERCE", "length": 10.0, "width": 1.6, "power": 1.5, "hits": 1, "wind_up_s": 1.5, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["shield_rebuilds_18pct_per_s_after_3s", "floor_is_deleted_only_spinning_gold_kirie_flecks_are_platforms_95pct_void", "fall_returns_faller_to_last_checkpoint_fleck_plus_5pct_glaze_erosion", "unfolds_into_20ft_paper_crane_with_six_pitched_origami_snaps", "kirie_gale_tornado_shaves_1_plate_per_s_from_every_party_temporary_shield_and_divinity_halo_ignoring_element", "break_wings_lock_as_static_bridge_full_break", "positioner_auto_paths_optimal_triple_formation_universe_synergy_1_25_if_three_universes"],
+     "on_enter": "She unfolds into a 20 ft paper crane.",
+     "on_break": "Wings lock as a static bridge for the full Break.",
+     "notes": "Shield 22, rebuilds at 18%/s after 3 s. Weak [MYCELIA][FERRO][TACHYON]. Resist [NULL][HZ]. HP windows for Phases 2-3 are not given; split 1.0-0.5 and 0.5-0."},
+    {"id": "final_void", "name": "Final Void (teaches NULL)", "hp_from": 0.5, "hp_to": 0.0,
+     "shield": {"shield": 28, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "true_null": true, "fake_weaknesses_on_null": ["SWORD", "ASTRAL", "FERRO", "RUIN"]},
+     "tags": ["PAPER", "NULL"],
+     "actions": [
+       {"id": "void_fold", "name": "Void Fold", "tags": ["NULL"], "shape": "BATTLEFIELD", "power": 1.0, "hits": 1, "wind_up_s": 2.0, "target": "all", "weight": 1},
+       {"id": "white_erase", "name": "White Erase", "tags": ["NULL", "PAPER"], "shape": "CIRCLE", "radius": 4.0, "power": 1.4, "hits": 1, "target": "weakest", "weight": 2}
+     ],
+     "mechanics": ["95pct_white_only_gold_asanoha_and_silhouettes_visible", "she_is_true_null_no_weakness_until_nulled", "casting_null_on_her_creates_fake_weaknesses_sword_astral_ferro_ruin_for_2_turns_the_break_window", "a_true_null_ally_cannot_be_stripped_by_her_null_a_disadvantage_here", "nulled_bosses_take_bonus_galaxy_damage_from_crono_below_20pct", "break_nulls_deep_inhale_and_absolute_tape_stop_silence_she_collapses_into_a_flat_crane_in_seras_palm_the_mask_remains"],
+     "on_enter": "Crono at 20%: Copy knows copy. You held him so I could... pretend. Kami-Ori: Not pretend. / Porcelain holds tea / because it chose to.",
+     "on_break": "NULL's deep inhale and absolute tape-stop silence; she collapses into a flat crane in Sera's palm. The mask remains.",
+     "notes": "Shield 28. TRUE NULL: no weakness until NULLed; NULL creates [SWORD][ASTRAL][FERRO][RUIN] for 2 turns."},
+    {"id": "seventh_arm", "name": "Seventh Arm (secret)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "break", "requires": "Kirie_100 (100 Kirie Scales); two TRUE NULL allies and two who are not", "sprite": "bos_pg_kami_ori_seventh_arm",
+     "shield": {"shield": 35, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": true},
+     "tags": ["PAPER", "NULL", "DIVINE"],
+     "actions": [
+       {"id": "spine_lash", "name": "Spine Lash", "tags": ["PAPER", "NULL"], "shape": "LINE_PIERCE", "length": 10.0, "width": 1.6, "power": 1.6, "hits": 2, "wind_up_s": 2.0, "target": "random", "weight": 2},
+       {"id": "root_bloom", "name": "Root Bloom", "tags": ["DIVINE", "PAPER"], "shape": "CIRCLE", "radius": 4.0, "power": 1.2, "hits": 1, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["requires_100_kirie_scales", "shield_35_x_2_stacked_written_as_refill_once", "roots_bloom_a_seventh_arm_holding_her_own_spine", "requires_two_true_null_allies_and_two_who_are_not_balance_check", "sets_wounds_kept_true_ending_and_seventh_arm_defeated"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 35 x 2 (two stacked shields, each its own Break). No weakness list is given."}
+  ],
+  "branches": [
+    {"id": "offering_outcome", "after_phase": "offering", "options": [
+      {"id": "wounds_kept", "label": "0 accepted", "flag": "Kami_Ori", "state": "Wounds_Kept", "requires": "refuse every offering (or defeat the Seventh Arm): +45 Light; unlocks Origami Requiem and Washi-Hollow Rebirth"},
+      {"id": "blank_slate", "label": "6 accepted", "flag": "Kami_Ori", "state": "Blank_Slate", "requires": "+50 Dark"},
+      {"id": "paradox_child", "label": "Mixed 3-3 or the Seventh Arm", "flag": "Kami_Ori", "state": "Paradox_Child", "requires": "+30 Prismatic"}
+    ], "notes": "Also sets Offering_Made. The Seventh Arm sets Seventh_Arm_Defeated and Wounds_Kept (True Ending)."}
+  ],
+  "drops": [],
+  "flags": {"Kami_Ori": ["Wounds_Kept", "Blank_Slate", "Paradox_Child"], "Offering_Made": ["set"], "Seventh_Arm_Defeated": ["set"]},
+  "notes": "Lv 68, HP 153,000. A six-armed origami Noh deity on the Crown of Horns lotus dais. Her mask always faces the camera. She speaks in tumbling haiku. Camera lerp 32 -> 24 degrees over 0.45 s on truth beats. Tags inferred (origami paper, NULL)."
+}

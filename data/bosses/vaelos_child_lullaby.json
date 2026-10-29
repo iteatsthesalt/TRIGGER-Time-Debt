@@ -1,0 +1,62 @@
+{
+  "id": "vaelos_child_lullaby",
+  "name": "Vaelos Child — Lullaby",
+  "universe": 7,
+  "level": 80,
+  "hp": 180000,
+  "kind": "boss",
+  "sprite": "bos_end3_vaelos_child",
+  "size": 1.3,
+  "body_radius": 0.5,
+  "fps": 24,
+  "is_metal": false,
+  "tags": ["NULL", "DARK"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["playground_no_hp_depletion_no_death", "music_box_stereo_direction", "vhs_fog_on_spill"],
+  "adds": [],
+  "phases": [
+    {"id": "tantrum", "name": "Tantrum (Hunger)", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 6, "weak": ["LIGHT", "ASTRAL", "TACHYON"], "resist": [], "keyed_plates": [{"material": "NULL", "key": "ASTRAL", "weight": 2}, {"material": "DARK", "key": "LIGHT", "weight": 1}, {"material": "NULL", "key": "TACHYON", "weight": 2}], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "DARK"],
+     "actions": [
+       {"id": "tantrum_wail", "name": "Tantrum Wail", "tags": ["NULL", "DARK"], "shape": "CIRCLE", "radius": 4.0, "power": 0.0, "hits": 1, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["lullaby_progress_plate_replaces_the_shield", "light_techs_shave_damage_is_irrelevant", "astral_smear_dash_trail_slows_the_tantrum_gauge", "breaking_him_with_sword_or_fire_intensifies_the_tantrum_porcelain_stress_plus_15_and_a_dark_point"],
+     "on_enter": "",
+     "on_break": "Sera (if Broken by SWORD or FIRE): He doesn't know sword yet.",
+     "notes": "[NULL]x4 + [DARK]x2 = 6 plates. Keys as written: NULL->ASTRAL (-2), DARK->LIGHT (-1), NULL->TACHYON (-2); these sum to 5 shave against a stated plate count of 6 (the bible is one DARK plate short; a trailing DARK->LIGHT (-1) would complete it). Weak [LIGHT][ASTRAL][TACHYON]."},
+    {"id": "hide_and_seek", "name": "Hide and Seek", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 6, "weak": ["MYCELIA", "VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [{"material": "NULL", "key": "MYCELIA", "weight": 2}, {"material": "WIND", "key": "VITREOUS", "weight": 1}, {"material": "DARK", "key": "TACHYON", "weight": 2}], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "WIND", "DARK"],
+     "actions": [
+       {"id": "hide", "name": "Hide in the White", "tags": ["NULL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "cloak", "self_target": true, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["phases_to_5pct_translucency_and_hides_in_the_white", "find_him_by_listening_to_the_music_boxs_stereo_direction", "seras_duplicate_token_shows_his_echo_from_2s_ago"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "[NULL]x3 + [WIND]x2 + [DARK]x1 = 6 plates. Keys as written: NULL->MYCELIA (-2), WIND->VITREOUS (-1), DARK->TACHYON (-2); the weights sum to 5 and the materials do not match the stated counts exactly (transcribed literally). Weak [MYCELIA][VITREOUS][TACHYON]."},
+    {"id": "porcelain_spill", "name": "Porcelain Spill", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 6, "weak": ["FERRO", "ASTRAL", "GUILE"], "resist": [], "keyed_plates": [{"material": "NULL", "key": "FERRO", "weight": 3}, {"material": "MYCELIA", "key": "ASTRAL", "weight": 2}, {"material": "SWORD", "key": "GUILE", "weight": 1}], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "MYCELIA", "SWORD"],
+     "actions": [
+       {"id": "bowl_wobble", "name": "Bowl Wobble", "tags": ["NULL"], "shape": "CIRCLE", "radius": 3.0, "power": 0.0, "hits": 1, "effect": "fog", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["he_carries_the_ash_porridge_bowl_across_the_void_a_spill_spawns_vhs_fog", "cassias_polarity_steadies_the_bowl", "glenn_steals_the_wobble", "seras_chronoslip_cost_waived_while_her_hand_is_over_his", "perfect_15s_carry_drops_porcelain_stress_from_72_to_20"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "[NULL]x2 + [MYCELIA]x2 + [SWORD]x2 = 6 plates. Keys NULL->FERRO (-3), MYCELIA->ASTRAL (-2), SWORD->GUILE (-1) = 6. Weak [FERRO][ASTRAL][GUILE]."},
+    {"id": "lullaby", "name": "Lullaby", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "scripted",
+     "shield": {"shield": 0, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["NULL"],
+     "actions": [],
+     "mechanics": ["no_plates", "hold_sync_hold_in_rhythm_for_24_beats_two_cycles_at_72_bpm_to_finish_the_music_box", "afterwards_vaelos_joins_as_the_bonus_member_element_null_learning"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "No plates. Hold Sync Hold in rhythm for 24 beats (two cycles at 72 BPM) to finish the music box. Afterwards Vaelos joins as the bonus member (element NULL_LEARNING)."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "notes": "Ending 3 — Vaelos Child (Chapter 12). A playground, not a punishment: no HP depletion and no death; victory is lullaby completion. The shield plate is replaced by a Lullaby Progress Plate; every phase advances on Break. Level is not given (80 used; HP is 2,250 x 80 for the stat curve only and is never depleted)."
+}

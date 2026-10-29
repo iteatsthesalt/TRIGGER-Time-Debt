@@ -1,0 +1,62 @@
+{
+  "id": "glass_matriarch",
+  "name": "Glass Matriarch — Schala's Reflection",
+  "universe": 4,
+  "level": 40,
+  "hp": 92000,
+  "kind": "boss",
+  "sprite": "bos_u4_glass_matriarch",
+  "size": 6.1,
+  "body_radius": 2.0,
+  "fps": 60,
+  "is_metal": true,
+  "tags": ["VITREOUS", "FERRO"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["moon_chamber", "oil_blight_from_phase_2"],
+  "adds": [],
+  "phases": [
+    {"id": "stored_prayers", "name": "Stored Prayers", "hp_from": 1.0, "hp_to": 0.65,
+     "shield": {"shield": 10, "weak": ["VITREOUS", "FERRO"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["VITREOUS", "FERRO"],
+     "actions": [
+       {"id": "prayer_prism_volley", "name": "Prayer Prism Volley", "tags": ["VITREOUS", "LIGHT"], "shape": "LINE_PIERCE", "length": 9.0, "width": 1.2, "power": 1.2, "hits": 3, "wind_up_s": 1.5, "target": "random", "weight": 2},
+       {"id": "mask_frown", "name": "Mask Frown", "tags": ["VITREOUS", "FERRO"], "shape": "SINGLE", "power": 1.1, "hits": 1, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["porcelain_masks_frown_and_release_stored_prayers_as_prism_ammunition"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 10, Weak [VITREOUS][FERRO]. HP windows are not given; split evenly."},
+    {"id": "chest_opens", "name": "Chest Opens", "hp_from": 0.65, "hp_to": 0.3,
+     "shield": {"shield": 8, "weak": ["ASTRAL", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["VITREOUS", "FERRO", "OIL"],
+     "actions": [
+       {"id": "syringe_spray", "name": "Syringe Spray", "tags": ["FERRO", "OIL"], "shape": "CONE", "radius": 3.0, "length": 5.0, "power": 1.1, "hits": 1, "effect": "oil_blight", "target": "nearest", "weight": 2},
+       {"id": "glass_pull", "name": "Glass Pull", "tags": ["VITREOUS"], "shape": "SINGLE", "power": 1.3, "hits": 1, "wind_up_s": 1.5, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["chest_opens_constant_oil_blight", "cassia_loom_pull_or_vesper_glass_pull_extracts_the_syringes"],
+     "on_enter": "The chest opens: constant Oil-Blight.",
+     "on_break": "",
+     "notes": "Shield 8, Weak [ASTRAL][TACHYON]."},
+    {"id": "moon_choice", "name": "The Moon Choice", "hp_from": 0.3, "hp_to": 0.0,
+     "shield": {"shield": 6, "weak": ["NULL", "MYCELIA"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["VITREOUS", "FERRO", "NULL"],
+     "actions": [
+       {"id": "moon_glass_scream", "name": "Moon-Glass Scream", "tags": ["VITREOUS", "NULL"], "shape": "CIRCLE", "radius": 5.0, "power": 1.3, "hits": 1, "wind_up_s": 2.0, "target": "weakest", "weight": 1},
+       {"id": "mask_frown", "name": "Mask Frown", "tags": ["VITREOUS", "FERRO"], "shape": "SINGLE", "power": 1.1, "hits": 1, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["moon_choice_sleep_or_shatter"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 6, Weak [NULL][MYCELIA]."}
+  ],
+  "branches": [
+    {"id": "the_moon", "after_phase": "moon_choice", "options": [
+      {"id": "sleep", "label": "Let the Moon sleep", "flag": "Moon", "state": "Sleep", "requires": "Light +20: the heal fountain stays; Divinity lotus kintsugi heals 1% glaze per 8 s and +1 plate per 5 s"},
+      {"id": "shatter", "label": "Shatter the Moon", "flag": "Moon", "state": "Shatter", "requires": "Dark +25: the Moon becomes a low-gravity debris dungeon of prismatic shards; Divinity becomes Ruin Decay, -2% max glaze per battle, cap 30%"}
+    ], "notes": "The flag in data/flags carries light 30 / dark 25 affinity values; the bible text says Light +20."}
+  ],
+  "drops": [],
+  "flags": {"Moon": ["Sleep", "Shatter"]},
+  "notes": "Optional, Moon chamber. Lv 40, HP 92,000. An Arch-Curator glass variant guarding the drowned Moon. Tags inferred (glass Arch-Curator)."
+}

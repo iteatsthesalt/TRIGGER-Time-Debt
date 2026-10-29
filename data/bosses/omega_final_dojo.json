@@ -1,0 +1,70 @@
+{
+  "id": "omega_final_dojo",
+  "name": "Omega-Spekkio — The Final Dojo",
+  "universe": 7,
+  "level": 70,
+  "hp": 120000,
+  "kind": "boss",
+  "sprite": "chr_omega_spekkio_dojo",
+  "size": 1.8,
+  "body_radius": 0.5,
+  "fps": 24,
+  "is_metal": false,
+  "tags": ["NULL"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["white_mat"],
+  "adds": [],
+  "requires": "Sera carries all 8 sigils; after Kami-Ori; found in U7's negative space",
+  "phases": [
+    {"id": "crane", "name": "Crane", "hp_from": 1.0, "hp_to": 0.75,
+     "shield": {"shield": 10, "weak": ["WIND", "PIERCING"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "PAPER"],
+     "actions": [
+       {"id": "crane_fold", "name": "Crane Fold", "tags": ["PAPER", "NULL"], "shape": "SINGLE", "power": 1.0, "hits": 2, "target": "random", "weight": 2},
+       {"id": "wing_cut", "name": "Wing Cut", "tags": ["WIND"], "shape": "CONE", "radius": 3.0, "length": 5.0, "power": 1.2, "hits": 1, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["pure_evasion_folds_out_of_every_predicted_hit_unless_a_gauge_was_held_at_sync_hold_before_the_attack", "patience_lesson"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Bout 1. Shield 10, Weak [WIND][PIERCING]. HP 30,000 for this bout."},
+    {"id": "samurai", "name": "Samurai", "hp_from": 0.75, "hp_to": 0.5,
+     "shield": {"shield": 12, "weak": ["SWORD", "INK"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "SWORD"],
+     "actions": [
+       {"id": "parry_stance", "name": "Parry Stance", "tags": ["SWORD"], "shape": "SINGLE", "power": 0.0, "hits": 1, "self_target": true, "target": "nearest", "weight": 1},
+       {"id": "iai_cut", "name": "Iai Cut", "tags": ["SWORD", "INK"], "shape": "SINGLE", "power": 1.5, "hits": 1, "wind_up_s": 2.0, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["every_action_it_takes_is_a_parry_stance", "only_an_attacker_who_has_perfect_parried_it_this_bout_can_shave_it", "ens_lesson"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Bout 2. Shield 12, Weak [SWORD][INK]. HP 30,000."},
+    {"id": "dragon", "name": "Dragon", "hp_from": 0.5, "hp_to": 0.25,
+     "shield": {"shield": 16, "weak": ["FIRE", "ICE", "VOLT"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "FIRE", "ICE", "VOLT"],
+     "actions": [
+       {"id": "breath_fire", "name": "Fire Breath", "tags": ["FIRE"], "shape": "CONE", "radius": 6.0, "length": 8.0, "power": 1.4, "hits": 1, "wind_up_s": 2.0, "target": "nearest", "weight": 1},
+       {"id": "breath_ice", "name": "Ice Breath", "tags": ["ICE"], "shape": "CONE", "radius": 6.0, "length": 8.0, "power": 1.4, "hits": 1, "wind_up_s": 2.0, "status": "slow", "status_seconds": 4, "target": "nearest", "weight": 1},
+       {"id": "breath_volt", "name": "Volt Breath", "tags": ["VOLT"], "shape": "CONE", "radius": 6.0, "length": 8.0, "power": 1.4, "hits": 1, "wind_up_s": 2.0, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["weakness_cycles_fire_ice_volt_every_6s_only_one_active_at_a_time", "breath_attacks_cover_two_thirds_of_the_mat", "positioning_lesson"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Bout 3. Shield 16, Weak [FIRE][ICE][VOLT] cycling every 6 s (only the current one counts; the list holds all three). HP 30,000."},
+    {"id": "faceless", "name": "Faceless", "hp_from": 0.25, "hp_to": 0.0,
+     "shield": {"shield": 20, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "true_null": true},
+     "tags": ["NULL"],
+     "actions": [
+       {"id": "faceless_palm", "name": "Faceless Palm", "tags": ["NULL"], "shape": "SINGLE", "power": 1.3, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "erase", "name": "Erase", "tags": ["NULL"], "shape": "BATTLEFIELD", "power": 0.8, "hits": 1, "wind_up_s": 2.0, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["true_null", "only_null_created_fake_weaknesses_can_shave_it", "null_lesson", "break_omega_spekkio_laughs_and_joins_as_the_ninth_member"],
+     "on_enter": "",
+     "on_break": "Omega-Spekkio laughs: Ha. You want to be un-weak. That's different. He joins as the ninth member.",
+     "notes": "Bout 4. Shield 20, TRUE NULL. HP 30,000."}
+  ],
+  "branches": [],
+  "drops": ["null_shield"],
+  "flags": {},
+  "notes": "Optional recruitment. Lv 70. Four bouts on a white mat; each bout is a single-phase duel with its own lesson and its own HP 30,000. Encoded as one boss with four phases: the 120,000 total is 4 x 30,000 and each quarter window is one bout. Rewards: the NULL Shield toggle, Miura Fold, Lotus Reverse, Gold Leaf Severance."
+}

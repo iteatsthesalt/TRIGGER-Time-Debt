@@ -1,0 +1,35 @@
+{
+  "id": "ash_ringmaster",
+  "name": "Ash Ringmaster",
+  "universe": 5,
+  "level": 44,
+  "hp": 50000,
+  "kind": "miniboss",
+  "sprite": "enm_u5_ash_ringmaster",
+  "size": 2.4,
+  "body_radius": 0.8,
+  "fps": 12,
+  "is_metal": false,
+  "tags": ["GUILE", "SMOKE", "FIRE"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["big_top_gate_no_bp_generation", "ash_inhale_outside_music_radius"],
+  "adds": [],
+  "phases": [
+    {"id": "gatekeeper", "name": "Gatekeeper", "hp_from": 1.0, "hp_to": 0.0,
+     "shield": {"shield": 9, "weak": ["SWORD", "WATER", "GUILE"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["GUILE", "SMOKE", "FIRE"],
+     "actions": [
+       {"id": "whip_crack", "name": "Whip Crack", "tags": ["GUILE", "FIRE"], "shape": "CONE", "radius": 6.0, "length": 6.0, "power": 1.2, "hits": 1, "effect": "steal_bp", "bp_steal": 1, "target": "nearest", "weight": 2},
+       {"id": "ash_flourish", "name": "Ash Flourish", "tags": ["SMOKE"], "shape": "CIRCLE", "radius": 3.0, "power": 0.9, "hits": 1, "status": "ash_inhale", "status_seconds": 8, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["while_he_stands_no_bp_is_generated_at_the_gate_glenns_theft_is_the_only_bp_source", "every_10s_battle_time_whip_crack_cone_6_0_steals_1_bp_into_visible_counter", "guile_weakness_honest_hit_only", "break_whip_freezes_mid_crack_glenn_empties_whole_counter_with_a_single_steal_exception_to_3_bp_steal_cap_pool_cap_still_applies"],
+     "on_enter": "",
+     "on_break": "The whip freezes mid-crack and Glenn can empty the whole counter with a single steal.",
+     "notes": "Shield 9, Tags [GUILE][SMOKE][FIRE], Weak [SWORD][WATER] and an honest [GUILE] hit. The whip crack is on a 10 s battle-time timer (the weighted action is the stand-in). Stolen BP accumulates in his visible counter (stolen_bp meta)."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "notes": "Gate mini-boss. Lv 44, HP 50,000. A charred ringmaster's coat stuffed with ash, guarding the Big Top gate. While he stands, no BP is generated at the gate: Glenn's theft is the party's only BP source, which is why the Carnival needs Glenn."
+}

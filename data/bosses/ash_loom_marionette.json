@@ -1,0 +1,69 @@
+{
+  "id": "ash_loom_marionette",
+  "name": "Ash-Loom Marionette",
+  "universe": 5,
+  "level": 64,
+  "hp": 144000,
+  "kind": "boss",
+  "sprite": "enm_pg_ash_loom_marionette",
+  "size": 2.6,
+  "body_radius": 0.9,
+  "fps": 12,
+  "is_metal": false,
+  "tags": ["GUILE", "SMOKE", "RUIN"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["u5_puppet_stage", "thread_cuts_delay_1_5x", "six_cuts_collapse_stage"],
+  "adds": [
+    {"key": "puppet_add", "count": 4, "phase": "thread_keeper", "def": {"shield": 4, "tags": ["GUILE", "SMOKE"], "weak": ["SWORD", "SMOKE", "FIRE"], "notes": "Four empty-costume puppet adds, 4 plates each."}},
+    {"key": "strongman_dummy", "count": 1, "phase": "thread_keeper", "level": 43, "shield": 8},
+    {"key": "ticket_golem_barker", "count": 1, "phase": "thread_keeper", "level": 45, "shield": 6},
+    {"key": "ash_cotton_swirl", "count": 1, "phase": "ash_knight_copy", "trigger": "every_bp_steal"}
+  ],
+  "phases": [
+    {"id": "thread_keeper", "name": "Thread Keeper", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "threads_cut",
+     "shield": {"shield": 14, "untargetable": true, "weak": ["SWORD", "VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["GUILE", "SMOKE", "RUIN"],
+     "actions": [
+       {"id": "pull_costumes", "name": "Pull the Costumes", "tags": ["GUILE", "SMOKE"], "shape": "PARTY", "power": 0.5, "hits": 1, "wind_up_s": 1.0, "target": "all", "weight": 1},
+       {"id": "ash_drift", "name": "Ash Drift", "tags": ["SMOKE", "RUIN"], "shape": "CIRCLE", "radius": 4.0, "power": 0.8, "hits": 1, "status": "ash_inhale", "status_seconds": 6, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["untargetable_above_the_stage", "shield_14_plus_4_puppet_adds_4_each", "spawns_a_strongman_dummy_lv43_8_plates_and_a_ticket_golem_barker_lv45_6_plates", "cut_yellow_red_blue_to_expose_the_heart_thread", "break_lock_it_mid_swing_for_a_line_pierce"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Phase 1: untargetable above; ends when the threads are cut (not on HP). Weak [SWORD] (cut, 2.0x), [VITREOUS] (reveal, 2.6x at Lv3), [TACHYON] (scratch)."},
+    {"id": "ash_knight_copy", "name": "Ash-Knight Copy", "hp_from": 1.0, "hp_to": 0.0,
+     "shield": {"shield": 16, "weak": ["GUILE", "SMOKE", "MYCELIA"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["RUIN", "FIRE", "SWORD", "HEAVY"],
+     "actions": [
+       {"id": "ash_blade", "name": "Ash Blade", "tags": ["RUIN", "FIRE", "SWORD"], "shape": "SINGLE", "power": 1.5, "hits": 1, "wind_up_s": 1.5, "target": "nearest", "weight": 3},
+       {"id": "heavy_cleave", "name": "Heavy Cleave", "tags": ["SWORD", "HEAVY"], "shape": "CONE", "radius": 3.0, "length": 4.0, "power": 1.8, "hits": 1, "wind_up_s": 2.5, "target": "nearest", "weight": 2},
+       {"id": "keep_the_music", "name": "Keep the Music Going", "tags": ["GUILE"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "steal_bp", "bp_steal": 1, "target": "weakest", "weight": 2}
+     ],
+     "mechanics": ["drops_and_fights_as_an_ash_knight_copy_with_cyrus_phase_2_rules", "locked_30fps_cannot_be_squashed_prop_hammer_plus_50pct", "reverse_bp_theft_every_steal_spawns_ash_cotton_that_cracks_crono_if_not_popped", "ashfall_outside_safe_circle"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Phase 2: Shield 16 and the Phase 2 rules of Cyrus (see cyrus.json ash_knight)."},
+    {"id": "veil_lifted", "name": "Veil Lifted (conditional, Story Bible)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "scripted", "requires": "Sera is phased at 40%",
+     "shield": {"shield": 0, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["GUILE", "SMOKE", "RUIN"],
+     "actions": [],
+     "mechanics": ["shows_glenn_as_he_was_before_the_paint", "mercy_puzzle_harmonise_with_cassias_opposite_phase_record_and_it_sleeps", "or_burn_it", "doing_both_in_separate_loops_opens_an_amber_rift"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "From the Story Bible (Chapter 15): if Sera is phased at 40%, a third phase lifts the veil and the fight becomes a mercy puzzle. Not in the Combat Laws entry."}
+  ],
+  "branches": [
+    {"id": "glenn_threads", "after_phase": "veil_lifted", "options": [
+      {"id": "mercy", "label": "Harmonise it to sleep", "flag": "Glenn_Threads", "state": "Cut_Mercy", "requires": "Cassia's opposite-phase record; Light +30; it will have four fewer shields when the Arch-Curator is fought again"},
+      {"id": "burn", "label": "Burn it", "flag": "Glenn_Threads", "state": "Incinerated", "requires": "Dark +25; a laurel fragment drops early"}
+    ], "notes": "Story Bible branch."},
+    {"id": "glenn_arm", "after_phase": "ash_knight_copy", "options": [
+      {"id": "hose_arm", "label": "Hose-arm accepted", "flag": "Glenn_Arm", "state": "HoseArm_Accepted", "requires": "+30 Light; unlocks the hidden third hit of Mercy Leap"},
+      {"id": "iron_arm", "label": "Iron-arm denial", "flag": "Glenn_Arm", "state": "IronArm_Denial", "requires": "+25 Dark; grants the Charred Laurel without the Prop Chest farm"}
+    ], "notes": "Reward ties into Glenn's hose-arm side quest."}
+  ],
+  "drops": ["charred_laurel"],
+  "flags": {"Glenn_Threads": ["Cut_Mercy", "Incinerated"], "Glenn_Arm": ["HoseArm_Accepted", "IronArm_Denial"]},
+  "notes": "Side boss (Chapter 15). Lv 64, HP 144,000. Ash leftovers that learned to puppeteer empty costumes on a U5 puppet stage. Shield 14 + 4 Puppet Adds (4 each). The charred_laurel drop is the IronArm_Denial reward."
+}

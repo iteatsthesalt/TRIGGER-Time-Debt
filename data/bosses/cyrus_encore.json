@@ -1,0 +1,66 @@
+{
+  "id": "cyrus_encore",
+  "name": "Cyrus the Marionettist — Encore",
+  "universe": 5,
+  "level": 85,
+  "hp": 45000,
+  "kind": "boss",
+  "sprite": "bos_end7_cyrus_encore",
+  "size": 2.4,
+  "body_radius": 0.8,
+  "fps": 12,
+  "is_metal": false,
+  "tags": ["GUILE", "SMOKE", "RUIN"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["puppet_stage", "visible_threads_to_each_party_member_phase_2"],
+  "adds": [{"key": "leg_mechanism", "count": 1, "phase": "calliope_entrance", "trigger": "each_step", "def": {"tags": ["GUILE", "FERRO"], "weak": ["SWORD"], "notes": "Each of his steps spawns a Leg Mechanism add that chips 1 plate off a party temporary shield if not cleared. Plates not given."}}],
+  "phases": [
+    {"id": "calliope_entrance", "name": "The Calliope Entrance", "hp_from": 1.0, "hp_to": 0.6,
+     "shield": {"shield": 10, "plate_material": "GUILE", "weak": ["SWORD"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["GUILE", "SMOKE", "RUIN"],
+     "actions": [
+       {"id": "calliope_step", "name": "Calliope Step", "tags": ["GUILE", "SMOKE"], "shape": "SINGLE", "power": 1.0, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "spawn_leg", "name": "Leg Mechanism", "tags": ["GUILE"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:leg_mechanism", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["hp_18000", "10_guile_illusion_plates_need_honesty_or_area_hits", "each_step_spawns_a_leg_mechanism_add_that_chips_1_plate_off_a_party_temporary_shield_if_not_cleared", "glenns_masamune_hilt_cut_deals_2x_cronos_ordinary_sword_1_5x"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "HP 18,000 (1.0 to 0.6 of 45,000). 10 [GUILE] plates, Weak [SWORD]."},
+    {"id": "encore_of_valor", "name": "The Encore of Valor", "hp_from": 0.6, "hp_to": 0.267,
+     "shield": {"shield": 8, "plate_material": ["SMOKE", "RUIN"], "weak": ["VITREOUS"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["GUILE", "SMOKE", "RUIN"],
+     "actions": [
+       {"id": "kin_thread_tug", "name": "Kin Thread Tug", "tags": ["GUILE", "SMOKE"], "shape": "SINGLE", "power": 1.1, "hits": 1, "target": "random", "weight": 2},
+       {"id": "cursed_gold_rain", "name": "Cursed Gold Rain", "tags": ["RUIN"], "shape": "CIRCLE", "radius": 3.0, "power": 1.2, "hits": 1, "wind_up_s": 1.5, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["hp_15000", "8_mixed_smoke_dodge_plates_need_wind_or_water_and_ruin_cursed_gold_plates_need_vitreous", "every_party_member_has_a_visible_thread_to_his_fingers", "cut_the_wrong_kin_thread_and_the_party_loses_all_bp_and_that_ally_is_broken_cannot_act_next_turn_def_minus_50pct"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "HP 15,000 (0.6 to 0.267). 8 mixed [SMOKE][RUIN] plates, Weak [VITREOUS]."},
+    {"id": "vaelos_reveals", "name": "Vaelos Reveals", "hp_from": 0.267, "hp_to": 0.0,
+     "shield": {"shield": 7, "plate_material": "RUIN", "weak": ["TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["GUILE", "SMOKE", "RUIN", "NULL"],
+     "actions": [
+       {"id": "black_oil_strings", "name": "Black-Oil Strings", "tags": ["NULL", "RUIN"], "shape": "LINE_PIERCE", "length": 8.0, "width": 1.2, "power": 1.4, "hits": 2, "wind_up_s": 1.5, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["hp_12000", "7_ruin_cursed_gold_plates"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "HP 12,000 (0.267 to 0). 7 [RUIN] plates, Weak [TACHYON]."},
+    {"id": "strings_cut_inside", "name": "Strings Cut Inside", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "honest_lines",
+     "shield": {"shield": 5, "plate_material": "GUILE", "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "shaved_only_by": ["honest_lines"]},
+     "tags": ["GUILE"],
+     "actions": [
+       {"id": "backlash", "name": "Phase-Out Backlash", "tags": ["GUILE", "NULL"], "shape": "PARTY", "power": 0.0, "hits": 1, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["no_hp_bar", "5_guile_plates_that_only_honest_lines_shave_each_honest_line_minus_1", "attacking_instead_restores_his_plates_and_applies_a_40pct_phase_out_backlash_to_the_whole_party", "final_strike_is_glenn_cutting_his_own_strings_to_cyrus"],
+     "on_enter": "",
+     "on_break": "Glenn cuts his own strings to Cyrus.",
+     "notes": "No HP bar. 5 [GUILE] plates that only honest lines shave."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "notes": "Ending 7 — Ashen Jester (Chapter 19). 30 plates across four phases (10/8/7/5). Plate types: [GUILE] illusion plates (need honesty or area hits), [SMOKE] dodge plates (need wind or water), [RUIN] cursed gold plates (need VITREOUS); plate_material records the type since these are not tag keys. Weak [SWORD][VITREOUS][TACHYON]. HP is low on purpose (18,000 + 15,000 + 12,000 = 45,000); the fight is decided by threads and honesty. Level is not given (85 used)."
+}

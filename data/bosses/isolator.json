@@ -1,0 +1,72 @@
+{
+  "id": "isolator",
+  "name": "Juvenile Lavos Matriarch — Isolator",
+  "universe": 6,
+  "level": 60,
+  "hp": 135000,
+  "kind": "boss",
+  "sprite": "bos_u6_juvenile_lavos_matriarch",
+  "size": 9.1,
+  "body_radius": 3.0,
+  "fps": 15,
+  "is_metal": true,
+  "tags": ["LAVOS", "HZ", "FERRO"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["crt_shrine_plaza_nine_tv_stacks", "rain_conductivity_100pct", "vhs_blind_unless_static_tuned", "puddles_as_neon_light_walls"],
+  "adds": [{"key": "umbilical_crt", "count": 2, "phase": "isolator", "def": {"shield": 3, "tags": ["HZ", "FERRO"], "weak": ["RUIN", "FERRO"], "notes": "Umbilical CRTs (3 plates each) heal her 2 plates per 8 s until severed by a RUIN or FERRO LINE_PIERCE."}}],
+  "phases": [
+    {"id": "lullaby", "name": "Lullaby", "hp_from": 1.0, "hp_to": 0.7,
+     "shield": {"shield": 12, "weak": ["HZ", "FIRE"], "resist": ["SWORD"], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["LAVOS", "HZ", "FERRO"],
+     "actions": [
+       {"id": "white_noise", "name": "White Noise", "tags": ["HZ", "WHITE_NOISE"], "shape": "CIRCLE", "radius": 5.0, "power": 0.8, "hits": 1, "status": "blind", "status_seconds": 8, "target": "weakest", "weight": 2},
+       {"id": "tracking_hold", "name": "Tracking Hold", "tags": ["HZ"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "time_stop", "target": "random", "weight": 1},
+       {"id": "neo_tokyo_slide", "name": "Neo-Tokyo Slide", "tags": ["LAVOS", "FIRE"], "shape": "LINE_PIERCE", "length": 8.0, "width": 1.4, "power": 1.2, "hits": 1, "status": "oil_dot", "status_seconds": 6, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["resist_sword_neon_green_threads", "white_noise_circle_5_0_minus_30pct_hit", "tracking_hold_time_stop_one_battler_3s", "neo_tokyo_slide_adds_oil_dot", "to_break_static_must_use_carrion_on_throat_bulge_to_expose_core_then_seras_tachyon_needle_extends_into_a_cone", "break_masks_weep_black_oil_crts_show_cronos_wrist_reveal_at_60_and_20", "enters_phase_2_four_plates_down"],
+     "on_enter": "",
+     "on_break": "Masks weep black oil; the CRTs show Crono's wrist reveal at 60% and 20%. She enters Phase 2 four plates down.",
+     "notes": "100-70%. Shield 12, Weak [HZ][FIRE], Resist [SWORD]."},
+    {"id": "isolator", "name": "Isolator", "hp_from": 0.7, "hp_to": 0.35,
+     "shield": {"shield": 10, "start_at": 6, "weak": ["HZ", "FIRE"], "resist": ["SWORD"], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["LAVOS", "HZ", "FERRO"],
+     "actions": [
+       {"id": "faraday_lull", "name": "Faraday Lull", "tags": ["HZ", "WHITE_NOISE"], "shape": "BATTLEFIELD", "power": 0.5, "hits": 1, "wind_up_s": 2.0, "status": "blind", "status_seconds": 10, "target": "all", "weight": 1},
+       {"id": "cable_whip", "name": "Cable Whip", "tags": ["FERRO", "LAVOS"], "shape": "LINE", "length": 7.0, "width": 1.2, "power": 1.3, "hits": 2, "target": "random", "weight": 2}
+     ],
+     "mechanics": ["shield_10_plus_2_umbilical_crts_3_each", "umbilicals_heal_2_plates_per_8s_until_severed_by_ruin_or_ferro_line_pierce", "faraday_lull_mono_12bit_crush_city_muted_whole_party_blind_unless_static_holds_signal", "puddles_become_solid_neon_light_walls_passable_only_at_high_conductivity", "break_requires_one_boost_lv3_line_pierce_through_both_umbilicals_and_her_at_once", "drops_vapor_memory_core_fragment"],
+     "on_enter": "Faraday Lull: mono, 12-bit crush, the city muted to rain and static.",
+     "on_break": "Drops a Vapor Memory Core fragment.",
+     "notes": "70-35%. Shield 10 + 2 Umbilical CRTs (3 each). Starts four plates down (start_at 6) per the Phase 1 Break. The weakness list is not restated; Phase 1's is carried."},
+    {"id": "adolescence", "name": "Adolescence", "hp_from": 0.35, "hp_to": 0.1,
+     "shield": {"shield": 8, "weak": ["ASTRAL", "HZ", "NULL"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["LAVOS", "HZ", "NULL"],
+     "actions": [
+       {"id": "knock_static_burst", "name": "Knock-Static Burst", "tags": ["HZ", "LAVOS"], "shape": "CIRCLE", "radius": 4.0, "power": 1.2, "hits": 1, "wind_up_s": 1.5, "status": "knock_static", "status_turns": 2, "target": "weakest", "weight": 2},
+       {"id": "stolen_red_bike_ghost", "name": "Red Bike Ghost (stolen)", "tags": ["FIRE", "HZ"], "shape": "LINE_PIERCE", "length": 10.0, "width": 1.4, "power": 1.5, "hits": 1, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["she_stands_masks_crack_slide_like_r66y", "chest_opens_on_lavos_fibre_same_galaxy_void_as_crono_at_20", "steals_red_bike_ghost_from_the_party", "inflicts_knock_static_forced_12fps_stepping_2_turns_u2_clay_rules", "any_rewinding_tech_costs_crono_3pct_max_hp_ceiling", "crono_desaturates_to_0_85_crack_overlay_drives_emission"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "35-10%. Shield 8, Weak [ASTRAL][HZ][NULL] (Vaelos's identity emerging)."},
+    {"id": "hiss_choice", "name": "Hiss Choice", "hp_from": 0.1, "hp_to": 0.0, "advance_on": "branch",
+     "shield": {"shield": 0, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["LAVOS", "HZ"],
+     "actions": [],
+     "mechanics": ["no_damage", "ui_freezes_static_presents_the_choice_on_katakana_cards"],
+     "on_enter": "The UI freezes; Static presents the choice on katakana cards.",
+     "on_break": "",
+     "notes": "10-0%. No damage."}
+  ],
+  "branches": [
+    {"id": "hiss_choice", "after_phase": "adolescence", "options": [
+      {"id": "unplug", "label": "Unplug", "flag": "U6_Matriarch", "state": "Unplugged", "requires": "Light +30: Static screams once (432 Hz to 220 Hz), SIGNAL is lost forever, the rain stops; Sera learns hz_static_pure"},
+      {"id": "stay_plugged", "label": "Stay Plugged", "flag": "U6_Matriarch", "state": "Fed", "requires": "Dark +25: Static keeps SIGNAL, the Red Bike unlocks fully, conductivity drain -50%, +1 BP per rain-soaked kill, Crono's integrity -10"},
+      {"id": "teach_hiss", "label": "Teach Hiss to Sing", "flag": "U6_Matriarch", "state": "Hiss_Lullaby", "requires": "Prismatic +15: needs Arris_Dome=Sleeping and a Prometheus Core not burned selfishly (Prometheus_Core=Saved); Cassia records the future lullaby and plays it into the past CRT; Amber Rift; unlocks the Vapor Memory Core"}
+    ], "notes": ""}
+  ],
+  "drops": ["vapor_memory_core_fragment"],
+  "flags": {"U6_Matriarch": ["Unplugged", "Fed", "Hiss_Lullaby"]},
+  "notes": "Lv 60, HP 135,000. CRT Shrine Plaza: the 28 x 28 plane over tarps, puddles as inverted reflections, nine TV stacks in a ring. A 30 ft amber-glass chrysalis of cables, porcelain theatre masks and a Lavos-fibre chest; the centre CRT holds Static's 1999 birth tape. A brooding mother trying to raise a human. Rain conductivity is always 100% here; the party is VHS BLIND unless Static is tuned. Tags inferred (cables, Lavos fibre, hiss)."
+}

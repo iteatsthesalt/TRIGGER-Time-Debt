@@ -1,0 +1,66 @@
+{
+  "id": "omega_final_void",
+  "name": "Omega-Spekkio — Final Void",
+  "universe": 9,
+  "level": 90,
+  "hp": 99999,
+  "kind": "boss",
+  "sprite": "bos_end8_omega_final_void",
+  "size": 1.8,
+  "body_radius": 0.5,
+  "fps": 60,
+  "is_metal": false,
+  "tags": ["NULL"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["white_void_95pct_white_gold_flecks_only", "dual_techs_disabled"],
+  "adds": [{"key": "vaelos_null_shield", "count": 1, "phase": "atom", "def": {"shield": 20, "tags": ["NULL", "ASTRAL"], "weak": [], "plate_rules": {"refill_once": true}, "notes": "Vaelos raises a 20-plate shield around Omega-Spekkio; the party must Break it twice. Unless Dark > 0, in which case it will not Break."}}],
+  "phases": [
+    {"id": "master", "name": "Master", "hp_from": 1.0, "hp_to": 0.75,
+     "shield": {"shield": 42, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "true_null": true},
+     "tags": ["NULL"],
+     "actions": [
+       {"id": "void_palm", "name": "Void Palm", "tags": ["NULL"], "shape": "SINGLE", "power": 1.3, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "erase_weakness", "name": "ERASE WEAKNESS", "tags": ["NULL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "self_target": true, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["plate_reads_shield_42_to_41_minus_1_42_plates_one_per_entry_in_the_fake_weakness_pool", "no_weakness_every_hit_reads_0_immune_no_weakness", "seras_null_creates_one_fake_weakness_from_the_42_entry_pool_for_2_turns", "every_8s_he_casts_erase_weakness_and_returns_to_immune", "dual_techs_disabled_require_at_least_1_shared_weakness_current_true_null_none_found"],
+     "on_enter": "DUAL TECHS: REQUIRE AT LEAST 1 SHARED WEAKNESS. CURRENT: TRUE NULL. NONE FOUND.",
+     "on_break": "",
+     "notes": "42 plates. ERASE WEAKNESS is on an 8 s battle-time timer (the action is the stand-in)."},
+    {"id": "doll", "name": "Doll", "hp_from": 0.75, "hp_to": 0.5,
+     "shield": {"shield": 35, "stacked_shields": [35, 35], "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": true, "true_null": true},
+     "tags": ["NULL"],
+     "actions": [
+       {"id": "porcelain_palm", "name": "White Porcelain Palm", "tags": ["NULL"], "shape": "SINGLE", "power": 1.4, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "white_out", "name": "White-Out", "tags": ["NULL"], "shape": "BATTLEFIELD", "power": 0.8, "hits": 1, "wind_up_s": 2.0, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["plate_reads_shield_35_to_0_minus_35_x_2_in_white_porcelain", "null_now_also_adds_10pct_to_seras_phase_out_stack", "at_80pct_sera_is_untargetable_for_4_turns_and_must_stay_phased_to_keep_fake_weaknesses_alive"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Two stacked 35-plate shields (refill_once)."},
+    {"id": "atom", "name": "Atom", "hp_from": 0.5, "hp_to": 0.25,
+     "shield": {"shield": 20, "stacked_shields": [20, 20], "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": true, "true_null": true},
+     "tags": ["NULL"],
+     "actions": [
+       {"id": "atom_strike", "name": "Atom Strike", "tags": ["NULL"], "shape": "SINGLE", "power": 1.5, "hits": 1, "target": "crono", "weight": 1}
+     ],
+     "mechanics": ["vaelos_raises_a_20_plate_shield_around_omega_spekkio_the_party_must_break_vaeloss_shield_twice", "crono_is_forced_to_20pct_hp_and_fights_alone_while_sera_is_fully_phased", "vaelos_is_unmade_no_death_animation_white_eats_him_unless_dark_greater_than_0_in_which_case_his_shield_will_not_break"],
+     "on_enter": "",
+     "on_break": "Vaelos is unmade: no death animation; white eats him.",
+     "notes": "The shield block here is Vaelos's 20-plate shield around Omega (see adds vaelos_null_shield)."},
+    {"id": "null", "name": "NULL", "hp_from": 0.25, "hp_to": 0.0, "advance_on": "ending",
+     "shield": {"shield": 1, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false, "true_null": true, "fake_weaknesses_on_null": ["SWORD", "ASTRAL", "FERRO", "RUIN"]},
+     "tags": ["NULL"],
+     "actions": [
+       {"id": "expand_white", "name": "Expand the White", "tags": ["NULL"], "shape": "BATTLEFIELD", "power": 0.0, "hits": 1, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["plate_reads_shield_1_to_0_minus_1", "only_broken_if_four_fake_weaknesses_sword_astral_ferro_ruin_exist_for_2_seconds_and_crono_alone_lands_all_four", "he_cannot", "ending_is_reached_by_not_breaking_it_the_white_expands_to_100pct_and_sera_is_erased"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "[SHIELD 1 -> 0 (-1)]. The ending is reached by not breaking it."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "notes": "Ending 8 — Null Erasure (Chapter 20). HP 99,999, damage gated to phase thresholds (the hp_from/hp_to quarters are the gates). Dual Techs are disabled. Level is not given (90 used). Universe 9 White Void; sprite anchored on Omega-Spekkio."
+}

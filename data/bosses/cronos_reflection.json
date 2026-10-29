@@ -1,0 +1,95 @@
+{
+  "id": "cronos_reflection",
+  "name": "Crono's Reflection",
+  "universe": 0,
+  "level": 85,
+  "hp": 300000,
+  "kind": "boss",
+  "sprite": "bos_end5_cronos_reflection",
+  "size": 1.8,
+  "body_radius": 0.5,
+  "fps": 60,
+  "is_metal": false,
+  "tags": ["NULL", "ASTRAL", "RUIN"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["ruin_scaling_cap_lifted_to_10_stacks", "crono_enters_at_minus_60pct_ceiling_with_ruin_10_stacks", "mercury_orb_joints_leak_phase_2", "mammon_siphon_chronoslip_escape_5pct_per_s_phase_3"],
+  "adds": [],
+  "phases": [
+    {"id": "the_doll", "name": "The Doll", "hp_from": 1.0, "hp_to": 0.75,
+     "shield": {"shield": 19, "weak": ["TACHYON", "VITREOUS", "FERRO"], "resist": [], "keyed_plates": [
+        {"material": "NULL", "key": "ASTRAL", "weight": 2},
+        {"material": "ASTRAL", "key": "RUIN", "weight": 4, "note": "needs a charged Astral Smear Dash"},
+        {"material": "RUIN", "key": "NULL", "weight": 3},
+        {"material": "NULL", "key": "ASTRAL", "weight": 2},
+        {"material": "ASTRAL", "key": "RUIN", "weight": 3},
+        {"material": "RUIN", "key": "NULL", "weight": 5}
+      ], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "ASTRAL", "RUIN"],
+     "actions": [
+       {"id": "doll_mimic", "name": "Doll Mimic", "tags": ["ASTRAL", "NULL"], "shape": "SINGLE", "power": 1.2, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "bekkler_stance", "name": "Bekkler Stance", "tags": ["RUIN"], "shape": "CIRCLE", "radius": 3.0, "power": 1.0, "hits": 1, "wind_up_s": 1.5, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["immune_to_physical_hits", "6_keyed_plates_in_order"],
+     "on_enter": "Marle offscreen: That's not you. That's what you let Bekkler make.",
+     "on_break": "",
+     "notes": "100-75%. 6 plates: NULL->ASTRAL (-2), ASTRAL->RUIN (-4) (needs a charged Astral Smear Dash), RUIN->NULL (-3), NULL->ASTRAL (-2), ASTRAL->RUIN (-3), RUIN->NULL (-5). Shield total 19 is the sum of the weights."},
+    {"id": "the_collection", "name": "The Collection", "hp_from": 0.75, "hp_to": 0.4,
+     "shield": {"shield": 27, "weak": ["TACHYON", "VITREOUS", "FERRO"], "resist": [], "keyed_plates": [
+        {"material": "RUIN", "key": "ASTRAL", "weight": 4, "note": "weak [VITREOUS]: Marle's vitreous arrow"},
+        {"material": "ASTRAL", "key": "NULL", "weight": 2},
+        {"material": "NULL", "key": "RUIN", "weight": 3, "note": "weak [FERRO]"},
+        {"material": "RUIN", "key": "ASTRAL", "weight": 3},
+        {"material": "ASTRAL", "key": "NULL", "weight": 2},
+        {"material": "NULL", "key": "RUIN", "weight": 4, "note": "weak [TACHYON]"},
+        {"material": "RUIN", "key": "NULL", "weight": 3},
+        {"material": "NULL", "key": "ASTRAL", "weight": 6}
+      ], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "ASTRAL", "RUIN", "FERRO"],
+     "actions": [
+       {"id": "mercury_leak", "name": "Mercury Orb Leak", "tags": ["RUIN", "FERRO"], "shape": "CIRCLE", "radius": 3.0, "power": 1.0, "hits": 1, "status": "mercury_slow", "status_seconds": 6, "target": "weakest", "weight": 2},
+       {"id": "collection_sweep", "name": "Collection Sweep", "tags": ["ASTRAL", "NULL"], "shape": "CONE", "radius": 3.5, "length": 5.0, "power": 1.3, "hits": 1, "wind_up_s": 1.5, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["mercury_orb_joints_leak_across_the_arena", "heals_if_a_plate_is_not_broken_within_12s", "per_plate_weakness_annotations_vitreous_ferro_tachyon"],
+     "on_enter": "Sera's empty mask on the floor: Dad, you're leaking stars.",
+     "on_break": "",
+     "notes": "75-40%. 8 plates; the weight sum is 27. Some plates carry an extra weakness annotation (plate note)."},
+    {"id": "the_conduit", "name": "The Conduit", "hp_from": 0.4, "hp_to": 0.1,
+     "shield": {"shield": 31, "weak": ["TACHYON", "VITREOUS", "FERRO"], "resist": [], "keyed_plates": [
+        {"material": "RUIN", "key": "NULL", "weight": 5, "note": "weak [VITREOUS][TACHYON]"},
+        {"material": "NULL", "key": "RUIN", "weight": 4},
+        {"material": "RUIN", "key": "ASTRAL", "weight": 6, "note": "weak [FERRO]"},
+        {"material": "ASTRAL", "key": "RUIN", "weight": 5},
+        {"material": "RUIN", "key": "NULL", "weight": 4},
+        {"material": "NULL", "key": "ASTRAL", "weight": 7, "note": "all three weaknesses within 10 s"}
+      ], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "ASTRAL", "RUIN"],
+     "actions": [
+       {"id": "siphon_pull", "name": "Mammon Siphon Pull", "tags": ["RUIN", "NULL"], "shape": "LINE_PIERCE", "length": 9.0, "width": 1.4, "power": 1.5, "hits": 1, "wind_up_s": 2.0, "target": "random", "weight": 2},
+       {"id": "conduit_channel", "name": "Conduit Channel", "tags": ["NULL", "RUIN"], "shape": "SINGLE", "power": 1.3, "hits": 1, "status": "ruin", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["the_mammon_siphon_pulls", "chronoslip_escape_costs_5pct_per_second_spent_slipping", "last_plate_needs_all_three_weaknesses_within_10s"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "40-10%. 6 plates; weight sum 31."},
+    {"id": "porcelain_silence", "name": "Porcelain Silence", "hp_from": 0.1, "hp_to": 0.0, "advance_on": "stand_still_12s",
+     "shield": {"shield": 396, "weak": [], "resist": [], "keyed_plates": [
+        {"material": "RUIN", "key": "RUIN", "weight": 99},
+        {"material": "RUIN", "key": "RUIN", "weight": 99},
+        {"material": "RUIN", "key": "RUIN", "weight": 99},
+        {"material": "RUIN", "key": "RUIN", "weight": 99}
+      ], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "ASTRAL", "RUIN"],
+     "actions": [
+       {"id": "silence", "name": "Silence", "tags": ["NULL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["4_plates_shield_ruin_to_ruin_minus_99_unbreakable_by_damage", "stand_still_for_12_seconds", "any_attack_resets_them"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "10-0%. 4 plates [SHIELD RUIN->RUIN (-99)]. Unbreakable by damage. Stand still for 12 seconds. Any attack resets them."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "notes": "Ending 5 — Porcelain Silence (Chapter 17). HP 300,000 (Ruin scaling active: a deliberately long fight for the despair route). 24 plates across four phases (6/8/6/4), all keyed. Tags [NULL][ASTRAL][RUIN]. Immune to physical hits (a damage-type rule, not a tag: kept as a mechanic). Weak [TACHYON][VITREOUS][FERRO]. Crono enters at -60% ceiling with Ruin Decay stacks at 10 (this ending lifts the usual 3-stack cap). Level is not given (85 used)."
+}

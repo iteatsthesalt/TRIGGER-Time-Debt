@@ -1,0 +1,79 @@
+{
+  "id": "cyrus",
+  "name": "Cyrus the Marionettist",
+  "universe": 5,
+  "level": 48,
+  "hp": 110000,
+  "kind": "boss",
+  "sprite": "bos_u5_cyrus_marionettist",
+  "size": 2.4,
+  "body_radius": 0.8,
+  "fps": 12,
+  "is_metal": false,
+  "tags": ["GUILE", "SMOKE", "RUIN"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["puppet_stage_threads_12ft_overhead", "thread_cuts_delay_1_5x", "six_cuts_collapse_stage_into_ash_pit", "ashfall_outside_safe_circle_8pct_max_hp_per_15s", "detuned_calliope_0_6x"],
+  "adds": [
+    {"key": "strongman_dummy", "count": 2, "phase": "marionettist", "shield": 4, "respawn_s": 12},
+    {"key": "ticket_golem_barker", "count": 1, "phase": "marionettist", "shield": 4, "respawn_s": 12},
+    {"key": "heckler_harlequin", "count": 1, "phase": "marionettist", "shield": 4, "respawn_s": 12},
+    {"key": "ash_cotton_swirl", "count": 1, "phase": "ash_knight", "trigger": "every_bp_steal"},
+    {"key": "vaelos_black_oil_strings", "count": 1, "phase": "strings_cut_from_inside", "def": {"tags": ["NULL", "RUIN"], "weak": ["ASTRAL"], "plate_rules": {"untargetable": true}, "notes": "The Strings bar: untargetable, shaved only by ASTRAL; heals the Body 2 plates per 8 s. Plate count not given."}}
+  ],
+  "phases": [
+    {"id": "marionettist", "name": "Marionettist, Puppet Master", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "threads_cut",
+     "shield": {"shield": 12, "untargetable": true, "weak": ["SWORD", "VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["GUILE", "SMOKE", "RUIN"],
+     "actions": [
+       {"id": "pull_strings", "name": "Pull Strings", "tags": ["GUILE", "SMOKE"], "shape": "PARTY", "power": 0.5, "hits": 1, "wind_up_s": 1.0, "target": "all", "weight": 1},
+       {"id": "calliope_drone", "name": "Calliope Drone", "tags": ["SMOKE", "RUIN"], "shape": "CIRCLE", "radius": 4.0, "power": 0.8, "hits": 1, "status": "ash_inhale", "status_seconds": 6, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["untargetable_above_the_stage_shield_12", "four_puppet_adds_4_plates_each_two_strongman_dummies_a_ticket_golem_a_heckler_harlequin", "each_add_respawns_12s_after_it_falls", "threads_pulse_cyan_to_orange_with_scan_wave", "cut_threads_in_order_yellow_red_blue_to_expose_heart_thread", "break_lock_him_mid_swing_so_a_line_pierce_reaches_the_heart", "cutting_six_or_more_collapses_the_stage_reset_plus_mp_drain"],
+     "on_enter": "Cyrus: Dance, little brother, so they don't see ash. Sera: He thinks you're still brave. Show him brave can be still.",
+     "on_break": "",
+     "notes": "Shield 12, untargetable + 4 Puppet Adds (4 plates each). Tags [GUILE][SMOKE][RUIN]. Weak [SWORD] (cut), [VITREOUS] (reveal), [TACHYON] (scratch). The phase ends when the last thread is cut and he drops, not on HP."},
+    {"id": "ash_knight", "name": "Ash-Knight, Who Forgot Softness", "hp_from": 1.0, "hp_to": 0.4,
+     "shield": {"shield": 16, "weak": ["GUILE", "SMOKE", "MYCELIA"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["RUIN", "FIRE", "SWORD", "HEAVY"],
+     "actions": [
+       {"id": "ash_blade", "name": "Ash Blade", "tags": ["RUIN", "FIRE", "SWORD"], "shape": "SINGLE", "power": 1.5, "hits": 1, "wind_up_s": 1.5, "target": "nearest", "weight": 3},
+       {"id": "heavy_cleave", "name": "Heavy Cleave", "tags": ["SWORD", "HEAVY"], "shape": "CONE", "radius": 3.0, "length": 4.0, "power": 1.8, "hits": 1, "wind_up_s": 2.5, "target": "nearest", "weight": 2},
+       {"id": "keep_the_music", "name": "Keep the Music Going", "tags": ["GUILE"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "steal_bp", "bp_steal": 1, "target": "weakest", "weight": 2},
+       {"id": "ashfall", "name": "Ashfall", "tags": ["FIRE", "RUIN"], "shape": "BATTLEFIELD", "power": 0.4, "hits": 1, "status": "ash_inhale", "status_seconds": 8, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["triggered_when_last_thread_cut_and_he_drops", "weak_2_6x_at_boost_lv3", "only_thing_in_u5_not_rubber_locked_to_jerky_30fps_flat_two_tone_fire", "cannot_be_squashed", "prop_hammer_blunt_guile_deals_plus_50pct", "reverse_bp_theft_every_steal_spawns_an_ash_cotton_swirl", "glenns_honest_laugh_aimed_at_cronos_astral_breaks_the_cycle", "ashfall_80pct_of_stage_outside_safe_circle_costs_8pct_max_hp_per_15s"],
+     "on_enter": "Cyrus: Softness burns. I removed it. Glenn: Softness didn't burn. You did.",
+     "on_break": "",
+     "notes": "Shield 16, Tags [RUIN][FIRE][SWORD][HEAVY], Weak [GUILE][SMOKE][MYCELIA]. Every Keep the Music steal should also summon an ash_cotton_swirl. This phase animates at 30 fps."},
+    {"id": "strings_cut_from_inside", "name": "Strings Cut From Inside", "hp_from": 0.4, "hp_to": 0.0,
+     "shield": {"shield": 10, "weak": ["ASTRAL", "VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": true},
+     "tags": ["NULL", "RUIN", "GUILE", "SMOKE"],
+     "actions": [
+       {"id": "oil_thread_lash", "name": "Black-Oil Thread Lash", "tags": ["NULL", "RUIN"], "shape": "LINE_PIERCE", "length": 8.0, "width": 1.2, "power": 1.4, "hits": 2, "wind_up_s": 1.5, "target": "random", "weight": 2},
+       {"id": "smoke_curtain", "name": "Smoke Curtain", "tags": ["SMOKE", "GUILE"], "shape": "BATTLEFIELD", "power": 0.6, "hits": 1, "effect": "fog", "target": "all", "weight": 1}
+     ],
+     "mechanics": ["vaelos_black_oil_threads_replace_the_smoke", "two_bars_body_shield_20_targetable_and_strings_untargetable_shaved_only_by_astral", "strings_heal_body_2_plates_per_8s", "duo_required", "glenn_fractured_grin_self_shatter_below_25pct_hp_to_1_hp_fragile_2_turns_shows_hollow_with_origami_frog_plus_5_light", "crono_can_show_galaxy_deliberately_12pct_ceiling_until_camp_phase_freezes_10s", "two_breaks_at_10_plates_mask_falls_blue_eye_weeps_and_at_0_gold_shatter_60fps_porcelain", "calliope_resolves_into_cronos_u0_theme"],
+     "on_enter": "Crono, extending his wrist: See? Hollow can hold. Cyrus: ...cut me down. Please. Not puppet. Again.",
+     "on_break": "At 10 plates the mask falls and a sorrowful blue eye weeps the first clean fluid in U5; at 0 the gold shatter renders every style at 60 fps porcelain, Vaelos's hum stops.",
+     "notes": "From 40% HP. Body Shield 20 with two Breaks (at 10 and at 0): written as shield 10 with refill_once. Tags [NULL][RUIN][GUILE][SMOKE]. Weak [ASTRAL][VITREOUS][TACHYON]; a Duo is required."},
+    {"id": "mercy_cut_down", "name": "Mercy, Cut Down (conditional)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "scripted", "requires": "Light",
+     "shield": {"shield": 0, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["GUILE"],
+     "actions": [],
+     "mechanics": ["no_combat_use_the_prop_hammer_on_the_lever_to_lower_him", "with_dark_the_loop_continues_and_he_must_be_killed"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "With Light, no combat: use the Prop Hammer on the lever to lower him. He gives the Charred Laurel: Teach boy... funny not armor. Funny is cracked window light gets in."}
+  ],
+  "branches": [
+    {"id": "cyrus_fate", "after_phase": "strings_cut_from_inside", "options": [
+      {"id": "cut_down", "label": "Cut Down", "flag": "Cyrus", "state": "Cut_Down", "requires": "Light; Prop Hammer on the lever; he gives the Charred Laurel"},
+      {"id": "left_hanging", "label": "Left Hanging", "flag": "Cyrus", "state": "Left_Hanging", "requires": "Dark; the loop continues and he must be killed; the Laurel is blackened (-1 BP per 15 s for all of U6) but grants the Prop Cannon ultimate (7.0 multiplier)"},
+      {"id": "re_string", "label": "Re-String as Instrument", "flag": "Re_String", "state": "set", "requires": "the secret seventh colour shard from U4; focus sunlight onto the calliope mirror to turn the threads into harp strings, Crono's galaxy visible and Glenn's hollow shown: +10 Prismatic and the Dual Chrono Laugh"}
+    ], "notes": ""}
+  ],
+  "drops": ["charred_laurel"],
+  "flags": {"Cyrus": ["Cut_Down", "Left_Hanging"], "Re_String": ["set"]},
+  "notes": "Lv 48, HP 110,000. The Big Top, threads 12 ft overhead, a detuned calliope slowed to 0.6x with fire and vinyl noise, Vaelos's diminished-fifth hum underneath. He is not evil: he thinks distraction is mercy. Phase 1 ends on thread cuts, not HP; Phase 3 begins at 40% HP."
+}

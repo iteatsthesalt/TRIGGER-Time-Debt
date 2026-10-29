@@ -1,0 +1,58 @@
+{
+  "id": "r66y_residual_sorrow",
+  "name": "R-66Y Residual Sorrow + Torso Heart",
+  "universe": 0,
+  "level": 70,
+  "hp": 160000,
+  "kind": "boss",
+  "sprite": "bos_pg_robo_torso_heart",
+  "size": 6.1,
+  "body_radius": 2.0,
+  "fps": 12,
+  "is_metal": true,
+  "tags": ["BLUNT", "FERRO", "FIRE", "RUIN"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["atrium_tower"],
+  "adds": [{"key": "knocked_mask", "count": 3, "phase": "lullaby", "trigger": "mask_knocked_off_during_crack_slide", "def": {"tags": ["FERRO", "RUIN"], "weak": ["ASTRAL", "FERRO"], "notes": "Each knocked mask becomes an add that applies one hazard: VHS Fog, Mercury Leak, Grief-Resonance, Ruin Decay or Oil-Blight. Plates not given."}}],
+  "phases": [
+    {"id": "lullaby", "name": "Lullaby", "hp_from": 1.0, "hp_to": 0.7,
+     "shield": {"shield": 13, "belief_number": 9999, "weak": ["ASTRAL", "FERRO", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["BLUNT", "FERRO", "FIRE", "RUIN"],
+     "actions": [
+       {"id": "crack_slide", "name": "Crack-Slide", "tags": ["FERRO", "BLUNT"], "shape": "LINE_PIERCE", "length": 7.0, "width": 1.4, "power": 1.4, "hits": 1, "wind_up_s": 2.0, "target": "nearest", "weight": 2},
+       {"id": "sorrow_volley", "name": "Sorrow Volley", "tags": ["FIRE", "FERRO"], "shape": "LINE_PIERCE", "length": 10.0, "width": 1.4, "power": 1.2, "hits": 3, "wind_up_s": 1.5, "target": "random", "weight": 2},
+       {"id": "oil_weep", "name": "Oil Weep", "tags": ["RUIN"], "shape": "CIRCLE", "radius": 3.0, "power": 0.9, "hits": 1, "effect": "oil_blight", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["plate_reads_shield_9999_to_6999_minus_3000_break", "ordinary_shaves_remove_1", "knocking_a_mask_off_during_a_crack_slide_removes_3000_9999_6999_3999_999", "the_last_999_is_the_chapter_1_doll_again_10_real_plates_hidden_in_it", "each_knocked_mask_becomes_an_add_applying_one_hazard_vhs_fog_mercury_leak_grief_resonance_ruin_decay_oil_blight"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "100-70%. Belief plate 9999: the real plates are the 3 mask knock-offs (3,000 each) plus the 10 real plates inside the final 999, written here as shield 13 behind belief_number 9999. Tags [BLUNT][FERRO][FIRE][RUIN]. Weak [ASTRAL][FERRO][TACHYON]."},
+    {"id": "goliath", "name": "Goliath", "hp_from": 0.7, "hp_to": 0.3,
+     "shield": {"shield": 12, "weak": ["ASTRAL", "FERRO", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["BLUNT", "FERRO", "FIRE", "RUIN"],
+     "actions": [
+       {"id": "gatling_volley", "name": "Thoracic Ring Volley", "tags": ["FIRE", "FERRO"], "shape": "LINE_PIERCE", "length": 10.0, "width": 1.4, "power": 1.4, "hits": 3, "wind_up_s": 1.5, "target": "random", "weight": 3},
+       {"id": "leg_fold_stomp", "name": "Leg-Fold Stomp", "tags": ["BLUNT", "FERRO"], "shape": "CIRCLE", "radius": 3.0, "power": 1.3, "hits": 1, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["thoracic_ring_at_full_speed", "safe_spot_inside_the_ring", "one_barrel_glows_before_each_volley"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "70-30%. Shield 12. The weakness list is not restated; Phase 1's is carried."},
+    {"id": "torso_heart", "name": "Torso Heart", "hp_from": 0.3, "hp_to": 0.0,
+     "shield": {"shield": 8, "weak": ["ASTRAL", "FERRO", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["BLUNT", "FERRO", "FIRE", "RUIN"],
+     "actions": [
+       {"id": "heart_pulse", "name": "Torso Heart Pulse", "tags": ["FERRO", "FIRE"], "shape": "CIRCLE", "radius": 4.0, "power": 1.2, "hits": 1, "wind_up_s": 2.0, "target": "weakest", "weight": 2},
+       {"id": "sorrow_volley", "name": "Sorrow Volley", "tags": ["FIRE", "FERRO"], "shape": "LINE_PIERCE", "length": 10.0, "width": 1.4, "power": 1.2, "hits": 3, "wind_up_s": 1.5, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["the_heart_takes_the_shield_to_9999_when_he_is_broken_for_the_last_time", "upgrade_complete_the_golden_light_phase_2_siege_uses_this_heart"],
+     "on_enter": "",
+     "on_break": "The Heart takes the shield to 9999 and the upgrade is complete.",
+     "notes": "30-0%. Shield 8."}
+  ],
+  "branches": [],
+  "drops": ["torso_heart_9999"],
+  "flags": {},
+  "notes": "Final side boss (Chapter 15). Lv 70, HP 160,000. Robo asks to become the tower and wants his Torso Heart upgraded to 9999 to protect the Atrium. Placed in U0 (the Atrium) but animated on R-66Y's U2 clay canvas at 12 fps; the alternative manifest sprite is enm_pg_r66y_residual_sorrow. The torso_heart_9999 drop is the upgrade itself."
+}

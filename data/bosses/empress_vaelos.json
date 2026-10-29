@@ -1,0 +1,95 @@
+{
+  "id": "empress_vaelos",
+  "name": "Empress Vaelos",
+  "universe": 7,
+  "level": 84,
+  "hp": 190000,
+  "kind": "boss",
+  "sprite": "bos_end2_empress_vaelos",
+  "size": 3.0,
+  "body_radius": 1.0,
+  "fps": 24,
+  "is_metal": false,
+  "tags": ["NULL", "RUIN", "ASTRAL", "DIVINE"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["predator_field_heals_enemies_only", "mammon_conduit_shattered_crono_at_centre_5m_minus_3pct_glaze_per_8s_and_temp_shields", "sera_rewind_costs_15pct", "sera_phase_out_at_20pct_instead_of_40"],
+  "adds": [
+    {"key": "washi_hollow_monk", "count": 2, "phase": "ruthless_audit", "trigger": "Goyama=Incinerated ledger page"},
+    {"key": "audit_ledger_add", "count": 1, "phase": "ruthless_audit", "def": {"shield": 4, "tags": ["PAPER", "RUIN"], "weak": [], "notes": "A 4-plate add counted inside the phase's 8."}},
+    {"key": "throne_arm", "count": 6, "phase": "coronation_throne", "def": {"tags": ["NULL", "RUIN"], "weak": [], "notes": "Six arms each hold a corrupted object (black apple, fang, iron lotus, Gatling barrel, burning ledger, pointing mudra); each grants her one action type; Breaking an arm's object removes that action for the rest of the fight. Plates not given."}}
+  ],
+  "phases": [
+    {"id": "gold_leaf_mantle", "name": "Gold Leaf Mantle", "hp_from": 1.0, "hp_to": 0.75,
+     "shield": {"shield": 8, "weak": ["NULL", "DIVINE"], "resist": ["RUIN", "ASTRAL"], "nullify": ["VITREOUS"], "absorb": ["FERRO", "MYCELIA"], "keyed_plates": [], "regenerating": true, "refill_once": false},
+     "tags": ["NULL", "RUIN", "ASTRAL", "DIVINE"],
+     "actions": [
+       {"id": "gold_leaf_offering", "name": "Gold Leaf Offering", "tags": ["DIVINE", "NULL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "target": "random", "weight": 2},
+       {"id": "kirie_storm_lite", "name": "Kirie Storm (lite)", "tags": ["WIND", "DIVINE"], "shape": "BATTLEFIELD", "power": 0.7, "hits": 1, "wind_up_s": 2.0, "target": "all", "weight": 1},
+       {"id": "mantle_lash", "name": "Mantle Lash", "tags": ["RUIN", "ASTRAL"], "shape": "SINGLE", "power": 1.4, "hits": 1, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["starts_with_every_weakness_erased_weaknesses_must_be_created", "weak_null_divine_only_while_a_party_member_performs_worship_gaze_3s_idle_looking_up", "repeats_kami_oris_offering_accepting_gives_plus_1_bp_and_locks_that_ally_to_true_null_for_the_ending_declining_gives_her_plus_1_plate", "kirie_storm_lite", "cassias_gramophone_resonance_shatters_the_amber_fossil_of_lucca_in_her_shoulder_ferro_becomes_a_weakness_for_8s"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 8. Weak [NULL][DIVINE] only during a Worship Gaze. Resist [RUIN][ASTRAL]. Absorbs [FERRO][MYCELIA]. [VITREOUS] nullifies shave. 32 plates distributed 8/8/8/8 across four phases, rebuilding 18%/s after 3 s."},
+    {"id": "ruthless_audit", "name": "Ruthless Audit", "hp_from": 0.75, "hp_to": 0.5,
+     "shield": {"shield": 8, "weak": [], "resist": [], "resist_all": true, "keyed_plates": [], "regenerating": true, "refill_once": false},
+     "tags": ["NULL", "RUIN", "ASTRAL", "DIVINE", "PAPER"],
+     "actions": [
+       {"id": "ledger_strike", "name": "Ledger Strike", "tags": ["NULL", "RUIN"], "shape": "SINGLE", "power": 1.3, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "ash_aoe", "name": "Goyama's Page (ash)", "tags": ["ASH", "RUIN"], "shape": "CIRCLE", "radius": 3.5, "power": 1.2, "hits": 1, "wind_up_s": 1.5, "target": "weakest", "weight": 1, "requires": "Goyama=Incinerated"},
+       {"id": "summon_monks", "name": "Goyama's Page (monks)", "tags": ["ASH"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:washi_hollow_monk", "target": "weakest", "weight": 1, "requires": "Goyama=Incinerated"},
+       {"id": "gatling_ring", "name": "R-66Y's Page (Gatling ring)", "tags": ["GUN", "FERRO"], "shape": "LINE_PIERCE", "length": 5.5, "width": 1.0, "power": 1.3, "hits": 1, "wind_up_s": 1.0, "target": "random", "weight": 1, "requires": "R66Y=Salvaged"},
+       {"id": "predator_field", "name": "Azar's Page (Predator Field)", "tags": ["DIVINE", "RUIN"], "shape": "BATTLEFIELD", "power": 0.5, "hits": 1, "target": "all", "weight": 1, "requires": "Azar=Predator"}
+     ],
+     "mechanics": ["12_plate_audit_ledger_she_shaves_down_to_8_on_entry_plus_a_4_plate_add_counted_inside_the_8", "all_tags_resisted_at_first", "ledger_flips_a_page_for_each_ruthless_flag_goyama_incinerated_ash_aoe_3_5_summons_washi_hollow_monks", "r66y_salvaged_rotating_gatling_ring_line_pierce_rail_5_5_long_cone_2_8_1_3x_dodged_with_perfect_frame_input_on_4_frame_hold", "azar_predator_predator_field", "at_50pct_of_phase_sera_choice_gate_become_warden_or_phase_out", "black_oil_armor_every_shave_minus_1_with_goyama_incinerated_plus_r66y_salvaged_plus_azar_predator"],
+     "on_enter": "She opens Marle's ledger and its pages flip, one for each ruthless flag.",
+     "on_break": "",
+     "notes": "Shield 8 (a 12-plate audit ledger she shaves down to 8 on entry, plus a 4-plate add counted inside the 8). All tags resisted at first (resist_all). The 'requires' key on actions gates them on flags."},
+    {"id": "coronation_throne", "name": "Coronation Throne", "hp_from": 0.5, "hp_to": 0.25,
+     "shield": {"shield": 8, "weak": [], "resist": [], "keyed_plates": [], "regenerating": true, "refill_once": false, "true_null": true},
+     "tags": ["NULL", "RUIN", "ASTRAL", "DIVINE"],
+     "actions": [
+       {"id": "black_apple", "name": "Black Apple", "tags": ["RUIN", "DARK"], "shape": "CIRCLE", "radius": 3.0, "power": 1.2, "hits": 1, "status": "ruin", "target": "weakest", "weight": 1},
+       {"id": "fang", "name": "Fang", "tags": ["SWORD", "SAURIA"], "shape": "SINGLE", "power": 1.5, "hits": 1, "target": "nearest", "weight": 1},
+       {"id": "iron_lotus", "name": "Iron Lotus", "tags": ["FERRO", "DIVINE"], "shape": "SELF_AURA", "radius": 4.0, "power": 1.0, "hits": 1, "target": "nearest", "weight": 1},
+       {"id": "gatling_barrel", "name": "Gatling Barrel", "tags": ["GUN", "FERRO"], "shape": "LINE_PIERCE", "length": 8.0, "width": 1.2, "power": 1.3, "hits": 3, "wind_up_s": 1.5, "target": "random", "weight": 1},
+       {"id": "burning_ledger", "name": "Burning Ledger", "tags": ["FIRE", "PAPER"], "shape": "CONE", "radius": 3.5, "length": 6.0, "power": 1.3, "hits": 1, "wind_up_s": 1.5, "target": "nearest", "weight": 1},
+       {"id": "pointing_mudra", "name": "Pointing Mudra", "tags": ["NULL", "DIVINE"], "shape": "SINGLE", "power": 1.1, "hits": 1, "status": "silence", "status_seconds": 6, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["weak_created_by_null_omega_spekkio_or_seras_null_for_2_turns_at_a_time", "six_arms_each_hold_a_corrupted_object_each_grants_one_action_type", "breaking_an_arms_object_removes_that_action_for_the_rest_of_the_fight", "seras_warden_field_makes_divine_count_double_for_the_shave"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 8. Weakness created by NULL for 2 turns at a time. Each action here belongs to one arm."},
+    {"id": "next_cycle", "name": "The Next Cycle", "hp_from": 0.25, "hp_to": 0.0,
+     "shield": {"shield": 8, "weak": ["ASTRAL", "DIVINE"], "resist": [], "keyed_plates": [], "regenerating": true, "refill_once": false},
+     "tags": ["NULL", "RUIN", "ASTRAL", "DIVINE"],
+     "actions": [
+       {"id": "crown_decree", "name": "Crown Decree", "tags": ["DIVINE", "NULL"], "shape": "BATTLEFIELD", "power": 1.2, "hits": 1, "wind_up_s": 2.5, "target": "all", "weight": 1},
+       {"id": "marles_cadence", "name": "Marle's Cadence", "tags": ["ASTRAL", "RUIN"], "shape": "SINGLE", "power": 1.5, "hits": 1, "target": "crono", "weight": 2}
+     ],
+     "mechanics": ["weak_ruin_added_if_marles_queen_sacrifice_was_accepted", "speaks_in_marles_cadence_wearing_cronos_red_hair_in_gold_leaf", "at_0_the_player_chooses_to_take_the_crown_the_player_becomes_the_final_boss_of_the_next_cycle"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 8. Weak [ASTRAL][DIVINE] (and [RUIN] if Marle's sacrifice was accepted; no flag for the Queen Sacrifice exists in data/flags)."},
+    {"id": "light_leak", "name": "Light Leak (secret)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "break", "requires": "Sera chose Become Warden at the Phase 2 gate",
+     "shield": {"shield": 8, "weak": ["LIGHT", "TACHYON", "DIVINE"], "resist": [], "keyed_plates": [], "regenerating": true, "refill_once": false},
+     "tags": ["NULL", "RUIN", "ASTRAL", "DIVINE"],
+     "actions": [
+       {"id": "crown_decree", "name": "Crown Decree", "tags": ["DIVINE", "NULL"], "shape": "BATTLEFIELD", "power": 1.2, "hits": 1, "wind_up_s": 2.5, "target": "all", "weight": 1}
+     ],
+     "mechanics": ["only_with_sera_as_warden", "seras_tachyon_needle_0_8x_pierces_any_resist_is_the_only_thing_that_shaves_her_here"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Phase 5. Shield 8, Weak [LIGHT][TACHYON][DIVINE]. A small mercy inside the darkest ending."}
+  ],
+  "branches": [
+    {"id": "sera_choice_gate", "after_phase": "ruthless_audit", "options": [
+      {"id": "become_warden", "label": "Become Warden", "flag": "", "state": "", "requires": "Sera becomes stationary terrain projecting a true Divinity Field (+1 plate per 5 s to allies, thaws Ruin 1% per 8 s, converts Debt at 100%); she cannot act; [DIVINE] weakness added permanently after Phase 2; unlocks secret Phase 5"},
+      {"id": "phase_out", "label": "Phase Out", "flag": "", "state": "", "requires": "to 40%, gone for 2 turns, 'Don't forget me', pure Dark"}
+    ], "notes": "At 50% of Phase 2. No flag for the Warden choice exists in data/flags."}
+  ],
+  "drops": [],
+  "flags": {},
+  "notes": "Ending 2 — Empress Heir (Chapter 11). Lv 84, HP 190,000. 32 plates distributed 8/8/8/8 across four phases, rebuilding 18%/s after 3 s. Tags [NULL][RUIN][ASTRAL][DIVINE]. She starts with every weakness erased ([WEAKNESSES ERASED]); weaknesses must be created. Crono is fully shattered at the centre of the arena as a Mammon Conduit hazard. Flag effects read: Goyama=Incinerated + R66Y=Salvaged + Azar=Predator -> Black Oil Armor (every shave -1); Sera Warden -> [DIVINE] permanent weakness after Phase 2; Marle's Queen Sacrifice accepted -> she loses her [RUIN] resist for 15 s after each Break."
+}

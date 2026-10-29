@@ -59,6 +59,7 @@ func _ready() -> void:
 	controller.interact_requested.connect(_on_interact)
 	controller.focus_changed.connect(_on_focus)
 	controller.menu_requested.connect(_on_menu)
+	controller.rewind_requested.connect(_on_rewind)
 	follow = PartyFollow.new()
 	follow.name = "PartyFollow"
 	add_child(follow)
@@ -336,6 +337,46 @@ func _on_focus(on: bool) -> void:
 
 func _on_menu() -> void:
 	pass
+
+
+## Sera's field Rewind (Story Bible Ch1 beat 2). Locations that teach or use it override this.
+func _on_rewind() -> void:
+	pass
+
+
+## The Rewind presentation: Sera's ghosts in other canvases, a tape-rewind sting, +5% translucency,
+## and the crack under her left eye spreading. Returns false when Sera is not here.
+func field_rewind(sera: Node, target: Node = null) -> bool:
+	if sera == null or not (sera is CombatActor):
+		return false
+	var s := sera as CombatActor
+	Audio.play_sfx("time/rewind")
+	for i in 2:
+		var ghost := ActorSprite.new()
+		ghost.material.set_shader_parameter("sheet", s.sprite.material.get_shader_parameter("sheet"))
+		ghost.material.set_shader_parameter("frame_rect", s.sprite.material.get_shader_parameter("frame_rect"))
+		ghost.material.set_shader_parameter("sheet_px", s.sprite.material.get_shader_parameter("sheet_px"))
+		ghost.mesh = s.sprite.mesh
+		ghost.set_tint(Color(0.55, 0.55, 0.6) if i == 0 else Color(1.0, 0.85, 0.45))
+		ghost.set_opacity(0.45)
+		ghost.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(ghost)
+		ghost.global_position = s.sprite.global_position + Vector3(-0.35 * float(i + 1), 0.0, 0.1 * float(i + 1))
+		var tw := create_tween()
+		tw.tween_property(ghost, "transparency", 1.0, 1.4 + 0.3 * float(i))
+		tw.tween_callback(ghost.queue_free)
+	if target is CombatActor:
+		(target as CombatActor).sprite.play_backwards(&"idle", 2.0)
+	Game.set_debt(Game.sera_debt + 5.0)
+	if s.solidity:
+		s.solidity.debt = Game.sera_debt
+	s.sprite.set_porcelain(1, clampf(Game.sera_debt / 100.0 + 0.2, 0.2, 1.0), 0.0)
+	if rig:
+		rig.set_truth(true)
+		var tw2 := create_tween()
+		tw2.tween_interval(1.5)
+		tw2.tween_callback(func() -> void: if rig: rig.set_truth(false))
+	return true
 
 
 func _refresh_porcelain() -> void:

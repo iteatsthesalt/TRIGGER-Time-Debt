@@ -278,6 +278,12 @@ func _test(cond: Dictionary) -> bool:
 		return Game.crono_integrity <= float(cond["integrity_max"])
 	if cond.has("chapter_min"):
 		return Game.chapter >= int(cond["chapter_min"])
+	if cond.has("has_key_item"):
+		return Game.key_items.has(StringName(String(cond["has_key_item"])))
+	if cond.has("has_item"):
+		return int(Game.inventory.get(StringName(String(cond["has_item"])), 0)) > 0
+	if cond.has("party_has"):
+		return Game.active_party.has(StringName(String(cond["party_has"])))
 	return true
 
 

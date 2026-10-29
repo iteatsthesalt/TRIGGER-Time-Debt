@@ -21,6 +21,8 @@ var last_enemy_action: Dictionary = {}
 ## battle_time until which a Prismatic window stays open (0 = closed).
 var window_until: float = 0.0
 var window_kind: StringName = &""
+## Adds spawned by this controller (directors read it; dead ones are pruned lazily).
+var adds_alive: Array[Node] = []
 
 
 static func create_boss_actor(boss: BossDef, suffix: String = "") -> CombatActor:
@@ -68,6 +70,8 @@ func _process(delta: float) -> void:
 		window_kind = &""
 	_call_director("on_tick", [self, delta])
 	if not actor.stats.is_alive():
+		return
+	if String(phase().get("advance_on", "")) != "":
 		return
 	var target: int = def.phase_for_ratio(actor.stats.hp_ratio())
 	if target > phase_index:
@@ -136,10 +140,28 @@ func _spawn_phase_adds(i: int) -> void:
 			_on_summon(StringName(String(add.get("key", ""))), int(add.get("count", 1)), actor)
 
 
+func _add_def(key: StringName) -> EnemyDef:
+	var edef: EnemyDef = Data.enemy(key)
+	if edef != null:
+		return edef
+	for add in def.adds:
+		if StringName(String(add.get("key", ""))) == key and add.has("def"):
+			var d: Dictionary = (add["def"] as Dictionary).duplicate()
+			d["key"] = String(key)
+			d["id"] = String(key)
+			d["name"] = String(add.get("name", String(key).capitalize()))
+			d["universe"] = def.universe
+			d["level"] = int(add.get("level", def.level))
+			if d.get("fps", 60.0) is Array:
+				d["fps"] = 60.0
+			return EnemyDef.from_dict(d)
+	return null
+
+
 func _on_summon(key: StringName, count: int, near: Node) -> void:
 	if ended:
 		return
-	var edef: EnemyDef = Data.enemy(key)
+	var edef: EnemyDef = _add_def(key)
 	if edef == null:
 		push_warning("Boss %s: unknown add %s" % [def.id, key])
 		return
@@ -166,17 +188,38 @@ func _on_summon(key: StringName, count: int, near: Node) -> void:
 		coordinator.add_enemy(a, edef)
 		scene.hud.register_enemy(a)
 		a.sprite.play(&"revive", &"idle")
+		adds_alive.append(a)
 	scene.hud.show_message("%s calls %s ×%d" % [def.display_name, edef.display_name, count])
 
 
 func _on_unit_broken(unit: Node, _breaker: Node) -> void:
-	if unit != actor or ended:
+	if ended:
+		return
+	if unit != actor:
+		_call_director("on_add_break", [self, unit])
 		return
 	var sig: Array[StringName] = actor.shield.break_signature.duplicate()
 	_call_director("on_break", [self, sig])
 	var text: String = String(phase().get("on_break", ""))
 	if text != "" and director == null:
 		scene.hud.show_message(text)
+	if String(phase().get("advance_on", "")) == "break" and not transitioning:
+		if phase_index + 1 < def.phase_count():
+			_transition_to(phase_index + 1)
+		else:
+			# the fight ends when the last phase Breaks (the 999 Shard Doll)
+			ended = true
+			_call_director("on_defeat", [self])
+			boss_defeated.emit(actor)
+			coordinator.force_end(true, "final_break")
+
+
+## Advance to the next phase from a director (a mechanic completed, not an HP window).
+func advance_phase() -> void:
+	if transitioning or ended:
+		return
+	if phase_index + 1 < def.phase_count():
+		_transition_to(phase_index + 1)
 
 
 func _on_parry(ally: Node, perfect: bool) -> void:

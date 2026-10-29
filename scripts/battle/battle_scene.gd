@@ -524,7 +524,29 @@ func _auto_act() -> void:
 	if boss != null and boss.is_sealed() and actor.time_debt != null:
 		_on_deck_command("pay_debt", {})
 		return
-	var t: Node = living[randi() % living.size()]
+	auto_timer = 0.15
+	var targetable: Array = living.filter(func(e: Node) -> bool: return not coordinator._untargetable(e))
+	if targetable.is_empty():
+		coordinator.cmd_guard(actor)
+		return
+	# heal when someone is low and a healing item is on hand
+	var low: Node = null
+	for u in coordinator.party:
+		var st := CombatantStats.of(u)
+		if st != null and st.is_alive() and st.hp_ratio() < 0.35:
+			low = u
+	if low != null and int(Game.inventory.get(&"tonic", 0)) > 0 and randf() < 0.7:
+		if Game.take_item(&"tonic"):
+			coordinator.cmd_item(actor, Data.items[&"tonic"], low)
+			return
+	# focus fire: unbroken targets first, lowest plates first
+	targetable.sort_custom(func(a: Node, b: Node) -> bool:
+		var sa := ShieldComponent.of(a)
+		var sb := ShieldComponent.of(b)
+		var ka: int = (1000 if sa != null and sa.is_broken else 0) + (sa.current_shield if sa != null else 0)
+		var kb: int = (1000 if sb != null and sb.is_broken else 0) + (sb.current_shield if sb != null else 0)
+		return ka < kb)
+	var t: Node = targetable[0] if randf() < 0.8 else targetable[randi() % targetable.size()]
 	var techs: Array[TechDef] = coordinator.available_techs(actor).filter(func(x: TechDef) -> bool: return x.is_attack and x.target in ["enemy", "point"] and x.effect == &"")
 	var b: int = mini(coordinator.bank.bp, randi() % 3)
 	if not techs.is_empty() and randf() < 0.6:
@@ -534,7 +556,9 @@ func _auto_act() -> void:
 			actor.sprite.play(&"attack", &"ready")
 			return
 	actor.sprite.play(&"attack", &"ready")
-	coordinator.cmd_attack(actor, t, b)
+	var r2: Dictionary = coordinator.cmd_attack(actor, t, b)
+	if not bool(r2.get("ok", true)):
+		coordinator.cmd_guard(actor)
 
 
 # ------------------------------------------------------------------ presentation

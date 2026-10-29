@@ -78,7 +78,7 @@ func phase_def(i: int) -> EnemyDef:
 		"actions": p.get("actions", []), "behaviour": p.get("behaviour", {}), "drops": drops,
 	}
 	var rules: Dictionary = {}
-	for k in ["regenerating", "refill_once", "shield_only", "break_condition", "only_hit_by", "shared_owner", "belief", "regen_rate", "lock_seconds", "shared_group"]:
+	for k in ["regenerating", "refill_once", "shield_only", "break_condition", "only_hit_by", "shared_owner", "belief", "belief_number", "regen_rate", "lock_seconds", "shared_group"]:
 		if sh.has(k):
 			rules[k] = sh[k]
 	if not rules.is_empty():

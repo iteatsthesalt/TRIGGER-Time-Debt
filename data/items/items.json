@@ -1,11 +1,60 @@
 {
-  "items": [
-    {"id": "tonic", "name": "Tonic", "heal_pct": 0.3, "price": 10, "text": "Restores 30% HP."},
-    {"id": "mid_tonic", "name": "Mid Tonic", "heal_pct": 0.6, "price": 40, "text": "Restores 60% HP."},
-    {"id": "ether", "name": "Ether", "mp": 20, "price": 30, "text": "Restores 20 MP."},
-    {"id": "revive", "name": "Revive", "revive_pct": 0.3, "price": 80, "text": "Brings a fallen ally back at 30% HP."},
-    {"id": "cobalt_wash", "name": "Cobalt Wash", "cleanse": true, "price": 25, "text": "Cures the ink blot and reveals washi paths."},
-    {"id": "time_atom", "name": "Time Atom", "integrity": 0.5, "price": 0, "text": "+0.5 integrity for Crono."},
-    {"id": "tungsten_scrap", "name": "Tungsten Bracer Scrap", "crafting": true, "price": 0, "text": "A scrap from a Porcelain Shardling."}
-  ]
+ "items": [
+  {
+   "id": "tonic",
+   "name": "Tonic",
+   "heal_pct": 0.3,
+   "price": 10,
+   "text": "Restores 30% HP."
+  },
+  {
+   "id": "mid_tonic",
+   "name": "Mid Tonic",
+   "heal_pct": 0.6,
+   "price": 40,
+   "text": "Restores 60% HP."
+  },
+  {
+   "id": "ether",
+   "name": "Ether",
+   "mp": 20,
+   "price": 30,
+   "text": "Restores 20 MP."
+  },
+  {
+   "id": "revive",
+   "name": "Revive",
+   "revive_pct": 0.3,
+   "price": 80,
+   "text": "Brings a fallen ally back at 30% HP."
+  },
+  {
+   "id": "cobalt_wash",
+   "name": "Cobalt Wash",
+   "cleanse": true,
+   "price": 25,
+   "text": "Cures the ink blot and reveals washi paths."
+  },
+  {
+   "id": "time_atom",
+   "name": "Time Atom",
+   "integrity": 0.5,
+   "price": 0,
+   "text": "+0.5 integrity for Crono."
+  },
+  {
+   "id": "tungsten_scrap",
+   "name": "Tungsten Bracer Scrap",
+   "crafting": true,
+   "price": 0,
+   "text": "A scrap from a Porcelain Shardling."
+  },
+  {
+   "id": "thoracic_ring_part",
+   "name": "Thoracic Ring",
+   "kind": "key",
+   "crafting": true,
+   "description": "The 999 Shard Doll's turning ring, ripped out for parts. The masks wept."
+  }
+ ]
 }

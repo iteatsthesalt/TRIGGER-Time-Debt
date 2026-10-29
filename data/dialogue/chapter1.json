@@ -257,5 +257,851 @@
     {
       "end": true
     }
+  ],
+  "ch1_time_skip": [
+    {
+      "caption": "[A few days later. The family lives in the Horologe now.]"
+    },
+    {
+      "wait": 1.2
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_loft_wake": [
+    {
+      "music": "mus_u0_wind_scene_1024"
+    },
+    {
+      "say": "Sera wakes in the loft. The wall behind her bed is the wall of her father's old house in Truce, moved here plank by plank and set into the brass. The window still has his height marks in pencil.",
+      "who": "narrator"
+    },
+    {
+      "say": "Across the room her father sleeps sitting up in the chair. He never lies down. In case the galaxy spills.",
+      "who": "narrator"
+    },
+    {
+      "say": "Marle's scarf is around her neck. Frayed red. She doesn't remember putting it on.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[Hold FOCUS near him and look. Just look.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_crack_check": [
+    {
+      "camera": "truth",
+      "focus": "crono"
+    },
+    {
+      "say": "The watercolour drains out of him. Amber shards under the skin. A crack across the skull like a river on a map. The lit seam at the left wrist, where the counter kissed it.",
+      "who": "narrator"
+    },
+    {
+      "say": "Ink footprints on the floorboards around his chair that nobody in this house has feet for.",
+      "who": "narrator"
+    },
+    {
+      "wait": 0.8
+    },
+    {
+      "camera": "explore"
+    },
+    {
+      "say": "Okay. Okay. You're still here. You're still... most of you is still here.",
+      "who": "sera",
+      "portrait": "sad"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_nightmare": [
+    {
+      "universe": 7
+    },
+    {
+      "sfx": "porcelain/galaxy_hum_432"
+    },
+    {
+      "say": "The light goes gold. Not the window's gold. Leaf gold, the kind that cracks. It comes in through the plaster like it was always behind it.",
+      "who": "narrator"
+    },
+    {
+      "say": "Hey. You left the door open again.",
+      "who": "vaelos",
+      "style": "clean"
+    },
+    {
+      "say": "That voice. Her father's voice from the old stories, from before the gravel, clean as a struck glass. He never sounded like that. She has never once heard him sound like that.",
+      "who": "narrator"
+    },
+    {
+      "say": "I'm not— that isn't— Papa?",
+      "who": "sera",
+      "portrait": "hurt"
+    },
+    {
+      "say": "You hum like the house I was never allowed into.",
+      "who": "vaelos",
+      "style": "clean"
+    },
+    {
+      "universe": 0
+    },
+    {
+      "say": "Her father's idle breathing in the chair hitches, and for one frame his hand opens like a doll's.",
+      "who": "narrator"
+    },
+    {
+      "say": "No. No, give that back.",
+      "who": "sera",
+      "portrait": "angry"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_rewind_prompt": [
+    {
+      "caption": "[REWIND: press R. No Gate Key. Just her. Six ghosts of her in six canvases, two seconds back.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_after_rewind": [
+    {
+      "say": "Two seconds. The room runs backwards like water finding a drain, and her father's hand closes again, and his breath comes back the right way round.",
+      "who": "narrator"
+    },
+    {
+      "say": "It costs her. Five percent of her, wherever that goes. The crack under her left eye spreads to match the one on his skull.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[Every crack in the father pays a debt in the daughter. Sera's translucency: {debt}%. Rewind, Hold and Tachyon Needle are hers now.]"
+    },
+    {
+      "learn": "rewind",
+      "who": "sera"
+    },
+    {
+      "learn": "hold",
+      "who": "sera"
+    },
+    {
+      "learn": "tachyon_needle",
+      "who": "sera"
+    },
+    {
+      "say": "Downstairs. Robo. Coffee, if Robo has learned coffee.",
+      "who": "sera",
+      "portrait": "neutral"
+    },
+    {
+      "caption": "[Take the brass stair down.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_father_tank": [
+    {
+      "say": "At the bottom of the stair the east window has gone dark from the inside. Ink is gathering on the glass in drops that run upward.",
+      "who": "narrator"
+    },
+    {
+      "call": "father_tank_step"
+    },
+    {
+      "say": "He is between her and it before she has finished seeing it. No input. He was asleep upstairs a second ago. He is here.",
+      "who": "narrator"
+    },
+    {
+      "say": "Papa. It's a window. You don't have to—",
+      "who": "sera",
+      "portrait": "sad"
+    },
+    {
+      "choice": [
+        {
+          "text": "[Nod]",
+          "goto": "ft_nod"
+        },
+        {
+          "text": "[Look Away]",
+          "goto": "ft_away"
+        },
+        {
+          "text": "[Say Her Name]",
+          "goto": "ft_name"
+        }
+      ],
+      "who": "crono",
+      "prompt": "..."
+    },
+    {
+      "label": "ft_nod"
+    },
+    {
+      "say": "He nods. He does not move from between her and the glass.",
+      "who": "narrator"
+    },
+    {
+      "goto": "ft_line"
+    },
+    {
+      "label": "ft_away"
+    },
+    {
+      "call": "wrist_reveal"
+    },
+    {
+      "say": "He looks away, and the sleeve rides up, and the wrist is a lamp. Sera sees it. She sees that he knows she sees it.",
+      "who": "narrator"
+    },
+    {
+      "set_flag": "Ch1_Father_Looked_Away"
+    },
+    {
+      "goto": "ft_line"
+    },
+    {
+      "label": "ft_name"
+    },
+    {
+      "say": "Sera.",
+      "who": "crono"
+    },
+    {
+      "say": "That's my name. You've got one too. Use it on yourself sometime.",
+      "who": "sera",
+      "portrait": "smile"
+    },
+    {
+      "label": "ft_line"
+    },
+    {
+      "say": "Why do you always— you can't tank a window. Why do you always do that?",
+      "who": "sera",
+      "portrait": "angry"
+    },
+    {
+      "say": "Because when she has nightmares she calls for me.",
+      "who": "crono"
+    },
+    {
+      "say": "Forty-one years tired. Gravel all the way down. It is the only full sentence he says this week, and he says it to the window.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[Father Tank: when Sera is hurt or her translucency moves, Crono steps between her and the next hit. It needs no input. Astral Smear Dash, Time Slice and Astral Slash are ready.]"
+    },
+    {
+      "learn": "time_slice",
+      "who": "crono"
+    },
+    {
+      "learn": "astral_slash",
+      "who": "crono"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_hub_tutorial": [
+    {
+      "say": "[GOOD MORNING SERA UNIT. GOOD MORNING CRONO UNIT. I HAVE LOGGED THE INK. I HAVE NOT LOGGED THE WINDOW. THE WINDOW IS MINE.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "caption": "[The hub: Robo rests and saves; the pool washes the smear and never the Debt; the dummy in the north-west corner teaches shields. Follow the ink footprints when you want to know what is next.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_dummy_after": [
+    {
+      "if": {
+        "flag": "Atrium_Dummy",
+        "state": "Salvaged"
+      },
+      "then": "salv",
+      "else": "spared"
+    },
+    {
+      "label": "salv"
+    },
+    {
+      "say": "The dummy stands with its chest open. Black oil runs from the eyeholes of every mask on the collar, and keeps running.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "spared"
+    },
+    {
+      "say": "The dummy stands quiet, every shield rebuilt, plate reading 999 again. It giggles when you look too long. It sounds relieved.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_dummy_sequence": [
+    {
+      "say": "Belthasar's first Bekkler doll. The failed copy, made before the one who lived. Lucca refitted it with a thoracic ring and six spider legs and bolted it to this plinth to teach shields to anyone who would learn.",
+      "who": "narrator"
+    },
+    {
+      "say": "It has her father's goggles and a Time Egg replica in its chest, and nine hundred and ninety-nine shields in every universe's style.",
+      "who": "narrator"
+    },
+    {
+      "if": {
+        "has_key_item": "bekkler_doll_small"
+      },
+      "then": "doll_meets_doll",
+      "else": "start"
+    },
+    {
+      "label": "doll_meets_doll"
+    },
+    {
+      "say": "Sera takes the little Bekkler doll from her jacket, the one she won at the Fair when she was six, and holds it up to the dummy's goggles.",
+      "who": "narrator"
+    },
+    {
+      "say": "For two frames every canvas in the room collides. A needle drops on vinyl somewhere. An amber chime.",
+      "who": "narrator"
+    },
+    {
+      "sfx": "time/amber_rift"
+    },
+    {
+      "set": {
+        "flag": "Amber_Rift_U0_DollMeetsDoll",
+        "state": "set"
+      }
+    },
+    {
+      "rift": "Amber_Rift_U0_DollMeetsDoll"
+    },
+    {
+      "caption": "[Amber Rift: Doll Meets Doll. Prismatic +15. Cassia will record this later.]"
+    },
+    {
+      "label": "start"
+    },
+    {
+      "say": "[TRAINING DUMMY PRIME ONLINE. IT CANNOT HURT YOU. IT CAN ONLY SHOW YOU WHERE YOU ARE SOFT.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "label": "fight"
+    },
+    {
+      "battle": "",
+      "boss_id": "shard_doll_999",
+      "boss": true,
+      "at": "dummy_boss",
+      "center": "dummy_center",
+      "music": "mus_battle_core_u0",
+      "on_win": "won",
+      "on_lose": "fight"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "won"
+    },
+    {
+      "say": "The last plate falls. Its plate reads 0. The collar masks stop orbiting and look, every one of them, at Crono's left wrist.",
+      "who": "narrator"
+    },
+    {
+      "say": "The seam is lit. It always is after a Break; the house checks its dolls.",
+      "who": "narrator"
+    },
+    {
+      "choice": [
+        {
+          "text": "[Hold the wrist out, where she can see]",
+          "set": {
+            "flag": "Dummy_Wrist",
+            "state": "Seen"
+          },
+          "goto": "wrist_seen"
+        },
+        {
+          "text": "[Look Away]",
+          "set": {
+            "flag": "Dummy_Wrist",
+            "state": "Hidden"
+          },
+          "goto": "wrist_hidden"
+        }
+      ],
+      "who": "crono",
+      "prompt": "Sera is looking."
+    },
+    {
+      "label": "wrist_seen"
+    },
+    {
+      "say": "She sees it. She doesn't say anything about it. She puts her hand over it the way you put a hand over a candle in wind.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[Concerned: Sera heals Crono at 1.5× until camp. His confession can wait until then.]"
+    },
+    {
+      "counter": "concerned",
+      "add": 1
+    },
+    {
+      "goto": "fate"
+    },
+    {
+      "label": "wrist_hidden"
+    },
+    {
+      "say": "He turns the arm in. She sees him turn it. Something is written down somewhere, unseen, and will be paid later.",
+      "who": "narrator"
+    },
+    {
+      "counter": "camp_strain_owed",
+      "add": 10
+    },
+    {
+      "label": "fate"
+    },
+    {
+      "say": "The dummy waits. Its thoracic ring is still turning, slow, a part that would fit a gauntlet.",
+      "who": "narrator"
+    },
+    {
+      "choice": [
+        {
+          "text": "Spare it. Let it rebuild.",
+          "goto": "spare"
+        },
+        {
+          "text": "Rip its ring out for parts.",
+          "goto": "salvage"
+        }
+      ],
+      "who": "sera",
+      "prompt": "What do we do with it?"
+    },
+    {
+      "label": "spare"
+    },
+    {
+      "if": {
+        "counter_min": "dummy_boost3_spam",
+        "value": 3
+      },
+      "then": "spare_spammy",
+      "else": "spare_clean"
+    },
+    {
+      "label": "spare_clean"
+    },
+    {
+      "set": {
+        "flag": "Atrium_Dummy",
+        "state": "Spared",
+        "affinity": {
+          "light": 10
+        }
+      }
+    },
+    {
+      "say": "It giggles. It sounds relieved. Every plate climbs back to 999 with a sound like a wind chime cracking.",
+      "who": "narrator"
+    },
+    {
+      "goto": "done"
+    },
+    {
+      "label": "spare_spammy"
+    },
+    {
+      "set": {
+        "flag": "Atrium_Dummy",
+        "state": "Spared",
+        "affinity": {
+          "light": 5
+        }
+      }
+    },
+    {
+      "say": "It giggles, a little hoarse. You leaned on the Boost. It rebuilds anyway.",
+      "who": "narrator"
+    },
+    {
+      "goto": "done"
+    },
+    {
+      "label": "salvage"
+    },
+    {
+      "set": {
+        "flag": "Atrium_Dummy",
+        "state": "Salvaged",
+        "affinity": {
+          "dark": 15
+        }
+      }
+    },
+    {
+      "sfx": "combat/statue_shatter"
+    },
+    {
+      "say": "The ring comes out with a hydraulic scream. The masks on its collar weep black oil, and keep weeping, and will not stop for the rest of the game. Somewhere under the music box a hiss joins the beat.",
+      "who": "narrator"
+    },
+    {
+      "give_item": "thoracic_ring_part"
+    },
+    {
+      "caption": "[Obtained: Thoracic Ring. An arm cannon is yours later. Glenn will not teach you his Duals.]"
+    },
+    {
+      "label": "done"
+    },
+    {
+      "caption": "[Memory echoes now leak near the lab: Moss-Mice, Bekkler Fragments, an Ashen Echo. They rescale when you return.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_dummy_p1": [
+    {
+      "caption": "[Recognition. Plate: SHIELD 12. Weak to SWORD and something hidden. Pair the sword with the hidden thing when it shows.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_dummy_p2": [
+    {
+      "say": "It giggles. Something inside it hisses and the plate climbs to 18. New tags: FERRO, VOLT. It wants Astral now, and rubber.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[Contamination. Sera: REWIND its gauge when it winds up (+5% translucency). Park a gauge at 99 with SYNC HOLD, then Boost Lv3 for the extra shave.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_dummy_p3": [
+    {
+      "say": "At twenty percent it cracks exactly the way her father cracks, and laughs, and there are three of it: paper and pigment, soot and brush, clay and thumbprint.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[Galaxy Giggle. Three dolls, eight plates each. All three must Break within three seconds or the broken ones rebuild. Line them up: Astral Smear Dash, or a circle around two.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_dummy_p4": [
+    {
+      "say": "The three fold back into one, and the plate reads 999.",
+      "who": "narrator"
+    },
+    {
+      "say": "Ten of those are real. Nine hundred and eighty-nine are shards it is holding up to look taller. Vaelos's shields are belief. Hit it with what it fears.",
+      "who": "sera",
+      "portrait": "neutral"
+    },
+    {
+      "caption": "[Debt Lesson. Matching hits shave the ten real plates. Wrong elements chip the fake number with satisfying noise and no progress.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_glenn_honour": [
+    {
+      "set_flag": "Glenn_Honour_Checked"
+    },
+    {
+      "say": "Glenn is at the dummy with the cane in his good hand and the Marshall's ledger open on the plinth: the record of every fight the two of them have had since the kitchen.",
+      "who": "narrator"
+    },
+    {
+      "if": {
+        "flag": "Atrium_Dummy",
+        "state": "Salvaged"
+      },
+      "then": "refuse",
+      "else": "offer"
+    },
+    {
+      "label": "offer"
+    },
+    {
+      "say": "No needless killing. Spared what could be spared. Good. Then there's two things I can teach you, when you're ready for 'em. Ashen Bash, for your father. Mercy Leap, for you.",
+      "who": "glenn"
+    },
+    {
+      "set_flag": "Glenn_Duals_Offered"
+    },
+    {
+      "caption": "[Glenn offers training: Ashen Bash (Crono + Glenn) and Mercy Leap (Sera + Glenn) will be taught in time.]"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "refuse"
+    },
+    {
+      "say": "He closes the ledger without looking up from it.",
+      "who": "narrator"
+    },
+    {
+      "say": "You wear a doll to hide cracks. Same as me wearin' paint. I'll not teach it to swing harder.",
+      "who": "glenn"
+    },
+    {
+      "set_flag": "Glenn_Duals_Refused"
+    },
+    {
+      "caption": "[Glenn withholds his Dual Techs until the Bekkler doll is repaired in U5.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_glenn_after": [
+    {
+      "if": {
+        "flag": "Glenn_Duals_Refused"
+      },
+      "then": "r",
+      "else": "o"
+    },
+    {
+      "label": "r"
+    },
+    {
+      "say": "Mend what you broke, Captain. Then we'll talk about swinging.",
+      "who": "glenn"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "o"
+    },
+    {
+      "say": "Rest when Robo tells you. The tower keeps better time than I do.",
+      "who": "glenn"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_midnight": [
+    {
+      "say": "Midnight. Both of Robo's eyes close and the whole tower draws a breath, brass ticking as it cools. Under the music box, under the seventy-two, a second heartbeat at sixty-eight bleeds in and will not stay in time.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[At midnight the tower inhales. The second heartbeat is not Robo's.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_hearth": [
+    {
+      "say": "A brass stove and two benches. The family sits here at night, when the tower lets them.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_hearth_night": [
+    {
+      "say": "Marle is on the bench with the ledger closed on her knee for once. Sera is asleep against her shoulder. There is room on the other bench.",
+      "who": "narrator"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_hearth": [
+    {
+      "say": "Marle is on the bench with the ledger closed on her knee for once. Sera is asleep against her shoulder. Crono sits. The embers do the talking for a while.",
+      "who": "narrator"
+    },
+    {
+      "say": "She told me you didn't lie down. Up there. In the chair.",
+      "who": "marle",
+      "portrait": "neutral"
+    },
+    {
+      "say": "Twenty-four years I've checked that wrist for warmth while you slept. I never once asked what I'd do if it wasn't.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "say": "His left hand is in his lap, the sleeve down. She is not looking at it. She is very carefully not looking at it.",
+      "who": "narrator"
+    },
+    {
+      "choice": [
+        {
+          "text": "[Hold the wrist out to her]",
+          "set": {
+            "flag": "Crono_Confession",
+            "state": "Told",
+            "affinity": {
+              "light": 10
+            }
+          },
+          "goto": "tell"
+        },
+        {
+          "text": "[Pull the sleeve down]",
+          "set": {
+            "flag": "Crono_Confession",
+            "state": "Hidden",
+            "affinity": {
+              "dark": 10
+            }
+          },
+          "goto": "hide"
+        }
+      ],
+      "who": "crono",
+      "prompt": "..."
+    },
+    {
+      "label": "tell"
+    },
+    {
+      "say": "He turns the arm over and puts it in her hands, seam up. Light through it. She holds it the way you hold a cup you were told is cracked.",
+      "who": "narrator"
+    },
+    {
+      "say": "Warm. ...It was always warm. That's how I knew it wasn't you lying. Just the house.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "caption": "[Told. In the Bone-Tree there is gold that fills cracks. That path is open now.]"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "hide"
+    },
+    {
+      "say": "He pulls the sleeve down over it and keeps his hand there, and after a while she puts hers over his, over the sleeve, and they sit like that.",
+      "who": "narrator"
+    },
+    {
+      "say": "All right. All right. Not tonight, then.",
+      "who": "marle",
+      "portrait": "sad"
+    },
+    {
+      "caption": "[Hidden. In the Carnival of Ash there is a clown who reseals dolls. That path is open now.]"
+    },
+    {
+      "end": true
+    }
+  ],
+  "ch1_fair_call": [
+    {
+      "caption": "[The next evening.]"
+    },
+    {
+      "sfx": "ui/tube"
+    },
+    {
+      "say": "[SERA UNIT HAS LEFT THE TOWER. HEART RATE 140. TRANSLUCENCY RISING. HEADING: LEENE SQUARE. THE FAIR OPENED AT DUSK. I DID NOT LOG THE DOOR. THE DOOR IS HERS.]",
+      "who": "robo",
+      "style": "robo"
+    },
+    {
+      "say": "She's seventeen and we put her in a tower. Of course she went to the Fair. Go. I'll hold the room with Robo. Bring her back before her edges go.",
+      "who": "marle",
+      "portrait": "angry"
+    },
+    {
+      "say": "He is already at the gate. An exhausted forty-one-year-old going to chase a teenager through a crowd that smells of chestnuts and ozone.",
+      "who": "narrator"
+    },
+    {
+      "call": "leave_for_fair"
+    },
+    {
+      "end": true
+    }
+  ],
+  "atrium_seed_first_water": [
+    {
+      "say": "A pot of black earth. In it, a mercury orb wound in tungsten wire, cold. A tag in Lucca's hand: DOAN. REFUSED TO BE A CORE. WATER WHEN TIME HAS PASSED.",
+      "who": "narrator"
+    },
+    {
+      "choice": [
+        {
+          "text": "Water it.",
+          "goto": "water"
+        },
+        {
+          "text": "Leave it.",
+          "goto": "leave"
+        }
+      ],
+      "who": "sera",
+      "prompt": "..."
+    },
+    {
+      "label": "water"
+    },
+    {
+      "call": "water_seed"
+    },
+    {
+      "say": "The orb drinks. Something in it unlatches, and a green thread comes up through the wire, and where its first leaf should be there is a tiny gramophone horn, playing a tune Crono knows. Backwards. At a pitch that makes the brass hum.",
+      "who": "narrator"
+    },
+    {
+      "caption": "[The Seed of Doan: 1 of 3 waterings. Time must pass through a gate slip before the next. It promises a Triple Tech.]"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "leave"
+    },
+    {
+      "end": true
+    }
   ]
 }

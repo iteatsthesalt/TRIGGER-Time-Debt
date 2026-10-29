@@ -5,6 +5,7 @@ extends Node
 signal interact_requested(target: Node)
 signal focus_changed(on: bool)
 signal menu_requested
+signal rewind_requested
 
 @export var leader: CombatActor
 @export var enabled: bool = true
@@ -81,6 +82,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		focus_changed.emit(false)
 	elif event.is_action_pressed("menu"):
 		menu_requested.emit()
+	elif event.is_action_pressed("rewind"):
+		rewind_requested.emit()
 
 
 func nearest_interactable() -> Node:

@@ -75,6 +75,8 @@ func go(id: StringName, spawn: StringName = &"start", fade_s: float = 0.5) -> vo
 	var tree := get_tree()
 	var next: Node = packed.instantiate()
 	if current_scene != null and is_instance_valid(current_scene):
+		# take the old scene out now so the new one keeps its name (a location can reload itself)
+		tree.root.remove_child(current_scene)
 		current_scene.queue_free()
 	tree.root.add_child(next)
 	tree.current_scene = next

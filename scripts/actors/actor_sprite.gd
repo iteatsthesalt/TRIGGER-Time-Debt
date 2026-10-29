@@ -21,6 +21,7 @@ var material: ShaderMaterial
 var _accum: float = 0.0
 var _finished: bool = false
 var _one_shot_return: StringName = &""
+var _reverse_left: float = 0.0
 var _sheet_size: Vector2 = Vector2(128, 128)
 
 static var _shader: Shader
@@ -168,6 +169,12 @@ func update_from_velocity(v: Vector3, walking_anim: StringName = &"walk") -> voi
 		play(&"idle")
 
 
+## Play an animation's frames in reverse for `seconds` (Sera's Rewind winds her father's idle back).
+func play_backwards(name: StringName, seconds: float) -> void:
+	play(name)
+	_reverse_left = seconds
+
+
 func _process(delta: float) -> void:
 	if not anims.has(anim):
 		return
@@ -179,6 +186,13 @@ func _process(delta: float) -> void:
 	var fps: float = float(a.get("fps", canvas_fps))
 	var frame_time: float = float(holds[frame]) if frame < holds.size() else 1.0 / maxf(1.0, fps)
 	_accum += delta
+	if _reverse_left > 0.0:
+		_reverse_left -= delta
+		while _accum >= frame_time:
+			_accum -= frame_time
+			frame = wrapi(frame - 1, 0, count)
+		_update_rect()
+		return
 	while _accum >= frame_time:
 		_accum -= frame_time
 		frame += 1

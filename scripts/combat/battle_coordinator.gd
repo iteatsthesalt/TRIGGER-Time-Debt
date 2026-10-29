@@ -93,6 +93,8 @@ var token_duplicate_active: Node = null
 var paused: bool = false
 ## Units that take no HP damage for now (a boss sealed until a Debt is paid); shields still shave.
 var undamageable: Array[Node] = []
+## When > 0, enemy hits cannot take a party member below this many HP (zero-fail tutorial fights).
+var party_hp_floor: int = 0
 
 
 func _physics_process(delta: float) -> void:
@@ -268,6 +270,13 @@ func add_enemy(u: Node, def: EnemyDef = null) -> void:
 
 func request_summon(key: StringName, count: int, near: Node) -> void:
 	summon_requested.emit(key, count, near)
+
+
+## End the battle from outside (a boss whose fight ends on a Break, a scripted escape).
+func force_end(victory: bool, reason: String = "scripted") -> void:
+	if state == State.IDLE or state == State.VICTORY or state == State.DEFEAT:
+		return
+	_finish(victory, reason)
 
 
 func _award_xp() -> Dictionary:
@@ -1022,6 +1031,9 @@ func _resolve_enemy_hits(e: Node, t: Node, action: Dictionary, shape_hits: int, 
 			dmg = roundi(float(dmg) * 0.5)
 			tsc.remove_stacks(&"glass_ward", 1)
 		var vulnerable_breaks_guard: bool = bool(ctx["vulnerable"])
+		if party_hp_floor > 0 and party.has(t):
+			# zero-fail fights (the 999 Shard Doll): nobody here can be knocked out
+			dmg = mini(dmg, maxi(0, tst.hp - party_hp_floor))
 		var dealt: int = tst.apply_damage(dmg, vulnerable_breaks_guard)
 		total += dealt
 		_apply_enemy_status(action, t)

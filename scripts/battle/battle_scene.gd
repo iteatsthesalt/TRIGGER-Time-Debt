@@ -561,13 +561,35 @@ func _auto_act() -> void:
 		coordinator.cmd_guard(actor)
 
 
+## Shapes that can catch more than one enemy in a single cast.
+const AUTO_MULTI_SHAPES: Array[int] = [
+	TechDef.Shape.LINE_PIERCE, TechDef.Shape.CONE, TechDef.Shape.CIRCLE, TechDef.Shape.CROSS,
+	TechDef.Shape.DELTA, TechDef.Shape.SPLIT_CONE,
+]
+
+
 ## Which of the actor's attack techs the autobattle casts this turn. `techs` are the castable attacks,
 ## `targetable` the enemies that can be hit right now (the 999 Shard Doll's split puts three up at once).
-func _auto_pick_tech(techs: Array[TechDef], _targetable: Array) -> TechDef:
-	# TODO(human): when more than one enemy is targetable, prefer a tech whose shape can catch several
-	# (TechDef.Shape.LINE_PIERCE, CONE, CIRCLE, CROSS, DELTA, SPLIT_CONE) and whose tags hit a weakness of at
-	# least two of them (ShieldComponent.of(e).hits_weakness(tech.tags)); otherwise keep the random pick.
-	return techs[randi() % techs.size()]
+## With several enemies up it takes the multi-target tech whose tags hit the most weaknesses, so a split
+## of dolls sharing a weakness is lined up rather than chipped one at a time; two casts in five stay
+## random so fights keep some variety.
+func _auto_pick_tech(techs: Array[TechDef], targetable: Array) -> TechDef:
+	if targetable.size() < 2 or randf() < 0.4:
+		return techs[randi() % techs.size()]
+	var best: TechDef = null
+	var best_hits: int = 1
+	for tech in techs:
+		if not AUTO_MULTI_SHAPES.has(tech.shape):
+			continue
+		var hits: int = 0
+		for e in targetable:
+			var sh := ShieldComponent.of(e)
+			if sh != null and sh.hits_weakness(tech.tags):
+				hits += 1
+		if hits > best_hits:
+			best_hits = hits
+			best = tech
+	return best if best != null else techs[randi() % techs.size()]
 
 
 # ------------------------------------------------------------------ presentation

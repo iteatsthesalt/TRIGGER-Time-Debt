@@ -94,9 +94,10 @@ delivers art per `docs/BOT_REVIEW.md`; ChatGPT writes the text layer per `docs/J
 7. Keep `docs/DECISIONS.md`, `docs/QUESTIONS_FOR_NICH.md`, `docs/ASSET_REQUESTS.md`, `docs/screenshots/` current.
 
 ## Known issues
-- **The autobattle AI single-targets**, so the Shard Doll's split lesson takes ~5 min headless (eight
-  rebuilds before the dolls stay broken) and Crono is floored often; `BattleScene._auto_pick_tech()` is the
-  place to prefer LINE/CONE/CIRCLE techs when several enemies share a weakness.
+- **The autobattle still needs eight rebuilds on the Shard Doll's split** (~3.5 min headless since
+  `BattleScene._auto_pick_tech()` prefers the multi-target tech that hits the most weaknesses; it was ~5 min):
+  it never breaks all three within one 3 s window because it aims at one doll's position rather than lining
+  them up. Aiming to maximise coverage (the line through two dolls) is the next AI step.
 - Rooms, textures, props and enemies are placeholders until Nich's assets land (ASSET_REQUESTS batches 2–9).
 - Marle's imported sprite is realistic-proportioned beside a chibi cast (Nich to decide).
 - Autobattle AI never heals, so probe losses overstate difficulty; defeat costs −5 integrity each retry.

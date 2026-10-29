@@ -28,6 +28,8 @@ signal parry_result(ally: Node, perfect: bool)
 signal possibility_branch(branch_id: StringName, options: Array)
 signal heal_resolved(source: Node, target: Node, amount: int)
 signal unit_moved(unit: Node, to: Vector3)
+signal summon_requested(key: StringName, count: int, near: Node)
+signal enemy_added(unit: Node)
 
 enum State { IDLE, TRANSITION_IN, TICK, COMMAND_WAIT, EXECUTING, BRANCH, VICTORY, DEFEAT, TRANSITION_OUT }
 
@@ -87,6 +89,10 @@ var turn_snapshots: Dictionary = {}
 ## unit -> the last action it performed (Borrowed Future's Token Duplicate copies it).
 var last_actions: Dictionary = {}
 var token_duplicate_active: Node = null
+## Set by a boss controller while a mid-battle script plays: the clock stops and no window opens.
+var paused: bool = false
+## Units that take no HP damage for now (a boss sealed until a Debt is paid); shields still shave.
+var undamageable: Array[Node] = []
 
 
 func _physics_process(delta: float) -> void:
@@ -249,6 +255,21 @@ func _finish(victory: bool, reason: String = "") -> void:
 	state = State.IDLE
 
 
+## Bring a new enemy into a running battle (adds, summons, phase spawns).
+func add_enemy(u: Node, def: EnemyDef = null) -> void:
+	if enemies.has(u):
+		return
+	enemies.append(u)
+	if def != null:
+		enemy_defs[CombatantStats.of(u).actor_id] = def
+	_init_unit(u, rng.randf_range(CombatConstants.ENEMY_START_GAUGE.x, CombatConstants.ENEMY_START_GAUGE.y) * 0.5)
+	enemy_added.emit(u)
+
+
+func request_summon(key: StringName, count: int, near: Node) -> void:
+	summon_requested.emit(key, count, near)
+
+
 func _award_xp() -> Dictionary:
 	var total: int = 0
 	for e in enemies:
@@ -276,7 +297,7 @@ func _award_xp() -> Dictionary:
 # ------------------------------------------------------------------ timeline
 
 func advance(delta: float) -> void:
-	if state != State.TICK:
+	if state != State.TICK or paused:
 		return
 	var dt: float = delta * flow_speed
 	if dt <= 0.0:
@@ -1162,6 +1183,8 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 			var dealt: int
 			if bool(r["absorbed"]):
 				dealt = -tst.heal(dmg)
+			elif undamageable.has(t):
+				dealt = 0
 			else:
 				dealt = tst.apply_damage(dmg, true)
 			total += maxi(0, dealt)

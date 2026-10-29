@@ -1,64 +1,349 @@
 {
-  "id": "atrium_cradle",
-  "name": "Atrium Cradle — Proto Arch-Curator (R-66Y frame)",
-  "universe": 0,
-  "level": 3,
-  "hp": 2400,
-  "kind": "boss",
-  "sprite": "bos_u0_atrium_cradle",
-  "size": 3.2,
-  "body_radius": 1.2,
-  "fps": 60,
-  "is_metal": true,
-  "tags": ["FERRO", "LIGHT"],
-  "resist": [],
-  "immune": [],
-  "arena_hazards": ["sorrowful_blue_12fps_step", "canvas_split_u0_watercolour_u2_clay", "fracture_gate_time_debt"],
-  "adds": [{"key": "porcelain_shardling", "count": 2, "phase": "dollhouse_seal"}],
-  "phases": [
-    {"id": "preservation_protocol", "name": "Preservation Protocol", "hp_from": 1.0, "hp_to": 0.66,
-     "shield": {"shield": 4, "weak": [], "resist": [], "keyed_plates": [{"material": "SWORD", "key": "SWORD", "weight": 1}, {"material": "SWORD", "key": "SWORD", "weight": 1}, {"material": "LIGHT", "key": "LIGHT", "weight": 1}, {"material": "LIGHT", "key": "LIGHT", "weight": 1}], "regenerating": false, "refill_once": false},
-     "tags": ["FERRO", "LIGHT"],
-     "actions": [
-       {"id": "sorrowful_blue", "name": "Sorrowful Blue", "tags": ["LIGHT", "FERRO"], "shape": "CIRCLE", "radius": 4.0, "power": 0.6, "hits": 1, "wind_up_s": 1.5, "status": "knock_static", "status_seconds": 6, "target": "weakest", "weight": 1},
-       {"id": "ring_swipe", "name": "Thoracic Ring Swipe", "tags": ["FERRO", "BLUNT"], "shape": "SINGLE", "power": 1.0, "hits": 1, "target": "nearest", "weight": 2}
+ "id": "atrium_cradle",
+ "name": "Atrium Cradle — Proto Arch-Curator (R-66Y frame)",
+ "universe": 0,
+ "level": 3,
+ "hp": 2400,
+ "kind": "boss",
+ "sprite": "bos_u0_atrium_cradle",
+ "size": 3.2,
+ "body_radius": 1.2,
+ "fps": 60,
+ "is_metal": true,
+ "tags": [
+  "FERRO",
+  "LIGHT"
+ ],
+ "resist": [],
+ "immune": [],
+ "arena_hazards": [
+  "sorrowful_blue_12fps_step",
+  "canvas_split_u0_watercolour_u2_clay",
+  "fracture_gate_time_debt"
+ ],
+ "adds": [
+  {
+   "key": "porcelain_shardling",
+   "count": 2,
+   "phase": "dollhouse_seal"
+  }
+ ],
+ "phases": [
+  {
+   "id": "preservation_protocol",
+   "name": "Preservation Protocol",
+   "hp_from": 1.0,
+   "hp_to": 0.66,
+   "shield": {
+    "shield": 4,
+    "weak": [],
+    "resist": [],
+    "keyed_plates": [
+     {
+      "material": "SWORD",
+      "key": "SWORD",
+      "weight": 1
+     },
+     {
+      "material": "SWORD",
+      "key": "SWORD",
+      "weight": 1
+     },
+     {
+      "material": "LIGHT",
+      "key": "LIGHT",
+      "weight": 1
+     },
+     {
+      "material": "LIGHT",
+      "key": "LIGHT",
+      "weight": 1
+     }
+    ],
+    "regenerating": false,
+    "refill_once": false
+   },
+   "tags": [
+    "FERRO",
+    "LIGHT"
+   ],
+   "actions": [
+    {
+     "id": "sorrowful_blue",
+     "name": "Sorrowful Blue",
+     "tags": [
+      "LIGHT",
+      "FERRO"
      ],
-     "mechanics": ["plates_keyed_to_own_material", "break_signature_sets_lean", "sorrowful_blue_forces_12fps_step_6s_gauges_0_8x"],
-     "on_enter": "Robo: PRESERVATION =/= LOVE. ERROR.",
-     "on_break": "Break Signature [LIGHT] -> Light lean, the crack holds. Signature [SWORD] or [FIRE] -> Dark lean, the crack widens.",
-     "notes": "Plates [SWORD]x2 + [LIGHT]x2 (4). A rotating thoracic ring casts Sorrowful Blue, which forces the party onto a 12 fps step for 6 s (actions animate stepped; gauges fill at 0.8x; knock_static is the closest status). The tag of the plate that falls last is the Break Signature. No weakness list is given for this phase."},
-    {"id": "dollhouse_seal", "name": "Dollhouse Seal", "hp_from": 0.66, "hp_to": 0.33,
-     "shield": {"shield": 5, "weak": ["TACHYON", "LIGHT"], "resist": [], "keyed_plates": [{"material": "SWORD", "key": "SWORD", "weight": 1}, {"material": "SWORD", "key": "SWORD", "weight": 1}, {"material": "FIRE", "key": "FIRE", "weight": 1}, {"material": "FIRE", "key": "FIRE", "weight": 1}, {"material": "DARK", "key": "DARK", "weight": 1}], "regenerating": false, "refill_once": false},
-     "tags": ["FERRO", "LIGHT"],
-     "actions": [
-       {"id": "dollhouse_clamp", "name": "Dollhouse Clamp", "tags": ["FERRO", "DARK"], "shape": "SINGLE", "power": 1.1, "hits": 1, "wind_up_s": 1.5, "target": "nearest", "weight": 2},
-       {"id": "seal_pulse", "name": "Seal Pulse", "tags": ["FIRE"], "shape": "CIRCLE", "radius": 3.0, "power": 0.8, "hits": 1, "target": "weakest", "weight": 1},
-       {"id": "spawn_shardlings", "name": "Spawn Shardlings", "tags": ["FERRO"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:porcelain_shardling", "target": "weakest", "weight": 1}
+     "shape": "CIRCLE",
+     "radius": 4.0,
+     "power": 0.6,
+     "hits": 1,
+     "wind_up_s": 1.5,
+     "status": "knock_static",
+     "status_seconds": 6,
+     "target": "weakest",
+     "weight": 1
+    },
+    {
+     "id": "ring_swipe",
+     "name": "Thoracic Ring Swipe",
+     "tags": [
+      "FERRO",
+      "BLUNT"
      ],
-     "mechanics": ["arena_splits_50_50_u0_watercolour_60fps_u2_clay_12fps", "undamageable_until_crono_pays_time_debt_5pct_max_hp_permanent", "spawns_porcelain_shardlings", "sera_learns_fall_break"],
-     "on_enter": "The arena splits between U0 watercolour and U2 clay.",
-     "on_break": "",
-     "notes": "Plates [SWORD]x2 + [FIRE]x2 + [DARK]x1 (5), Weak [TACHYON][LIGHT]. The Cradle cannot be damaged until Crono pays Time Debt: 5% of his max HP as a permanent integrity loss, the game's first permanent cost. Sera learns Fall Break here."},
-    {"id": "atrium_fracture", "name": "Atrium Fracture", "hp_from": 0.33, "hp_to": 0.0,
-     "shield": {"shield": 6, "weak": [], "resist": [], "keyed_plates": [{"material": "DARK", "key": "DARK", "weight": 1}, {"material": "DARK", "key": "DARK", "weight": 1}, {"material": "DARK", "key": "DARK", "weight": 1}, {"material": "SWORD", "key": "SWORD", "weight": 1}, {"material": "SWORD", "key": "SWORD", "weight": 1}, {"material": "LIGHT", "key": "LIGHT", "weight": 1}], "regenerating": false, "refill_once": false},
-     "tags": ["FERRO", "LIGHT", "DARK"],
-     "actions": [
-       {"id": "crack_slide", "name": "Crack-Slide", "tags": ["FERRO", "DARK"], "shape": "LINE_PIERCE", "length": 6.0, "width": 1.4, "power": 1.4, "hits": 1, "wind_up_s": 2.0, "target": "nearest", "weight": 2},
-       {"id": "mask_scream", "name": "Theatre Mask Scream", "tags": ["DARK", "LIGHT"], "shape": "CIRCLE", "radius": 3.0, "power": 0.9, "hits": 1, "target": "weakest", "weight": 1}
+     "shape": "SINGLE",
+     "power": 1.0,
+     "hits": 1,
+     "target": "nearest",
+     "weight": 2
+    }
+   ],
+   "mechanics": [
+    "plates_keyed_to_own_material",
+    "break_signature_sets_lean",
+    "sorrowful_blue_forces_12fps_step_6s_gauges_0_8x"
+   ],
+   "on_enter": "Robo: PRESERVATION =/= LOVE. ERROR.",
+   "on_break": "Break Signature [LIGHT] -> Light lean, the crack holds. Signature [SWORD] or [FIRE] -> Dark lean, the crack widens.",
+   "notes": "Plates [SWORD]x2 + [LIGHT]x2 (4). A rotating thoracic ring casts Sorrowful Blue, which forces the party onto a 12 fps step for 6 s (actions animate stepped; gauges fill at 0.8x; knock_static is the closest status). The tag of the plate that falls last is the Break Signature. No weakness list is given for this phase."
+  },
+  {
+   "id": "dollhouse_seal",
+   "name": "Dollhouse Seal",
+   "hp_from": 0.66,
+   "hp_to": 0.33,
+   "shield": {
+    "shield": 5,
+    "weak": [
+     "TACHYON",
+     "LIGHT"
+    ],
+    "resist": [],
+    "keyed_plates": [
+     {
+      "material": "SWORD",
+      "key": "SWORD",
+      "weight": 1
+     },
+     {
+      "material": "SWORD",
+      "key": "SWORD",
+      "weight": 1
+     },
+     {
+      "material": "FIRE",
+      "key": "FIRE",
+      "weight": 1
+     },
+     {
+      "material": "FIRE",
+      "key": "FIRE",
+      "weight": 1
+     },
+     {
+      "material": "DARK",
+      "key": "DARK",
+      "weight": 1
+     }
+    ],
+    "regenerating": false,
+    "refill_once": false
+   },
+   "tags": [
+    "FERRO",
+    "LIGHT"
+   ],
+   "actions": [
+    {
+     "id": "dollhouse_clamp",
+     "name": "Dollhouse Clamp",
+     "tags": [
+      "FERRO",
+      "DARK"
      ],
-     "mechanics": ["u1_ash_background_u0_foreground", "porcelain_theatre_mask_and_crack_slide_first_appear", "perfect_parry_on_crack_slide_opens_prismatic_window", "vaelos_voice_overlays_robo_last_10pct", "break_swaps_to_u7_gold_leaf_3s", "defeat_is_shutdown_six_legs_fold_in_six_frames"],
-     "on_enter": "",
-     "on_break": "A 3 s swap to U7 gold leaf.",
-     "notes": "Plates [DARK]x3 + [SWORD]x2 + [LIGHT]x1 (6). No weakness list is given for this phase. A perfect parry on the Crack-Slide opens a Prismatic window (The Bowl Still Whole). Defeat is a Shutdown, not a death."}
+     "shape": "SINGLE",
+     "power": 1.1,
+     "hits": 1,
+     "wind_up_s": 1.5,
+     "target": "nearest",
+     "weight": 2
+    },
+    {
+     "id": "seal_pulse",
+     "name": "Seal Pulse",
+     "tags": [
+      "FIRE"
+     ],
+     "shape": "CIRCLE",
+     "radius": 3.0,
+     "power": 0.8,
+     "hits": 1,
+     "target": "weakest",
+     "weight": 1
+    },
+    {
+     "id": "spawn_shardlings",
+     "name": "Spawn Shardlings",
+     "tags": [
+      "FERRO"
+     ],
+     "shape": "SINGLE",
+     "power": 0.0,
+     "hits": 1,
+     "effect": "summon:porcelain_shardling",
+     "target": "weakest",
+     "weight": 1
+    }
+   ],
+   "mechanics": [
+    "arena_splits_50_50_u0_watercolour_60fps_u2_clay_12fps",
+    "undamageable_until_crono_pays_time_debt_5pct_max_hp_permanent",
+    "spawns_porcelain_shardlings",
+    "sera_learns_fall_break"
+   ],
+   "on_enter": "The arena splits between U0 watercolour and U2 clay.",
+   "on_break": "",
+   "notes": "Plates [SWORD]x2 + [FIRE]x2 + [DARK]x1 (5), Weak [TACHYON][LIGHT]. The Cradle cannot be damaged until Crono pays Time Debt: 5% of his max HP as a permanent integrity loss, the game's first permanent cost. Sera learns Fall Break here.",
+   "script": "prologue_cradle_phase2",
+   "sealed": true
+  },
+  {
+   "id": "atrium_fracture",
+   "name": "Atrium Fracture",
+   "hp_from": 0.33,
+   "hp_to": 0.0,
+   "shield": {
+    "shield": 6,
+    "weak": [],
+    "resist": [],
+    "keyed_plates": [
+     {
+      "material": "DARK",
+      "key": "DARK",
+      "weight": 1
+     },
+     {
+      "material": "DARK",
+      "key": "DARK",
+      "weight": 1
+     },
+     {
+      "material": "DARK",
+      "key": "DARK",
+      "weight": 1
+     },
+     {
+      "material": "SWORD",
+      "key": "SWORD",
+      "weight": 1
+     },
+     {
+      "material": "SWORD",
+      "key": "SWORD",
+      "weight": 1
+     },
+     {
+      "material": "LIGHT",
+      "key": "LIGHT",
+      "weight": 1
+     }
+    ],
+    "regenerating": false,
+    "refill_once": false
+   },
+   "tags": [
+    "FERRO",
+    "LIGHT",
+    "DARK"
+   ],
+   "actions": [
+    {
+     "id": "crack_slide",
+     "name": "Crack-Slide",
+     "tags": [
+      "FERRO",
+      "DARK"
+     ],
+     "shape": "LINE_PIERCE",
+     "length": 6.0,
+     "width": 1.4,
+     "power": 1.4,
+     "hits": 1,
+     "wind_up_s": 2.0,
+     "target": "nearest",
+     "weight": 2
+    },
+    {
+     "id": "mask_scream",
+     "name": "Theatre Mask Scream",
+     "tags": [
+      "DARK",
+      "LIGHT"
+     ],
+     "shape": "CIRCLE",
+     "radius": 3.0,
+     "power": 0.9,
+     "hits": 1,
+     "target": "weakest",
+     "weight": 1
+    }
+   ],
+   "mechanics": [
+    "u1_ash_background_u0_foreground",
+    "porcelain_theatre_mask_and_crack_slide_first_appear",
+    "perfect_parry_on_crack_slide_opens_prismatic_window",
+    "vaelos_voice_overlays_robo_last_10pct",
+    "break_swaps_to_u7_gold_leaf_3s",
+    "defeat_is_shutdown_six_legs_fold_in_six_frames"
+   ],
+   "on_enter": "",
+   "on_break": "A 3 s swap to U7 gold leaf.",
+   "notes": "Plates [DARK]x3 + [SWORD]x2 + [LIGHT]x1 (6). No weakness list is given for this phase. A perfect parry on the Crack-Slide opens a Prismatic window (The Bowl Still Whole). Defeat is a Shutdown, not a death.",
+   "script": "prologue_cradle_phase3"
+  }
+ ],
+ "branches": [
+  {
+   "id": "prologue_fall",
+   "after_phase": "atrium_fracture",
+   "options": [
+    {
+     "id": "light",
+     "label": "Teach Her To Land",
+     "flag": "Prologue_Fall",
+     "state": "Teach_Her_To_Land",
+     "requires": "catch Sera gently; no extra Debt; Crono's integrity holds at 60"
+    },
+    {
+     "id": "dark",
+     "label": "Hold The Copy Together",
+     "flag": "Prologue_Fall",
+     "state": "Hold_The_Copy_Together",
+     "requires": "hide the crack, break the door with [SWORD]; integrity drops to 40, the inner doll face shows, Vaelos's whispers +15% frequent, Sera gains a Dark lean (U1 sumi-e dodge)"
+    },
+    {
+     "id": "prismatic",
+     "label": "The Bowl Still Whole",
+     "flag": "The_Bowl_Still_Whole",
+     "state": "set",
+     "requires": "Astral Smear Dash catches the ash-porridge bowl inside a 1.5 s window while Crono is at 60% (window opened by a perfect parry on the Crack-Slide); pays the Debt but keeps both leans; grants Bekkler's Guilt and the first Prismatic point"
+    }
+   ],
+   "notes": "Vaelos: —you remember how to catch—"
+  }
+ ],
+ "drops": [
+  "tungsten_wire_loom_bracer"
+ ],
+ "flags": {
+  "Prologue_Fall": [
+   "Teach_Her_To_Land",
+   "Hold_The_Copy_Together"
   ],
-  "branches": [
-    {"id": "prologue_fall", "after_phase": "atrium_fracture", "options": [
-      {"id": "light", "label": "Teach Her To Land", "flag": "Prologue_Fall", "state": "Teach_Her_To_Land", "requires": "catch Sera gently; no extra Debt; Crono's integrity holds at 60"},
-      {"id": "dark", "label": "Hold The Copy Together", "flag": "Prologue_Fall", "state": "Hold_The_Copy_Together", "requires": "hide the crack, break the door with [SWORD]; integrity drops to 40, the inner doll face shows, Vaelos's whispers +15% frequent, Sera gains a Dark lean (U1 sumi-e dodge)"},
-      {"id": "prismatic", "label": "The Bowl Still Whole", "flag": "The_Bowl_Still_Whole", "state": "set", "requires": "Astral Smear Dash catches the ash-porridge bowl inside a 1.5 s window while Crono is at 60% (window opened by a perfect parry on the Crack-Slide); pays the Debt but keeps both leans; grants Bekkler's Guilt and the first Prismatic point"}
-    ], "notes": "Vaelos: —you remember how to catch—"}
-  ],
-  "drops": ["tungsten_wire_loom_bracer"],
-  "flags": {"Prologue_Fall": ["Teach_Her_To_Land", "Hold_The_Copy_Together"], "The_Bowl_Still_Whole": ["set"]},
-  "notes": "Prologue boss. Lv 3, HP 2,400. The house trying to keep its dolls safe. Party: Crono, Sera, Marle (guest). Plates in this fight are keyed to their own material: a [SWORD] plate falls to [SWORD] hits, a [LIGHT] plate to [LIGHT] hits (Marle's Ward). The tag of the plate that falls last is the Break Signature. Top-level tags are inferred (R-66Y frame, light-casting ring); the bible gives no tag column for this boss. HP windows per phase are not given and are split evenly. Drop: Tungsten Wire Loom Bracer (Break damage bonus after a shield Break)."
+  "The_Bowl_Still_Whole": [
+   "set"
+  ]
+ },
+ "notes": "Prologue boss. Lv 3, HP 2,400. The house trying to keep its dolls safe. Party: Crono, Sera, Marle (guest). Plates in this fight are keyed to their own material: a [SWORD] plate falls to [SWORD] hits, a [LIGHT] plate to [LIGHT] hits (Marle's Ward). The tag of the plate that falls last is the Break Signature. Top-level tags are inferred (R-66Y frame, light-casting ring); the bible gives no tag column for this boss. HP windows per phase are not given and are split evenly. Drop: Tungsten Wire Loom Bracer (Break damage bonus after a shield Break)."
 }

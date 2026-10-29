@@ -420,7 +420,11 @@ static func _steal_from(c: BattleCoordinator, glenn: Node, target: Node, boost: 
 
 ## Enemy actions with a named effect.
 static func apply_enemy_effect(c: BattleCoordinator, enemy: Node, action: Dictionary, hit_list: Array) -> void:
-	match String(action.get("effect", "")):
+	var eff: String = String(action.get("effect", ""))
+	if eff.begins_with("summon:"):
+		c.request_summon(StringName(eff.trim_prefix("summon:")), int(action.get("count", 2)), enemy)
+		return
+	match eff:
 		"bell_slow":
 			for u in c.party:
 				var sc := StatusComponent.of(u)

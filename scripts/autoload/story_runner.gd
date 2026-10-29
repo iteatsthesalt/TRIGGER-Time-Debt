@@ -20,6 +20,7 @@ var auto_advance_s: float = -1.0
 var auto_choice: int = -1
 var skip_waits: bool = false
 var _battle_waiting: bool = false
+var _depth: int = 0
 var _history: Array[Dictionary] = []
 var _vars: Dictionary = {}
 
@@ -37,15 +38,20 @@ func is_running() -> bool:
 	return running
 
 
-## Run a script by id (from Data.dialogue) or an inline array of commands.
+## Run a script by id (from Data.dialogue) or an inline array of commands. A script may start while
+## another is waiting on a battle (a boss phase beat): it runs nested and the outer one resumes after.
 func run(id: StringName, inline: Array = []) -> void:
-	if running:
+	if running and not _battle_waiting:
 		push_warning("Story: script %s requested while %s is running" % [id, current_id])
 		return
 	var cmds: Array = inline if not inline.is_empty() else Data.dialogue_script(id)
 	if cmds.is_empty():
 		push_warning("Story: empty script %s" % id)
 		return
+	var nested: bool = running
+	var outer_id: StringName = current_id
+	var outer_waiting: bool = _battle_waiting
+	_depth += 1
 	running = true
 	current_id = id
 	script_started.emit(id)
@@ -68,9 +74,14 @@ func run(id: StringName, inline: Array = []) -> void:
 			else:
 				push_warning("Story: unknown label %s" % jump)
 	box.hide_box()
-	running = false
+	_depth -= 1
 	script_finished.emit(id)
-	current_id = &""
+	if nested:
+		current_id = outer_id
+		_battle_waiting = outer_waiting
+	else:
+		running = false
+		current_id = &""
 
 
 func _exec(cmd: Dictionary) -> String:

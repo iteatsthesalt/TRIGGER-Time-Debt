@@ -264,8 +264,24 @@ func _on_story_battle(encounter_id: StringName, cmd: Dictionary) -> void:
 		a.global_position = leader_pos + Vector3(4.0 + float(idx % 3) * 1.6, 0.0, -2.0 + float(idx / 3) * 2.0)
 		enemies.append(a)
 		idx += 1
+	var boss_id: String = String(cmd.get("boss_id", ""))
+	var music: String = String(enc.get("music", ""))
+	if boss_id != "" and Data.bosses.has(StringName(boss_id)):
+		var bdef: BossDef = BossDef.from_dict(Data.bosses[StringName(boss_id)])
+		var b: CombatActor = BossController.create_boss_actor(bdef)
+		if int(cmd.get("boss_hp", 0)) > 0:  # tests and tuning runs
+			b.stats.base_max_hp = int(cmd["boss_hp"])
+			b.stats.reset_vitals()
+		add_child(b)
+		var at: Variant = get_marker(StringName(String(cmd.get("at", "")))) if cmd.has("at") else null
+		b.global_position = at if at != null else leader_pos + Vector3(5.0, 0.0, -1.0)
+		enemies.push_front(b)
+		if music == "":
+			music = String(cmd.get("music", "mus_boss_%s" % boss_id))
 	var center: Vector3 = leader_pos + Vector3(2.5, 0.0, 0.0)
-	start_battle(enemies, center, {"advantage": String(cmd.get("advantage", "normal")), "boss": bool(cmd.get("boss", false)), "music": enc.get("music", ""), "story": true, "boss_id": String(cmd.get("boss_id", ""))}, null)
+	if cmd.has("center") and get_marker(StringName(String(cmd["center"]))) != null:
+		center = get_marker(StringName(String(cmd["center"])))
+	start_battle(enemies, center, {"advantage": String(cmd.get("advantage", "normal")), "boss": bool(cmd.get("boss", boss_id != "")), "music": music, "story": true, "boss_id": boss_id}, null)
 
 
 func start_battle(enemies: Array, center: Vector3, config: Dictionary, zone: EncounterZone) -> void:

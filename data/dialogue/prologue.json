@@ -134,9 +134,8 @@
     {"say": "[DOLLHOUSE SEAL ENGAGED. THE CRADLE CANNOT BE DAMAGED UNTIL A DOLL PAYS.]", "who": "robo", "style": "robo"},
     {"say": "Sera, grey and standing, looks at the string of light between their chests.", "who": "narrator"},
     {"say": "Papa. I think I can make the next one cheaper. I don't know how I know that.", "who": "sera", "portrait": "hurt"},
-    {"caption": "[Sera learns FALL BREAK: the ally's next Time Debt cost is halved. Crono pays 5% of his integrity to open the Seal. Permanently.]"},
+    {"caption": "[Sera learns FALL BREAK: the ally's next Time Debt cost is halved. The Seal opens only for payment: choose PAY TIME DEBT from Crono's deck. It costs 5% of his integrity. Permanently.]"},
     {"learn": "fall_break", "who": "sera"},
-    {"integrity": -5},
     {"end": true}
   ],
 

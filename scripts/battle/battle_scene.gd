@@ -30,6 +30,8 @@ var preview_mesh: MeshInstance3D
 var config: Dictionary = {}
 var _ended: bool = false
 var _flash: ColorRect
+var boss: BossController
+var input_blocked: bool = false
 static var _plane_shader: Shader
 static var _aoe_shader: Shader
 
@@ -82,6 +84,7 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 	coordinator.boost_used.connect(_on_boost_used)
 	coordinator.sera_phase_changed.connect(_on_sera_phase)
 	coordinator.unit_moved.connect(_on_unit_moved)
+	coordinator.summon_requested.connect(_on_summon_requested)
 	var music: String = String(cfg.get("music", ""))
 	if music != "":
 		Audio.play_music(StringName(music), 0.6)
@@ -99,6 +102,14 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 		e.face_toward(center + Vector3(0, 0, 4))
 	coordinator.flow_speed = float(Game.settings.get("flow_speed", 1.0))
 	coordinator.start_battle(party, enemies, center, start_cfg)
+	for e in enemies:
+		if e.has_meta("boss_id") and boss == null:
+			var bdef: BossDef = BossDef.from_dict(Data.bosses.get(StringName(String(e.get_meta("boss_id"))), {}))
+			if bdef.phase_count() > 0:
+				boss = BossController.new()
+				boss.name = "Boss"
+				add_child(boss)
+				boss.setup(self, coordinator, e, bdef)
 	var tw := create_tween()
 	tw.tween_property(plane_mat, "shader_parameter/reveal", 1.0, 0.6)
 
@@ -201,6 +212,8 @@ func _open_main_deck() -> void:
 		if coordinator.can_spare(e):
 			spareable = true
 	items.append({"label": "Spare", "cmd": "spare", "enabled": spareable})
+	if boss != null and boss.is_sealed() and actor.time_debt != null:
+		items.append({"label": "Pay Time Debt (5%% integrity, now %d)" % roundi(Game.crono_integrity), "cmd": "pay_debt"})
 	if not coordinator.is_boss_battle:
 		items.append({"label": "Withdraw", "cmd": "withdraw"})
 	hud.open_deck(actor.stats.display_name, items)
@@ -254,6 +267,21 @@ func _on_deck_command(cmd: String, payload: Dictionary) -> void:
 				_open_main_deck()
 			else:
 				_after_command()
+		"pay_debt":
+			# The first permanent cost (Prologue): 5% of Crono's ceiling opens the Dollhouse Seal. A free action.
+			hud.close_deck()
+			actor.time_debt.pay_integrity(5.0)
+			Game.set_integrity(actor.time_debt.integrity)
+			actor.set_porcelain_visuals()
+			if boss != null:
+				boss.set_sealed(false)
+			Flags.add_counter(&"debts_paid", 1)
+			Audio.play_sfx("porcelain/crack_small")
+			hud.spawn_number(actor.global_position, "−5% ceiling", Color(0.8, 0.85, 1.0), true)
+			hud.show_message("Paid. The Seal opens by exactly as much as he gives it.")
+			if Flags.has(&"The_Bowl_Still_Whole"):
+				_gold_shatter(actor.global_position)
+			_open_main_deck()
 		"back":
 			_open_main_deck()
 
@@ -395,8 +423,37 @@ func _after_command() -> void:
 	hud.update_plates({}, _party_blind(), null)
 
 
+## Mid-battle story beats close the deck and swallow input; when they end the open window is re-offered.
+func set_input_blocked(on: bool) -> void:
+	input_blocked = on
+	if on:
+		hud.close_deck()
+		hud.set_targeting(false)
+		(preview_mesh.mesh as ImmediateMesh).clear_surfaces()
+		mode = Mode.NONE
+	elif coordinator != null and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and coordinator.active_actor != null:
+		_on_command_requested(coordinator.active_actor)
+
+
+func _on_summon_requested(key: StringName, count: int, near: Node) -> void:
+	if boss != null:
+		return  # the boss controller places its own adds
+	var edef: EnemyDef = Data.enemy(key)
+	if edef == null:
+		return
+	for k in count:
+		var a: CombatActor = CombatActor.create_enemy(edef, -1, "_sum%d" % (randi() % 10000))
+		get_parent().add_child(a)
+		var base: Vector3 = coordinator.position_of(near) if near != null else center
+		var ang: float = randf() * TAU
+		a.global_position = base + Vector3(cos(ang), 0.0, sin(ang)) * (1.6 + 0.4 * float(k))
+		enemies.append(a)
+		coordinator.add_enemy(a, edef)
+		hud.register_enemy(a)
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if _ended or coordinator == null or coordinator.state != BattleCoordinator.State.COMMAND_WAIT or auto:
+	if _ended or coordinator == null or coordinator.state != BattleCoordinator.State.COMMAND_WAIT or auto or input_blocked or Story.is_running():
 		return
 	match mode:
 		Mode.DECK, Mode.TECHS, Mode.ITEMS:
@@ -454,7 +511,7 @@ func _process(delta: float) -> void:
 		var wu: Dictionary = coordinator.wind_ups[e]
 		var t: float = 1.0 - float(wu["left"]) / maxf(0.01, float(wu["total"]))
 		(telegraphs[e].material_override as ShaderMaterial).set_shader_parameter("boost_ratio", t)
-	if auto and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and actor != null:
+	if auto and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and actor != null and not input_blocked and not coordinator.paused:
 		auto_timer -= delta
 		if auto_timer <= 0.0:
 			_auto_act()
@@ -463,6 +520,9 @@ func _process(delta: float) -> void:
 func _auto_act() -> void:
 	var living: Array = coordinator.living_enemies()
 	if living.is_empty():
+		return
+	if boss != null and boss.is_sealed() and actor.time_debt != null:
+		_on_deck_command("pay_debt", {})
 		return
 	var t: Node = living[randi() % living.size()]
 	var techs: Array[TechDef] = coordinator.available_techs(actor).filter(func(x: TechDef) -> bool: return x.is_attack and x.target in ["enemy", "point"] and x.effect == &"")

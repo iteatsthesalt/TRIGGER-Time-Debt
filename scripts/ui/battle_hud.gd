@@ -156,6 +156,28 @@ func register_units(party: Array, enemies: Array, hover: Node = null) -> void:
 		_add_party_row(hover, true)
 
 
+## A turn-bar marker for an enemy that joined after the battle began (summons, adds).
+func register_enemy(u: Node) -> void:
+	if turn_markers.has(u):
+		return
+	var st := CombatantStats.of(u)
+	var m := Panel.new()
+	m.custom_minimum_size = Vector2(14, 14)
+	m.size = Vector2(14, 14)
+	var sb := _frame(Color(0.35, 0.2, 0.2), Color(0.9, 0.5, 0.4))
+	sb.set_content_margin_all(0)
+	m.add_theme_stylebox_override("panel", sb)
+	var l := Label.new()
+	l.text = String(st.actor_id).left(2).to_upper() if st != null else "?"
+	l.add_theme_font_size_override("font_size", 7)
+	l.add_theme_color_override("font_color", CREAM)
+	l.position = Vector2(1, 1)
+	m.add_child(l)
+	turn_bar.add_child(m)
+	turn_markers[u] = m
+	ensure_plate(u)
+
+
 func _actor_colour(st: CombatantStats) -> Color:
 	if st == null:
 		return DARK
@@ -369,7 +391,7 @@ func _build_deck() -> void:
 
 ## items: [{label, cmd, payload, enabled}]
 func open_deck(title: String, items: Array) -> void:
-	deck_items = items
+	deck_items.assign(items)
 	for b in deck_buttons:
 		b.queue_free()
 	deck_buttons.clear()

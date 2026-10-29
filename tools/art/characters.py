@@ -89,7 +89,7 @@ CHARACTERS = {
         "accessories": ["cape"],
         "weapon": None,
     },
-    "robo_boy": {  # Vaelos as the boy in the Atrium (Act 2); Crono's colours, no gear.
+    "vaelos_boy": {  # Vaelos as the boy in the Atrium (Act 2); Crono's colours, no gear.
         "id": "vaelos_boy", "group": "npcs", "canvas": "u0", "fps": 60, "height": 80, "build": 0.85, "age": "child",
         "hair": "spiky",
         "palette": {

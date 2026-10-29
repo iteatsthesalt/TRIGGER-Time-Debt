@@ -58,6 +58,8 @@ func run() -> void:
 		test_save_roundtrip,
 		test_story_runner_inline_script,
 		test_prologue_scripts_reachable,
+		test_boss_defs_validate_and_phase_windows,
+		test_coordinator_add_enemy_and_undamageable,
 	]
 	for t in tests:
 		_current = t.get_method()
@@ -1073,3 +1075,55 @@ func test_prologue_scripts_reachable() -> void:
 				for o in cmd["choice"]:
 					if o.has("goto") and not labels.has(String(o["goto"])):
 						check(false, "%s: missing label %s" % [id, o["goto"]])
+
+
+func test_boss_defs_validate_and_phase_windows() -> void:
+	check(Data.bosses.size() >= 31, "31 bosses loaded (got %d)" % Data.bosses.size())
+	var problems: int = 0
+	for id in Data.bosses.keys():
+		var b: BossDef = BossDef.from_dict(Data.bosses[id])
+		var errs: PackedStringArray = b.validation_errors()
+		if not errs.is_empty():
+			problems += 1
+			print("    boss %s: %s" % [id, ", ".join(errs)])
+		for i in b.phase_count():
+			var pdef: EnemyDef = b.phase_def(i)
+			check(pdef.hp_override == b.hp and pdef.kind == "boss", "%s phase %d carries the boss HP pool" % [id, i])
+	check_eq(problems, 0, "every boss file validates")
+	var cradle: BossDef = BossDef.from_dict(Data.bosses[&"atrium_cradle"])
+	check_eq(cradle.phase_count(), 3, "the Cradle has three phases")
+	check_eq(cradle.phase_for_ratio(1.0), 0, "full HP is phase 1")
+	check_eq(cradle.phase_for_ratio(0.5), 1, "50% is the Dollhouse Seal")
+	check_eq(cradle.phase_for_ratio(0.1), 2, "10% is the Atrium Fracture")
+	check_eq(cradle.phase_def(0).keyed_plates.size(), 4, "phase 1 has four keyed plates")
+	check(cradle.phase_def(1).weak.has(&"TACHYON") and cradle.phase_def(1).weak.has(&"LIGHT"), "phase 2 weak to TACHYON and LIGHT")
+	var actor: CombatActor = BossController.create_boss_actor(cradle)
+	_track(actor)
+	check_eq(actor.stats.max_hp(), 2400, "boss actor has the 2,400 HP pool")
+	check(actor.has_meta("boss_id"), "boss actor is tagged for the battle scene")
+
+
+func test_coordinator_add_enemy_and_undamageable() -> void:
+	var c := _coord(11)
+	var crono := _party_member(&"crono", 10, Vector3(0, 0, 3))
+	var e1 := _enemy(&"e1", 5, Vector3(0, 0, -2), 1, [])
+	_start(c, [crono], [e1])
+	var u: Node = _advance_until_actor(c, &"crono")
+	check(u != null, "crono gets a window")
+	var e2 := _enemy(&"e2", 5, Vector3(2, 0, -2), 1, [])
+	c.add_enemy(e2, null)
+	check(c.enemies.has(e2) and c.gauges.has(e2), "a mid-battle enemy joins with a gauge")
+	c.undamageable.append(e2)
+	var hp_before: int = CombatantStats.of(e2).hp
+	c.cmd_attack(u, e2, 0)
+	check_eq(CombatantStats.of(e2).hp, hp_before, "a sealed enemy takes no HP damage")
+	c.undamageable.clear()
+	var u2: Node = _advance_until_actor(c, &"crono")
+	if u2 != null:
+		c.cmd_attack(u2, e2, 0)
+		check(CombatantStats.of(e2).hp < hp_before, "and takes damage once the seal lifts")
+	c.paused = true
+	var t0: float = c.battle_time
+	c.advance(1.0)
+	check_eq(c.battle_time, t0, "a paused coordinator does not advance")
+	c.paused = false

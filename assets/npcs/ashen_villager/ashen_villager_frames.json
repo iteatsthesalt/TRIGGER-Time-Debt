@@ -1,0 +1,97 @@
+{
+ "cell": 128,
+ "mirror_w": false,
+ "fps": 24,
+ "anims": {
+  "idle": {
+   "col": 0,
+   "count": 4,
+   "fps": 4,
+   "loop": true
+  },
+  "walk": {
+   "col": 4,
+   "count": 6,
+   "fps": 9,
+   "loop": true
+  },
+  "run": {
+   "col": 10,
+   "count": 6,
+   "fps": 12,
+   "loop": true
+  },
+  "interact": {
+   "col": 16,
+   "count": 3,
+   "fps": 6,
+   "loop": false
+  },
+  "emote": {
+   "col": 19,
+   "count": 4,
+   "fps": 4,
+   "loop": false
+  },
+  "ready": {
+   "col": 23,
+   "count": 4,
+   "fps": 4,
+   "loop": true
+  },
+  "attack": {
+   "col": 27,
+   "count": 6,
+   "fps": 14,
+   "loop": false
+  },
+  "charge": {
+   "col": 33,
+   "count": 4,
+   "fps": 6,
+   "loop": true
+  },
+  "release": {
+   "col": 37,
+   "count": 6,
+   "fps": 12,
+   "loop": false
+  },
+  "hurt": {
+   "col": 43,
+   "count": 3,
+   "fps": 10,
+   "loop": false
+  },
+  "ko": {
+   "col": 46,
+   "count": 6,
+   "fps": 8,
+   "loop": false
+  },
+  "revive": {
+   "col": 52,
+   "count": 5,
+   "fps": 8,
+   "loop": false
+  },
+  "victory": {
+   "col": 57,
+   "count": 6,
+   "fps": 8,
+   "loop": false
+  },
+  "break": {
+   "col": 63,
+   "count": 1,
+   "fps": 1,
+   "loop": false
+  },
+  "death": {
+   "col": 64,
+   "count": 6,
+   "fps": 8,
+   "loop": false
+  }
+ }
+}

@@ -2,51 +2,55 @@
 
 The hand-off between runs. Keep it honest: what exists, what is verified, what is next, what is broken.
 
-## State on 2026-10-29 (run 1, foundation)
+## State on 2026-10-29 (run 1, continued: the Prologue plays end to end)
+
+### How to run and check
+- `source tools/setup_godot.sh` (Godot 4.7.2 on PATH). `bash tools/check.sh` = import, parse-all, unit tests (423 checks), data lint, visual smoke with captures; `--no-visual` for headless only.
+- Boot args (all scenes): `--scene=<id>`, `--spawn=<marker>`, `--checkpoint=<id>`, `--party=a,b,c`, `--chapter=<n>`, `--integrity=<n>`, `--level=<n>`, `--flag=Name:State`, `--say=text`, `--autobattle`.
+- Probes (headless): `godot --headless --path . --script res://tools/build/prologue_probe.gd -- --autobattle` plays the whole Prologue (breakfast → gate → Cradle → courtyard → Atrium) and prints `PROBE_END ok=true`; `tools/build/battle_probe.gd -- --scene=test_arena --autobattle --boss=<id> --party=crono,sera,marle --level=4 --boss_hp=500` drives one boss; `tools/build/walk_probe.gd`, `ui_probe.gd`, `curves_probe.gd` are small diagnostics.
+- Captures: `bash tools/capture/render.sh <scene_id> <prefix> [frames] [args]` → `/tmp/captures/`. Software Vulkan runs at ~2 fps; keep captures under 600 frames. Scene demo args: `--demo=cradle` (kitchen, checkpoint `prologue_gate_open`) walks into the hall.
 
 ### What exists and is verified
-- **Project** at the repo root: `project.godot` (Godot 4.7.2, Forward+, 640×360 UI base with integer scaling, input map, physics 60 Hz), eight autoloads, folder layout (`scenes/ scripts/ data/ assets/ audio/ shaders/ tests/ tools/ docs/`).
-- **Autoloads:** `Data` (JSON registry + validation), `Flags` (Possibility Engine: flags, Light/Dark/Prismatic, Beckons, Amber Rifts, leans, ending qualification), `Game` (roster, party, inventory, integrity, debt, chapter, settings), `Saves` (JSON slots), `Universe` (canvas weights, fps table, 0.8 s blend), `Audio` (buses, music stems, SFX pools, RTPCs, tape stop), `Router` (locations with fade), `Story` (JSON cutscene/dialogue runner with a code-built dialogue box and Crono's three-choice wheel).
-- **Combat core** (`scripts/combat/`): tags, constants sheet, stat curves (Combat Laws §15), `CombatantStats`, `ShieldComponent` (shave law, keyed plates, belief plates, regenerating/refill/shield-only rules, lock → rebuild → resume timers on battle time, Break Signature), `StatusComponent` (seconds/turn durations, stacks, periodic ticks, all modifiers), `TimeDebtComponent` (three HP layers, crack states, Reinforced, interest), `SolidityComponent` (debt, thresholds, Causal Collapse, voluntary tracking), `BoostBank` (shared pool, caps, owed BP), `TechDef`/`EnemyDef` (from JSON, validated), `DamagePipeline` (§6.4 in full), `TacticalPositioner` (all shapes analytic, blockers, snap), `EnemyBrain`, `BattleFields` (residual fields, Canvas Clash conversions), `TechEffects` (Rewind, HOLD, Borrowed Future, Fall Break, Time Debt Seal, Bekkler's Guilt, Astral Field, Shogun's Command, gourd, Ruin Purge, Eclipse X-Strike, Tachyon Needle, Ward, Mercury Pulse, Wire Loom Mend, NULL strip and more), and `BattleCoordinator` (battle_time clock, Sync Hold at 99.0, Ready Pool, Duals/Triples from the pool, Guard/Ens Parry, Swap, Spare, Withdraw, enemy wind-ups, Break cover, Prometheus Core, Oil-Blight, rewards, defeat = −5 integrity).
-- **Tests:** `tests/run_tests.gd` → `tests/suite_core.gd`: **302 checks pass** headless, including the §18.7 acceptance checks (shave law, Lv3 bonus, keyed plates, Break timing 3.0 s + 18%/s + 0.4 s, HOLD, damage states 1.0/1.3/2.0/2.6, worked examples §6.5, falloff, ASTRAL displacement, positioner coverage and cover, BP caps, Crono ceiling and floor, crack states, Sera thresholds and phase-out, hairline rewind tax, parry, wind-ups, victory/XP/spare, defeat, Prometheus Core, Oil-Blight, Borrowed Future, Duals from the Ready Pool, data validation, flags/affinity/Beckons, save round trip, story runner branching).
-- **Data:** techs for Crono, Sera, Krona, Marle and early Duals; all 11 U0 enemies (E23–E30, E01, E03, E04) with actions; character kits; 80 flag definitions across all universes; universes table; items; U0 encounters; the Prologue scripts (`data/dialogue/prologue.json`).
-- **Tooling:** `tools/check.sh` (import, parse-all, tests, data lint, smoke boot with captures), `tools/build/parse_all.gd`, `tools/build/lint_data.py`, `tools/capture/smoke.gd`.
-- **Docs:** `docs/DECISIONS.md`, `docs/QUESTIONS_FOR_NICH.md`.
+- **Project**: Forward+, UI canvas 640×360 with integer scaling (window 1280×720), eight autoloads (`Data`, `Flags`, `Game`, `Saves`, `Universe`, `Audio`, `Router`, `Story`). Main scene `scenes/boot/boot.tscn` → title.
+- **Combat core** (`scripts/combat/`, 423 headless checks): every Combat Laws system from the previous hand-off plus `BossDef` (phases → per-phase `EnemyDef`), coordinator `paused`, `add_enemy`, `undamageable` (seals), `summon:<key>` enemy effects, XP overrides.
+- **Boss framework**: `scripts/battle/boss_controller.gd` watches the HP pool, swaps shield/tags/actions per phase, runs the phase's `script` (a dialogue id in the boss JSON) with the clock stopped and input blocked, spawns `adds` per phase (capped by `max_adds`), hands events to an optional director `scripts/battle/bosses/<id>.gd` (`on_setup/on_phase/on_break/on_parry/on_action/on_tick/on_defeat/on_summon`), applies `drops`. Story battles: `{"battle": "<encounter or empty>", "boss_id": "...", "at": "<marker>", "center": "<marker>", "music": ..., "on_win"/"on_lose"}`. Story scripts can nest (`{"run": "<script>"}` and phase scripts while a battle waits).
+- **Atrium Cradle** (`data/bosses/atrium_cradle.json`, `scripts/battle/bosses/atrium_cradle.gd`): three phases, keyed plates, Break Signature (LIGHT holds the crack / SWORD-FIRE widens it −3 integrity), Dollhouse Seal paid from Crono's deck (PAY TIME DEBT, 5% integrity, free action), Shardling adds, U7 gold-leaf swap on Break in phase 3, perfect parry on Crack-Slide → 1.5 s Prismatic window → Astral Smear Dash grants The Bowl Still Whole. Retuned to Lv 2 / 1,200 HP (see DECISIONS).
+- **Data**: 123 techs (all §11), 11 character kits, 82 enemies (all codices U0–U9), 31 bosses (`data/bosses/`), 71 encounters, 80 flags, items, universes, dialogue for the Prologue and the Chapter 1 hub. `docs/reports/enemy_codex_report.md` lists every judgement call and every mechanic that is notes-only.
+- **Field layer**: `Location` base (world, lights, camera rig, party spawn, markers, zones, interactables, `add_npc` → `FieldNPC`, `add_cast` (a CombatActor standing in the scene before joining), `rebuild_party`, `add_ink_puddle` (24 fps Chronoslip residue + U1 leak), `add_door`, story battles, defeat handling with story-battle revive), `EncounterZone`, `Interactable`, `PlayerController`, `PartyFollow`, `CombatActor`, `ActorSprite`, `SpriteLibrary`, `HD2DWorld` (compositor + `set_leak(universe, amount)`), `HD2DCameraRig`.
+- **Scenes**: `scenes/ui/title.tscn` (New Game / Continue / Options / Quit; backdrop is plate-00 for now), `scenes/u0/guardia_kitchen.tscn` (kitchen + hall, breakfast cutscene with `stir_ritual` / `first_chronoslip` / `sera_collapses` / `after_fall`, three-way fall choice, Fracture Gate, hall encounters, Cradle trigger, exit), `scenes/u0/guardia_courtyard.tscn` (rain, Glenn and Magus, Epoch gauntlet, gate to Truce), `scenes/u0/atrium_horologe.tscn` (first hub: round brass hall, dais and clock pillar with turning hands and 72 BPM vines, pool, Seed pot, workbench with the little Bekkler doll, gramophone, dummy plinth, loft, eight gates lit when `Gate_U<n>_Open`, Robo rest/save/galaxy, arrival script), `scenes/test/diorama.tscn`, `scenes/test/arena.tscn` (`--encounter=`, `--boss=`, `--boss_hp=`).
+- **Checkpoints** (`Game.checkpoint`): `prologue_kitchen` → `prologue_breakfast_done` → `prologue_gate_open` → `prologue_cradle_done` → `atrium_arrival` → `atrium_hub`. Saves to slot 0 at each.
+- **Art**: `tools/art/spritegen.py` + `tools/art/characters.py` (paper-doll rig, chibi HD-2D proportions, 4 directions × 70 columns, per-canvas finish; asymmetric west view keeps Crono's gauntlet on his right arm; ~10 s per character). Sheets exist for crono, sera, krona (U1 sumi finish), marle, glenn_marshall, magus, vaelos_boy, villager_m/f, child, guard, elder, merchant, ashen_villager, ashen_soldier. Portraits from the catalog for the main cast. Textures in `assets/textures/`.
+- **Audio** (`audio/`, 95 MB, built by `python3 tools/audio/build_all.py`): title, Guardia morning, Wind Scene 1024 (box/piano/wind/tick + debt variants), Truce 1024, Fair, battle core U0/U1, Cradle boss, Vaelos, Sera, U1 morning, Krona duel, transit, stings; SFX families ui/combat/porcelain/weapons/magic/footsteps/time/status/creatures; beds amb_u0/amb_u1/amb_transit. Loudness-normalised, loop points in the `.import` sidecars. Stem tracks have no base `.ogg` on purpose. `docs/reports/audio_build_report.md` has the table.
+- **Outputs**: screenshots in `/mnt/session/outputs/screenshots/`.
 
-### Not yet built
-- No scenes beyond `boot.tscn` (the title and locations are registered in `Router` but their `.tscn` files do not exist yet).
-- No rendering pipeline (compositor), sprites, environments, VFX, UI HUD, audio files.
-- No field controller, actors, encounter zones, battle presentation.
-
-## The plan (whole game, in priority order)
-
-### A. Foundation (this run)
-1. ✅ Project, autoloads, combat core, tests, check.sh.
-2. ▶ HD-2D proof: compositor canvas stack (paper, grade, edge, VHS), lit diorama scene with a crisp billboard sprite, porcelain shader; `scenes/test/diorama.tscn`; screenshots in `/mnt/session/outputs/`.
-3. Field layer: `CombatActor` (CharacterBody3D) with components, `ActorSprite` (quad + `sprite_canvas.gdshader`, SpriteFrames from sheets at the canvas rate), player controller, party follow, HD-2D camera rig (32° explore, 24° truth), interactables, encounter zones, the battle bootstrap (28×28 plane over terrain, dissolve), battle HUD (Turn Bar, shield plates with preview math, command deck, Boost pips, Sera's ring, telegraph decals, damage numbers).
-4. Asset generators: `tools/art/pixel.py` helpers; a paper-doll pixel sprite generator (128 px cells, 4 directions, idle/walk/battle columns, per-canvas treatment); portraits from the catalog paintings (key_out → 512 PRT); texture generators (paper, stone, moss, wood); Blender kit builder for U0 (castle kitchen, courtyard, Atrium interior, Truce square); UI frame/icon generator; `tools/audio/` (music box, drones, SFX families, MIDI → FluidSynth tracks).
-5. Vertical slice: Prologue (kitchen, stir ritual, first slip, the choice, gate, Atrium Cradle boss, courtyard) → Chapter 1 (Atrium hub: Robo, fountain, 999 dummy, Seed, Glenn, hearth choice; Fair: chase, Bekkler's tent, Telepod, Vaelos) → Chapter 2 opening (bamboo grove duel, Pagoda fracture, Kuro-Truce, Krona joins, Eclipse X-Strike).
-
-### B. Main game
-6. Chapter 2 remainder (Iron Bridges and Ens Parry, karma loop, Goyama, Ashen Daimyo, Cobalt Nodachi, Mammon Furnace, Weeping Shogun) + Interlude Day 1.
-7. Chapter 3 U2 (Slag-Yards, Porcelain Weaver, Cassia, Spine-Highway, three roads, Arris Dome, Geno-Foundry, R-66Y with the Possibility Branch) + Interlude Day 2.
-8. Chapter 4 U3 (Mycelia Floor, Xyloph, Mid-City, Canopy, Azar) + Day 3.
-9. Chapter 5 U4 (Baptistery, Nave, Library, Vesper, caustic puzzles, Central Eye, Schala Shadow Weaver, Dreaming Moon) + Day 4.
-10. Chapter 6 U5 (the 22-minute loop, Ringmaster, Pierrot-Glenn, Hall of Mirrors, Cyrus) + Day 5.
-11. Chapter 7 U6 (CRT shrine, Static, Oracle, clinic, tuning, Neon Bloom, Isolator) + Day 6.
-12. Chapter 8 U7 (Root Approach, shrines, lotus ponds, Gold Leaf repair, Kami-Ori, Omega-Spekkio's Dojo) + Day 7.
-13. Chapter 9 U8 (Navel String, Gallery, Cradle, Vaelos: Which Father) and the ending gate.
-14. Endings 1–4 (Golden Light, Empress Heir, Vaelos Child, Borrowed Future), New Game+ carry-overs.
-15. Side quests (Ch15: Seed of Doan, Bekkler doll, Glenn's arm, Crown/Klein/Robo's heart), Possibility Codex (Ch14), Director Commentary (Ch16), Endings 5–8.
-16. Polish, balance, accessibility (reduced flicker, captions, auto Sync Hold), performance; exports for Linux, Windows, web into `/mnt/session/outputs/`.
+### Verified visually this run
+Kitchen with the party and the dialogue box, title screen, hall with placeholder enemies, generated sprites lit with shadows in the arena. The Cradle fight itself has only been verified headless (probe) and by the HUD capture from the arena earlier.
 
 ## Next steps (start here)
-1. Build the compositor canvas stack and the diorama proof scene; capture and look at the screenshot.
-2. Build the field layer and the battle scene (`scenes/battle/`), with a sandbox encounter that plays end to end with the HUD.
-3. Sprite generator + Crono/Sera/Marle/Robo sprites and portraits; U0 kitchen kit; run the Prologue.
-4. Spawn subagents for: full tech library JSON from Combat Laws §11; enemy codex JSON for U1–U8 from §13; audio families (music box, SFX) under `tools/audio/`.
+1. **Chapter 1 beats in the Atrium** (Story Bible §6 Ch1): loft wake + crack check (focus), the nightmare + Rewind tutorial (a scripted mini-battle or a field verb), Father Tank window, 999 Shard Doll boss (`data/bosses/shard_doll_999.json` exists; needs a director: fake belief plates, three-doll split at 20%, Spared/Salvaged/DollMeetsDoll flags, `Pushing Sera to 40%`), Krona's ink footprints (`Ink Path`), Seed of Doan watering (counter `seed_waters`), Glenn's honour check, midnight hearth choice (`Crono_Confession` tell/hide), the Fair trigger.
+2. **Leene Square and the Fair** (`scenes/u0/leene_square.tscn`): crowds (villager sprites), chestnut vendors, Bekkler's tent (`Bekkler_Confessed`), Telepod pavilion, the chase, rift-spawn battle from seven universes, Vaelos descent (needs a Vaelos sprite: tall alabaster, fibre-optic mane), the leap into the seam → `bamboo_grove`.
+3. **Chapter 2 opening**: `scenes/u1/bamboo_grove.tscn` (ink canvas), Krona duel (`krona_duel.json`), Pagoda fracture, Kuro-Truce, Krona joins (`recruit`), Eclipse X-Strike. Then the rest of Chapter 2.
+4. **Enemy and boss art**: a code-drawn enemy sprite generator (Dust Mote Cluster, Porcelain Shardling, Ashen Spoon, Vaelos Echo, Bellkeeper, Moss-Mouse, Bekkler Fragment, Ferro-Drone, Cradle, Shard Doll) — everything is a grey placeholder blob now.
+5. **Environment quality pass** for U0: flagstone/plank textures at 64 px/m with proper grout (the current stone reads as cracked mud), hearth fire particles, props (pots with handles, dishes), Blender kit for arches/columns/the Robo pillar face. Replace the title backdrop with our own Atrium render.
+6. **Battle presentation**: verify the Cradle fight visually; boss name/phase banner; Pay Time Debt moment VFX; Sorrowful Blue 12 fps step; the Sera ring on the HUD; a save/load + party menu (Tab).
+7. Fonts (Reference Bible §7.6), icon set (§7.4), theme.
+8. Keep `docs/DECISIONS.md` and `docs/QUESTIONS_FOR_NICH.md` current.
 
 ## Known issues
-- `project.godot` points `run/main_scene` at `scenes/boot/boot.tscn`, which routes to `title` (not yet built): the boot logs a warning and idles.
-- `Audio` and `Story` build their UI from code; the theme is a stub (`assets/ui/theme.tres`), fonts are the engine default until the pixel/text fonts are generated.
-- Shared plates (`shared_owner`) and Break-immune-until conditions are implemented in `ShieldComponent` but not yet exercised by a boss.
+- Enemies and bosses are placeholder blobs (`SpriteLibrary.placeholder`); the Cradle and the Shard Doll especially need art.
+- Autobattle AI (used by probes) never heals, so probe losses overstate difficulty; still, defeat costs −5 integrity each retry, which can drain a Prologue (probe ended at 29–50 integrity). Consider a story-battle exemption or a floor during the Prologue.
+- The floor textures read as cracked mud at diorama distance; the kitchen lights are flat; the hearth has no fire.
+- A faint rectangle shows inside the dialogue box bottom-right (some child control's default style); harmless, not yet traced.
+- Title backdrop uses design plate-00 (temporary).
+- U1 ink grade does not exempt Crono's watercolour (bible: only crimson and Crono keep colour).
+- Pierrot-Glenn portrait crop is wrong (shows Cyrus's ghost). `knows_tech` kits for crono/sera/krona list few duals/triples (data/characters) — add them before Chapter 2.
+- Audio: tracks were composed blind; a listening pass is needed. Not rendered yet: fair chase stem, boss phase clips, Truce tine variants.
+- Boss JSON mechanics marked notes-only in `docs/reports/enemy_codex_report.md` (conjunction weaknesses, untargetable sub-targets, battle-time heal timers) need code when their chapters are built.
+- `ObjectDB instances leaked` warnings at the end of probe scripts (scripts quit mid-scene); harmless.
+
+## The plan (whole game, in priority order)
+A. Foundation ✅ project, autoloads, combat core, tests, check.sh, HD-2D proof, field layer, battle scene, sprite generator, audio toolchain, boss framework, Prologue.
+B. Vertical slice ▶ Chapter 1 hub beats + Fair, Chapter 2 opening through Krona joining, with enemy art and U0/U1 environment kits.
+C. Chapters 2–9 in order, each with its bosses (directors), side content, Sera interludes, music per universe.
+D. Endings 1–8, New Game+, Possibility Codex (Ch14), side quests (Ch15), Director Commentary (Ch16).
+E. Polish, balance, accessibility (reduced flicker, captions, auto Sync Hold), performance; exports for Linux, Windows and web into `/mnt/session/outputs/`.

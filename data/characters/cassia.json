@@ -1,0 +1,30 @@
+{
+  "id": "cassia", "name": "Cassia-09", "element": "FERRO", "home_universe": 2, "canvas_fps": 12, "archetype": "tank",
+  "weapon": {"name": "Gramophone Horn", "tags": ["SOUND", "FERRO"], "hits": 1}, "move_range": 5.0,
+  "vulnerable": ["VOLT", "RUIN"], "resistant": ["FERRO"],
+  "sprite": "cassia", "height_m": 1.9,
+  "techs": [
+    {"id": "gramophone_resonance", "unlock": {"on_join": true}},
+    {"id": "ferro_graviton", "unlock": {"on_join": true}},
+    {"id": "mercury_pulse", "unlock": {"on_join": true}},
+    {"id": "wire_loom_mend", "unlock": {"on_join": true}},
+    {"id": "sound_ring", "unlock": {"on_join": true}},
+    {"id": "prometheus_overload", "unlock": {"chapter": 3}},
+    {"id": "gatling_arm", "unlock": {"flag": "R66Y_Salvaged"}},
+    {"id": "solar_railgun", "unlock": {"on_join": true}},
+    {"id": "iron_maiden_scroll", "unlock": {"on_join": true}},
+    {"id": "time_mines", "unlock": {"on_join": true}},
+    {"id": "reinforced_guard", "unlock": {"flag": "Arris_Dome_Sleeping"}},
+    {"id": "ferro_null", "unlock": {"flag": "Dark_40"}},
+    {"id": "empress_cannon", "unlock": {"flag": "R66Y_Salvaged"}},
+    {"id": "spore_rail", "unlock": {"chapter": 4}},
+    {"id": "prismlight_salvo", "unlock": {"chapter": 5}},
+    {"id": "graviton_whiteout", "unlock": {"chapter": 7}},
+    {"id": "ashtear_paradox", "unlock": {"on_join": true}},
+    {"id": "ashtear_paradox_family", "unlock": {"flag": "Lucca_Consent_Asked"}},
+    {"id": "first_light_fragment_i", "unlock": {"chapter": 4}},
+    {"id": "carnival_of_souls", "unlock": {"chapter": 6}},
+    {"id": "promise_across_rust", "unlock": {"flag": "Seed_of_Doan_Grown"}}
+  ],
+  "passives": ["porcelain_audit", "ferric_rattle"]
+}

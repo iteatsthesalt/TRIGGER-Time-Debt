@@ -1,0 +1,22 @@
+{
+  "id": "xyloph", "name": "Xyloph", "element": "MYCELIA", "home_universe": 3, "canvas_fps": 30, "archetype": "balanced",
+  "weapon": {"name": "Talons and Wing Gusts", "tags": ["SAURIA", "WIND"], "hits": 2}, "move_range": 6.0,
+  "vulnerable": ["FIRE", "RUIN"], "resistant": ["WIND", "MYCELIA"],
+  "sprite": "xyloph", "height_m": 2.2,
+  "techs": [
+    {"id": "mycelia_tether", "unlock": {"on_join": true}},
+    {"id": "photosynthetic_burst", "unlock": {"on_join": true}},
+    {"id": "dew_lance", "unlock": {"on_join": true}},
+    {"id": "core_lattice", "unlock": {"on_join": true}},
+    {"id": "divinity_field", "unlock": {"flag": "Azar_Predator"}},
+    {"id": "reptite_crown", "unlock": {"flag": "Azar_Scholar"}},
+    {"id": "solar_winds", "unlock": {"on_join": true}},
+    {"id": "triangulation", "unlock": {"on_join": true}},
+    {"id": "spore_rail", "unlock": {"on_join": true}},
+    {"id": "mycelia_time_lapse", "unlock": {"on_join": true}},
+    {"id": "bloom_crown", "unlock": {"chapter": 5}},
+    {"id": "first_light_fragment_i", "unlock": {"on_join": true}},
+    {"id": "first_light_that_never_was", "unlock": {"chapter": 6}}
+  ],
+  "passives": ["thermal_glide", "core_lattice", "panspermia"]
+}

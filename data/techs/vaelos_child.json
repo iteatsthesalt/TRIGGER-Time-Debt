@@ -1,0 +1,7 @@
+{
+  "techs": [
+    {"id": "kintsugi_mend", "name": "Kintsugi Mend", "tier": "single", "actors": ["vaelos_child"], "tags": ["AURA", "FERRO", "VITREOUS"], "shape": "SINGLE", "target": "ally", "heal": 1.0, "costs": {"vaelos_child": {"mp": 6}}, "effect": "kintsugi_mend", "unlock": {"chapter": 12}, "notes": "Ending 3 (Ch12). Restores HP and max-HP ceiling with a gold fill. On Crono: +2 integrity once per battle; can mend a PEAK crack."},
+    {"id": "porcelain_memory", "name": "Porcelain Memory", "tier": "single", "actors": ["vaelos_child"], "tags": ["NULL_LEARNING"], "shape": "SINGLE", "hits": 1, "power": 0.5, "uses": "ELEMENTAL", "costs": {"vaelos_child": {"mp": 4}}, "effect": "porcelain_memory", "unlock": {"chapter": 12}, "notes": "Ending 3 (Ch12). Shape: copies the last party shape used (written as SINGLE until the engine supports shape copying). Adds the weakness tag he is holding to everything it touches."},
+    {"id": "null_spoon_hold", "name": "Null Spoon HOLD", "tier": "single", "actors": ["vaelos_child"], "tags": ["NULL_LEARNING"], "shape": "SINGLE", "hits": 1, "power": 0.1, "uses": "ELEMENTAL", "costs": {"vaelos_child": {"mp": 3}}, "effect": "null_spoon_hold", "unlock": {"chapter": 12}, "notes": "Ending 3 (Ch12). 0.1 power (no damage). He steadies the spoon instead of swinging it: places a weakness tag he has learned on the target for 2 turns. It counts as real for shaving and for the 2.0x multiplier."}
+  ]
+}

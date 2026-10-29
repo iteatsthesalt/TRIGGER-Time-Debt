@@ -1,0 +1,8 @@
+{
+  "techs": [
+    {"id": "null_omega", "name": "NULL", "tier": "single", "actors": ["omega"], "tags": ["NULL"], "shape": "CIRCLE", "radius": 3.0, "target": "point", "effect": "null_strip", "costs": {"omega": {"mp": 8}}, "unlock": {"chapter": 8}, "notes": "Joins (Ch8). Strip tags, resistances and buffs for 2 turns (allies in the circle too). On a weaknessless target, create one fake weakness from the 42-entry pool for 2 turns."},
+    {"id": "miura_fold", "name": "Miura Fold", "tier": "single", "actors": ["omega"], "tags": ["NULL", "FOLD"], "shape": "SINGLE", "effect": "miura_fold", "costs": {"omega": {"mp": 10}}, "unlock": {"chapter": 8}, "notes": "Two enemies. The two share one HP pool for 2 turns; on the snap, everything dealt to the pool is split back between them as true damage."},
+    {"id": "lotus_reverse", "name": "Lotus Reverse", "tier": "single", "actors": ["omega"], "tags": ["NULL", "AURA"], "shape": "SINGLE", "target": "ally", "effect": "lotus_reverse", "costs": {"omega": {"mp": 14}}, "unlock": {"chapter": 8}, "notes": "Unfolds an ally 3 s back: cancels a KO from the last 3 s, refunds MP spent in them, cleanses; leaves a paper decoy that draws one enemy action."},
+    {"id": "gold_leaf_severance", "name": "Gold Leaf Severance", "tier": "ultimate", "actors": ["omega"], "tags": ["NULL"], "shape": "BATTLEFIELD", "target": "point", "power": 0.0, "costs": {}, "effect": "gold_leaf_severance", "unlock": {"chapter": 8}, "notes": "Costs 3-5 Gold Leaf stacks (no engine cost key; the effect must check them). Cuts the timeline into a one-turn washi pocket where only NULL exists: every enemy is TRUE NULL and every party hit deals true damage. Vaelos is locked out (his next action is skipped)."}
+  ]
+}

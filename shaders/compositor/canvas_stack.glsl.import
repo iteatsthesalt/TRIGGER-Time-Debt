@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://2ahkcb5260v4"
+path="res://.godot/imported/canvas_stack.glsl-6461e3f5ec251d021482eae80f22153e.res"
+
+[deps]
+
+source_file="res://shaders/compositor/canvas_stack.glsl"
+dest_files=["res://.godot/imported/canvas_stack.glsl-6461e3f5ec251d021482eae80f22153e.res"]
+
+[params]
+

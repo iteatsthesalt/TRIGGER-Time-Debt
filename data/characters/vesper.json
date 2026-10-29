@@ -1,0 +1,29 @@
+{
+  "id": "vesper", "name": "Vesper", "element": "VITREOUS", "home_universe": 4, "canvas_fps": 60, "archetype": "balanced",
+  "weapon": {"name": "Rose-Window Lance", "tags": ["PIERCING", "VITREOUS"], "hits": 2}, "move_range": 5.0,
+  "vulnerable": ["BLUNT", "FERRO"], "resistant": ["VITREOUS", "LIGHT"],
+  "sprite": "vesper", "height_m": 1.95,
+  "techs": [
+    {"id": "lily_lancets", "unlock": {"on_join": true}},
+    {"id": "cathedral_ray", "unlock": {"on_join": true}},
+    {"id": "vitreous_prism", "unlock": {"on_join": true}},
+    {"id": "baptistery", "unlock": {"on_join": true}},
+    {"id": "prism_guard", "unlock": {"on_join": true}},
+    {"id": "rose_window", "unlock": {"level": 38}},
+    {"id": "prism_refraction", "unlock": {"level": 40}},
+    {"id": "fractured_lens", "unlock": {"flag": "Central_Eye_Broken"}},
+    {"id": "vitreous_refraction", "unlock": {"on_join": true}},
+    {"id": "refraction_needle", "unlock": {"on_join": true}},
+    {"id": "chrono_prism", "unlock": {"on_join": true}},
+    {"id": "prismlight_salvo", "unlock": {"on_join": true}},
+    {"id": "ash_graveyard", "unlock": {"on_join": true}},
+    {"id": "bloom_crown", "unlock": {"on_join": true}},
+    {"id": "masque_feint", "unlock": {"chapter": 6}},
+    {"id": "mercy_leap", "unlock": {"chapter": 6}},
+    {"id": "anachronism_glass", "unlock": {"chapter": 7}},
+    {"id": "first_light_that_never_was", "unlock": {"chapter": 6}},
+    {"id": "carnival_of_souls", "unlock": {"chapter": 6}},
+    {"id": "washi_hollow_rebirth", "unlock": {"flag": "Kami_Ori_Wounds_Kept"}}
+  ],
+  "passives": ["fractured_lens_tell", "prism_split"]
+}

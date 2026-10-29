@@ -1065,7 +1065,7 @@ Sera, in her cage, is carried through the seam. On Vaelos's side the Fracture lo
 **Choices, flags and affinity.**
 - **Arris_Dome Sleeping** (Light +30) / **Incinerated** (Dark +25): see the roads. Incinerated also keeps the Grief drain on for the whole dungeon and locks the Robo's Ribbon quest.
 - **R-66Y Rewound** (Light +30): the Sera clone is rescued and later grows into the hub's fast-travel clone; the Seed of Doan side quest continues; the child R-66Y teaches Wire Loom Mend; the **Robo's Ribbon** sub-quest opens back in the 1024 clocktower; Cassia keeps her centaur body and her climb.
-- **R-66Y Salvaged** (Dark +25): the Laser Cannon and the permanent Dual Tech **Omega Annihilation**; Cassia is rebuilt bipedal and loses her climb; Lucca fades; Azar will lose faith in the party in U3.
+- **R-66Y Salvaged** (Dark +25): the Laser Cannon and the permanent Dual Tech **Empress Cannon** (Krona fires it braced on Cassia's new frame); Cassia is rebuilt bipedal and loses her climb; Lucca fades; Azar will lose faith in the party in U3.
 - **Amber Rift** (Prismatic +15): the Paradox road and the secret phase.
 - **Lucca's consent** (asked / forced) and **Extract / Keep Integrated** for Cassia.
 - **Mother_Brain Sleep / Overclock**: overclocking her burns a hundred years of the future for power (Dark +25).
@@ -1149,7 +1149,7 @@ Sera lands alone in a small boat on the black water outside the Drowned Cathedra
 8. **The first chosen crack.** Vesper cracks on purpose for the first time, and fur and starlight show through his glass.
 9. **The Schala Shadow Weaver** (boss).
 10. **Accepted.** Crono opens his crack in front of the cathedral. Schala's voice, from the reflection in Vesper's chest: **"Oh, we are the same."** It is the first place in the game where Crono is seen cracked and accepted, and it unlocks his confession in U7.
-11. **The Dreaming Moon.** The cathedral's great stained-glass moon sleeps above the nave. Leave it asleep, or detonate its core to warp onward.
+11. **The Dreaming Moon.** The cathedral's great stained-glass moon sleeps above the nave. Leave it asleep, or detonate its core to warp onward. Its chamber holds an optional fight: the **Glass Matriarch**, Schala's Reflection, a glass Arch-Curator that wears her portrait.
 
 **Dialogue.**
 > **SERA:** Papa you're leaking.
@@ -1178,7 +1178,7 @@ Sera lands alone in a small boat on the black water outside the Drowned Cathedra
 **Choices, flags and affinity.**
 - **Central_Eye Broken** (Light, "Shatter the Perfect Window", +15): Schala is freed; Vesper's Fractured Lens opens; Sera's HOLD lengthens; the cathedral fills with air, the crush ends and the choir's filter opens to a pure sound.
 - **Central_Eye Polished** (Dark, "Preserve Eternity", +15): the cage stays; Vesper's Prism Guard holds more stacks but he never cracks — Crono's hiding, mirrored; the Weaver gains 25% more shields and skips her Mercy phase; a Grief-Resonance hum never stops.
-- **Weave It Anew** (Prismatic, +10): align all seven colours, including a secret shard carried from U3, while Crono's galaxy is deliberately open at 20%. Both cracked and whole. Unlocks the triple **Chrono Prism** (Vesper + Crono + Schala) and reveals the conduit linking Cassia's amber tank across U2, U4 and U6 — a fragment of First Light That Never Was.
+- **Weave It Anew** (Prismatic, +10): align all seven colours, including a secret shard carried from U3, while Crono's galaxy is deliberately open at 20%. Both cracked and whole. Unlocks **Chrono Prism** (Vesper + Crono, with the Schala-cat in the light) and reveals the conduit linking Cassia's amber tank across U2, U4 and U6 — a fragment of First Light That Never Was.
 - **Moon_Sleep** (Light +30): the cathedral stays intact and its heal fountain becomes a Divinity Field. **Moon_Shatter** (Dark +25): detonate the core for warp; the moon becomes a low-gravity debris dungeon of prismatic shards, the Divinity Field turns to Ruin Decay, and U4's enemies gain the NULL tag.
 - **The Lamplighter's shard** of Crono's face: keep it, and Vaelos's whispers follow the party into U5 and U6.
 - High affinities reach forward: on the Light path Vesper's glass will never yellow, and in U7 Schala will repair one of Crono's cracks with gold leaf (10% of his debt forgiven); on the Dark path Vesper's armour turns opaque and the final arena is two metres of darkness with no caustics; on the Prismatic path, with the shards kept, Vaelos speaks for the first time with real hurt — "You keep breaking windows I built to keep us warm" — and the cat hisses, because he is afraid of being seen cracked.
@@ -1353,7 +1353,7 @@ If love comes from a copy, is it real? In U7 Crono stops asking. He isn't standi
 - The Heart stays sealed until one of these three is set.
 - **Kirie_100** and **Seventh_Arm_Defeated**; **Fossil Preserved / Shattered**; **Gold_Leaf_Bridge / Bone**.
 
-**Rewards and techs.** The **NULL** element for the party — it costs Sera 5% translucency or Crono 2% glaze, and it erases rather than damages. **Origami Requiem** (Crono + Omega-Spekkio, or Kami-Ori's crane before he joins — Crono's watercolour dash along a fold line folds an enemy's past away and leaves a gold field that thaws Ruin). **Time Debt Paid** (Sera + Crono — a large heal that clears all Erosion and, on the Light path, revives once per battle; it costs Crono 10% in cracks, repaired by kintsugi; for a moment it restores the original Crono's memory). **Washi-Hollow Rebirth** (a triple, Wounds_Kept only). Omega-Spekkio and his Dojo rewards: the NULL Shield, **Miura Fold**, **Lotus Reverse**, **Gold Leaf Severance**.
+**Rewards and techs.** The **NULL** element for the party — it costs Sera 5% translucency or Crono 2% glaze, and it erases rather than damages. **Origami Requiem** (Crono + Sera carrying Kami-Ori's paper crane, or Crono + Omega-Spekkio once he joins — Crono's watercolour dash along a fold line folds an enemy's past away and leaves a gold field that thaws Ruin). **Time Debt Paid** (Sera + Crono — a large heal that clears all Erosion and, on the Light path, revives once per battle; it costs Crono 10% in cracks, repaired by kintsugi; for a moment it restores the original Crono's memory). **Washi-Hollow Rebirth** (a triple, Wounds_Kept only). Omega-Spekkio and his Dojo rewards: the NULL Shield, **Miura Fold**, **Lotus Reverse**, **Gold Leaf Severance**.
 
 **Exit hook.** A filament of the original atoms runs from the Tree's marrow down into something that drank the Tree.
 
@@ -1423,7 +1423,7 @@ Affinity is never shown as a number. The player reads it in the art: Light pulls
 | 2 | Empress Heir | Dark ≥ 90, Light < 40 | R-66Y_Salvaged; Arris_Dome_Incinerated; Azar_Predator. Usually Vaelos_Father Rejected and Time_Egg_Well Fed | U7, the Bone-Tree corrupted |
 | 3 | Vaelos Child | Prismatic ≥ 45, Light ≥ 45, Dark ≥ 45 | At least three Amber Rifts; The Bowl Still Whole; Spoon_Taught; Kami_Ori_Paradox_Child; Vaelos_Father Both | U7 as a playground |
 | 4 | Borrowed Future (True) | Light ≥ 90, Dark ≥ 90, Prismatic ≥ 45 | Sera_Phase Voluntary_40 in the Heart, after at least one earlier voluntary phase-out; a native-style Token Duplicate given to Crono during it; Crono_Porcelain Kintsugi_Pris; Arris_Dome_Sleeping, R-66Y_Rewound, Seed_of_Doan_Grown; Kami_Ori_Wounds_Kept; Crono enters the Heart's last phase at 20% | U9, the Borrowed Future |
-| 5 | Porcelain Silence | Dark ≥ 90, Light < 40, Prismatic < 45 | Porcelain stress held at 100 from U3 through U4 with no repair of any kind; Bekkler_Confessed never set; Cassia never allowed to mend him; Grief_Embraced | The Atrium as a museum |
+| 5 | Porcelain Silence | Dark ≥ 90, Light < 40, Prismatic < 45 | Porcelain stress held at 100 from U3 through U4 with no repair of any kind; Bekkler_Confessed never set; Cassia never allowed to mend him; Grief_Embraced; at least one Atrium Siege lived through (Atrium_Siege) | The Atrium as a museum |
 | 6 | Mycelia Bloom | Light ≥ 60, Dark < 40, Prismatic 60–75 | Arris_Dome_Sleeping, R-66Y_Rewound, Azar_Scholar, Moon_Sleep, Seed_of_Doan_Grown (at full growth); Mycelia Tether mastery (GLOBAL_POOL_01) | The Atrium's heart, then everywhere |
 | 7 | Ashen Jester | Light ≥ 90, Dark ≥ 90 | Glenn_HoseArm_Accepted; Bekkler_Doll_Repaired; Carnival_Completed; Laugh_Track_Resisted; Thread_Cutting_Mastery | The carnival beneath the Atrium |
 | 8 | Null Erasure | Light < 10, Dark = 0, Prismatic < 20 | NULL mastery (Sera, NULL 10); 100 Kirie Scales; Seventh_Arm_Defeated; Blank_Slate used (Wounds_Kept = False); every weakness erased in the Possibility Codex (TRUE NULL) | U9, the White Atrium Void |
@@ -1832,7 +1832,7 @@ The engine collapses doors.
 | Ashinaga | Ch2 | Rested / Ripped (Dark +25) | Rested keeps U1's ink parry; Ripped gives a Lavos-fibre weapon and a Ruin field, and masks weep oil for good |
 | Masamune | Ch2–3 | Reforged / Shattered | Reforged with Atropos-00's ribbon into the Cobalt Nodachi upgrade; shattered for its chitin |
 | Arris_Dome | Ch3 | Sleeping (Light +30) / Incinerated (Dark +25) | Sleeping: the Core behind the Doan gate, the Seed alive. Incinerated: orange sky forever, the Core free, vendors as charcoal outlines at a guilt markup, the Ribbon and the Seed lost. Ending 2 needs Incinerated; Endings 1, 4, 6 need Sleeping |
-| R-66Y | Ch3 | Rewound (Light +30) / Salvaged (Dark +25) | Rewound: the child teacher, a Scholar shop (88 BPM), the clone, the Ribbon. Salvaged: the Laser Cannon, Omega Annihilation, a Ferro Forge shop (104 BPM), Cassia bipedal, Azar's lost faith |
+| R-66Y | Ch3 | Rewound (Light +30) / Salvaged (Dark +25) | Rewound: the child teacher, a Scholar shop (88 BPM), the clone, the Ribbon. Salvaged: the Laser Cannon, the Empress Cannon Dual Tech, a Ferro Forge shop (104 BPM), Cassia bipedal, Azar's lost faith |
 | Mother_Brain | Ch3 | Sleep / Overclock (Dark +25) | Overclock burns a hundred years of the future; Sleep adds her harmony to Ending 3's lullaby |
 | Lucca_Consent | Ch3, Ch15 | Asked / Forced | Synergy or Resentment; forcing a Salvage is Dark +25 |
 | Cassia | Ch3 onward | Keep_Integrated / Extract | "We," or Lucca's Last Schematic |
@@ -1890,6 +1890,7 @@ The engine collapses doors.
 | Spoon_Taught | Interludes | Set | Four or more spoon lessons; Ending 3 |
 | Sera_Mama_Whisper | Any phase-out | Heard / Missed | — |
 | Crono_Armor | Ch9, Codex | Fell / Kept | The pauldron falls on a Golden bake |
+| Atrium_Siege | Any chapter | A count | Each time Crono's integrity reaches 0% and the party survives Vaelos's siege of the Atrium; Ending 5 needs at least one |
 
 Ending flags set by the endings themselves are listed under each ending in [Section 7](#7-endings).
 
@@ -2046,5 +2047,6 @@ How the sources were reconciled.
 | Ending 3 | A permanent "ninth slot"; a twenty-foot Vaelos; a 78 BPM music box | The bonus tenth member in New Game+; nine feet; 72 BPM |
 | Truncated source passages | Empress Vaelos's later phases; the Golden tech list; U5's roster; Ch15's final boss phases | Completed briefly from V2 material and in the spirit of the chapter |
 | Codex list | Flags filed under the wrong universe; a fixed count of 47 | Re-homed to where they happen; "forty-seven on a thorough run" |
-| Origami Requiem | Crono + Kami-Ori, who is not playable | Crono + Omega-Spekkio, Kami-Ori's crane standing in before he joins |
+| Origami Requiem | Crono + Kami-Ori, who is not playable | Crono + Sera carrying Kami-Ori's crane; Crono + Omega-Spekkio once he joins |
+| Omega Annihilation | The original story's R-66Y Salvage reward for Krona; FINAL's Sera + Static Dual Tech | The Sera + Static Dual keeps the name; the Salvage gives the Laser Cannon and its Dual Tech, Empress Cannon (Krona + Cassia) |
 | Gaps filled | — | Sera's seven interludes and the spoon lessons; the eight sigils; the small Bekkler doll's origin; the Ash Ringmaster as Ozzie; Static's card 「イヤ」; the Pipe Overload's place in the hub; the Porcelain Crown ceremony |

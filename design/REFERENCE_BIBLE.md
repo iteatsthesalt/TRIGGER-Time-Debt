@@ -1430,8 +1430,8 @@ Weapons appear in four places: the character sheets, a 256 detail sprite for men
 
 #### 5.5.14 Lavos-Grafted Laser Cannon — `equipment_lavos_grafted_laser_cannon`
 
-- **Make:** the cannon Krona rips from R-66Y on the Salvage path. It unlocks Omega Annihilation; Johnny's forge on the ruthless path sells copies.
-- **Specs:** PRP-S at 256, U2 clay at 12 fps, Lavos fibre wrapping a gatling barrel, oil weeping. Files `assets/items/lavos_laser_cannon.png`.
+- **Make:** the cannon Krona rips from R-66Y on the Salvage path. It unlocks the Dual Tech **Empress Cannon**, which Krona fires braced on Cassia-09's bipedal frame; Johnny's forge on the ruthless path sells copies.
+- **Specs:** PRP-S at 256, U2 clay at 12 fps, Lavos fibre wrapping a gatling barrel, oil weeping. Files `assets/items/lavos_laser_cannon.png`. The Empress Cannon tech VFX is an 18 m beam of red Lavos fibre and black oil with a 12 fps clay recoil through Cassia's frame and sumi-e sparks off Krona's sleeves: `vfx/dual/empress_cannon.tscn`.
 - **Prompt:** `a heavy laser-gatling cannon torn from a giant robot, brass barrels wrapped in red Lavos muscle fibre, black oil weeping from the joints, stop-motion claymation photographed under a hard key light, visible thumbprints, brass and ash, flat #00FF00 background`
 - **Check:** it reads as the same barrel as the Arch-Curator's arms.
 - **Anchor:** enemy_arch_curator_r_66y.
@@ -1936,11 +1936,11 @@ Each VFX brief gives the effect, its canvas and rate, and its pieces (flipbooks 
 
 #### 5.8.14 Omega Annihilation — `vfx_omega_annihilation`
 
-- **Make:** the Dual Tech unlocked by the Lavos-Grafted Laser Cannon: tachyon flicker plus white-noise cancellation, a causal collapse. Total mute and a chime.
-- **Specs:** a full-screen white-noise cancel shader (one cel frame, then white) and a cannon beam VFX-P. Files `vfx/dual/omega_annihilation.tscn`.
-- **Prompt:** `a laser beam wrapped in violet tachyon ghosts and white static erasing everything it touches into blank white, a cel-anime flare`
+- **Make:** Sera and Static's Dual Tech: tachyon flicker plus white-noise cancellation, a causal collapse that silences a boss's ultimate and rewinds its wind-up. Total mute and a chime.
+- **Specs:** a full-screen white-noise cancel shader (one cel frame, then white) over a 5 m ring of violet tachyon ghosts collapsing inward (VFX-P). Files `vfx/dual/omega_annihilation.tscn`.
+- **Prompt:** `violet tachyon ghosts and white television static collapsing inward to one silent point, erasing everything they touch into blank white, a cel-anime flare`
 - **Check:** the reduced-flicker version replaces the noise with a steady white fade.
-- **Anchor:** equipment_magnetic_tape_reel_whip; enemy_arch_curator_r_66y.
+- **Anchor:** playable_sera; playable_static; equipment_magnetic_tape_reel_whip.
 
 #### 5.8.15 VHS Static Fog — `vfx_vhs_static_fog`
 
@@ -2869,7 +2869,7 @@ One row per asset the full game needs. Spec codes are in §1.4, canvases in §3,
 | enm_u0_dust_mote_cluster | Enemy | U0 | Orbiting motes repeating the porridge stir | ENM-S 60 | plate-06 | VS |
 | enm_u0_porcelain_shardling | Enemy | U0 | Porcelain shards that mimic Crono's idle | ENM-S 60 | plate-06 | VS |
 | enm_u0_ashen_spoon | Enemy | U0/U1 | A sumi brush-stroke spoon creature, 24 fps judder | ENM-S 24 | plate-02 | VS |
-| enm_u0_training_dummy_prime | Mini-boss | U0 | Bekkler doll with thoracic ring; splits into three dolls | BOS 256 | plate-05 | VS |
+| enm_u0_training_dummy_prime | Boss | U0 | The 999 Shard Doll, Chapter 1's tutorial boss: Bekkler doll with thoracic ring; splits into three dolls | BOS 256 | plate-05 | VS |
 | enm_u0_moss_mouse | Enemy | U0 | Small mossy mouse | ENM-S 60 | plate-06 | VS |
 | enm_u0_bekkler_fragment | Enemy | U0/U5 | Rubber-hose doll piece stretching 300% | ENM-S 12 drawings | playable_pierrot_glenn | VS |
 | enm_u0_ashen_echo_krona | Enemy | U0/U1 | Sumi echo of Krona with a dry-brush cape | ENM-S 24 | plate-02 | VS |
@@ -2893,6 +2893,7 @@ One row per asset the full game needs. Spec codes are in §1.4, canvases in §3,
 | enm_u2_porcelain_knight_squire | Enemy | U2 | Shield-wall knight that kneels on Break | ENM-S 12 | enemy_weeping_porcelain_citizen_husks | MG |
 | enm_u2_mercury_leaker | Enemy | U2 | Orb-bellied leaker of mercury pools | ENM-S 12 | plate-04 | MG |
 | enm_u2_loom_bracer_rook | Enemy | U2 | Elite wire-whipper | ENM-M 12 | equipment_tesla_loom | MG |
+| enm_u2_cassia_pattern_patrol | Enemy | U2 | Ferrous porcelain spider on Cassia-09's chassis pattern, gramophone horn | ENM-M 12 | plate-04 | MG |
 | enm_u2_mother_of_threads | Mini-boss | U2 | Three-phase mini-boss with Lucca's amber core | BOS 256 | plate-04 | MG |
 | enm_u3_nestling | Enemy | U3 | Feathered chick that steals Shared | ENM-S 30 | plate-03 | MG |
 | enm_u3_gene_scribe | Enemy | U3 | Writes FAILED ink fields | ENM-S 30 | plate-07 | MG |
@@ -2966,7 +2967,8 @@ One row per asset the full game needs. Spec codes are in §1.4, canvases in §3,
 | bos_u3_azar | Boss | U3 | Divinity Warden, four phases plus the secret phase | BOS 256 | plate-07 | MG |
 | bos_u3_mycelia_matriarch | Boss | U3 | Spore Mother cracking to gold leaf | BOS 512 | vfx_mycelia_spores | MG |
 | bos_u4_schala_shadow_weaver | Boss | U4 | Woven portrait, then the giant shadow cat | BOS 512 | plate-11 | MG |
-| bos_u4_arch_curator_glass | Boss | U4 | Glass variant of masks and organ pipes | BOS 512 | plate-05 | MG |
+| bos_u4_arch_curator_glass | Boss | U4 | The Arch-Curator Echo (mid-boss): glass variant of masks and organ pipes | BOS 512 | plate-05 | MG |
+| bos_u4_glass_matriarch | Boss | U4 | Schala's Reflection, the optional Moon-chamber boss: the glass Arch-Curator rebuilt with Schala's portrait and an oil-syringe chest | BOS 512 | plate-11 | MG |
 | bos_u4_leviathan_low_tide | Boss | U4 | Three-phase leviathan in the collapsing nave | BOS 768 | plate-11 | MG |
 | bos_u5_cyrus_marionettist | Boss | U5 | Marionettist, Ash-Knight, self-puppet, mercy | BOS 512 | playable_pierrot_glenn | MG |
 | bos_u6_juvenile_lavos_matriarch | Boss | U6 | Thirty-foot amber-glass chrysalis of cables | BOS 768 | plate-08 | MG |
@@ -3157,7 +3159,8 @@ One row per asset the full game needs. Spec codes are in §1.4, canvases in §3,
 | vfx_iron_maiden_scroll | VFX | U1/U2 | Flatten to scroll, then shred | Shader, VFX-P | equipment_tesla_loom | MG |
 | vfx_ashtear_paradox | VFX | MIX | Singularity Big Bang in three materials | Shader, VFX-P | vfx_astral_ink_to_gold_burn | MG |
 | vfx_rewind_2300 | VFX | U2 | Clay rotting off in reverse to golden Robo | Shader | enemy_arch_curator_r_66y | MG |
-| vfx_omega_annihilation | VFX | MIX | Noise cancellation beam | Shader, VFX-P | enemy_arch_curator_r_66y | MG |
+| vfx_omega_annihilation | VFX | MIX | Tachyon ghosts collapsing into white-noise silence | Shader, VFX-P | playable_static | MG |
+| vfx_empress_cannon | VFX | U1/U2 | Lavos-fibre cannon beam braced on Cassia | VFX-P 12 | enemy_arch_curator_r_66y | MG |
 | vfx_prometheus_core | VFX | U2 | Revive star flash; relic ultimate melt | VFX-F 12 | npc_robo_clocktower | MG |
 | vfx_mycelia_tether | VFX | U3 | Nodes, tubes, 1.5 s pulse | VFX-P 30 | vfx_mycelia_spores | MG |
 | vfx_photosynthetic_burst | VFX | U3 | Wing fold, hold, ligne burst | VFX-F 30 | plate-03 | MG |
@@ -3187,6 +3190,20 @@ One row per asset the full game needs. Spec codes are in §1.4, canvases in §3,
 | vfx_dual_set_b | VFX | MIX | Masque Feint, Prismlight Salvo, Guilt Halo, Tachyon Static, Ash Graveyard, Mycelia Time-Lapse, Ferro Null, Ruin Elastic, Refraction Needle, Graviton Whiteout, Bloom Crown | VFX-P each | Each actor's sheet | MG |
 | vfx_dual_set_c | VFX | MIX | Fake Family Photo, Origami Requiem, Time Debt Paid, Ashen Bash, Mercy Leap, Chrono Prism, Anachronism Glass | VFX-P each | Each actor's sheet | MG |
 | vfx_triple_set | VFX | MIX | Delta Storm, Washi-Hollow Rebirth, Promise Across Rust | VFX-P each | Each actor's sheet | MG |
+| vfx_dual_set_d | VFX | MIX | Reinforced Guard, Time Mines, Triangulation, Vitreous Refraction, Honest Stage, Solar Railgun + HZ | VFX-P each | Each actor's sheet | MG |
+| vfx_triple_set_b | VFX | MIX | Chrono Laugh, Family Porcelain — All Three Fathers | VFX-P each | Each actor's sheet | MG |
+| vfx_crono_set | VFX | U0 | Time Slice, Time Debt Seal, Bekkler's Guilt | VFX-P 60 each | playable_crono | VS |
+| vfx_crono_set_late | VFX | U0 | Astral Field, Luminaire, Unborrowed Time | VFX-P 60 each | playable_crono | MG |
+| vfx_sera_set | VFX | MIX | Fall Break, Rewind Reel, Slip Backtrack, HZ Static (Pure), Borrowed Future — True | VFX-P each | playable_sera | MG |
+| vfx_krona_set | VFX | U1 | Cinnabar Flare, Shogun's Command, Crimson Seppuku That Failed | VFX-F 24 each | playable_krona | VS |
+| vfx_cassia_set | VFX | U2 | Gramophone Resonance, Ferro Graviton, Gatling Arm, Prometheus Overload | VFX-P 12 each | plate-04 | MG |
+| vfx_xyloph_set | VFX | U3 | Dew Lance, Core Lattice | VFX-P 30 each | playable_xyloph | MG |
+| vfx_vesper_set | VFX | U4 | Cathedral Ray, Prism Refraction, Baptistery | VFX-P 12 each | playable_vesper | MG |
+| vfx_glenn_set | VFX | U5 | Sleight of Arm, Guile Elastic, Swap Face, Prop Hammer, Balloon Escape, Honest Laugh, Prop Cannon | VFX-F 12 each | playable_pierrot_glenn | MG |
+| vfx_static_set | VFX | U6 | HZ Static | VFX-P 15 | playable_static | MG |
+| vfx_omega_spekkio_set | VFX | U7 | Miura Fold, Gold Leaf Severance | VFX-F 24 each | playable_omega_spekkio | MG |
+| vfx_marle_set | VFX | U0 | Light Bolt, Ward, Vitreous Arrow, Porcelain Promise | VFX-P 60 each | npc_marle | VS |
+| vfx_vaelos_child_set | VFX | U7/U8 | Kintsugi Mend, Porcelain Memory, Null Spoon HOLD, Porcelain Promise Child, Fake Family Photo Real, First Light — Child Variant | VFX-P each | enemy_vaelos | PG |
 | vfx_status_set | VFX | All | VHS fog, mercury, grief, ruin, oil-blight loops | VFX-P | ui_party_status_icons | VS |
 | vfx_hazard_set | VFX | All | Ink blot, ash inhale, pollen haze, crush-dark, conductivity, neon bloom | VFX-P | Each universe's plate | MG |
 | vfx_divinity_field | VFX | U3/U7 | Lotus aura, +1 shield per 5 s | VFX-P | plate-07 | MG |
@@ -3356,7 +3373,7 @@ Every image in `design/images/`, what it shows, where it is embedded and which b
 
 | Image | Shows | Embedded in | Anchor for |
 |---|---|---|---|
-| `images/catalog/enemy_arch_curator_r_66y.jpg` | R-66Y, twenty-foot clay goliath | §5.3.3 | §3.1, §5.5.14, §5.6.14, §5.8.13, §5.8.14, §11 |
+| `images/catalog/enemy_arch_curator_r_66y.jpg` | R-66Y, twenty-foot clay goliath | §5.3.3 | §3.1, §5.5.14, §5.6.14, §5.8.13, §11 |
 | `images/catalog/enemy_bike_bros_daltonized_models.jpg` | Bike Bros fused to clay bikes | §5.3.4 | §11 |
 | `images/catalog/enemy_porcelain_weaver.jpg` | Cassia-09 as the hostile Weaver | §5.3.5 | §4.4, §5.2.4, §5.8.7, §11 |
 | `images/catalog/enemy_vaelos.jpg` | Vaelos as the alabaster sovereign | §5.3.1 | §3.1, §4.10, §11 |
@@ -3390,8 +3407,8 @@ Every image in `design/images/`, what it shows, where it is embedded and which b
 | `images/catalog/playable_krona.jpg` | Krona in black o-yoroi with dual nodachi | §5.2.3 | §4.3, §5.8.6, §11 |
 | `images/catalog/playable_omega_spekkio.jpg` | Omega-Spekkio, six-armed origami deity | §5.2.9 | §3.1, §4.9, §5.5.11, §5.8.20, §11 |
 | `images/catalog/playable_pierrot_glenn.jpg` | Pierrot-Glenn with the Cyrus ghost overhead | §5.2.7 | §3.1, §4.7, §4.11, §5.4.7, §5.6.17, §11 |
-| `images/catalog/playable_sera.jpg` | Sera at 17 with the clock-hand daggers | §5.2.2 | §4.2, §11 |
-| `images/catalog/playable_static.jpg` | Static in the hazard coat with the subwoofer rig | §5.2.8 | §3.1, §4.8, §5.5.10, §11 |
+| `images/catalog/playable_sera.jpg` | Sera at 17 with the clock-hand daggers | §5.2.2 | §4.2, §5.8.14, §11 |
+| `images/catalog/playable_static.jpg` | Static in the hazard coat with the subwoofer rig | §5.2.8 | §3.1, §4.8, §5.5.10, §5.8.14, §11 |
 | `images/catalog/playable_vesper.jpg` | Vesper Alfador in stained-glass armour | §5.2.6 | §3.1, §4.6, §4.11, §11 |
 | `images/catalog/playable_xyloph.jpg` | Xyloph, six-winged Reptite Archon | §5.2.5 | §3.1, §4.5, §11 |
 | `images/catalog/prop_atropos_00_memory_ribbon.jpg` | Reel of memory ribbon | §5.7.8 | §11 |

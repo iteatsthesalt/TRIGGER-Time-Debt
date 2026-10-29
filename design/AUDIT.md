@@ -45,6 +45,30 @@ The 12 plates (FINAL and V2 hold the same 12 images) are in `images/plates/`.
 | 22 | Seconds vs turns | Hazards and Break recovery in seconds vs a timeline that stops at Sync Hold | All battle timers run on battle time, which pauses during Sync Hold |
 | 23 | Divinity Field | Two different definitions | +1 temporary shield per 5 s (cap 20% max HP); heals Ruin 1% per 8 s; it is also where Sera's translucency heals |
 | 24 | Krona's ink footprints | 6 s vs 30 s | 6 s in the field, 30 s in the Atrium and U4 light puzzles |
+| 25 | Omega Annihilation | The original story: the R-66Y Salvage gives Krona a Dual Tech of that name. FINAL's Tech Library: a Sera + Static Dual | The Sera + Static Dual keeps the name. The Salvage gives the Lavos-Grafted Laser Cannon and its own Dual Tech, Empress Cannon (Krona + Cassia-09) |
+| 26 | Origami Requiem | Crono + Kami-Ori, who is never playable | Crono + Sera carrying Kami-Ori's paper crane; the same Dual is Crono + Omega-Spekkio once he joins |
+| 27 | U1's bosses | "Ashen Daimyo" vs "Shogun Ashinaga"; the Furnace's boss unnamed | Lord Ashinaga is the Ashen Daimyo of Goyama Castle. The Weeping Shogun, an ink-and-clockwork Amalgam Spawn, guards the Mammon Furnace |
+| 28 | U4's glass boss | V2: Arch-Curator Glass Variant / Glass Matriarch. FINAL: the Arch-Curator Echo | The Arch-Curator Echo is the U4 mid-boss. The Glass Matriarch, Schala's Reflection, is an optional fight in the Dreaming Moon's chamber |
+| 29 | Ending 5 | Porcelain stress at 100, no confession, Grief embraced | The same, plus at least one Atrium Siege lived through, since the despair route is the one where Crono's integrity hits 0% |
+
+## Where each bible records its own choices
+
+Each bible ends with its own audit notes, listing every smaller choice it made and keeping any original numbers it converted:
+
+- Story Bible: section 11, Appendix A.
+- Combat Laws Bible: Appendix A (60 entries, including the shield conversion to plates and every renamed or merged technique).
+- Reference Bible: Appendix B (and Appendix A, the image index).
+
+## Gaps filled by invention
+
+The bibles invent where the sources were silent. These are the larger inventions, worth a look:
+
+- **Lucca is inside Cassia-09.** The amber tank holds home Lucca's nervous system. She crossed into U2 eight years ago, after Project: Klein, and R-66Y archived her. Cassia does not know; Lucca does.
+- **New encounters** where the sources only named a fight: the Krona duel in the Bamboo Grove, the Weeping Shogun, the Ash Ringmaster (Ozzie), the four Final Dojo bouts, the Forge Tendril, the Atrium Siege, and Empress Vaelos's later phases.
+- **Sera's Debt and solidity.** Her persistent Translucency Debt rises 5 per new gate jump and stays at or below 55 outside scripted scenes; each battle she starts at 100 minus her Debt and spends solidity on her techniques.
+- **Crono's three HP layers:** Battle Strain (clears after each battle), Camp Strain (clears at camp) and Integrity (the Time Debt). His Prologue integrity is 60 (Light), 40 (Dark) or 50 (Prismatic).
+- **Story texture:** Sera's seven interludes and the spoon lessons, the eight sigils, the small Bekkler doll's origin, Static's card 「イヤ」, and the Porcelain Crown ceremony.
+- **Vaelos's child kit** for New Game+ after Ending 3, completed from FINAL's Chapter 12 list.
 
 ## What was removed
 

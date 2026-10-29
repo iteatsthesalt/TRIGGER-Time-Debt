@@ -1,0 +1,17 @@
+{
+  "id": "krona", "name": "Krona", "element": "RUIN", "home_universe": 1, "canvas_fps": 24, "archetype": "tank",
+  "weapon": {"name": "Defiled Masamune", "tags": ["SWORD", "INK"], "hits": 2}, "move_range": 6.0,
+  "vulnerable": ["VITREOUS", "LIGHT"], "resistant": ["RUIN", "FIRE"],
+  "sprite": "krona", "height_m": 1.72,
+  "techs": [
+    {"id": "teppo_ash_cut", "unlock": {"on_join": true}},
+    {"id": "shoguns_command", "unlock": {"on_join": true}},
+    {"id": "cinnabar_flare", "unlock": {"on_join": true}},
+    {"id": "oil_drinker", "unlock": {"on_join": true}},
+    {"id": "ruin_purge", "unlock": {"flag": "Daimyo_Phase1"}},
+    {"id": "crimson_seppuku", "unlock": {"level": 18}},
+    {"id": "cobalt_nodachi", "unlock": {"flag": "Cobalt_Nodachi_Taken"}},
+    {"id": "eclipse_x_strike", "unlock": {"on_join": true}}
+  ],
+  "passives": ["oil_drinker", "ash_feeder"]
+}

@@ -1,0 +1,22 @@
+{
+  "flags": [
+    {"id": "Arris_Dome", "where": "Ch3", "states": [{"id": "Sleeping", "affinity": {"light": 30}}, {"id": "Incinerated", "affinity": {"dark": 25}}]},
+    {"id": "R66Y", "where": "Ch3", "states": [{"id": "Rewound", "affinity": {"light": 30}}, {"id": "Salvaged", "affinity": {"dark": 25}}]},
+    {"id": "Mother_Brain", "where": "Ch3", "states": [{"id": "Sleep", "affinity": {}}, {"id": "Overclock", "affinity": {"dark": 25}}]},
+    {"id": "Lucca_Consent", "where": "Ch3, Ch15", "states": [{"id": "Asked", "affinity": {}}, {"id": "Forced", "affinity": {"dark": 25}}]},
+    {"id": "Cassia", "where": "Ch3 onward", "states": [{"id": "Keep_Integrated", "affinity": {}}, {"id": "Extract", "affinity": {}}]},
+    {"id": "Lucca_Nervous_System", "where": "Ch3", "states": [{"id": "Rescued", "affinity": {}}, {"id": "Left", "affinity": {}}]},
+    {"id": "Ferro_Drone", "where": "Ch3", "states": [{"id": "Spared", "affinity": {}}, {"id": "Scrapped", "affinity": {}}]},
+    {"id": "Slag_Yard", "where": "Ch3", "states": [{"id": "Evac", "affinity": {"light": 10}}, {"id": "Sealed", "affinity": {}}]},
+    {"id": "Oil_Cathedral", "where": "Ch3", "states": [{"id": "Silenced", "affinity": {}}, {"id": "Fed", "affinity": {}}]},
+    {"id": "Amber_Rift_U2", "where": "Ch3", "amber_rift": true, "rift_state": "set", "states": [{"id": "set", "affinity": {}}]},
+    {"id": "Cassia_Mended_Crono", "where": "Ch3", "states": [{"id": "set", "affinity": {}}]},
+    {"id": "Azar", "where": "Ch4", "states": [{"id": "Scholar", "affinity": {"light": 30}}, {"id": "Predator", "affinity": {"dark": 25}}]},
+    {"id": "Moon_Memory", "where": "Ch4", "states": [{"id": "Kept", "affinity": {}}, {"id": "Sacrificed", "affinity": {"light": 15}}]},
+    {"id": "Eden", "where": "Ch4", "states": [{"id": "Panspermia", "affinity": {"prismatic": 15}}, {"id": "Pure", "affinity": {"light": 20}}]},
+    {"id": "Mycelia_Tether", "where": "Ch4", "states": [{"id": "Spore", "affinity": {}}, {"id": "Burn", "affinity": {}}]},
+    {"id": "Xyloph", "where": "Ch4", "states": [{"id": "Bloom", "affinity": {}}, {"id": "Ash", "affinity": {}}]},
+    {"id": "Saurian_Egg", "where": "Ch4", "states": [{"id": "Incubated", "affinity": {}}, {"id": "Crushed", "affinity": {}}]},
+    {"id": "Red_Moon", "where": "Ch4", "amber_rift": true, "rift_state": "set", "states": [{"id": "set", "affinity": {}}]}
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "sera", "name": "Sera", "element": "TACHYON", "home_universe": -1, "canvas_fps": 60, "archetype": "caster",
+  "weapon": {"name": "Twin Pendulum Blades", "tags": ["PIERCING"], "hits": 2}, "move_range": 8.0,
+  "vulnerable": ["NULL", "HZ"], "resistant": ["TACHYON"],
+  "sprite": "sera", "height_m": 1.62,
+  "techs": [
+    {"id": "fall_break", "unlock": {"chapter": 0}},
+    {"id": "rewind", "unlock": {"chapter": 1}},
+    {"id": "hold", "unlock": {"chapter": 1}},
+    {"id": "tachyon_needle", "unlock": {"chapter": 1}},
+    {"id": "hover_rewind_hp", "unlock": {"chapter": 2}},
+    {"id": "hover_fast_forward", "unlock": {"chapter": 2}},
+    {"id": "borrowed_future", "unlock": {"chapter": 4}},
+    {"id": "rewind_reel", "unlock": {"chapter": 6}},
+    {"id": "slip_backtrack", "unlock": {"flag": "U6_Matriarch_Fed"}},
+    {"id": "hz_static_pure", "unlock": {"flag": "U6_Matriarch_Unplugged"}},
+    {"id": "null_sera", "unlock": {"chapter": 8}},
+    {"id": "borrowed_future_true", "unlock": {"level": 80}},
+    {"id": "atropos_ribbon", "unlock": {"flag": "True_Ending_Route"}}
+  ],
+  "passives": ["quantum_flicker", "chronoslip"]
+}

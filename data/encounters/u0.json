@@ -1,0 +1,13 @@
+{
+  "encounters": [
+    {"id": "kitchen_motes", "universe": 0, "enemies": ["dust_mote_cluster", "dust_mote_cluster", "dust_mote_cluster"], "music": "mus_battle_core_u0", "notes": "Prologue tutorial: the motes orbit the stirring."},
+    {"id": "kitchen_shardlings", "universe": 0, "enemies": ["porcelain_shardling", "porcelain_shardling"], "music": "mus_battle_core_u0"},
+    {"id": "kitchen_spoons", "universe": 0, "enemies": ["ashen_spoon", "ashen_spoon", "dust_mote_cluster"], "music": "mus_battle_core_u0"},
+    {"id": "kitchen_echo", "universe": 0, "enemies": ["vaelos_echo", "porcelain_shardling"], "music": "mus_battle_core_u0", "notes": "Only Sera can hit the Echo."},
+    {"id": "atrium_lab_mice", "universe": 0, "enemies": ["moss_mouse", "moss_mouse", "moss_mouse"], "music": "mus_battle_core_u0"},
+    {"id": "atrium_lab_fragment", "universe": 0, "enemies": ["bekkler_fragment", "moss_mouse"], "music": "mus_battle_core_u0"},
+    {"id": "atrium_lab_krona_echo", "universe": 0, "enemies": ["ashen_echo_krona"], "music": "mus_battle_core_u0"},
+    {"id": "atrium_lab_drone", "universe": 0, "enemies": ["ferro_drone_09", "debtling", "debtling"], "music": "mus_battle_core_u0"},
+    {"id": "truce_bellkeeper", "universe": 0, "enemies": ["trance_bellkeeper", "gato_ruin"], "music": "mus_battle_core_u0"}
+  ]
+}

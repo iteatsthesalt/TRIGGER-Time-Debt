@@ -1,0 +1,7 @@
+{
+  "techs": [
+    {"id": "light_bolt", "name": "Light Bolt", "tier": "single", "actors": ["marle"], "tags": ["BOW", "LIGHT"], "shape": "SINGLE", "hits": 2, "power": 0.9, "uses": "ELEMENTAL", "costs": {"marle": {"mp": 4}}, "unlock": {"chapter": 0}},
+    {"id": "ward", "name": "Ward", "tier": "single", "actors": ["marle"], "tags": ["LIGHT", "AURA"], "shape": "SINGLE", "target": "ally", "heal": 0.8, "effect": "ward", "costs": {"marle": {"mp": 5}}, "unlock": {"chapter": 0}},
+    {"id": "vitreous_arrow", "name": "Vitreous Arrow", "tier": "single", "actors": ["marle"], "tags": ["BOW", "VITREOUS"], "shape": "SINGLE", "hits": 2, "power": 1.0, "uses": "ELEMENTAL", "costs": {"marle": {"mp": 5}}, "unlock": {"chapter": 10}}
+  ]
+}

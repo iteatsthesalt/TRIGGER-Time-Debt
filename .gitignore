@@ -12,3 +12,10 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+# Generated captures and scratch
+/tmp/
+/captures/
+*.avi
+*.mp4
+/source_art/raw/
+.godot/

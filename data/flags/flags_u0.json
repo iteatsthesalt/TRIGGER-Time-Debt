@@ -1,0 +1,21 @@
+{
+  "flags": [
+    {"id": "Prologue_Fall", "where": "Prologue", "states": [
+      {"id": "Teach_Her_To_Land", "affinity": {"light": 30}, "text": "Catch her gently; Crono's integrity holds at 60."},
+      {"id": "Hold_The_Copy_Together", "affinity": {"dark": 25}, "text": "Hide the crack and break the gate with the sword; integrity drops to 40."}]},
+    {"id": "The_Bowl_Still_Whole", "where": "Prologue", "amber_rift": true, "rift_state": "set", "states": [{"id": "set", "affinity": {}, "text": "Caught the ash-porridge bowl with Astral Smear Dash; Bekkler's Guilt."}]},
+    {"id": "Atrium_Dummy", "where": "Ch1", "states": [
+      {"id": "Spared", "affinity": {"light": 10}}, {"id": "Salvaged", "affinity": {"dark": 15}}]},
+    {"id": "Amber_Rift_U0_DollMeetsDoll", "where": "Ch1", "amber_rift": true, "rift_state": "set", "states": [{"id": "set", "affinity": {}}]},
+    {"id": "Crono_Confession", "where": "Ch1 hearth", "states": [{"id": "Told", "affinity": {}}, {"id": "Hidden", "affinity": {}}]},
+    {"id": "Bekkler_Confessed", "where": "Ch1 Fair", "states": [{"id": "set", "affinity": {}}]},
+    {"id": "Bekkler_Hid", "where": "Ch1 Fair", "states": [{"id": "set", "affinity": {"dark": 10}}]},
+    {"id": "Glenn_Duals", "where": "Ch1 onward", "states": [{"id": "Granted", "affinity": {}}, {"id": "Refused", "affinity": {}}]},
+    {"id": "Pipe_Overload", "where": "Hub", "states": [{"id": "Left", "affinity": {}}, {"id": "Overclocked", "affinity": {"dark": 25}}]},
+    {"id": "Prometheus_Core", "where": "Ch3", "states": [{"id": "Saved", "affinity": {}}, {"id": "Burned", "affinity": {}}]},
+    {"id": "Robo_Ribbon", "where": "Ch3/Ch15", "states": [{"id": "Equipped", "affinity": {}}, {"id": "Lost", "affinity": {}}]},
+    {"id": "Seed_of_Doan", "where": "Ch1, Ch15", "states": [{"id": "Grown", "affinity": {"light": 5}}, {"id": "Ash", "affinity": {"dark": 25}}]},
+    {"id": "Sera_Clone", "where": "Ch3", "states": [{"id": "Rescued", "affinity": {}}, {"id": "Lost", "affinity": {}}]},
+    {"id": "Sera_First_Voluntary", "where": "Ch1 dummy", "states": [{"id": "set", "affinity": {}}]}
+  ]
+}

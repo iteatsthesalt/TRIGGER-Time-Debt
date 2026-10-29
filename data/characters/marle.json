@@ -1,0 +1,12 @@
+{
+  "id": "marle", "name": "Marle", "element": "LIGHT", "home_universe": 0, "canvas_fps": 60, "archetype": "balanced", "guest": true,
+  "weapon": {"name": "Royal Crossbow", "tags": ["BOW", "FIRE"], "hits": 2}, "move_range": 6.0,
+  "vulnerable": [], "resistant": [],
+  "sprite": "marle", "height_m": 1.68,
+  "techs": [
+    {"id": "light_bolt", "unlock": {"chapter": 0}},
+    {"id": "ward", "unlock": {"chapter": 0}},
+    {"id": "vitreous_arrow", "unlock": {"chapter": 10}},
+    {"id": "porcelain_promise", "unlock": {"flag": "Act1_Done"}}
+  ]
+}

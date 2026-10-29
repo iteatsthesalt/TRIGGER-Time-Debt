@@ -1,0 +1,14 @@
+{
+  "universes": [
+    {"id": 0, "name": "Atrium Horologe", "canvas": "watercolour", "fps": 60, "level_band": [1, 4], "bias": 0, "music_field": "mus_u0_truce_1024", "music_battle": "mus_battle_core_u0"},
+    {"id": 1, "name": "Crimson Shogunate", "canvas": "sumi-e", "fps": 24, "level_band": [5, 11], "bias": 1, "music_field": "mus_u1_ashen_morning", "music_battle": "mus_battle_core_u1"},
+    {"id": 2, "name": "Clockwork Ossuary", "canvas": "clay", "fps": 12, "level_band": [12, 20], "bias": 3, "cap": 20, "music_field": "mus_u2_slag_yards", "music_battle": "mus_battle_core_u2"},
+    {"id": 3, "name": "Saurian Eden", "canvas": "ligne claire", "fps": 30, "level_band": [21, 30], "bias": 2, "music_field": "mus_u3_eden", "music_battle": "mus_battle_core_u3"},
+    {"id": 4, "name": "Drowned Cathedral", "canvas": "stained glass", "fps": 60, "level_band": [31, 40], "bias": 4, "cap": 60, "music_field": "mus_u4_cathedral", "music_battle": "mus_battle_core_u4"},
+    {"id": 5, "name": "Carnival of Ash", "canvas": "rubber-hose", "fps": 12, "level_band": [41, 50], "bias": 4, "cap": 60, "music_field": "mus_u5_carnival", "music_battle": "mus_battle_core_u5"},
+    {"id": 6, "name": "1999 A.D. Singularity", "canvas": "cel anime", "fps": 15, "level_band": [51, 60], "bias": 5, "music_field": "mus_u6_third_district", "music_battle": "mus_u6_neo_truce_action"},
+    {"id": 7, "name": "Bone-Tree of Eternity", "canvas": "gold leaf", "fps": 24, "level_band": [61, 70], "bias": 5, "music_field": "mus_u7_bone_tree", "music_battle": "mus_battle_core_u7"},
+    {"id": 8, "name": "Vaelos Heart", "canvas": "porcelain null", "fps": 15, "level_band": [71, 80], "bias": 5, "music_field": "mus_u8_vaelos_heart", "music_battle": "mus_u8_boss_vaelos"},
+    {"id": 9, "name": "White Void", "canvas": "blank", "fps": 60, "level_band": [80, 99], "bias": 5, "music_field": "mus_end4_borrowed_future", "music_battle": "mus_end4_borrowed_future"}
+  ]
+}

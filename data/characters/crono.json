@@ -1,0 +1,19 @@
+{
+  "id": "crono", "name": "Crono", "element": "ASTRAL", "home_universe": 0, "canvas_fps": 60, "archetype": "tank",
+  "weapon": {"name": "Epoch's Wake", "tags": ["SWORD"], "hits": 2}, "move_range": 6.0,
+  "vulnerable": ["RUIN", "NULL"], "resistant": ["TIME_DEBT"],
+  "sprite": "crono", "height_m": 1.78,
+  "techs": [
+    {"id": "astral_smear_dash", "unlock": {"chapter": 0}},
+    {"id": "time_debt_seal", "unlock": {"chapter": 0}},
+    {"id": "time_slice", "unlock": {"chapter": 1}},
+    {"id": "astral_slash", "unlock": {"chapter": 1}},
+    {"id": "bekkler_guilt", "unlock": {"flag": "The_Bowl_Still_Whole"}},
+    {"id": "astral_field", "unlock": {"chapter": 3}},
+    {"id": "luminaire", "unlock": {"level": 35}},
+    {"id": "unborrowed_time", "unlock": {"level": 78}},
+    {"id": "null_erasure", "unlock": {"flag": "Dark_40"}},
+    {"id": "null_crono", "unlock": {"chapter": 8}}
+  ],
+  "passives": ["father_tank", "trauma_silence", "porcelain_audit"]
+}

@@ -1,12 +1,154 @@
 {
-  "flags": [
-    {"id": "Goyama", "where": "Ch2", "states": [
-      {"id": "Repainted", "affinity": {"light": 30}}, {"id": "Incinerated", "affinity": {"dark": 25}}, {"id": "Both", "affinity": {"prismatic": 15}}]},
-    {"id": "The_Gourd", "where": "Ch2", "states": [{"id": "Sealed", "affinity": {"light": 30}}, {"id": "Kept", "affinity": {"dark": 25}}]},
-    {"id": "Cobalt_Nodachi", "where": "Ch2", "states": [{"id": "Taken", "affinity": {}}, {"id": "Left", "affinity": {}}]},
-    {"id": "Ashinaga", "where": "Ch2", "states": [{"id": "Rested", "affinity": {}}, {"id": "Ripped", "affinity": {"dark": 25}}]},
-    {"id": "Masamune", "where": "Ch2-3", "states": [{"id": "Reforged", "affinity": {}}, {"id": "Shattered", "affinity": {}}]},
-    {"id": "Krona_Joined", "where": "Ch2", "states": [{"id": "set", "affinity": {}}]},
-    {"id": "Daimyo_Phase1", "where": "Ch2", "states": [{"id": "set", "affinity": {}}]}
-  ]
+ "flags": [
+  {
+   "id": "Goyama",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "Repainted",
+     "affinity": {
+      "light": 30
+     }
+    },
+    {
+     "id": "Incinerated",
+     "affinity": {
+      "dark": 25
+     }
+    },
+    {
+     "id": "Both",
+     "affinity": {
+      "prismatic": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "The_Gourd",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "Sealed",
+     "affinity": {
+      "light": 30
+     }
+    },
+    {
+     "id": "Kept",
+     "affinity": {
+      "dark": 25
+     }
+    }
+   ]
+  },
+  {
+   "id": "Cobalt_Nodachi",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "Taken",
+     "affinity": {}
+    },
+    {
+     "id": "Left",
+     "affinity": {}
+    }
+   ]
+  },
+  {
+   "id": "Ashinaga",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "Rested",
+     "affinity": {}
+    },
+    {
+     "id": "Ripped",
+     "affinity": {
+      "dark": 25
+     }
+    }
+   ]
+  },
+  {
+   "id": "Masamune",
+   "where": "Ch2-3",
+   "states": [
+    {
+     "id": "Reforged",
+     "affinity": {}
+    },
+    {
+     "id": "Shattered",
+     "affinity": {}
+    }
+   ]
+  },
+  {
+   "id": "Krona_Joined",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "set",
+     "affinity": {}
+    }
+   ]
+  },
+  {
+   "id": "Daimyo_Phase1",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "set",
+     "affinity": {}
+    }
+   ]
+  },
+  {
+   "id": "Pagoda_Fractured",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "set",
+     "affinity": {},
+     "text": "The U2 clay gear has crashed into the Chitin-Pagoda."
+    }
+   ]
+  },
+  {
+   "id": "Gourd_Vial_Kept",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "set",
+     "affinity": {},
+     "text": "The vein was sealed but Krona kept one vial (half of Goyama_Both)."
+    }
+   ]
+  },
+  {
+   "id": "Tanaka_Dojo",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "set",
+     "affinity": {},
+     "text": "The karma house was saved three mornings and became a dojo."
+    }
+   ]
+  },
+  {
+   "id": "Chapter2_Done",
+   "where": "Ch2",
+   "states": [
+    {
+     "id": "set",
+     "affinity": {},
+     "text": "The Weeping Shogun fell; the party rode Johnny's wheel up the seam."
+    }
+   ]
+  }
+ ]
 }

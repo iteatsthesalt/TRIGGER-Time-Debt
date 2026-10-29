@@ -1,0 +1,2052 @@
+{
+ "ch2_grove_wake": [
+  {
+   "universe": 1
+  },
+  {
+   "checkpoint": "ch2_grove"
+  },
+  {
+   "music": "mus_u1_morning"
+  },
+  {
+   "caption": "Kuro-Truce Bamboo Grove. Rice paper for sky. Every stalk a single brush stroke, and the wind moves them on twos."
+  },
+  {
+   "fade": "in",
+   "wait": 1.0
+  },
+  {
+   "say": "Crono comes to with his cheek on paper. The ink has not dried under him: a man-shaped smear where he fell through the seam.",
+   "who": "narrator"
+  },
+  {
+   "camera": "truth",
+   "focus": "crono"
+  },
+  {
+   "say": "His scarf still bleeds watercolour. Here, where everything is three inks, he is the only thing with colour in it.",
+   "who": "narrator"
+  },
+  {
+   "wait": 0.8
+  },
+  {
+   "camera": "explore"
+  },
+  {
+   "say": "Papa. Papa, I can't— I'm not there, I'm— just get up. Please get up.",
+   "who": "sera",
+   "portrait": "hurt"
+  },
+  {
+   "say": "Her voice comes from nowhere and everywhere, thinned to a whisper, doubled.",
+   "who": "narrator"
+  },
+  {
+   "anim": "crono",
+   "name": "revive"
+  },
+  {
+   "wait": 0.6
+  },
+  {
+   "sfx": "sfx_time_ink_footstep"
+  },
+  {
+   "say": "Footprints on the paper. Bare feet, wet with black. They stop six stalks away.",
+   "who": "narrator"
+  },
+  {
+   "show": "krona",
+   "at": "krona_duel_start"
+  },
+  {
+   "face": "krona",
+   "to": "crono"
+  },
+  {
+   "say": "Red hair. Scarf. Sword on the wrong hip.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "Someone painted a boy from a story and dropped him in my grove.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "face": "crono",
+   "to": "krona"
+  },
+  {
+   "say": "I know that face. Look at it every morning in the gourd.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "anim": "krona",
+   "name": "ready"
+  },
+  {
+   "say": "Draw. If you're him, you'll know why.",
+   "who": "krona",
+   "portrait": "angry"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_duel_sequence": [
+  {
+   "run": "ch2_grove_wake"
+  },
+  {
+   "battle": "",
+   "boss_id": "krona_duel",
+   "boss": true,
+   "at": "krona_duel_start",
+   "center": "grove_center",
+   "music": "mus_boss_krona_duel",
+   "on_win": "won",
+   "on_lose": "lost"
+  },
+  {
+   "label": "lost"
+  },
+  {
+   "debt": 5
+  },
+  {
+   "say": "The ink takes him. Somewhere a girl rewinds a blow she did not see, and the paper is blank again.",
+   "who": "narrator"
+  },
+  {
+   "goto": "won"
+  },
+  {
+   "label": "won"
+  },
+  {
+   "run": "ch2_duel_end"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_duel_mid": [
+  {
+   "say": "You fight like the story. All light. Burning my ground gold so you can stand on it.",
+   "who": "krona",
+   "portrait": "angry"
+  },
+  {
+   "say": "I didn't get to be the story.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "Lavos fell on my island. I went down the vein and ate the star. Everyone I love got up afterwards. Wrong.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "camera": "truth",
+   "focus": "crono"
+  },
+  {
+   "say": "The Defiled Masamune has opened his wrist. Under the paint the porcelain is lit from inside, and she sees it.",
+   "who": "narrator"
+  },
+  {
+   "say": "...Hollow.",
+   "who": "krona",
+   "portrait": "surprised"
+  },
+  {
+   "camera": "explore"
+  },
+  {
+   "choice": [
+    {
+     "text": "Overcharge the gauntlet.",
+     "goto": "overcharge"
+    },
+    {
+     "text": "Hold.",
+     "goto": "hold"
+    }
+   ],
+   "who": "crono",
+   "prompt": "The Epoch gauntlet hums against the open seam."
+  },
+  {
+   "label": "overcharge"
+  },
+  {
+   "call": "duel_overcharge"
+  },
+  {
+   "integrity": -2
+  },
+  {
+   "say": "He feeds the crack to the gauntlet. It costs him. It always costs him.",
+   "who": "narrator"
+  },
+  {
+   "end": true
+  },
+  {
+   "label": "hold"
+  },
+  {
+   "say": "He covers the wrist with his other hand and keeps his feet.",
+   "who": "narrator"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_duel_end": [
+  {
+   "music": "stop"
+  },
+  {
+   "say": "The killing stroke comes down. Then it comes up again, the same stroke, backwards, ink climbing back onto the blade.",
+   "who": "narrator"
+  },
+  {
+   "sfx": "sfx_time_rewind"
+  },
+  {
+   "show": "sera_ghost",
+   "at": "sera_ghost_mark"
+  },
+  {
+   "say": "No. Not him. Not again.",
+   "who": "sera",
+   "portrait": "angry"
+  },
+  {
+   "say": "A girl in a teal jacket, fourteen percent of a girl, phased halfway through a bamboo stalk. Her daggers are clock hands.",
+   "who": "narrator"
+  },
+  {
+   "say": "...A ghost. Walking through ink.",
+   "who": "krona",
+   "portrait": "surprised"
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "say": "Krona lowers the nodachi. Not surrender. Interest.",
+   "who": "narrator"
+  },
+  {
+   "say": "Yours?",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "who": "crono",
+   "prompt": "Krona waits.",
+   "choice": [
+    {
+     "text": "[Nod]",
+     "goto": "nod"
+    },
+    {
+     "text": "[Look Away]",
+     "goto": "away"
+    },
+    {
+     "text": "[Say Sera's Name]",
+     "goto": "name"
+    }
+   ]
+  },
+  {
+   "label": "nod"
+  },
+  {
+   "say": "He nods. The smallest possible nod.",
+   "who": "narrator"
+  },
+  {
+   "goto": "after"
+  },
+  {
+   "label": "away"
+  },
+  {
+   "say": "He looks at the paper sky instead. Krona reads that too.",
+   "who": "narrator"
+  },
+  {
+   "goto": "after"
+  },
+  {
+   "label": "name"
+  },
+  {
+   "say": "Sera.",
+   "who": "crono",
+   "portrait": "neutral"
+  },
+  {
+   "goto": "after"
+  },
+  {
+   "label": "after"
+  },
+  {
+   "hide": "sera_ghost"
+  },
+  {
+   "say": "Papa, they're taking me somewhere with no doors. I'll find you. I always—",
+   "who": "sera",
+   "portrait": "hurt"
+  },
+  {
+   "say": "Gone. The grove is three inks again, and a red scarf.",
+   "who": "narrator"
+  },
+  {
+   "say": "Then you're not the story. You're a father. Worse.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "Town's that way. Don't drink anything.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "hide": "krona"
+  },
+  {
+   "checkpoint": "ch2_grove_done"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_pagoda_fracture": [
+  {
+   "caption": "The Chitin-Pagoda. Nine tiers of red Lavos shell, lacquered, leaning over Kuro-Truce like it is listening."
+  },
+  {
+   "camera": "truth",
+   "focus": "pagoda_top"
+  },
+  {
+   "sfx": "sfx_time_fracture_tear"
+  },
+  {
+   "say": "The paper sky splits. Something falls through it that was never drawn with a brush: a gear the size of a house, thumbprinted clay, turning at twelve frames a second in a world that moves at twenty-four.",
+   "who": "narrator"
+  },
+  {
+   "shake": 1.2
+  },
+  {
+   "sfx": "sfx_impact_clay_crash"
+  },
+  {
+   "say": "It takes the top three tiers with it. The pagoda holds. The gear keeps turning inside it, hitching, the wrong speed for this world.",
+   "who": "narrator"
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "say": "That's not from here either, Papa. That's from the next one.",
+   "who": "sera",
+   "portrait": "surprised"
+  },
+  {
+   "say": "They're leaking into each other.",
+   "who": "sera",
+   "portrait": "hurt"
+  },
+  {
+   "camera": "explore"
+  },
+  {
+   "set": {
+    "flag": "Pagoda_Fractured",
+    "state": "set"
+   }
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_streets_arrival": [
+  {
+   "checkpoint": "ch2_streets"
+  },
+  {
+   "music": "mus_u1_morning"
+  },
+  {
+   "caption": "Kuro-Truce. The Ashen Morning. Every gate is being painted bone white, and the painters hum."
+  },
+  {
+   "say": "Townsfolk with paper masks and wet brushes. Fresh paper over every door. Under the paper, if you look, something darker that the paper is for.",
+   "who": "narrator"
+  },
+  {
+   "say": "Smells like wet ash under paint.",
+   "who": "sera",
+   "portrait": "neutral"
+  },
+  {
+   "say": "She flickers at his elbow, there and not, a ghost at fourteen percent. Only he hears her. He answers by not looking at the doors.",
+   "who": "narrator"
+  },
+  {
+   "say": "It's Truce. It's our Truce with the colour taken out. There's the fountain. There's... that's the Leene Bell, Papa. They melted it.",
+   "who": "sera",
+   "portrait": "sad"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_doorway_peel": [
+  {
+   "choice": [
+    {
+     "text": "Peel the paper.",
+     "goto": "peel"
+    },
+    {
+     "text": "Leave it.",
+     "goto": "leave"
+    }
+   ],
+   "who": "crono",
+   "prompt": "A doorway. Fresh paper over char. The paste is still wet."
+  },
+  {
+   "label": "peel"
+  },
+  {
+   "sfx": "sfx_ui_paper_tear"
+  },
+  {
+   "say": "Under the paper: char. In the char, small handprints in soot, a row of them at a child's height, and a date scratched beside them. Three sieges ago.",
+   "who": "narrator"
+  },
+  {
+   "say": "...They put the paper on so they wouldn't have to look. Papa, they do it every morning.",
+   "who": "sera",
+   "portrait": "sad"
+  },
+  {
+   "counter": "doors_peeled",
+   "add": 1
+  },
+  {
+   "end": true
+  },
+  {
+   "label": "leave"
+  },
+  {
+   "say": "He leaves it. Somewhere behind him a painter starts the next door.",
+   "who": "narrator"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_leene_bell": [
+  {
+   "say": "The Leene Bell, melted and recast as a blade, hangs over the square on a frayed rope. A guillotine with a name on it.",
+   "who": "narrator"
+  },
+  {
+   "say": "It used to ring for the Fair. Mom said you could hear it from the castle.",
+   "who": "sera",
+   "portrait": "sad"
+  },
+  {
+   "say": "Crono puts a hand on the frame. The metal is still faintly warm, the way bells are after they ring.",
+   "who": "narrator"
+  },
+  {
+   "say": "Was always warm.",
+   "who": "crono",
+   "portrait": "neutral"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_ash_forge": [
+  {
+   "caption": "The Ash Forge. In the home Truce, this is Lucca's house."
+  },
+  {
+   "say": "The same floor plan. The same window. Where her workbench stood there is an anvil, and the anvil is cold.",
+   "who": "narrator"
+  },
+  {
+   "say": "A sign in brushed kanji that Sera reads for him: ASH FORGE. REPAIRS. NO QUESTIONS.",
+   "who": "narrator"
+  },
+  {
+   "say": "She'd hate that sign.",
+   "who": "sera",
+   "portrait": "neutral"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_dojo_krona_joins": [
+  {
+   "checkpoint": "ch2_dojo"
+  },
+  {
+   "caption": "A burned dojo. The roof is gone; the sky is paper. Krona sits on the one unburned mat, scraping rust off a katana with oil from her gourd."
+  },
+  {
+   "say": "Behind her, five retainers kneel in a row. Old friends, by the way they sit. Their rot is lacquered behind paper masks, and the lacquer is cracking.",
+   "who": "narrator"
+  },
+  {
+   "move": "crono",
+   "to": "dojo_threshold",
+   "speed": 2.5
+  },
+  {
+   "say": "Ashtears always blow themselves up. Love language.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "She does not look up. She sips from the gourd. Every retainer flinches at once, like a single body.",
+   "who": "narrator"
+  },
+  {
+   "say": "You did what Dad does.",
+   "who": "sera",
+   "portrait": "neutral"
+  },
+  {
+   "say": "I did the right Crono thing and everyone died.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "So I did the wrong thing. Drank the vein under the castle. They got back up. Corroded.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "say": "So I'll keep doing wrong thing.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "wait": 0.6
+  },
+  {
+   "say": "Crono stands in the doorway and says nothing. He is good at it. He has had twenty-four years.",
+   "who": "narrator"
+  },
+  {
+   "say": "You're doing it now. The quiet. The 'nothing to say so nothing is wrong.'",
+   "who": "krona",
+   "portrait": "angry"
+  },
+  {
+   "say": "I invented that. Doesn't work. Sit.",
+   "who": "krona"
+  },
+  {
+   "who": "crono",
+   "prompt": "The unburned mat has room for two.",
+   "choice": [
+    {
+     "text": "[Nod]",
+     "goto": "nod"
+    },
+    {
+     "text": "[Look Away]",
+     "goto": "away"
+    },
+    {
+     "text": "[Say Sera's Name]",
+     "goto": "name"
+    }
+   ]
+  },
+  {
+   "label": "nod"
+  },
+  {
+   "say": "He sits. The retainers watch his wrist.",
+   "who": "narrator"
+  },
+  {
+   "goto": "join"
+  },
+  {
+   "label": "away"
+  },
+  {
+   "say": "He looks at the retainers instead. One of them looks back, and the mask slips a little, and he looks away again.",
+   "who": "narrator"
+  },
+  {
+   "say": "Yeah. That's why the masks.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "goto": "join"
+  },
+  {
+   "label": "name"
+  },
+  {
+   "say": "Sera. They have Sera.",
+   "who": "crono",
+   "portrait": "neutral"
+  },
+  {
+   "say": "The ghost. I know. Saw her stop my blade.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "goto": "join"
+  },
+  {
+   "label": "join"
+  },
+  {
+   "say": "Vein's under Goyama. Whoever took your ghost went down it. Castle's four bridges out.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "I'm not helping you. I'm going anyway. Walk next to me if you want.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "She stands. The one surprised laugh she will allow herself this chapter is for his sword, which is on the wrong hip after all.",
+   "who": "narrator"
+  },
+  {
+   "say": "Ha. Wrong hip.",
+   "who": "krona",
+   "portrait": "smile"
+  },
+  {
+   "recruit": "krona"
+  },
+  {
+   "set_flag": "Krona_Joined:set"
+  },
+  {
+   "learn": "eclipse_x_strike",
+   "who": "crono"
+  },
+  {
+   "say": "ECLIPSE X-STRIKE. When they strike together the screen splits: his half watercolour, hers ink.",
+   "who": "narrator"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_bridge_1": [
+  {
+   "checkpoint": "ch2_bridge_1"
+  },
+  {
+   "caption": "The first Iron Bridge. A shrine gate of black iron, ash-ronin kneeling at its foot like they have been waiting a hundred years."
+  },
+  {
+   "say": "They won't let you cross without the parry. Ens. Circle on the ink. Catch the stroke at the edge, not the middle.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "ENS PARRY. When an enemy's stroke lands, press parry inside the window. A perfect parry negates the hit and leaves a sumi ring on the ally.",
+   "who": "narrator"
+  },
+  {
+   "battle": "iron_bridge_shrine_1",
+   "at": "bridge_1_fight",
+   "center": "bridge_1_center",
+   "music": "mus_u1_battle_core",
+   "on_win": "won",
+   "on_lose": "lost"
+  },
+  {
+   "label": "lost"
+  },
+  {
+   "debt": 5
+  },
+  {
+   "goto": "won"
+  },
+  {
+   "label": "won"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_bridge_2": [
+  {
+   "checkpoint": "ch2_bridge_2"
+  },
+  {
+   "caption": "The second Iron Bridge. The river under it runs grey. Something in it is still warm."
+  },
+  {
+   "say": "Second gate. Same lesson. They only teach one thing.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "battle": "iron_bridge_shrine_2",
+   "at": "bridge_2_fight",
+   "center": "bridge_2_center",
+   "music": "mus_u1_battle_core",
+   "on_win": "won",
+   "on_lose": "lost"
+  },
+  {
+   "label": "lost"
+  },
+  {
+   "debt": 5
+  },
+  {
+   "goto": "won"
+  },
+  {
+   "label": "won"
+  },
+  {
+   "say": "Krona sips. The crack on her neck climbs a finger's width. Nobody says anything about it.",
+   "who": "narrator"
+  },
+  {
+   "camera": "truth",
+   "focus": "crono"
+  },
+  {
+   "say": "And his wrist answers: the hairline widens, gold under the paint. Near the vein, the copy reacts to the original's atoms, dissolved in the oil she drinks.",
+   "who": "narrator"
+  },
+  {
+   "camera": "explore"
+  },
+  {
+   "say": "Papa, your wrist. It's listening to the oil.",
+   "who": "sera",
+   "portrait": "hurt"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_bridge_3": [
+  {
+   "checkpoint": "ch2_bridge_3"
+  },
+  {
+   "caption": "The third Iron Bridge. Crows made of VHS feathers watch from the torii, and the picture of them rolls."
+  },
+  {
+   "say": "Crows. Don't look at the picture, look at the bird.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "battle": "iron_bridge_shrine_3",
+   "at": "bridge_3_fight",
+   "center": "bridge_3_center",
+   "music": "mus_u1_battle_core",
+   "on_win": "won",
+   "on_lose": "lost"
+  },
+  {
+   "label": "lost"
+  },
+  {
+   "debt": 5
+  },
+  {
+   "goto": "won"
+  },
+  {
+   "label": "won"
+  },
+  {
+   "say": "You keep covering the wrist. Everyone here is cracked. Nobody's looking.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "who": "crono",
+   "prompt": "She is looking.",
+   "choice": [
+    {
+     "text": "[Nod]",
+     "goto": "nod3"
+    },
+    {
+     "text": "[Look Away]",
+     "goto": "away3"
+    },
+    {
+     "text": "[Say Sera's Name]",
+     "goto": "name3"
+    }
+   ]
+  },
+  {
+   "label": "nod3"
+  },
+  {
+   "say": "He takes the hand off the wrist. Leaves it uncovered for the rest of the bridge.",
+   "who": "narrator"
+  },
+  {
+   "goto": "done3"
+  },
+  {
+   "label": "away3"
+  },
+  {
+   "say": "He does not. She lets it go.",
+   "who": "narrator"
+  },
+  {
+   "goto": "done3"
+  },
+  {
+   "label": "name3"
+  },
+  {
+   "say": "Sera used to trace it.",
+   "who": "crono",
+   "portrait": "sad"
+  },
+  {
+   "say": "...Yeah. Kids do that.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "label": "done3"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_bridge_4": [
+  {
+   "checkpoint": "ch2_bridge_4"
+  },
+  {
+   "caption": "The fourth Iron Bridge. Goyama burns at the far end, three floors of fire that never fall."
+  },
+  {
+   "say": "Last gate. After this it's the castle, and the castle doesn't kneel.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "battle": "iron_bridge_shrine_4",
+   "at": "bridge_4_fight",
+   "center": "bridge_4_center",
+   "music": "mus_u1_battle_core",
+   "on_win": "won",
+   "on_lose": "lost"
+  },
+  {
+   "label": "lost"
+  },
+  {
+   "debt": 5
+  },
+  {
+   "goto": "won"
+  },
+  {
+   "label": "won"
+  },
+  {
+   "say": "The last ronin bows before he falls, and the bow is to her.",
+   "who": "narrator"
+  },
+  {
+   "say": "Captain of my gate guard. Fourth siege. I told him to hold the bridge and he did.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "say": "He got back up too. Didn't ask him.",
+   "who": "krona"
+  },
+  {
+   "checkpoint": "ch2_goyama_gate"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_gourd_choice": [
+  {
+   "caption": "The vein mouth, a rock split under the fourth bridge. The oil inside is not black; it is every colour the ink took away, and it moves."
+  },
+  {
+   "say": "This is it. The star. I come here when the gourd runs dry.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "She holds the gourd over the vein. Her hand is steady. Her neck is not.",
+   "who": "narrator"
+  },
+  {
+   "say": "You could seal it. Astral burns ink; it'd burn this. Retainers go down for good. I go down slower.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "Or I fill up and we walk into that castle with the best tank on the island.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "Your call. I've made mine too many times.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "choice": [
+    {
+     "text": "Seal the vein.",
+     "goto": "seal"
+    },
+    {
+     "text": "Let her drink.",
+     "goto": "keep"
+    },
+    {
+     "text": "Seal it. Keep one vial.",
+     "goto": "both",
+     "if": {
+      "has_key_item": "bekkler_doll_small"
+     }
+    }
+   ],
+   "who": "crono",
+   "prompt": "The oil hums at 220 hertz. Cracked."
+  },
+  {
+   "label": "seal"
+  },
+  {
+   "sfx": "sfx_magic_astral_burn"
+  },
+  {
+   "say": "He puts the gauntlet in the vein and the oil goes gold, then white, then stone. Behind them, on the bridge, five masks fall off five faces, and the faces are at peace.",
+   "who": "narrator"
+  },
+  {
+   "say": "...Oh.",
+   "who": "krona",
+   "portrait": "surprised"
+  },
+  {
+   "say": "They look like them again.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "set_flag": "The_Gourd:Sealed"
+  },
+  {
+   "say": "OIL-DRINKER ends. Krona's corruption clears over the coming days. She learns, slowly, to ask someone else to take a hit.",
+   "who": "narrator"
+  },
+  {
+   "end": true
+  },
+  {
+   "label": "keep"
+  },
+  {
+   "say": "He steps back. She fills the gourd and drinks, and the crack reaches her jaw.",
+   "who": "narrator"
+  },
+  {
+   "say": "Good. Don't make it mean anything.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "set_flag": "The_Gourd:Kept"
+  },
+  {
+   "say": "OIL-DRINKER stays. Her Ruin decay will keep stacking, world after world.",
+   "who": "narrator"
+  },
+  {
+   "end": true
+  },
+  {
+   "label": "both"
+  },
+  {
+   "say": "He seals it. But first she fills one vial and stoppers it with paper, and neither of them says what it is for.",
+   "who": "narrator"
+  },
+  {
+   "say": "Sealed and sipping. That's not a plan. That's a person.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "set_flag": "The_Gourd:Sealed"
+  },
+  {
+   "set": {
+    "flag": "Gourd_Vial_Kept",
+    "state": "set"
+   }
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_karma_house": [
+  {
+   "caption": "The Tanaka house, at the end of Paper Street. It is on fire. It is always on fire at this hour."
+  },
+  {
+   "choice": [
+    {
+     "text": "Put it out.",
+     "goto": "save"
+    },
+    {
+     "text": "Let it burn.",
+     "goto": "burn"
+    }
+   ],
+   "who": "crono",
+   "prompt": "A family in the doorway. They have the look of people who have done this before."
+  },
+  {
+   "label": "save"
+  },
+  {
+   "sfx": "sfx_magic_astral_burn"
+  },
+  {
+   "say": "Astral light eats the fire the way it eats ink. The family bows. The mother repaints the door before the smoke has cleared.",
+   "who": "narrator"
+  },
+  {
+   "counter": "house_saved",
+   "add": 1
+  },
+  {
+   "if": {
+    "counter_min": "house_saved",
+    "value": 3
+   },
+   "then": "dojo",
+   "else": "done"
+  },
+  {
+   "label": "dojo"
+  },
+  {
+   "say": "Three mornings saved. The family stops painting. They tear the paper off every door and leave the char showing, and the house becomes a dojo, and the dojo stays.",
+   "who": "narrator"
+  },
+  {
+   "say": "A house that stopped lying. First one on the island.",
+   "who": "krona",
+   "portrait": "smile"
+  },
+  {
+   "set": {
+    "flag": "Tanaka_Dojo",
+    "state": "set"
+   }
+  },
+  {
+   "goto": "done"
+  },
+  {
+   "label": "burn"
+  },
+  {
+   "say": "He walks past. Krona walks past. The family walks out, and does not look back, and the fire goes on without an audience.",
+   "who": "narrator"
+  },
+  {
+   "counter": "house_burned",
+   "add": 1
+  },
+  {
+   "if": {
+    "counter_min": "house_burned",
+    "value": 3
+   },
+   "then": "flake",
+   "else": "done"
+  },
+  {
+   "label": "flake"
+  },
+  {
+   "say": "Three mornings burned. The house is ash. On the ash, where the hearth was, a single flake of gold leaf: the family's memory of the room, left for whoever comes next.",
+   "who": "narrator"
+  },
+  {
+   "give_item": "gold_leaf_memory_flake"
+  },
+  {
+   "say": "Some homes you can't save. You can only make sure somebody remembers the shape.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "goto": "done"
+  },
+  {
+   "label": "done"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_goyama_flag_resolve": [
+  {
+   "if": {
+    "flag": "Gourd_Vial_Kept",
+    "state": "set"
+   },
+   "then": "both",
+   "else": "check_light"
+  },
+  {
+   "label": "both"
+  },
+  {
+   "set_flag": "Goyama:Both"
+  },
+  {
+   "rift": "Amber_Rift_U1_Goyama"
+  },
+  {
+   "end": true
+  },
+  {
+   "label": "check_light"
+  },
+  {
+   "if": {
+    "counter_min": "house_saved",
+    "value": 3
+   },
+   "then": "light",
+   "else": "check_dark"
+  },
+  {
+   "label": "light"
+  },
+  {
+   "if": {
+    "flag": "The_Gourd",
+    "state": "Sealed"
+   },
+   "then": "repainted",
+   "else": "check_dark"
+  },
+  {
+   "label": "repainted"
+  },
+  {
+   "set_flag": "Goyama:Repainted"
+  },
+  {
+   "end": true
+  },
+  {
+   "label": "check_dark"
+  },
+  {
+   "if": {
+    "counter_min": "house_burned",
+    "value": 3
+   },
+   "then": "dark",
+   "else": "none"
+  },
+  {
+   "label": "dark"
+  },
+  {
+   "if": {
+    "flag": "The_Gourd",
+    "state": "Kept"
+   },
+   "then": "incinerated",
+   "else": "none"
+  },
+  {
+   "label": "incinerated"
+  },
+  {
+   "set_flag": "Goyama:Incinerated"
+  },
+  {
+   "end": true
+  },
+  {
+   "label": "none"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_castle_gate_poem": [
+  {
+   "run": "ch2_goyama_flag_resolve"
+  },
+  {
+   "caption": "Goyama Castle. The top three floors burn and never fall. On the gate, a poem in the Daimyo's hand, repainted every morning over the one beneath."
+  },
+  {
+   "say": "Sera reads it. 'Hold the bridge, hold the gate, hold the child's hand / the ink will dry before the fire does.'",
+   "who": "narrator"
+  },
+  {
+   "say": "He wrote that for me. I was nine. He wrote a new one every year and painted over the old one.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "if": {
+    "flag": "Goyama",
+    "state": "Both"
+   },
+   "then": "doll",
+   "else": "go"
+  },
+  {
+   "label": "doll"
+  },
+  {
+   "say": "Crono takes the small Bekkler doll from his pack and holds it out. Porcelain knows porcelain.",
+   "who": "narrator"
+  },
+  {
+   "say": "...That's you. The little one. Cracked the same place.",
+   "who": "krona",
+   "portrait": "surprised"
+  },
+  {
+   "say": "She holds it. Sealed and sipping, a doll in one hand and the vial in the other. An Amber Rift opens quietly behind her, and neither of them turns around.",
+   "who": "narrator"
+  },
+  {
+   "goto": "go"
+  },
+  {
+   "label": "go"
+  },
+  {
+   "checkpoint": "ch2_castle"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_paper_doors": [
+  {
+   "caption": "The paper floors. Doors of white washi in every direction, and behind each one, ash-ronin who cannot see what is not painted."
+  },
+  {
+   "say": "UNPAINTED. While Crono stands behind untouched paper he is invisible to them, and he cannot attack. Step through paint to be seen. Step back to vanish.",
+   "who": "narrator"
+  },
+  {
+   "say": "The floors are the Daimyo's trick. He's been invisible to himself for years.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_daimyo_sequence": [
+  {
+   "checkpoint": "ch2_daimyo"
+  },
+  {
+   "caption": "The top floor. It burns. The fire has been burning so long it has become a kind of weather."
+  },
+  {
+   "say": "At the far end, seated, twenty feet of a man made of surrender petitions. Thousands of them, folded and stacked into a body, armour weeping black oil at every joint.",
+   "who": "narrator"
+  },
+  {
+   "say": "He is writing. Each petition he finishes stands up, bows, and becomes a soldier.",
+   "who": "narrator"
+  },
+  {
+   "say": "Lord Ashinaga. The Ashen Daimyo. He raised me when the pigment-house burned.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "say": "Father. It's Krona. I'm back from the vein.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "The Daimyo does not look up. He writes her name on a petition, and the petition stands, and it has her face.",
+   "who": "narrator"
+  },
+  {
+   "say": "...Okay. Okay. Crono. Burn the ink. I'll corrode the rest.",
+   "who": "krona",
+   "portrait": "angry"
+  },
+  {
+   "battle": "",
+   "boss_id": "goyama_ashen_daimyo",
+   "boss": true,
+   "at": "daimyo_fight",
+   "center": "daimyo_center",
+   "music": "mus_boss_goyama_daimyo",
+   "on_win": "won",
+   "on_lose": "lost"
+  },
+  {
+   "label": "lost"
+  },
+  {
+   "debt": 5
+  },
+  {
+   "say": "The petitions close over him like a book. Somewhere, a ghost turns the page back.",
+   "who": "narrator"
+  },
+  {
+   "goto": "won"
+  },
+  {
+   "label": "won"
+  },
+  {
+   "run": "ch2_daimyo_won"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_daimyo_phase2": [
+  {
+   "say": "Break. The petitions scatter like a flock. Under the white-out on the oldest one, a child's name in a child's hand. KRONA. And under that, crossed out, another name, the one she had before the pigment-house.",
+   "who": "narrator"
+  },
+  {
+   "say": "He kept it. He kept the first one.",
+   "who": "krona",
+   "portrait": "surprised"
+  },
+  {
+   "set_flag": "Daimyo_Phase1:set"
+  },
+  {
+   "say": "RUIN PURGE learned. Krona's ink can now purge a buff and leave an Ash Field.",
+   "who": "narrator"
+  },
+  {
+   "learn": "ruin_purge",
+   "who": "krona"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_daimyo_phase3": [
+  {
+   "say": "The Daimyo cracks down the middle. Inside, where a heart should be, a gourd. The same gourd. Vein-oil bubbling in it at two hundred and twenty hertz.",
+   "who": "narrator"
+  },
+  {
+   "say": "...You drank it too?",
+   "who": "krona",
+   "portrait": "surprised"
+  },
+  {
+   "say": "Oil floods the floor. Ash Field. The castle breathes in.",
+   "who": "narrator"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_daimyo_phase4": [
+  {
+   "say": "One shield left, and it is not a shield. It is a seal, written in two inks at once, and it can only be cut from both canvases in the same instant.",
+   "who": "narrator"
+  },
+  {
+   "say": "Eclipse. Now. Both of us or neither.",
+   "who": "krona",
+   "portrait": "angry"
+  },
+  {
+   "say": "Papa, I can see it from here. The seal's got two sides. Hit both.",
+   "who": "sera",
+   "portrait": "surprised"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_daimyo_won": [
+  {
+   "music": "stop"
+  },
+  {
+   "say": "He comes apart as porcelain. Under the porcelain, red muscle fibre, the same fibre that runs under Crono's chest. The same maker.",
+   "who": "narrator"
+  },
+  {
+   "say": "Something small falls out of him and rolls to Crono's feet. A tooth. It whispers, in a clean young voice that is Crono's own voice at seventeen.",
+   "who": "narrator"
+  },
+  {
+   "say": "Papa. Big Brother Copy. I planted one of me in every world. This one grew a Daimyo.",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "key_item": "vaelos_tooth"
+  },
+  {
+   "say": "THE VAELOS TOOTH. The first proof that Vaelos seeded every timeline.",
+   "who": "narrator"
+  },
+  {
+   "choice": [
+    {
+     "text": "Let him rest.",
+     "goto": "rest"
+    },
+    {
+     "text": "Rip the fibre out.",
+     "goto": "rip"
+    }
+   ],
+   "who": "krona",
+   "prompt": "The Daimyo's chest is open. The Lavos fibre inside is still warm. It would make a weapon."
+  },
+  {
+   "label": "rest"
+  },
+  {
+   "say": "Krona closes the petitions over him, one by one, and the last one she folds into a crane.",
+   "who": "narrator"
+  },
+  {
+   "say": "Rest, Father. I'll write the next one.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "set_flag": "Ashinaga:Rested"
+  },
+  {
+   "say": "U1 keeps its ink parry. The masks of Kuro-Truce stay dry.",
+   "who": "narrator"
+  },
+  {
+   "goto": "vault"
+  },
+  {
+   "label": "rip"
+  },
+  {
+   "sfx": "sfx_combat_fibre_tear"
+  },
+  {
+   "say": "She tears the fibre out of him in handfuls. It knots itself around the Defiled Masamune and the blade drinks.",
+   "who": "narrator"
+  },
+  {
+   "say": "He'd have done the same. He did do the same.",
+   "who": "krona",
+   "portrait": "angry"
+  },
+  {
+   "set_flag": "Ashinaga:Ripped"
+  },
+  {
+   "relic": "lavos_fibre_wrap"
+  },
+  {
+   "say": "Every paper mask on the island begins, quietly, to weep black oil. They will not stop.",
+   "who": "narrator"
+  },
+  {
+   "goto": "vault"
+  },
+  {
+   "label": "vault"
+  },
+  {
+   "checkpoint": "ch2_daimyo_done"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_vault_nodachi": [
+  {
+   "caption": "The vault under Goyama. No fire here. One blade on a stand, and the blade is blue."
+  },
+  {
+   "say": "The Founder's nodachi, dyed in the first cobalt pigment: the colour of the first sunrise after the ichor rain, when the island decided to live.",
+   "who": "narrator"
+  },
+  {
+   "say": "Every Daimyo swore on it. None of them drew it. You don't draw the sky.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "Its trail would stain any sky cobalt. In every other world, that stain would show Crono where the hidden slips are.",
+   "who": "narrator"
+  },
+  {
+   "say": "If I take it, this island never gets its morning back. Crimson Night, forever. The paint stops working.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "If I leave it, we go into the Furnace with rust.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "choice": [
+    {
+     "text": "Take it.",
+     "goto": "take"
+    },
+    {
+     "text": "Leave it.",
+     "goto": "leave"
+    }
+   ],
+   "who": "krona",
+   "prompt": "Her hand is on the hilt. She is waiting for him to decide, and he knows it is not his to decide."
+  },
+  {
+   "label": "take"
+  },
+  {
+   "sfx": "sfx_weapons_nodachi_draw_cobalt"
+  },
+  {
+   "say": "She draws it. The vault turns indigo, then white. Above them, outside, the paper sky goes red and stays red.",
+   "who": "narrator"
+  },
+  {
+   "say": "Some homes you save by leaving them burning.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "say": "Krona weeps. First time. The oil in her gourd stops bubbling and does not start again.",
+   "who": "narrator"
+  },
+  {
+   "set_flag": "Cobalt_Nodachi:Taken"
+  },
+  {
+   "key_item": "cobalt_nodachi"
+  },
+  {
+   "learn": "cobalt_nodachi",
+   "who": "krona"
+  },
+  {
+   "say": "THE COBALT NODACHI. Its trail stains the sky; Crono's Smear Dash can now find hidden Chronoslips in every world. HOMELAND DYE: a portal back to U1 from anywhere.",
+   "who": "narrator"
+  },
+  {
+   "goto": "done"
+  },
+  {
+   "label": "leave"
+  },
+  {
+   "say": "She takes her hand off the hilt. The blade stays blue. The morning stays possible.",
+   "who": "narrator"
+  },
+  {
+   "say": "Rust is honest. We'll manage.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "set_flag": "Cobalt_Nodachi:Left"
+  },
+  {
+   "goto": "done"
+  },
+  {
+   "label": "done"
+  },
+  {
+   "checkpoint": "ch2_vault_done"
+  },
+  {
+   "save": 0
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_furnace_sequence": [
+  {
+   "checkpoint": "ch2_furnace"
+  },
+  {
+   "music": "mus_u1_furnace_approach"
+  },
+  {
+   "caption": "The Mammon Furnace. Under Goyama, where the vein runs into something older than the island. Heat with a heartbeat."
+  },
+  {
+   "say": "Above the furnace, hung from the clay gear's teeth, a cage of hard geometry. In it, a girl, flickering through seven kinds of drawing: ink, clay, line, glass, rubber, cel, gold.",
+   "who": "narrator"
+  },
+  {
+   "say": "PAPA. Papa I'm here, I'm right here, don't look at the— don't look at the thing under me.",
+   "who": "sera",
+   "portrait": "hurt"
+  },
+  {
+   "say": "The thing under her stands up. Its lower half is an ink Lavos spawn, brushed. Its upper half is a clay clockwork centipede, thumbprinted, turning at twelve. Two drawings, two speeds, one body.",
+   "who": "narrator"
+  },
+  {
+   "say": "That's what the gear brought. That's two worlds eating each other.",
+   "who": "krona",
+   "portrait": "angry"
+  },
+  {
+   "say": "Burn the ink. I'll rot the clay. The ghost does the rest.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "I've got the daggers. I can rewind you, Papa. I can speed her up. Just don't die where I can see it.",
+   "who": "sera",
+   "portrait": "hurt"
+  },
+  {
+   "sera_state": "hover_support"
+  },
+  {
+   "battle": "",
+   "boss_id": "weeping_shogun",
+   "boss": true,
+   "at": "furnace_fight",
+   "center": "furnace_center",
+   "music": "mus_boss_weeping_shogun",
+   "on_win": "won",
+   "on_lose": "lost"
+  },
+  {
+   "label": "lost"
+  },
+  {
+   "debt": 5
+  },
+  {
+   "say": "The Furnace takes them. The cage above it turns the page back, and the girl's hand is a little more transparent for it.",
+   "who": "narrator"
+  },
+  {
+   "goto": "won"
+  },
+  {
+   "label": "won"
+  },
+  {
+   "run": "ch2_furnace_won"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_furnace_won": [
+  {
+   "music": "stop"
+  },
+  {
+   "say": "The Shogun falls in two directions at once, the ink half dissolving to gold, the clay half sagging in slow, stepped frames. The weeping stops.",
+   "who": "narrator"
+  },
+  {
+   "camera": "truth",
+   "focus": "sera_cage"
+  },
+  {
+   "say": "And the cage lifts. Not on the chain. Lifted. A hand nine feet above the ground, alabaster and leaking starlight, closes around the geometry and raises it toward the tear the gear left in the sky.",
+   "who": "narrator"
+  },
+  {
+   "say": "Little Sister. Day one.",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "say": "Papa! PAPA, I'll find— don't forget me—",
+   "who": "sera",
+   "portrait": "hurt"
+  },
+  {
+   "sera_state": "absent"
+  },
+  {
+   "say": "Gone, up the seam. Crono does not shout. He has never been a shouter. He puts his hand on his wrist and the crack under it is wider than it was this morning.",
+   "who": "narrator"
+  },
+  {
+   "camera": "explore"
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "say": "That's the thing from the Fair.",
+   "who": "krona",
+   "portrait": "neutral"
+  },
+  {
+   "say": "It has your face. Younger. It's the you that didn't come back.",
+   "who": "krona",
+   "portrait": "sad"
+  },
+  {
+   "who": "crono",
+   "prompt": "Krona has never asked him a question he had to answer with words.",
+   "choice": [
+    {
+     "text": "[Nod]",
+     "goto": "nod_f"
+    },
+    {
+     "text": "[Look Away]",
+     "goto": "away_f"
+    },
+    {
+     "text": "[Say Sera's Name]",
+     "goto": "name_f"
+    }
+   ]
+  },
+  {
+   "label": "nod_f"
+  },
+  {
+   "say": "He nods. Once.",
+   "who": "narrator"
+  },
+  {
+   "goto": "hook"
+  },
+  {
+   "label": "away_f"
+  },
+  {
+   "say": "He looks at the tear in the sky, and keeps looking.",
+   "who": "narrator"
+  },
+  {
+   "goto": "hook"
+  },
+  {
+   "label": "name_f"
+  },
+  {
+   "say": "Sera.",
+   "who": "crono",
+   "portrait": "neutral"
+  },
+  {
+   "say": "He said day one.",
+   "who": "crono",
+   "portrait": "neutral"
+  },
+  {
+   "goto": "hook"
+  },
+  {
+   "label": "hook"
+  },
+  {
+   "say": "Wedged in the clay gear's teeth, something from the next world: the front wheel of a jetbike, burned out, its tyre still turning. A name scratched into the hub. JOHNNY.",
+   "who": "narrator"
+  },
+  {
+   "say": "Still runs. Course it still runs.",
+   "who": "krona",
+   "portrait": "smile"
+  },
+  {
+   "say": "It tows them up the seam, toward a year that smells of oil and dust. 2300 A.D.",
+   "who": "narrator"
+  },
+  {
+   "set": {
+    "flag": "Chapter2_Done",
+    "state": "set"
+   }
+  },
+  {
+   "chapter": 3
+  },
+  {
+   "checkpoint": "ch2_done"
+  },
+  {
+   "save": 0
+  },
+  {
+   "run": "ch2_interlude_day1"
+  },
+  {
+   "go": "ossuary_arrival",
+   "spawn": "seam_exit"
+  },
+  {
+   "end": true
+  }
+ ],
+ "ch2_interlude_day1": [
+  {
+   "universe": 8
+  },
+  {
+   "party": [
+    "sera"
+   ]
+  },
+  {
+   "music": "mus_interlude_ash_kitchen"
+  },
+  {
+   "caption": "Interlude. Day 1. The House Without Doors."
+  },
+  {
+   "say": "A kitchen built from ash. Guardia's table, Guardia's pots, Guardia's window, and behind the window, nothing. Not dark. Nothing.",
+   "who": "narrator"
+  },
+  {
+   "say": "Vaelos sits where her father sits. There is a bowl in front of him, and a spoon, and ash where the porridge should be.",
+   "who": "narrator"
+  },
+  {
+   "say": "Little Sister. Teach me the seven stirs.",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "say": "...Why.",
+   "who": "sera",
+   "portrait": "angry"
+  },
+  {
+   "say": "Because he does them for you every morning and nobody has ever done them for me. I was incubated, not stirred.",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "say": "You hum like the house I was never allowed into.",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "say": "She can walk the room. She can rewind the ash he spills, and every rewind costs her: the day's clock, moving in her hands.",
+   "who": "narrator"
+  },
+  {
+   "choice": [
+    {
+     "text": "Teach him. Properly.",
+     "goto": "teach"
+    },
+    {
+     "text": "Teach him wrong.",
+     "goto": "wrong"
+    },
+    {
+     "text": "Refuse.",
+     "goto": "refuse"
+    }
+   ],
+   "who": "sera",
+   "prompt": "Seven stirs, clockwise, and a tap on the rim. She has known it since before she could hold the spoon."
+  },
+  {
+   "label": "teach"
+  },
+  {
+   "say": "She shows him. Seven, clockwise. The tap. His hand is too big for the spoon and he holds it like a sword, and she fixes his fingers without thinking, the way her father fixed hers.",
+   "who": "narrator"
+  },
+  {
+   "say": "Again. I want to get it right before he does.",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "counter": "spoon_lessons",
+   "add": 1
+  },
+  {
+   "debt": 3
+  },
+  {
+   "goto": "end_day"
+  },
+  {
+   "label": "wrong"
+  },
+  {
+   "say": "She shows him. Six stirs, counter-clockwise, no tap. He copies it exactly, and she watches him be wrong with a face that gives nothing away.",
+   "who": "narrator"
+  },
+  {
+   "say": "That felt incomplete. Is it supposed to feel incomplete?",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "say": "That's the whole trick of it.",
+   "who": "sera",
+   "portrait": "neutral"
+  },
+  {
+   "counter": "spoon_lessons_wrong",
+   "add": 1
+  },
+  {
+   "debt": 2
+  },
+  {
+   "goto": "end_day"
+  },
+  {
+   "label": "refuse"
+  },
+  {
+   "say": "No. That's his. You don't get to have his.",
+   "who": "sera",
+   "portrait": "angry"
+  },
+  {
+   "say": "He does not get angry. That is worse. He stirs the ash on his own, wrong, and watches her watch him.",
+   "who": "narrator"
+  },
+  {
+   "say": "Which of us has the right to be her father? I'll keep asking. There are six more days.",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "debt": 2
+  },
+  {
+   "goto": "end_day"
+  },
+  {
+   "label": "end_day"
+  },
+  {
+   "say": "This is day one, Little Sister.",
+   "who": "vaelos",
+   "portrait": "neutral"
+  },
+  {
+   "camera": "truth",
+   "focus": "sera"
+  },
+  {
+   "say": "When the interlude ends her hand is a little more transparent than it was. She notices. She does not say 'Mama'. Not yet.",
+   "who": "narrator"
+  },
+  {
+   "camera": "explore"
+  },
+  {
+   "fade": "out",
+   "wait": 1.0
+  },
+  {
+   "party": [
+    "crono",
+    "krona"
+   ]
+  },
+  {
+   "end": true
+  }
+ ]
+}

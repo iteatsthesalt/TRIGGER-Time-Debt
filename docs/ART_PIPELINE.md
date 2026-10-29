@@ -1,101 +1,140 @@
-# Art pipeline: PixelLab characters → game sheets
+# Art pipeline: PixelLab → game
 
-How a character goes from a catalog painting to a lit, animated sprite in the game. This is the template
-every playable, NPC, enemy and boss follows. Generation runs through the PixelLab MCP tools in a session;
-the import runs anywhere with Python 3 + Pillow + numpy (no token needed: PixelLab downloads are keyed by the
-character UUID).
+**Who does what (current plan).** Nich makes all art with his PixelLab bot, working from
+`docs/ASSET_REQUESTS.md`. The build agent (and the studio assistant when it takes over) imports every finished
+asset with one command, wires it into the scene that needs it, screenshots it, and records it in
+`data/art/pixellab_assets.json`. Agents do not generate art beyond what proves the pipeline. Nothing in the
+PixelLab library is ever deleted.
 
-Ownership (see `docs/REQUESTS_FOR_STUDIO.md`): this pipeline and everything under `assets/characters`,
-`assets/npcs`, `assets/enemies`, `assets/bosses` is the build agent's. Portraits, generated UI, textures and
-VFX come from the studio assistant into `assets/portraits/`, `assets/ui/generated/`,
-`assets/textures/generated/`, `assets/vfx/generated/`, each with a `manifest.json`.
+Crono (PixelLab `8d699d00-eb9f-4da7-a408-a1f70039fa1c`) is the finished template: generated → sheet → normal
+map → import → screenshot (`docs/screenshots/07…`, `08…`).
 
-## 1. Generate (MCP tools, in a session)
+## 1. The contract (what a character request must produce)
 
-1. **Create the character** from its catalog image (Reference Bible §5) in pro mode. Name it `TRIGGER <Name> vN`
-   so Nich can find it in PixelLab's Character Creator (same account).
-   ```
-   create_character(mode="pro", size=128, view="low top-down",
-       name="TRIGGER Sera v1",
-       concept_image_url="https://raw.githubusercontent.com/iteatsthesalt/TRIGGER-Time-Debt/main/design/images/catalog/playable_sera.jpg",
-       description="<identity block from Reference Bible §4/§5, + 'Chrono Trigger hero proportions (about 3.5 heads tall), expressive face, strong silhouette, confident pixel shading'>")
-   ```
-   Pro mode costs 25 generations and returns eight rotations in ~5 minutes. Without a catalog image, pass
-   `style_character_id=<Crono's id>` so the cast stays in one style. Quadrupeds and creatures use
-   `create_character_pro_flash(template_id=...)` or `create_8_direction_object`.
-2. **Look at the rotations** (download the zip, make a contact sheet: `tools/art/pipeline/pixellab_import.py`
-   does this as `source_art/<group>/<id>/pixellab/contact.png`). Check against the catalog image and §4:
-   identity, asymmetry (Crono's gauntlet stays on his right arm), height ratio to Crono (95 px ≈ 1.78 m).
-   Regenerate with a sharper description if wrong: a second candidate costs 25 generations and is cheaper
-   than shipping a weak lead.
-3. **Animate** with `animate_character`. Template clips cost 1–2 generations per direction at 128 px and keep
-   the 128 canvas; custom v3 clips (`action_description`, `frame_count`) cost ~3–4 per direction and come back
-   on a larger canvas (the importer re-anchors them on the feet). Standard set and the template ids:
+| Setting | Value |
+|---|---|
+| Tool | `create_character` **pro** mode (`mode="pro"`), or `create_character_pro_flash` for creatures/large bodies |
+| Canvas | **128 × 128** for anything human-sized (pro mode's maximum). Humans come out ~86–101 px tall; the importer scales each sprite to its bible height in metres, so do not pad or resize. Bosses and large creatures: Pro Flash at **256 × 256** (`width=256, height=256`), or `create_8_direction_object` up to 168 |
+| View | `view="low top-down"` (the game camera is 15–30° above the ground) |
+| Directions | **8**: south, south-west, west, north-west, north, north-east, east, south-east |
+| Reference | `concept_image_url` = the catalog painting from `design/images/catalog/` (raw GitHub URL), or `style_character_id` = Crono's id when there is no painting, so the cast shares one look |
+| Proportions | Chrono Trigger: about 3.5 heads, expressive face, strong silhouette; put that sentence in every description |
+| Asymmetry | Keep it in every direction and never mirror (Crono's gauntlet is on his right arm; Glenn's left arm is missing) |
+| Name | `TRIGGER <Name> v1` (v2, v3 for retries) so the Character Creator and this repository agree |
+| Background | Transparent (PixelLab default) |
 
-   | Game anim | PixelLab clip | Frames | Use |
-   |---|---|---|---|
-   | idle | `breathing-idle` | 4 | field and menu idle |
-   | walk | `walking` | 6 | field |
-   | run | `running-6-frames` | 6 | field, battle approach |
-   | hurt | `taking-punch` | 6 | damage flinch |
-   | ready | `fight-stance-idle-8-frames` | 8 | battle idle |
-   | ko | `falling-back-death` | 7 | KO / shutdown |
-   | revive | `getting-up` | 5 | revive / boot |
-   | release | `fireball` | 6 | tech cast release |
-   | interact | `picking-up` | 5 | field interaction |
-   | attack | v3 `action_description` (weapon-specific) | 8 | basic attack |
-   | charge | v3 (4 frames, loop) | 4 | tech charge |
-   | victory | v3 | 6–8 | battle won |
+**Animations** (`animate_character`, pass `animation_name` = the game name in the first column; template ids
+are PixelLab clips, 1–2 generations per direction at 128 px; "v3" means a custom `action_description` clip
+in `mode="v3"`, `frame_count` as listed):
 
-   The 20 concurrent job slots are shared with the studio assistant and Nich: queue one or two clips at a
-   time and `wait_for_jobs` between. Pass `animation_name=<game anim>` so the importer finds the clip by its
-   display name.
-4. **Record** the character in `data/art/pixellab_characters.json`: `pixellab.chosen`, every candidate id with
-   its PixelLab name, the canvas, `height_m` (Reference Bible §1.2) and any `anims` overrides.
+| Game anim | PixelLab clip | Frames | Who needs it |
+|---|---|---|---|
+| idle | `breathing-idle` | 4 | everyone |
+| walk | `walking` | 6 | everyone who moves |
+| run | `running-6-frames` | 6 | party, chasers |
+| hurt | `taking-punch` | 6 | everyone who fights |
+| ready | `fight-stance-idle-8-frames` | 8 | party and bosses (battle idle) |
+| attack | v3, weapon described | 8 | everyone who fights |
+| ko | `falling-back-death` | 7 | party, humanoid enemies |
+| revive | `getting-up` | 5 | party |
+| release | `fireball` | 6 | casters (tech release) |
+| charge | v3 "gathering power, loop" | 4 | party |
+| interact | `picking-up` | 5 | party |
+| victory | v3 | 6–8 | party |
 
-## 2. Import (`tools/art/pipeline/`)
+Field NPCs need idle + walk. Enemies need idle + attack + hurt (+ ko for humanoids). The party needs the full
+table. Directions that PixelLab gets wrong (a back view drawn as a front view) are flagged by the importer
+(`WARNING … looks like the <other> rotation`); delete that one direction with `delete_animation(…, direction=)`
+and queue it again into the same `animation_group_id`.
+
+## 2. Import: one command
 
 ```
-python3 tools/art/pipeline/build_characters.py crono        # one id; none = every entry with a chosen id
-python3 tools/art/pipeline/build_characters.py crono --listing /tmp/crono.txt   # zip locked: use a saved get_character listing
+python3 tools/art/import_pixellab.py <pixellab_id | download url | character url> <asset_key>
 ```
 
-`build_characters.py` reads the manifest and calls `pixellab_import.py`, which:
+Examples:
 
-- downloads `https://api.pixellab.ai/mcp/characters/<id>/download` into `source_art/<group>/<id>/pixellab/`
-  (zip, unpacked frames, `metadata.json`, `contact.png`). The zip answers HTTP 423 while any job on the
-  character is still running; `--listing` fetches the finished frames from a pasted `get_character` output
-  instead;
-- packs the sheet: eight direction rows in the order **s, w, e, n, sw, se, nw, ne** (the first four match the
-  old four-row sheets), animation columns in `DEFAULT_MAP` order, cell = smallest multiple of 32 that holds
-  every frame, feet on the line 8 px above the cell bottom (Reference Bible §1.2), missing directions filled
-  with the rotation (or mirrored when `mirror_missing` is set, never for asymmetric heroes);
-- applies the canvas finish (`finish()`): hard alpha at 128, U0 ink #2C2C2C line and saturation 0.92, U1
-  near-black line and saturation 0.3, U7 sumi-brown line;
-- writes `assets/<group>/<id>/<id>_field.png`, `<id>_frames.json` (cell, rows, fps, `height_px`, `height_m`,
-  per-anim col/count/fps/loop) and the `.import` sidecar (lossless, no mipmaps, fix alpha border, §1.12).
+```
+python3 tools/art/import_pixellab.py 8d699d00-eb9f-4da7-a408-a1f70039fa1c crono
+python3 tools/art/import_pixellab.py https://api.pixellab.ai/mcp/characters/<id>/download enm_u0_porcelain_shardling
+python3 tools/art/import_pixellab.py <id> marle --listing /tmp/marle.txt     # jobs still running: paste get_character's output into the file
+python3 tools/art/import_pixellab.py <id> glenn_marshall --no-mirror           # the default; --mirror fills a missing west side from the east for symmetric creatures
+```
 
-## 3. In the engine
+The asset key is the game's sprite id. The target is resolved from game data (override with `--group`,
+`--canvas`, `--fps`, `--height-m`, `--map game=pixellab,…`):
 
-- `SpriteLibrary.apply(sprite, id, fps)` finds `assets/{characters,npcs,enemies,bosses}/<id>/<id>_field.png`,
-  reads the frame table, calls `ActorSprite.set_height(height_px, height_m)` (so a 95 px Crono stands 1.78 m)
-  and `set_sheet`. Optional `<id>_field_n.png` / `<id>_field_m.png` are picked up as normal and mask sheets.
-- `ActorSprite` picks the row from `facing`; eight-row sheets get true diagonals from `face_vector`, four-row
-  sheets collapse diagonals to the nearest cardinal. Animations play at their own fps with optional per-frame
-  `holds`; one-shots return to the animation named in `play(name, return_to)`.
-- Review: `tools/capture/render.sh test_lineup lineup 30 -- --ids=crono,sera --anim=walk` renders every facing of
-  the listed ids on the lit stage to `/tmp/captures/`. Look at it before calling the character done.
+| Key is… | Writes | Height |
+|---|---|---|
+| a playable (`data/characters/<key>.json`) | `assets/characters/<key>/<key>_field.png` | `height_m` from the kit |
+| an enemy key or sprite id (`data/enemies/`) | `assets/enemies/u<n>/<key>/<key>_sheet.png` | `height_m` in the def, else the cast density (53.4 px/m) |
+| a boss sprite id or id (`data/bosses/`) | `assets/bosses/u<n>/<key>/<key>_sheet.png` | `height_m` or `size` in the boss JSON |
+| anything else | `assets/npcs/<key>/<key>_field.png` | cast density |
 
-## 4. Checks before commit (Reference Bible §1.13)
+Each import writes, next to the sheet: `<key>_…_n.png` (a tangent-space normal sheet generated from the
+silhouette and shading, so the HD-2D light shapes the sprite), `<key>_frames.json` (below), the `.import`
+sidecars (lossless, no mipmaps, fix alpha border, normal flag on the `_n` sheet), and
+`source_art/<group>/<key>/pixellab/` (zip, raw frames, `metadata.json`, `contact.png`). It then records the asset
+in `data/art/pixellab_assets.json` (PixelLab id, key, date, settings, previous ids under `history`).
 
-1. Identity against the catalog image and §4 (asymmetry kept, weapon reads in silhouette).
-2. Height ratio: `height_px` in the frames JSON vs Crono's 95 (Sera 86, Krona 101, Marle ~90).
-3. Every direction present for idle, walk and run; no mirrored diagonals on asymmetric characters.
-4. Loops close (walk/run/idle); one-shots end on a readable pose.
-5. The lineup capture: crisp pixels (no filtering), shadow on the ground, outline colour matches the canvas.
+PixelLab's zip (`/mcp/characters/<id>/download`) is locked (HTTP 423) while any job on that character is still
+running; `--listing <file>` builds from a pasted `get_character` listing instead, and `--skip-download` rebuilds
+from the cached raw frames.
 
-## 5. Costs so far (generations)
+## 3. Sheet layout (what the engine reads)
 
-Pro character 25; `breathing-idle` 8/8 directions; `walking` 16; `running-6-frames` 16; `taking-punch` 16;
-`fight-stance-idle-8-frames` ≤16; `falling-back-death` ≤16. A full lead (field + battle + three v3 clips)
-lands around 200 generations; an NPC with idle + walk around 50.
+- Rows are directions in this order: **s, w, e, n, sw, se, nw, ne** (the first four are the old four-row
+  order, so four-row sheets still work). Columns are animations in the table order above, each `count` wide.
+- Cell: the smallest multiple of 32 px that holds every frame (128 for the cast). Pivot bottom-centre; the
+  feet sit on the line **8 px above the cell's bottom edge** (Reference Bible §1.2). Template clips keep
+  PixelLab's canvas, so the ground line is the south rotation's; v3 clips on a larger canvas are re-anchored
+  on their first frame's feet.
+- Finish per canvas (`pixellab_import.finish`): hard alpha at 128; U0 ink line #2C2C2C and saturation 0.92; U1
+  near-black line and saturation 0.30; U7 sumi-brown line. Other canvases pass through.
+- `<key>_frames.json`:
+  ```json
+  {"cell": 128, "rows": ["s","w","e","n","sw","se","nw","ne"], "mirror_w": false, "fps": 60,
+   "height_px": 95, "height_m": 1.78, "source": {"pixellab_character": "<id>", "canvas": "u0"},
+   "anims": {"idle": {"col": 0, "count": 4, "fps": 5, "loop": true}, "walk": {"col": 4, "count": 6, "fps": 10, "loop": true}, "...": {}}}
+  ```
+  Optional per-anim `holds` (seconds per frame) override `fps` frame by frame.
+- Engine side: `SpriteLibrary.apply(sprite, id, fps)` finds the sheet by id under
+  `assets/{characters,npcs,enemies,bosses}`, calls `ActorSprite.set_height(height_px, height_m)` and `set_sheet`;
+  `_n` and `_m` sheets are picked up automatically. `ActorSprite.face_vector` gives true eight-way facing on
+  eight-row sheets; `play(name, return_to)` runs one-shots.
+
+## 4. After every import
+
+1. Look at `source_art/<group>/<key>/pixellab/contact.png` against the catalog image and the bible brief.
+2. Render it: `bash tools/capture/render.sh test_lineup lineup 30 -- --ids=<key> --anim=walk` → `/tmp/captures/`,
+   and the scene that uses it. Judge: identity, asymmetry, height next to Crono (95 px ≈ 1.78 m), loops close.
+3. Move the entry in `docs/ASSET_REQUESTS.md` to **Done** with the PixelLab id and date; refresh
+   `docs/screenshots/` when a scene changes visibly.
+
+## 5. Checking for new art (at least hourly, and before any scene work)
+
+With the MCP tools: `list_characters(limit=50)`, `list_objects(limit=50)`, `list_topdown_tilesets`,
+`list_tiles_pro`, `list_ui_assets`, `list_images(limit=50)`. Anything completed whose name matches an asset key
+(or is clearly for the game) and is not yet in `data/art/pixellab_assets.json`: import it, wire it in,
+screenshot it, record it. Characters still showing pending jobs: wait, or import with `--listing`.
+
+## 6. Other asset kinds (import routes to add as they arrive)
+
+- **Objects / props** (`create_8_direction_object`, `create_1_direction_object`, `create_object_pro_flash`):
+  `get_object` gives the rotation URLs; props are billboards placed by `Location.add_prop` (to write with the
+  first prop) under `assets/props/u<n>/<key>.png`.
+- **Portraits** (`create_image_pro` / `pro_flash`, 512×512 bust, eight expressions): `assets/portraits/<id>/<id>_<expr>.png`;
+  `PortraitCache` already looks there first.
+- **Textures** (`create_image_*` tileable, 64 px/m): `assets/textures/generated/<material>_albedo.png` + `_normal.png`;
+  `SceneKit.named("<material>")` already looks there first.
+- **Tilesets** (`create_topdown_tileset`, `create_tiles_pro`): `assets/tilesets/u<n>/<key>/` with the sheet and
+  metadata JSON (Wang corners) for ground planes.
+- **UI** (`create_ui_asset`, icons via `create_image_pro`): `assets/ui/generated/`.
+- **VFX** (`animate_image` flipbooks): `assets/vfx/generated/<family>/<id>_fb_<n>f.png`.
+
+## 7. Costs seen so far (generations)
+
+Pro character 25; `breathing-idle` 8 per eight directions; `walking`, `running-6-frames`, `taking-punch`,
+`fight-stance-idle-8-frames`, `falling-back-death` up to 16 each; a full lead (field + battle + three v3
+clips) is about 200; an NPC with idle + walk about 50; a direction redo 1–2.

@@ -1,0 +1,55 @@
+{
+ "_readme": [
+  "Every PixelLab asset imported into the game: asset key -> PixelLab id, kind, import date and the settings",
+  "the sheet was built with. Written by tools/art/import_pixellab.py; rebuild any entry with",
+  "python3 tools/art/import_pixellab.py <pixellab_id> <key>. Nich's picks in the Character Creator are",
+  "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted."
+ ],
+ "crono": {
+  "pixellab_id": "8d699d00-eb9f-4da7-a408-a1f70039fa1c",
+  "pixellab_name": "Idle",
+  "kind": "character",
+  "group": "characters",
+  "path": "assets/characters/crono",
+  "imported": "2026-10-29",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.78,
+  "height_px": 95,
+  "cell": 128,
+  "anims": {
+   "idle": 4,
+   "walk": 6,
+   "run": 6,
+   "ready": 8,
+   "hurt": 6,
+   "ko": 7
+  },
+  "missing": [],
+  "history": []
+ },
+ "sera": {
+  "pixellab_id": "ce6ffc25-e512-4312-9d83-a850ab3b561f",
+  "pixellab_name": "Idle",
+  "kind": "character",
+  "group": "characters",
+  "path": "assets/characters/sera",
+  "imported": "2026-10-29",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.62,
+  "height_px": 86,
+  "cell": 128,
+  "anims": {
+   "idle": 4,
+   "walk": 6
+  },
+  "missing": [
+   "north-east:idle",
+   "north-west:idle",
+   "south-east:idle",
+   "south-west:idle"
+  ],
+  "history": []
+ }
+}

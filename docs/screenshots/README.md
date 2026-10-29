@@ -1,8 +1,8 @@
 # Screenshots
 
 Progress captures for Nich, refreshed after every visual milestone. Newest state first. Rooms and textures
-in captures 01–06 are placeholders (primitive-box rooms, procedural tiles) until the studio assistant's
-textures land in `assets/textures/generated/`; from capture 07 on, the characters are the real PixelLab
+in captures 01–06 are placeholders (primitive-box rooms, procedural tiles) until textures and props arrive
+from Nich's PixelLab bot (`docs/ASSET_REQUESTS.md`); from capture 07 on, the characters are real PixelLab
 sprites (see `docs/ART_PIPELINE.md`).
 
 | File | What it shows | Date |

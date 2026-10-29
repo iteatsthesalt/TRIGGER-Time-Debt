@@ -38,6 +38,8 @@ ROWS = ["south", "west", "east", "north", "south-west", "south-east", "north-wes
 SHORT = {"south": "s", "west": "w", "east": "e", "north": "n", "south-west": "sw", "south-east": "se",
          "north-west": "nw", "north-east": "ne"}
 FEET_PAD = 8
+## The cast's pixel density: Crono's 95 drawn pixels stand 1.78 m (Reference Bible §1.2 adjusted, see DECISIONS).
+CAST_DENSITY = 95.0 / 1.78
 
 # Game animation name -> (PixelLab animation display names to look for, fps, loop)
 DEFAULT_MAP = {
@@ -251,8 +253,10 @@ def check_directions(rotations, animations):
 
 
 def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps=60.0, anim_map=None,
-                extra_rows=None, mirror_missing=True):
-    """Pack rotations and animations into the game sheet and write the frame table."""
+                extra_rows=None, mirror_missing=True, suffix="_field", density_px_per_m=None):
+    """Pack rotations and animations into the game sheet and write the frame table.
+    `suffix` is "_field" for characters and NPCs, "_sheet" for enemies and bosses (SpriteLibrary's contract).
+    When `height_m` is None the character keeps the cast's pixel density (`density_px_per_m`)."""
     anim_map = anim_map or {}
     rotations, animations = load_state(meta, src_dir)
     for name, d, looks_like in check_directions(rotations, animations):
@@ -341,18 +345,20 @@ def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps
                 placed = place_in_cell(fr, cell, anchor)
                 sheet.paste(finish(placed, canvas), (c0 * cell + i * cell, r * cell))
     os.makedirs(out_dir, exist_ok=True)
-    sheet_path = os.path.join(out_dir, f"{game_id}_field.png")
+    sheet_path = os.path.join(out_dir, f"{game_id}{suffix}.png")
     sheet.save(sheet_path, optimize=True)
-    n_path = os.path.join(out_dir, f"{game_id}_field_n.png")
+    n_path = os.path.join(out_dir, f"{game_id}{suffix}_n.png")
     normal_sheet(sheet, cell).save(n_path, optimize=True)
     write_import(n_path, normal=True)
+    if height_m is None:
+        height_m = float(height_px) / float(density_px_per_m or CAST_DENSITY)
     data = {
         "cell": cell,
         "rows": [SHORT[d] for d in ROWS],
         "mirror_w": False,
         "fps": fps,
         "height_px": int(height_px),
-        "height_m": float(height_m),
+        "height_m": round(float(height_m), 3),
         "source": {"pixellab_character": meta["states"][0]["character"]["id"], "canvas": canvas},
         "anims": table,
     }

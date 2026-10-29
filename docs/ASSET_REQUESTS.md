@@ -1,24 +1,31 @@
 # Asset requests for Nich's PixelLab bot
 
 Nich makes the art. Each entry below is a ready-to-send PixelLab request. The build agent imports finished
-items with `python3 tools/art/pipeline/build_characters.py <asset_key>` (see `docs/ART_PIPELINE.md`) and marks
-the entry DONE with the PixelLab id. Keep this list in priority order; the first undone entry is the most
-urgent.
+items with `python3 tools/art/import_pixellab.py <pixellab_id|url> <asset_key>` (contract, sheet layout and
+checks in `docs/ART_PIPELINE.md`) and moves the entry to **Done** with the PixelLab id and date. Keep this
+list in priority order; the first undone entry is the most urgent. Entries marked IN PROGRESS already exist
+on the account (ids given); only the listed remaining animations are needed for them.
 
 ## How to send one
 
-- **Characters** (anything that walks): `create_character` in **pro** mode, `size=128`, `view="low top-down"`,
-  8 directions, name it `TRIGGER <Name> v1` (v2, v3 for retries), `concept_image_url` = the catalog image
-  link given, `description` = the prompt given. For the house style, add `style_character_id` =
-  Crono's id `8d699d00-eb9f-4da7-a408-a1f70039fa1c` whenever there is no catalog image.
-- Then queue the **animations** listed, one or two at a time (`animate_character`, pass `animation_name`):
-  field set = `breathing-idle`, `walking`, `running-6-frames`, `taking-punch`; battle set adds
-  `fight-stance-idle-8-frames`, `falling-back-death`, `getting-up`, `fireball` (tech release), `picking-up`
-  (interact), plus a custom v3 **attack** (8 frames, weapon in the description).
-- **Creatures and things that do not walk like a person** (motes, drones, spoons, a cat robot): use
-  `create_character_pro_flash` with the right `template_id` (`cat`, `dog`, `custom`) or
-  `create_8_direction_object`; same size, same view, same naming.
-- Every prompt below already carries the style line. Keep the flat background.
+- **Characters** (anything that walks): `create_character` in **pro** mode (`mode="pro"`), `size=128` (pro's
+  maximum; the importer scales every sprite to its height in metres, so never pad or resize),
+  `view="low top-down"`, 8 directions, name it `TRIGGER <Name> v1` (v2, v3 for retries), `concept_image_url`
+  = the catalog image link given, `description` = the prompt given. For the house style, add
+  `style_character_id` = Crono's id `8d699d00-eb9f-4da7-a408-a1f70039fa1c` whenever there is no catalog image.
+- Then queue the **animations** listed, one or two at a time (`animate_character`, and pass
+  `animation_name` = the game name: `idle`, `walk`, `run`, `hurt`, `ready`, `ko`, `revive`, `release`,
+  `interact`, `attack`, `charge`, `victory`): field set = `breathing-idle` (idle), `walking` (walk),
+  `running-6-frames` (run), `taking-punch` (hurt); battle set adds `fight-stance-idle-8-frames` (ready),
+  `falling-back-death` (ko), `getting-up` (revive), `fireball` (release), `picking-up` (interact), plus a
+  custom v3 **attack** (`mode="v3"`, `frame_count=8`, weapon in the `action_description`).
+- **Creatures and things that do not walk like a person** (motes, drones, spoons, a cat robot) and **anything
+  taller than a person**: `create_character_pro_flash` with `width`/`height` 128 (creatures) or 256 (bosses) and
+  the right `template_id` (`cat`, `dog`, `custom`), or `create_8_direction_object` (max 168); same view, same
+  naming. Pro Flash animates with the same `animate_character` clips.
+- Every prompt below already carries the style line. Keep the transparent background. If a direction comes
+  back facing the wrong way (the importer reports it), delete just that direction and queue it again into the
+  same `animation_group_id`.
 
 Catalog images live at `https://raw.githubusercontent.com/iteatsthesalt/TRIGGER-Time-Debt/main/design/images/catalog/<file>.jpg`.
 
@@ -26,13 +33,14 @@ Catalog images live at `https://raw.githubusercontent.com/iteatsthesalt/TRIGGER-
 
 | # | Asset key | Request |
 |---|---|---|
-| 1 | `sera` | IN PROGRESS by the build agent (PixelLab `ce6ffc25-…`). Skip unless the agent asks for a v2. |
-| 2 | `krona` | **Character, pro, 128, 8-dir.** Concept image `playable_krona.jpg`. Prompt: `Krona, ageless woman who looks early thirties, female mirror of Crono, spiky red hair tied in a war-knot with white ties, tired eyes, cheek scar, cracked black lacquered o-yoroi with a melted pauldron, red sash, tattered dry-brush cape, dripping gourd at the hip, bare feet, two long nodachi of snapped steel and red chitin on her back, Chrono Trigger hero proportions about 3.5 heads tall, expressive face, strong silhouette, confident pixel shading, sumi-e ink look with three tones: bone white, soot grey, arterial crimson`. Anims: field set + battle set + attack (`a heavy two-handed nodachi slash from high right to low left, ink flicks off the blade`). |
+| 0 | `crono` | IN PROGRESS, template character (PixelLab `8d699d00-eb9f-4da7-a408-a1f70039fa1c`, "Crono 41 (pro, concept)"; has idle, walk, run, hurt, ready, ko). **Remaining:** `getting-up` (revive), `fireball` (release), `picking-up` (interact), attack v3 (`a fast one-handed katana slash from his right side, the brass gauntlet leading, a faint rainbow arc off the blade`), charge v3 4 frames loop (`crouched draw stance, the katana held back, faint clock-wisps gathering`), victory v3 8 frames (`he lowers the katana, exhales, and rests the gauntlet hand on his hip`). |
+| 1 | `sera` | IN PROGRESS (PixelLab `ce6ffc25-e512-4312-9d83-a850ab3b561f`, "Sera 17 (pro, concept)"; has idle, walk, run). **Remaining:** `taking-punch`, battle set, attack v3 (`a quick double slash with two clock-hand daggers, ribbons of light trailing`), charge v3 (`she hovers higher, daggers raised, violet light pooling`), victory v3. |
+| 2 | `krona` | IN PROGRESS (PixelLab `6af5c834-e7a7-4e8b-83d7-8fb2b4222695`, "Krona (pro, concept)"; has idle, walk). **Remaining:** `running-6-frames`, `taking-punch`, battle set, attack v3 (`a heavy two-handed nodachi slash from high right to low left, ink flicks off the blade`), charge v3 (`iai stance, both nodachi sheathed low, a held breath`), victory v3. |
 | 3 | `marle` | **Character, pro, 128, 8-dir.** Concept image `npc_marle.jpg`. Prompt: `Queen Nadia Marle, 40, blonde ponytail, ceremonial blue and cream gown with a fitted bodice, brown boots, a ledger under one arm, tired regal posture, Chrono Trigger hero proportions about 3.5 heads tall, expressive face, strong silhouette, painterly watercolour pixel shading, desaturated`. Anims: field set + `fight-stance-idle-8-frames` + attack (`she draws a small crossbow and fires one bolt`). |
 | 4 | `glenn_marshall` | **Character, pro, 128, 8-dir.** Concept image `npc_glenn.jpg`. Prompt: `Glenn, 47, one-armed Marshall of Guardia, grey swept hair and short beard, LEFT sleeve empty and pinned, green cape over white-and-gold plate armour, belts and pouches, a tall cane capped with an old bronze sword hilt in his RIGHT hand, worn boots, Chrono Trigger hero proportions about 3.5 heads tall, expressive weathered face, strong silhouette, painterly watercolour pixel shading, desaturated`. Keep the missing arm in every direction. Anims: `breathing-idle`, `walking` (cane walk), `taking-punch`, `picking-up`. |
 | 5 | `magus` | **Character, pro, 128, 8-dir.** Concept image `npc_magus.jpg`. Prompt: `Magus, tall gaunt sorcerer, long silver-lavender hair, one eye blind and clouded with a trail of liquid silver dripping from it, violet high-collared cloak over dark robes, long fingers, Chrono Trigger hero proportions about 4 heads tall, sharp expressive face, strong silhouette, painterly watercolour pixel shading, desaturated`. Keep the blind eye on the same side in every direction. Anims: field set + `fireball` + attack (`he raises one hand and a scythe of violet light sweeps across`). |
 | 6 | `vaelos_boy` | **Character, pro, 128, 8-dir.** Concept image `enemy_vaelos.jpg` (the adult; make him a boy). Prompt: `a boy of about ten who looks like Crono's son, pale alabaster skin with faint hairline cracks that leak points of starlight, short red-and-silver hair, simple cream tunic and bare feet, calm unsettling smile, Chrono Trigger child proportions about 3 heads tall, painterly watercolour pixel shading, desaturated`. Anims: `breathing-idle`, `walking`, `picking-up`. |
-| 7 | `vaelos` (Sovereign) | **Character, pro, 128, 8-dir** (he is nine feet tall: ask for `height` so he fills the canvas; the importer scales by `height_m`). Concept image `enemy_vaelos.jpg`. Prompt: `Vaelos, nine-foot androgynous humanoid Lavos grown from Crono's atoms, cracked alabaster skin leaking starlight, a fibre-optic mane of light, a mantle of fossilised saurian bones with server blades and shards of stained glass, long elegant hands, serene cruel face like an older Crono, tall imposing silhouette, painterly watercolour pixel shading, desaturated, violet accents`. Anims: `breathing-idle`, `walking`, `fight-stance-idle-8-frames`, `fireball`, attack (`he extends one arm and a spear of starlight erupts forward`). |
+| 7 | `vaelos` (Sovereign) | **Pro Flash character, 256×256, 8-dir, template `custom`** (he is nine feet tall; the importer scales by `height_m` = 2.74). Style image: a 256-px crop of `enemy_vaelos.jpg` is too large for Pro Flash, so give the full prompt and use `style_image` = Crono's south rotation URL for the pixel look. Prompt: `Vaelos, nine-foot androgynous humanoid Lavos grown from Crono's atoms, cracked alabaster skin leaking starlight, a fibre-optic mane of light, a mantle of fossilised saurian bones with server blades and shards of stained glass, long elegant hands, serene cruel face like an older Crono, tall imposing silhouette, painterly watercolour pixel shading, desaturated, violet accents`. Anims: `breathing-idle`, `walking`, `fight-stance-idle-8-frames`, `fireball`, attack (`he extends one arm and a spear of starlight erupts forward`). |
 | 8 | `villager_m`, `villager_f`, `child`, `elder`, `guard`, `merchant` | Six **characters, pro, 128, 8-dir**, `style_character_id` = Crono's id, no concept image. Prompts: `a Guardia townsman in a brown tunic and cap carrying a basket`; `a Guardia townswoman in a green dress and apron with a shawl`; `a Guardia child in a yellow smock with a wooden sword`; `a white-bearded elder in a grey robe leaning on a stick`; `a Guardia castle guard in blue-and-silver mail with a halberd and a plumed helm`; `a plump merchant in a red waistcoat with a money pouch and a ledger`; each ending `Chrono Trigger NPC proportions about 3.5 heads tall, friendly readable face, painterly watercolour pixel shading, desaturated`. Anims: `breathing-idle`, `walking` only. |
 
 ## Batch 2: the Prologue and Chapter 1 enemies (U0)
@@ -59,14 +67,53 @@ described in the prompt, plus `taking-punch`.
 
 | # | Asset key | Prompt |
 |---|---|---|
-| 20 | `bos_u0_atrium_cradle` | **Object or character, 8-dir, `size=256`.** Concept image `enemy_arch_curator_r_66y.jpg` (a smaller proto version). Prompt: `a prototype Arch-Curator: a hulking robot on six brass insect legs, a rotating thoracic ring of eight gun barrels, a porcelain theatre-mask face with one sorrowful blue eye, copper vines and oil, peeled chassis showing red muscle fibre, painterly watercolour pixel art with clay-and-brass detail`. Anims: `breathing-idle` (the ring turns), attack (`the barrel ring spins and fires a volley`), `taking-punch`, `falling-back-death` (legs fold). |
-| 21 | `enm_u0_training_dummy_prime` (the 999 Shard Doll) | **Character, pro, `size=192`, 8-dir.** Concept image `playable_crono.jpg`. Prompt: `a life-size porcelain Bekkler doll of Crono with goggles pushed up and a glowing Time Egg replica set in its chest, standing on six reverse-jointed brass spider legs, a tungsten bracer on one arm and a mercury-silver shoulder, small porcelain masks orbiting its collar, giggling expression, gold cracks, painterly watercolour pixel art`. Anims: `breathing-idle` (head tilt), attack (`it rears up and stamps with two legs`), `taking-punch`, `falling-back-death` (cracks open on a galaxy inside). |
+| 20 | `bos_u0_atrium_cradle` | **Pro Flash character, 256×256, 8-dir, template `custom`** (3.2 m tall; `create_8_direction_object` at 168 is the fallback). Concept: `enemy_arch_curator_r_66y.jpg` as a smaller proto version (describe it; Pro Flash takes no concept image). Prompt: `a prototype Arch-Curator: a hulking robot on six brass insect legs, a rotating thoracic ring of eight gun barrels, a porcelain theatre-mask face with one sorrowful blue eye, copper vines and oil, peeled chassis showing red muscle fibre, painterly watercolour pixel art with clay-and-brass detail`. Anims: `breathing-idle` (the ring turns), attack (`the barrel ring spins and fires a volley`), `taking-punch`, `falling-back-death` (legs fold). |
+| 21 | `enm_u0_training_dummy_prime` (the 999 Shard Doll) | **Pro Flash character, 192×192, 8-dir, template `custom`** (2.0 m tall; pro mode cannot exceed 128). Describe the Crono doll from `playable_crono.jpg`. Prompt: `a life-size porcelain Bekkler doll of Crono with goggles pushed up and a glowing Time Egg replica set in its chest, standing on six reverse-jointed brass spider legs, a tungsten bracer on one arm and a mercury-silver shoulder, small porcelain masks orbiting its collar, giggling expression, gold cracks, painterly watercolour pixel art`. Anims: `breathing-idle` (head tilt), attack (`it rears up and stamps with two legs`), `taking-punch`, `falling-back-death` (cracks open on a galaxy inside). |
 
 ## Batch 4: Chapter 2 (U1 Crimson Shogunate, sumi-e)
 
-Requested once Batch 1–3 are in. The build agent will add the U1 enemy list and the Ashen Daimyo here with
-prompts in the three-ink sumi-e style.
+Requested once Batch 1–3 are in. The build agent adds the U1 enemy list, the Krona duel-boss variant and the
+Ashen Daimyo here with prompts in the three-ink sumi-e style when Chapter 2 scene work starts.
+
+## Batch 5: portraits (dialogue busts)
+
+`create_image_pro`, 512×512, transparent, one call per expression with the catalog image as a labelled
+reference (`usage: "character base"`). Expressions, in this order: neutral, sad, angry, surprised, smile, hurt,
+special_a, special_b. Import target `assets/portraits/<id>/<id>_<expr>.png` (the game looks there first).
+Order: crono, sera, marle, robo, glenn, magus, krona (U1 four-ink prompt tail), vaelos, lucca, bekkler.
+Prompt tails per canvas are in Reference Bible §1.11; identity blocks in §4 and §5.
+
+## Batch 6: Prologue props and the Atrium (billboards, `create_1_direction_object` or `create_object_pro_flash`, `view="low top-down"`)
+
+128 px unless noted, transparent, U0 watercolour tail. Kitchen: copper porridge pot on a hook, stone counter
+with two porcelain bowls, long oak table, three-legged stool with an ink-burned groove, brass speaking tube,
+copper pots on a shelf, a hearth with embers (3-frame flicker), stained-glass window panel (texture, 128×192).
+Courtyard: stone well, hand cart, moss flower bed, iron portcullis. Atrium Horologe (Reference Bible §3.2,
+§5.4.3, plate-00): the clock pillar face 256, brass gate arch 256, the Seed of Doan pot (§5.7.7), gramophone
+on a workbench (§5.7.5), the little Bekkler doll, dummy plinth, reflecting pool rim tiles, loft ladder, Robo's
+rest alcove.
+
+## Batch 7: U0 textures (tileable, 64 px/m, `create_image_pixen` or `pro` at 256×256 then tiled; a `_normal` from the importer)
+
+castle_flagstone, castle_wall_block, oak_plank, oak_beam, slate_roof, brass_panel, cobble_wet, grass_moss,
+dirt_path, fair_canvas_stripe, stone_steps, plaster_cream. Import target `assets/textures/generated/<name>_albedo.png`
+(the game looks there first).
+
+## Batch 8: UI (`create_ui_asset` and `create_image_pro` icons; Reference Bible §6 and the UI prompt tail)
+
+Dialogue frame 9-slice, menu frame, tooltip frame, cursor hand 16, target cursor 24, nine element icons 32
+(astral, tachyon, ruin, ferro, mycelia, vitreous, guile, hz, null; shape as well as colour), ten status icons
+16 (bleed, burn, slow, haste, seal, break, guard, stagger, oil_blight, rewound), HP/BP/turn gauges, shield plate
+housing 48×24 with the key glyphs. Import target `assets/ui/generated/`.
+
+## Batch 9: VFX flipbooks (`animate_image`, 128 cells, additive where noted)
+
+Element hits ×9 (8 frames each), Break shatter 12 (additive), plate crack 6, perfect-parry flash 4, Crono tech
+wisps 4 (loop) and Smear Dash trail 4, Sera Rewind glyph 8 and fast-forward streaks 6, Krona ink splash 8 and
+wet-ink zone 6 (loop). Import target `assets/vfx/generated/<family>/<id>_fb_<n>f.png`.
 
 ## Done
 
-(The build agent moves entries here with the PixelLab id and the import date.)
+| Asset key | PixelLab id | Imported | Notes |
+|---|---|---|---|
+| `crono` (field: idle, walk, run, hurt, ready, ko) | `8d699d00-eb9f-4da7-a408-a1f70039fa1c` | 2026-10-29 | the template; battle clips still listed above as #0 |

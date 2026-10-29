@@ -20,19 +20,26 @@ content; this file is how we work.
    should weigh in later add a line to `docs/QUESTIONS_FOR_NICH.md`.
 6. Copy the best new captures to `docs/screenshots/` (update its README) and to `/mnt/session/outputs/`.
 
-## Division of labour (do not cross these lines)
+## Division of labour (current plan; the older "studio folders" arrangement is withdrawn)
 
-- **Build agent (you):** every scene, system, script, test, dialogue, data file and sound; all character
-  sprites and animations (playable cast, NPCs, enemies, bosses) through `docs/ART_PIPELINE.md`; everything
-  under `scenes/ scripts/ data/ audio/ tests/ tools/ assets/characters assets/npcs assets/enemies assets/bosses`.
-- **Studio assistant (another agent, same PixelLab account, REST API):** commits straight to `main` in
-  `assets/portraits/`, `assets/ui/generated/`, `assets/textures/generated/`, `assets/vfx/generated/`, each with a
-  `manifest.json`. Do not generate those families. Check the folders first and wire in what is there
-  (`PortraitCache`, `SceneKit.named`, the UI loaders already look there); write what is missing in
-  `docs/REQUESTS_FOR_STUDIO.md` and carry on with a placeholder.
-- **Nich:** reviews and picks looks in PixelLab's Character Creator. Name PixelLab characters
-  `TRIGGER <Name> vN` and record every id in `data/art/pixellab_characters.json` so picks can be matched.
-- PixelLab's 20 concurrent job slots are shared by all three: queue a clip or two, `wait_for_jobs`, continue.
+- **Nich makes all art.** His bot, connected to the same PixelLab account, generates every asset from
+  `docs/ASSET_REQUESTS.md`: a prioritized list where each entry is a ready-to-send PixelLab request (asset key,
+  operation, size and view, animation list, full prompt from the Reference Bible brief and catalog image).
+  Keep that file current: the first undone entry is the most urgent; move entries to **Done** with the PixelLab
+  id and date as they are imported; add the next chapter's batch before its scene work starts.
+- **Build agents (you, and the studio assistant whenever this run stops) build everything else:** combat,
+  systems, scenes, scripts, dialogue, data, tests, menus, saves, music. You do not generate art beyond what
+  proves the pipeline (Crono is the finished template). Until an asset arrives, use the existing code-drawn
+  placeholder and keep building.
+- **Check for incoming art at least hourly and before any scene work:** list the PixelLab account's
+  characters, objects, tilesets and UI assets through the MCP tools; import anything new and completed whose
+  name matches an asset key (or is clearly for the game) with
+  `python3 tools/art/import_pixellab.py <id|url> <asset_key>`; wire it into the scene that needs it; screenshot
+  it; it is recorded in `data/art/pixellab_assets.json` (PixelLab id, key, date). **Never delete anything in
+  the PixelLab library.** Name any character you do create `TRIGGER <Name> vN`.
+- PixelLab's 20 concurrent job slots are shared with Nich's bot: do not occupy them.
+- Both agents commit straight to `main`: `git pull --rebase` before every push, small commits, and keep
+  `PROGRESS.md`, `docs/DECISIONS.md` and `docs/ASSET_REQUESTS.md` current at all times so either can continue.
 
 ## The hand-off is a deliverable
 
@@ -40,7 +47,7 @@ Nich and other tools (Claude Code, Cursor) must be able to keep building from th
 
 - `README.md` stays a complete orientation (run, check, add a scene / tech / enemy / boss / dialogue / flag /
   sprite, where each kind of data lives). Update it when you add a system or change a format.
-- `docs/` stays tidy: `ART_PIPELINE.md`, `DECISIONS.md`, `QUESTIONS_FOR_NICH.md`, `REQUESTS_FOR_STUDIO.md`,
+- `docs/` stays tidy: `ART_PIPELINE.md`, `ASSET_REQUESTS.md`, `DECISIONS.md`, `QUESTIONS_FOR_NICH.md`,
   `reports/`, `screenshots/`. `PROGRESS.md` lives in the root.
 - Systems are generic before they are wide: a mechanic goes into data + a reusable component, not a special
   case in one scene. Make the second instance free.

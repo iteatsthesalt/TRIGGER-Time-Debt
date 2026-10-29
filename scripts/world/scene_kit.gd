@@ -4,7 +4,7 @@ class_name SceneKit
 extends RefCounted
 
 const TILE_M := 16.0  # a 1024 px texture covers 16 m at 64 px/m
-## Where the studio assistant's textures land (docs/REQUESTS_FOR_STUDIO.md): <material>_albedo.png + _normal.png.
+## Where imported textures land (docs/ART_PIPELINE.md §6): <material>_albedo.png + _normal.png.
 const GENERATED_DIR := "res://assets/textures/generated"
 ## Placeholder materials by name until the generated ones exist.
 const PLACEHOLDER_BY_NAME := {

@@ -1,5 +1,5 @@
-## Loads and caches portrait textures. Lookup order (docs/REQUESTS_FOR_STUDIO.md):
-##   assets/portraits/<id>/<id>_<expr>.png          (the studio assistant's expression sets)
+## Loads and caches portrait textures. Lookup order (docs/ART_PIPELINE.md §6):
+##   assets/portraits/<id>/<id>_<expr>.png          (imported PixelLab expression sets)
 ##   assets/<group>/<id>/<id>_portrait_<expr>.png   (catalog crops kept by the build agent)
 ## falling back to the neutral expression, then null (the dialogue box hides the frame).
 class_name PortraitCache

@@ -1,0 +1,36 @@
+{
+  "group_id": "6c15f0d7-3449-474e-8c7b-e70ad5034490",
+  "states": [
+    {
+      "character": {
+        "id": "d1df31ab-e2cc-47c7-a8b7-6b293769a293",
+        "name": "Idle",
+        "prompt": "Crono at 41, weary swordsman father: spiky red hair, white headband with trailing tails, grey stubble, frayed orange scarf, ragged blue tunic, brown trousers and boots, moss-covered stone pauldrons, heavy brass gauntlet on his RIGHT arm wired to a curved katana held low. Keep the gauntlet and katana on his right arm in every direction (never mirror).",
+        "size": {
+          "width": 128,
+          "height": 128
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-10-29T12:38:39.249781+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-10-29T13:27:45.814140"
+}

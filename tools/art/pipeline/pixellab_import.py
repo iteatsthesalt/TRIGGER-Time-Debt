@@ -257,7 +257,7 @@ def check_directions(rotations, animations):
 def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps=60.0, anim_map=None,
                 extra_rows=None, mirror_missing=True, suffix="_field", density_px_per_m=None):
     """Pack rotations and animations into the game sheet and write the frame table.
-    `suffix` is "_field" for characters and NPCs, "_sheet" for enemies and bosses (SpriteLibrary's contract).
+    `suffix` is "[_<variant>]_<tier>" (e.g. "_field", "_u1_field", "_action"): the file is <id><suffix>.png.
     When `height_m` is None the character keeps the cast's pixel density (`density_px_per_m`)."""
     anim_map = anim_map or {}
     rotations, animations = load_state(meta, src_dir)
@@ -364,7 +364,7 @@ def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps
         "source": {"pixellab_character": meta["states"][0]["character"]["id"], "canvas": canvas},
         "anims": table,
     }
-    with open(os.path.join(out_dir, f"{game_id}_frames.json"), "w") as f:
+    with open(os.path.join(out_dir, f"{game_id}{suffix}_frames.json"), "w") as f:
         json.dump(data, f, indent=1)
     write_import(sheet_path)
     return sheet, data, missing

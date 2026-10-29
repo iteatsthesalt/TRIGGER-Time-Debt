@@ -87,3 +87,19 @@ bible's 114 px (§1.2). Rather than rescale pixel art, `<id>_frames.json` now ca
 (Crono 1.78 m). Character pixels are therefore ~1.2× the environment's 64 px/m texel, as in Octopath.
 Touches Reference Bible §1.2 (pixel density) and §1.4 CHR-F (the sheet now has eight direction rows:
 s, w, e, n, sw, se, nw, ne; the first four keep the old order so four-row sheets still load).
+
+## Art comes from Nich; a character is a set of sprites (2026-10-29, run 2)
+Nich now makes every asset with his PixelLab bot from `docs/ASSET_REQUESTS.md`; agents import with
+`tools/art/import_pixellab.py` and build everything else. A character is a set of sprites by tier — map (64),
+field (128 chibi, also used in battle), action (256, realistic 5.5-head, for Dual/Triple Tech cut-ins and
+cinematic beats), portrait (512) — plus variants for another canvas or a story state
+(`<id>[_<variant>]_<tier>.png`). `SpriteLibrary.apply` takes a tier and variant and falls back to field/base;
+`ActorSprite.set_tier` swaps a live sprite. The earlier "house style = one chibi sheet" decision stands for the
+field tier; the realistic rotation set (`d1df31ab…`) is the action tier's base rather than an unused
+alternative. Touches Reference Bible §1.4 (CHR-F/CHR-B become tiers of one set; battle clips live in the field
+sheet) and §4 (the action tier is the realistic reading of the catalog paintings).
+
+## Marle's field sprite arrived at realistic proportions
+`npc_marle` (`05c8ee87…`) from the bot is a 5.5-head, 124 px figure beside a 3.5-head cast. It is imported as
+`marle_field` so the game has her, and the decision (keep, or regenerate as chibi and move this one to her
+action tier) is left to Nich in ASSET_REQUESTS #3 and QUESTIONS_FOR_NICH.

@@ -60,6 +60,7 @@ func run() -> void:
 		test_prologue_scripts_reachable,
 		test_boss_defs_validate_and_phase_windows,
 		test_coordinator_add_enemy_and_undamageable,
+		test_sprite_library_tiers_and_variants,
 	]
 	for t in tests:
 		_current = t.get_method()
@@ -1127,3 +1128,29 @@ func test_coordinator_add_enemy_and_undamageable() -> void:
 	c.advance(1.0)
 	check_eq(c.battle_time, t0, "a paused coordinator does not advance")
 	c.paused = false
+
+
+func test_sprite_library_tiers_and_variants() -> void:
+	# Crono has a field sheet and an action sheet; Sera has only field. A missing tier or variant falls back.
+	var r: Dictionary = SpriteLibrary.resolve("crono", &"field")
+	check(not r.is_empty() and r["sheet"].ends_with("crono_field.png"), "crono field resolves to crono_field.png")
+	var a: Dictionary = SpriteLibrary.resolve("crono", &"action")
+	check(not a.is_empty() and a["tier"] == &"action" and a["sheet"].ends_with("crono_action.png"), "crono action tier resolves")
+	var m: Dictionary = SpriteLibrary.resolve("crono", &"map")
+	check(not m.is_empty() and m["tier"] == &"field", "a missing map tier falls back to field")
+	var v: Dictionary = SpriteLibrary.resolve("crono", &"field", &"u1")
+	check(not v.is_empty() and v["variant"] == &"" and v["tier"] == &"field", "a missing variant falls back to the base sheet")
+	check(SpriteLibrary.has_tier("crono", &"action") and not SpriteLibrary.has_tier("sera", &"action"), "has_tier reports real tiers only")
+	var sprite := ActorSprite.new()
+	root.add_child(sprite)
+	SpriteLibrary.apply(sprite, "crono", 60.0)
+	check(sprite.loaded_tier == &"field" and sprite.anims.has(&"walk") and sprite.rows == 8, "field sheet: eight rows, walk present")
+	sprite.set_facing(&"nw")
+	sprite.play(&"walk")
+	var swapped: bool = sprite.set_tier(&"action")
+	check(swapped and sprite.loaded_tier == &"action" and sprite.facing == &"nw", "swapping to the action tier keeps the facing")
+	check(sprite.anim == &"idle", "an animation the new tier lacks falls back to idle")
+	check(sprite.set_tier(&"field") and sprite.loaded_tier == &"field", "and back to field")
+	check(not sprite.set_tier(&"map") and sprite.loaded_tier == &"field", "a missing tier reports false and shows field")
+	check(absf(sprite.pixel_size * 95.0 - 1.78) < 0.01, "height mapping: 95 drawn px stand 1.78 m")
+	sprite.queue_free()

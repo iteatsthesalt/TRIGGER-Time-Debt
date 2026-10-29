@@ -47,6 +47,33 @@ table. Directions that PixelLab gets wrong (a back view drawn as a front view) a
 (`WARNING … looks like the <other> rotation`); delete that one direction with `delete_animation(…, direction=)`
 and queue it again into the same `animation_group_id`.
 
+## 1b. A character is a set of sprites: tiers and variants
+
+| Tier | Canvas | Look | Used for | File |
+|---|---|---|---|---|
+| `map` | 64, 4 dirs | tiny bold silhouette | the overworld (Chapter 3+) | `<id>_map.png` |
+| `field` | 128, 8 dirs | Chrono Trigger chibi, ~3.5 heads (Crono 95 px) | locations, biomes **and battle** (battle clips are columns of the field sheet) | `<id>_field.png` |
+| `action` | 256 (the sequence's directions, often s/w/e) | realistic ~5.5 heads (Crono ~120 px); ref `design/images/refs/crono_action_tier_reference.png` | Dual/Triple Tech cut-ins, cinematic beats, duel intros, the Fair descent. Each sequence is a **clip** = an animation column group in the one action sheet | `<id>_action.png` |
+| `portrait` | 512 | painted bust | dialogue, menus | `<id>_portrait_<expr>.png` |
+
+A **variant** is the same character in another canvas (`u1`, `u2`, … `u8`) or a story state (`debt60`,
+`debt20`, `debt0`, `broken`, `salvaged`, `rewound`, `mask_off`, `oil`, `sealed`, `cobalt`, `gold`, `ghost`),
+generated as the tier above with that canvas's prompt tail and `style_character_id` of the base so the
+identity holds. File: `<id>_<variant>_<tier>.png` (e.g. `sera_u1_field.png`, `crono_debt20_field.png`).
+
+PixelLab names carry both: `TRIGGER <Name> <tier> v1`, `TRIGGER <Name> <variant> <tier> v1`
+(`TRIGGER Crono action v1`, `TRIGGER Sera u1 field v1`). The importer reads them from `--name`, or takes
+`--tier` / `--variant` explicitly; unnamed characters are field/base. Every tier/variant sheet has its own
+`<stem>_frames.json`, `_n` normal sheet and manifest entry (`<id>[_<variant>]_<tier>`).
+
+Engine: `SpriteLibrary.apply(sprite, id, fps, tier := &"field", variant := &"")` resolves in this order —
+the variant's tier, the base tier, the variant's field sheet, the base field sheet, the legacy `_sheet`, the
+painted stand-in, a placeholder — and records what it found in `sprite.loaded_tier` / `loaded_variant`.
+`ActorSprite.set_tier(&"action")` swaps a live sprite for a cut-in (facing kept, the current animation kept
+when the new sheet has it, else idle) and returns false when it had to fall back; `set_variant(&"u1")`
+likewise. `SpriteLibrary.has_tier(id, tier, variant)` asks without loading. Enemies and bosses use the same
+tiers through `SpriteLibrary.apply_enemy(sprite, def, tier, variant)`.
+
 ## 2. Import: one command
 
 ```
@@ -56,7 +83,9 @@ python3 tools/art/import_pixellab.py <pixellab_id | download url | character url
 Examples:
 
 ```
-python3 tools/art/import_pixellab.py 8d699d00-eb9f-4da7-a408-a1f70039fa1c crono
+python3 tools/art/import_pixellab.py 8d699d00-eb9f-4da7-a408-a1f70039fa1c crono --name "TRIGGER Crono field v1"
+python3 tools/art/import_pixellab.py d1df31ab-e2cc-47c7-a8b7-6b293769a293 crono --tier action        # or --name "TRIGGER Crono action v1"
+python3 tools/art/import_pixellab.py <id> sera --name "TRIGGER Sera u1 field v1"                      # variant u1 -> sera_u1_field.png
 python3 tools/art/import_pixellab.py https://api.pixellab.ai/mcp/characters/<id>/download enm_u0_porcelain_shardling
 python3 tools/art/import_pixellab.py <id> marle --listing /tmp/marle.txt     # jobs still running: paste get_character's output into the file
 python3 tools/art/import_pixellab.py <id> glenn_marshall --no-mirror           # the default; --mirror fills a missing west side from the east for symmetric creatures
@@ -67,16 +96,17 @@ The asset key is the game's sprite id. The target is resolved from game data (ov
 
 | Key is… | Writes | Height |
 |---|---|---|
-| a playable (`data/characters/<key>.json`) | `assets/characters/<key>/<key>_field.png` | `height_m` from the kit |
-| an enemy key or sprite id (`data/enemies/`) | `assets/enemies/u<n>/<key>/<key>_sheet.png` | `height_m` in the def, else the cast density (53.4 px/m) |
-| a boss sprite id or id (`data/bosses/`) | `assets/bosses/u<n>/<key>/<key>_sheet.png` | `height_m` or `size` in the boss JSON |
-| anything else | `assets/npcs/<key>/<key>_field.png` | cast density |
+| a playable (`data/characters/<key>.json`) | `assets/characters/<key>/<key>[_<variant>]_<tier>.png` | `height_m` from the kit |
+| an enemy key or sprite id (`data/enemies/`) | `assets/enemies/u<n>/<key>/<key>[_<variant>]_<tier>.png` | `height_m` in the def, else the cast density (53.4 px/m) |
+| a boss sprite id or id (`data/bosses/`) | `assets/bosses/u<n>/<key>/<key>[_<variant>]_<tier>.png` | `height_m` or `size` in the boss JSON |
+| anything else | `assets/npcs/<key>/<key>[_<variant>]_<tier>.png` | cast density |
 
-Each import writes, next to the sheet: `<key>_…_n.png` (a tangent-space normal sheet generated from the
-silhouette and shading, so the HD-2D light shapes the sprite), `<key>_frames.json` (below), the `.import`
+Each import writes, next to the sheet: `<stem>_n.png` (a tangent-space normal sheet generated from the
+silhouette and shading, so the HD-2D light shapes the sprite), `<stem>_frames.json` (below), the `.import`
 sidecars (lossless, no mipmaps, fix alpha border, normal flag on the `_n` sheet), and
-`source_art/<group>/<key>/pixellab/` (zip, raw frames, `metadata.json`, `contact.png`). It then records the asset
-in `data/art/pixellab_assets.json` (PixelLab id, key, date, settings, previous ids under `history`).
+`source_art/<group>/<key>/pixellab[<suffix>]/` (zip, raw frames, `metadata.json`, `contact.png`). It then records
+the asset in `data/art/pixellab_assets.json` under `<key>[_<variant>]_<tier>` (PixelLab id, key, tier, variant,
+date, settings, previous ids under `history`).
 
 PixelLab's zip (`/mcp/characters/<id>/download`) is locked (HTTP 423) while any job on that character is still
 running; `--listing <file>` builds from a pasted `get_character` listing instead, and `--skip-download` rebuilds
@@ -92,7 +122,7 @@ from the cached raw frames.
   on their first frame's feet.
 - Finish per canvas (`pixellab_import.finish`): hard alpha at 128; U0 ink line #2C2C2C and saturation 0.92; U1
   near-black line and saturation 0.30; U7 sumi-brown line. Other canvases pass through.
-- `<key>_frames.json`:
+- `<stem>_frames.json` (e.g. `crono_field_frames.json`, `crono_action_frames.json`):
   ```json
   {"cell": 128, "rows": ["s","w","e","n","sw","se","nw","ne"], "mirror_w": false, "fps": 60,
    "height_px": 95, "height_m": 1.78, "source": {"pixellab_character": "<id>", "canvas": "u0"},

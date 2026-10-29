@@ -5,9 +5,12 @@
   "python3 tools/art/import_pixellab.py <pixellab_id> <key>. Nich's picks in the Character Creator are",
   "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted."
  ],
- "crono": {
+ "crono_field": {
   "pixellab_id": "8d699d00-eb9f-4da7-a408-a1f70039fa1c",
-  "pixellab_name": "Idle",
+  "pixellab_name": "Crono 41 (pro, concept)",
+  "id": "crono",
+  "tier": "field",
+  "variant": "",
   "kind": "character",
   "group": "characters",
   "path": "assets/characters/crono",
@@ -28,9 +31,12 @@
   "missing": [],
   "history": []
  },
- "sera": {
+ "sera_field": {
   "pixellab_id": "ce6ffc25-e512-4312-9d83-a850ab3b561f",
-  "pixellab_name": "Idle",
+  "pixellab_name": "Sera 17 (pro, concept)",
+  "id": "sera",
+  "tier": "field",
+  "variant": "",
   "kind": "character",
   "group": "characters",
   "path": "assets/characters/sera",
@@ -50,9 +56,12 @@
   ],
   "history": []
  },
- "krona": {
+ "krona_field": {
   "pixellab_id": "6af5c834-e7a7-4e8b-83d7-8fb2b4222695",
-  "pixellab_name": "Idle",
+  "pixellab_name": "Krona (pro, concept)",
+  "id": "krona",
+  "tier": "field",
+  "variant": "",
   "kind": "character",
   "group": "characters",
   "path": "assets/characters/krona",
@@ -69,9 +78,12 @@
   "missing": [],
   "history": []
  },
- "marle": {
+ "marle_field": {
   "pixellab_id": "05c8ee87-ac36-41af-870a-f1bf8bc4dabc",
-  "pixellab_name": "Idle",
+  "pixellab_name": "npc_marle",
+  "id": "marle",
+  "tier": "field",
+  "variant": "",
   "kind": "character",
   "group": "characters",
   "path": "assets/characters/marle",
@@ -80,6 +92,27 @@
   "fps": 60.0,
   "height_m": 1.68,
   "height_px": 124,
+  "cell": 128,
+  "anims": {
+   "idle": 1
+  },
+  "missing": [],
+  "history": []
+ },
+ "crono_action": {
+  "pixellab_id": "d1df31ab-e2cc-47c7-a8b7-6b293769a293",
+  "pixellab_name": "Crono 41 (v3 from pro sprite)",
+  "id": "crono",
+  "tier": "action",
+  "variant": "",
+  "kind": "character",
+  "group": "characters",
+  "path": "assets/characters/crono",
+  "imported": "2026-10-29",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.78,
+  "height_px": 120,
   "cell": 128,
   "anims": {
    "idle": 1

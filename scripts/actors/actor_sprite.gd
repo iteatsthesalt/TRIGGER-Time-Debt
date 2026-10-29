@@ -9,6 +9,13 @@ const PIXELS_PER_METRE := 64.0
 const DIRECTIONS: Array[StringName] = [&"s", &"w", &"e", &"n", &"sw", &"se", &"nw", &"ne"]
 const CARDINALS: Array[StringName] = [&"s", &"w", &"e", &"n"]
 
+## What this sprite shows: the sprite id and the requested tier/variant (SpriteLibrary.apply sets them),
+## plus what was actually found (loaded_*), so a cut-in can swap tiers and come back.
+var sprite_id: String = ""
+var tier: StringName = &"field"
+var variant: StringName = &""
+var loaded_tier: StringName = &"field"
+var loaded_variant: StringName = &""
 var cell: int = 128
 var columns: int = 1
 var rows: int = 1
@@ -201,6 +208,39 @@ func update_from_velocity(v: Vector3, walking_anim: StringName = &"walk") -> voi
 			play(walking_anim)
 	elif _one_shot_return == &"":
 		play(&"idle")
+
+
+## Swap to another tier of the same character (action for a Dual Tech cut-in, map on the overworld), keeping
+## facing and the current animation when the new sheet has it. Falls back to field when the tier is missing.
+## Returns true when the requested tier was actually loaded.
+func set_tier(new_tier: StringName) -> bool:
+	if sprite_id == "":
+		return false
+	var keep_anim: StringName = anim
+	var keep_facing: StringName = facing
+	SpriteLibrary.apply(self, sprite_id, canvas_fps, new_tier, variant)
+	facing = keep_facing
+	if anims.has(keep_anim):
+		anim = &""
+		play(keep_anim)
+	_update_rect()
+	return loaded_tier == new_tier
+
+
+## Swap to a variant (another universe's canvas, a story state such as debt20). Missing variants fall back
+## to the base sheet of the same tier. Returns true when the variant was found.
+func set_variant(new_variant: StringName) -> bool:
+	if sprite_id == "":
+		return false
+	var keep_anim: StringName = anim
+	var keep_facing: StringName = facing
+	SpriteLibrary.apply(self, sprite_id, canvas_fps, tier, new_variant)
+	facing = keep_facing
+	if anims.has(keep_anim):
+		anim = &""
+		play(keep_anim)
+	_update_rect()
+	return loaded_variant == new_variant
 
 
 ## Play an animation's frames in reverse for `seconds` (Sera's Rewind winds her father's idle back).

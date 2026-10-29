@@ -7,18 +7,23 @@
     python3 tools/art/import_pixellab.py https://api.pixellab.ai/mcp/characters/<id>/download enm_u0_porcelain_shardling
     python3 tools/art/import_pixellab.py <id> marle --listing /tmp/marle_listing.txt    # zip still locked (jobs pending)
 
-The asset key is the game's sprite id. The target folder, sheet suffix, canvas, frame rate and height are
-resolved from the game data:
+The asset key is the game's sprite id. A character is a SET of sprites: tiers (map 64 / field 128 / action
+256 / portrait 512) and variants (another canvas such as u1, or a story state such as debt20). The tier and
+variant come from the PixelLab name when you pass it (`--name "TRIGGER Sera u1 field v1"`), else from
+`--tier` / `--variant`, else field/base. The file written is `<key>[_<variant>]_<tier>.png`. The target
+folder, canvas, frame rate and height are resolved from the game data:
 
-    data/characters/<key>.json          -> assets/characters/<key>/<key>_field.png   (height_m from the kit)
-    an enemy whose key or sprite is <key> -> assets/enemies/u<n>/<key>/<key>_sheet.png (fps from the def)
-    a boss whose sprite is <key>        -> assets/bosses/u<n>/<key>/<key>_sheet.png
-    anything else (an NPC)              -> assets/npcs/<key>/<key>_field.png
+    data/characters/<key>.json          -> assets/characters/<key>/   (height_m from the kit)
+    an enemy whose key or sprite is <key> -> assets/enemies/u<n>/<key>/ (fps from the def)
+    a boss whose sprite is <key>        -> assets/bosses/u<n>/<key>/
+    anything else (an NPC)              -> assets/npcs/<key>/
 
 Every import writes the sheet (eight direction rows: s, w, e, n, sw, se, nw, ne), a `_n` normal sheet, the
 `_frames.json` table, the `.import` sidecars, a contact sheet under source_art/, and records the asset in
-data/art/pixellab_assets.json (PixelLab id, key, date, settings). Re-running on the same key rebuilds the sheet
-(for example after more animations were generated). Options override the resolved defaults:
+data/art/pixellab_assets.json under `<key>[_<variant>]_<tier>` (PixelLab id, key, tier, variant, date,
+settings). Re-running rebuilds the sheet (for example after more animations were generated). Options override
+the resolved defaults:
+    --tier action --variant u1 --name "<PixelLab name>"
     --height-m 1.78   --canvas u1   --fps 24   --group npcs   --map walk=sad-walk,attack=slash-v3
     --no-mirror (never mirror a missing direction; the default for asymmetric characters)
     --mirror    (fill a missing west-side direction from the east side; fine for symmetric creatures)
@@ -38,6 +43,22 @@ import pixellab_import as pl  # noqa: E402
 
 RECORD = os.path.join(ROOT, "data", "art", "pixellab_assets.json")
 UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+TIERS = ("map", "field", "action", "portrait")
+# "TRIGGER <Name> [<variant>] <tier> v<n>"  — the name is free text before the optional variant and tier.
+NAME_RE = re.compile(r"^\s*TRIGGER\s+(?P<name>.+?)(?:\s+(?P<variant>[a-z][a-z0-9]*))?\s+(?P<tier>map|field|action|portrait)\s+v(?P<ver>\d+)\s*$", re.I)
+
+
+def parse_name(name):
+    """-> (tier, variant) read from a PixelLab character name, or (None, None)."""
+    m = NAME_RE.match(name or "")
+    if not m:
+        return None, None
+    variant = (m.group("variant") or "").lower()
+    # the last word before the tier may be part of the character's name (e.g. "Pierrot Glenn field v1");
+    # a variant is a canvas (u0..u8) or a known state suffix.
+    if variant and not re.fullmatch(r"u[0-8]|debt\d+|broken|salvaged|rewound|mask_off|oil|sealed|cobalt|gold|ghost", variant):
+        variant = ""
+    return m.group("tier").lower(), variant
 
 
 def load_json(path):
@@ -53,23 +74,22 @@ def resolve_target(key):
         u = int(kit.get("home_universe", 0))
         # Sera has no home universe (-1): she is drawn on the U0 watercolour canvas with her ghost layers added in-engine.
         canvas = f"u{u}" if u >= 0 else "u0"
-        return {"group": "characters", "subdir": key, "suffix": "_field", "canvas": canvas,
+        return {"group": "characters", "subdir": key, "canvas": canvas,
                 "fps": float(kit.get("canvas_fps", 60)), "height_m": kit.get("height_m"), "universe": max(u, 0)}
     for f in glob.glob(os.path.join(ROOT, "data", "enemies", "u*", "*.json")):
         for e in load_json(f).get("enemies", []):
             if key in (e.get("key"), e.get("sprite")):
                 u = int(e.get("universe", 0))
-                return {"group": "enemies", "subdir": f"u{u}/{key}", "suffix": "_sheet", "canvas": f"u{u}",
+                return {"group": "enemies", "subdir": f"u{u}/{key}", "canvas": f"u{u}",
                         "fps": float(e.get("fps", 60)), "height_m": e.get("height_m"), "universe": u}
     for f in glob.glob(os.path.join(ROOT, "data", "bosses", "*.json")):
         b = load_json(f)
         if key in (b.get("sprite"), b.get("id")):
             u = int(b.get("universe", 0))
-            return {"group": "bosses", "subdir": f"u{u}/{key}", "suffix": "_sheet", "canvas": f"u{u}",
+            return {"group": "bosses", "subdir": f"u{u}/{key}", "canvas": f"u{u}",
                     "fps": float(b.get("fps", 60)), "height_m": b.get("height_m", b.get("size")), "universe": u}
     npc_canvas = "u0"
-    return {"group": "npcs", "subdir": key, "suffix": "_field", "canvas": npc_canvas, "fps": 60.0,
-            "height_m": None, "universe": 0}
+    return {"group": "npcs", "subdir": key, "canvas": npc_canvas, "fps": 60.0, "height_m": None, "universe": 0}
 
 
 def extract_id(text):
@@ -100,6 +120,9 @@ def main():
     ap.add_argument("source", help="PixelLab character id, download URL or character page URL")
     ap.add_argument("key", help="asset key = the game's sprite id")
     ap.add_argument("--group", default=None, choices=["characters", "npcs", "enemies", "bosses"])
+    ap.add_argument("--tier", default=None, choices=list(TIERS), help="map | field | action | portrait (default: from --name, else field)")
+    ap.add_argument("--variant", default=None, help="canvas (u1…) or state (debt20…) variant; default: from --name, else base")
+    ap.add_argument("--name", default="", help="the PixelLab character name, e.g. 'TRIGGER Sera u1 field v1'")
     ap.add_argument("--canvas", default=None)
     ap.add_argument("--fps", type=float, default=None)
     ap.add_argument("--height-m", type=float, default=None)
@@ -114,17 +137,19 @@ def main():
     t = resolve_target(args.key)
     if args.group:
         t["group"] = args.group
-        if args.group in ("characters", "npcs"):
-            t["subdir"], t["suffix"] = args.key, "_field"
-        else:
-            t["subdir"], t["suffix"] = f"u{t['universe']}/{args.key}", "_sheet"
+        t["subdir"] = args.key if args.group in ("characters", "npcs") else f"u{t['universe']}/{args.key}"
+    name_tier, name_variant = parse_name(args.name)
+    tier = args.tier or name_tier or "field"
+    variant = (args.variant if args.variant is not None else name_variant) or ""
+    suffix = ("_" + variant if variant else "") + "_" + tier
+    asset_id = args.key + suffix
     canvas = args.canvas or t["canvas"]
     fps = args.fps or t["fps"]
     height_m = args.height_m if args.height_m is not None else t["height_m"]
     anim_map = dict(kv.split("=") for kv in args.map.split(",") if "=" in kv)
     mirror = args.mirror and not args.no_mirror
 
-    src = os.path.join(ROOT, "source_art", t["group"], t["subdir"], "pixellab")
+    src = os.path.join(ROOT, "source_art", t["group"], t["subdir"], "pixellab" + ("" if suffix == "_field" else suffix))
     meta_path = os.path.join(src, "metadata.json")
     if args.listing:
         with open(args.listing) as f:
@@ -144,13 +169,15 @@ def main():
     out = os.path.join(ROOT, "assets", t["group"], t["subdir"])
     sheet, data, missing = pl.build_sheet(
         args.key, meta, src, out, canvas=canvas, height_m=height_m, fps=fps, anim_map=anim_map,
-        mirror_missing=mirror, suffix=t["suffix"])
+        mirror_missing=mirror, suffix=suffix)
     contact = os.path.join(src, "contact.png")
     pl.contact_sheet(sheet, data["cell"], contact)
-    name = meta["states"][0]["character"].get("name", "") if meta.get("states") else ""
-    record(args.key, {
+    record(asset_id, {
         "pixellab_id": pid,
-        "pixellab_name": name,
+        "pixellab_name": args.name,
+        "id": args.key,
+        "tier": tier,
+        "variant": variant,
         "kind": "character",
         "group": t["group"],
         "path": os.path.relpath(out, ROOT).replace(os.sep, "/"),
@@ -159,13 +186,14 @@ def main():
         "cell": data["cell"], "anims": {k: v["count"] for k, v in data["anims"].items()},
         "missing": sorted(set(f"{d}:{a}" for d, a in missing)),
     })
-    rel_sheet = os.path.relpath(os.path.join(out, f"{args.key}{t['suffix']}.png"), ROOT)
-    print(f"{args.key} <- {pid}: {rel_sheet} {sheet.width}x{sheet.height} cell {data['cell']} "
+    rel_sheet = os.path.relpath(os.path.join(out, f"{asset_id}.png"), ROOT)
+    print(f"{asset_id} <- {pid}: {rel_sheet} {sheet.width}x{sheet.height} cell {data['cell']} "
           f"height {data['height_px']}px = {data['height_m']} m, anims {list(data['anims'].keys())}")
     if missing:
         print("  directions filled with the rotation:", sorted(set(f"{d}:{a}" for d, a in missing)))
     print(f"  contact sheet: {os.path.relpath(contact, ROOT)}")
-    print(f"  review: bash tools/capture/render.sh test_lineup lineup 30 -- --ids={args.key} --anim=walk")
+    print(f"  review: bash tools/capture/render.sh test_lineup lineup 30 -- --ids={args.key} --anim=walk"
+          + (f" --tier={tier}" if tier != "field" else "") + (f" --variant={variant}" if variant else ""))
 
 
 if __name__ == "__main__":

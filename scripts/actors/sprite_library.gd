@@ -1,5 +1,7 @@
-## Resolves sprite ids to sheets and frame tables (assets/<group>/<id>/<id>_field.png + <id>_frames.json),
-## falling back to the painted stand-in, then to a generated placeholder so every actor is always visible.
+## Resolves sprite ids to sheets and frame tables. A character is a set of sprites (docs/ART_PIPELINE.md):
+## tiers map (64) / field (128, also battle) / action (256 cut-ins) / portrait, and variants (another canvas
+## or a story state): assets/<group>/<id>/<id>[_<variant>]_<tier>.png + _frames.json (+ _n normal, _m mask).
+## Missing tiers or variants fall back to field/base, then the painted stand-in, then a generated placeholder.
 class_name SpriteLibrary
 extends RefCounted
 
@@ -27,60 +29,90 @@ const DEFAULT_TABLE := {
 }
 
 
-static func apply(sprite: ActorSprite, id: String, fps: float) -> void:
+## Resolve the sheet for (id, tier, variant) with fallbacks: the variant's tier, the base tier, the
+## variant's field sheet, the base field sheet, the legacy `_sheet`, then the painted stand-in.
+## Returns {"dir": String, "stem": String, "sheet": String, "tier": StringName, "variant": StringName} or {}.
+static func resolve(id: String, tier: StringName = &"field", variant: StringName = &"", groups: Array = GROUPS, subdirs: Array = [""]) -> Dictionary:
+	var stems: Array = []
+	var seen: Dictionary = {}
+	for t in [tier, &"field"]:
+		for v in [variant, &""]:
+			var stem: String = id + ("_" + String(v) if v != &"" else "") + "_" + String(t)
+			if not seen.has(stem):
+				seen[stem] = true
+				stems.append({"stem": stem, "tier": t, "variant": v})
+	for g in groups:
+		for sub in subdirs:
+			var dir: String = "res://assets/%s/%s%s" % [g, sub, id]
+			for st in stems:
+				var path: String = "%s/%s.png" % [dir, st["stem"]]
+				if ResourceLoader.exists(path):
+					return {"id": id, "dir": dir, "stem": st["stem"], "sheet": path, "tier": st["tier"], "variant": st["variant"]}
+			var legacy: String = "%s/%s_sheet.png" % [dir, id]
+			if ResourceLoader.exists(legacy):
+				return {"id": id, "dir": dir, "stem": id + "_sheet", "sheet": legacy, "tier": &"field", "variant": &""}
+	return {}
+
+
+static func has_tier(id: String, tier: StringName, variant: StringName = &"") -> bool:
+	var r: Dictionary = resolve(id, tier, variant)
+	return not r.is_empty() and r["tier"] == tier and (variant == &"" or r["variant"] == variant)
+
+
+static func apply(sprite: ActorSprite, id: String, fps: float, tier: StringName = &"field", variant: StringName = &"") -> void:
+	sprite.sprite_id = id
+	sprite.tier = tier
+	sprite.variant = variant
+	var r: Dictionary = resolve(id, tier, variant)
+	if not r.is_empty():
+		_apply_resolved(sprite, r, fps, false)
+		return
 	for g in GROUPS:
-		var dir: String = "res://assets/%s/%s" % [g, id]
-		var sheet_path: String = "%s/%s_field.png" % [dir, id]
-		var table_path: String = "%s/%s_frames.json" % [dir, id]
-		if ResourceLoader.exists(sheet_path):
-			var tex: Texture2D = load(sheet_path)
-			var table: Dictionary = _load_table(table_path, fps)
-			var cell: int = int(table.get("_cell", 128))
-			var mirror: bool = bool(table.get("_mirror_w", false))
-			var height_px: int = int(table.get("_height_px", 0))
-			var height_m: float = float(table.get("_height_m", 0.0))
-			table.erase("_cell")
-			table.erase("_mirror_w")
-			table.erase("_height_px")
-			table.erase("_height_m")
-			sprite.set_height(height_px, height_m)
-			sprite.set_sheet(tex, cell, table, fps, mirror)
-			var n_path: String = "%s/%s_field_n.png" % [dir, id]
-			if ResourceLoader.exists(n_path):
-				sprite.set_normal_sheet(load(n_path))
-			var m_path: String = "%s/%s_field_m.png" % [dir, id]
-			if ResourceLoader.exists(m_path):
-				sprite.set_mask_sheet(load(m_path))
-			return
-		var painted: String = "%s/%s_painted.png" % [dir, id]
+		var painted: String = "res://assets/%s/%s/%s_painted.png" % [g, id, id]
 		if ResourceLoader.exists(painted):
 			sprite.set_standin(load(painted), fps)
 			return
 	sprite.set_standin(placeholder(id, Color(0.6, 0.6, 0.65), 128, 110), fps)
 
 
-static func apply_enemy(sprite: ActorSprite, def: EnemyDef) -> void:
+static func _apply_resolved(sprite: ActorSprite, r: Dictionary, fps: float, default_mirror: bool) -> void:
+	var tex: Texture2D = load(r["sheet"])
+	var table_path: String = "%s/%s_frames.json" % [r["dir"], r["stem"]]
+	if not FileAccess.file_exists(table_path):
+		table_path = "%s/%s_frames.json" % [r["dir"], r["id"]]  # legacy placeholder sheets: <id>_frames.json
+	var table: Dictionary = _load_table(table_path, fps)
+	var cell: int = int(table.get("_cell", 128))
+	var mirror: bool = bool(table.get("_mirror_w", default_mirror))
+	var height_px: int = int(table.get("_height_px", 0))
+	var height_m: float = float(table.get("_height_m", 0.0))
+	table.erase("_cell")
+	table.erase("_mirror_w")
+	table.erase("_height_px")
+	table.erase("_height_m")
+	sprite.set_height(height_px, height_m)
+	sprite.set_sheet(tex, cell, table, fps, mirror)
+	sprite.loaded_tier = r["tier"]
+	sprite.loaded_variant = r["variant"]
+	var n_path: String = "%s/%s_n.png" % [r["dir"], r["stem"]]
+	sprite.set_normal_sheet(load(n_path) if ResourceLoader.exists(n_path) else null)
+	var m_path: String = "%s/%s_m.png" % [r["dir"], r["stem"]]
+	sprite.set_mask_sheet(load(m_path) if ResourceLoader.exists(m_path) else null)
+
+
+static func apply_enemy(sprite: ActorSprite, def: EnemyDef, tier: StringName = &"field", variant: StringName = &"") -> void:
 	var id: String = String(def.sprite if def.sprite != &"" else def.key)
 	var key: String = String(def.key)
 	for cand in [id, key]:
+		var r: Dictionary = resolve(cand, tier, variant, ["enemies", "bosses"], ["u%d/" % def.universe, ""])
+		if not r.is_empty():
+			sprite.sprite_id = cand
+			sprite.tier = tier
+			sprite.variant = variant
+			_apply_resolved(sprite, r, def.fps, true)
+			return
 		for g in ["enemies", "bosses"]:
 			for sub in ["u%d/%s" % [def.universe, cand], cand]:
-				var dir: String = "res://assets/%s/%s" % [g, sub]
-				var sheet_path: String = "%s/%s_sheet.png" % [dir, cand]
-				if ResourceLoader.exists(sheet_path):
-					var table: Dictionary = _load_table("%s/%s_frames.json" % [dir, cand], def.fps)
-					var cell: int = int(table.get("_cell", 128))
-					var mirror: bool = bool(table.get("_mirror_w", true))
-					var height_px: int = int(table.get("_height_px", 0))
-					var height_m: float = float(table.get("_height_m", 0.0))
-					table.erase("_cell")
-					table.erase("_mirror_w")
-					table.erase("_height_px")
-					table.erase("_height_m")
-					sprite.set_height(height_px, height_m)
-					sprite.set_sheet(load(sheet_path), cell, table, def.fps, mirror)
-					return
-				var painted: String = "%s/%s_painted.png" % [dir, cand]
+				var painted: String = "res://assets/%s/%s/%s_painted.png" % [g, sub, cand]
 				if ResourceLoader.exists(painted):
 					sprite.set_standin(load(painted), def.fps)
 					return

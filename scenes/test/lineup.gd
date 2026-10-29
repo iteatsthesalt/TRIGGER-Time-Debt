@@ -1,10 +1,12 @@
 ## Cast lineup: every generated character sheet standing on a lit stage, one row per character,
 ## eight facings each (s, sw, w, nw, n, ne, e, se), playing the animation named by --anim= (default walk).
-## Used for art review captures: tools/capture/render.sh test_lineup lineup 40 -- --ids=crono,sera --anim=walk
+## Used for art review captures: tools/capture/render.sh test_lineup lineup 40 -- --ids=crono,sera --anim=walk [--tier=action] [--variant=u1]
 extends Node3D
 
 var ids: Array[String] = ["crono"]
 var anim: StringName = &"walk"
+var tier: StringName = &"field"
+var variant: StringName = &""
 var rig: HD2DCameraRig
 var world: HD2DWorld
 var _sprites: Array[ActorSprite] = []
@@ -20,6 +22,10 @@ func _ready() -> void:
 				ids.append(s.strip_edges())
 		elif arg.begins_with("--anim="):
 			anim = StringName(arg.trim_prefix("--anim="))
+		elif arg.begins_with("--tier="):
+			tier = StringName(arg.trim_prefix("--tier="))
+		elif arg.begins_with("--variant="):
+			variant = StringName(arg.trim_prefix("--variant="))
 	world = HD2DWorld.new()
 	world.name = "World"
 	add_child(world)
@@ -41,7 +47,7 @@ func _ready() -> void:
 			add_child(holder)
 			var s := ActorSprite.new()
 			holder.add_child(s)
-			SpriteLibrary.apply(s, id, 60.0)
+			SpriteLibrary.apply(s, id, 60.0, tier, variant)
 			s.set_facing(_facings[f])
 			s.play(anim)
 			_sprites.append(s)

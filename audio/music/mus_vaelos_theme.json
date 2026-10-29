@@ -1,0 +1,107 @@
+{
+  "id": "mus_vaelos_theme",
+  "bpm": 68,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "C Locrian",
+  "bars": 28,
+  "bar_s": 3.529412,
+  "duration_s": 98.8235,
+  "loop_start_s": 14.1176,
+  "loop_start_samples": 677647,
+  "loop_end_s": 98.8235,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 4,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 4,
+      "bars": 8,
+      "start_s": 14.1176
+    },
+    {
+      "name": "bridge",
+      "bar": 12,
+      "bars": 4,
+      "start_s": 42.3529
+    },
+    {
+      "name": "b",
+      "bar": 16,
+      "bars": 8,
+      "start_s": 56.4706
+    },
+    {
+      "name": "coda",
+      "bar": 24,
+      "bars": 4,
+      "start_s": 84.7059
+    }
+  ],
+  "stems": {
+    "bass": {
+      "file": "mus_vaelos_theme__bass.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 98.824,
+      "channels": 2,
+      "peak_dbfs": -6.11,
+      "rms_dbfs": -20.88,
+      "lufs_i": -22.98,
+      "size_bytes": 1455690
+    },
+    "lead": {
+      "file": "mus_vaelos_theme__lead.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 98.824,
+      "channels": 2,
+      "peak_dbfs": -7.8,
+      "rms_dbfs": -28.01,
+      "lufs_i": -21.33,
+      "size_bytes": 1006528
+    },
+    "pad": {
+      "file": "mus_vaelos_theme__pad.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 98.824,
+      "channels": 2,
+      "peak_dbfs": -6.18,
+      "rms_dbfs": -23.14,
+      "lufs_i": -25.85,
+      "size_bytes": 1901711
+    }
+  },
+  "director_stem_order": [
+    "bass",
+    "lead",
+    "pad"
+  ],
+  "mix": {
+    "duration_s": 98.824,
+    "channels": 2,
+    "peak_dbfs": -2.58,
+    "rms_dbfs": -18.32,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "grief_resonance": "pad stem volume and the Sub bus: 28 Hz \u2192 \u22126 dB, 40 Hz \u2192 +3 dB; also opens the music low-pass to 800 Hz",
+    "vaelos_near": "lay bass + pad under any world track (they phase at 68 against the hub's 72)",
+    "heartbeat": "the pump is fixed at 0.8 Hz here; U8 drives it from the RTPC"
+  },
+  "notes": "Bassoon C2/G\u266d2 on every beat with a sub octave; tenor hum = Crono's cell even and clean, \u221250 cents; pump 0.8 Hz; drone 28\u201340 Hz.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 14.1176,
+    "bpm": 68,
+    "beat_count": 112,
+    "bar_beats": 4
+  }
+}

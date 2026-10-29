@@ -1,0 +1,81 @@
+{
+  "id": "mus_u1_krona_duel",
+  "bpm": 96,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "D minor",
+  "bars": 40,
+  "bar_s": 2.5,
+  "duration_s": 100.0,
+  "loop_start_s": 10.0,
+  "loop_start_samples": 480000,
+  "loop_end_s": 100.0,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 4,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 4,
+      "bars": 12,
+      "start_s": 10.0
+    },
+    {
+      "name": "bridge",
+      "bar": 16,
+      "bars": 8,
+      "start_s": 40.0
+    },
+    {
+      "name": "b",
+      "bar": 24,
+      "bars": 12,
+      "start_s": 60.0
+    },
+    {
+      "name": "coda",
+      "bar": 36,
+      "bars": 4,
+      "start_s": 90.0
+    }
+  ],
+  "stems": {
+    "mix": {
+      "file": "mus_u1_krona_duel.ogg",
+      "default_on": true,
+      "duration_s": 100.0,
+      "channels": 2,
+      "peak_dbfs": -5.15,
+      "rms_dbfs": -22.65,
+      "lufs_i": -20.0,
+      "size_bytes": 2146002
+    }
+  },
+  "director_stem_order": [
+    "mix"
+  ],
+  "mix": {
+    "duration_s": 100.0,
+    "channels": 2,
+    "peak_dbfs": -5.15,
+    "rms_dbfs": -22.65,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "smear": "the 24 fps smear: a 0.3 s reverb freeze is rendered at the bridge \u2192 B seam (35.0 s); at runtime use AudioEffectReverb with room 1.0 for 0.3 s",
+    "hitstop": "duck the mix 6 dB and play sfx/combat/break_gong_vinyl on hitstop"
+  },
+  "notes": "Krona's cell G C D E\u266d at pitch over a D pedal (Phrygian bruise). Taiko pitched down a minor third and saturated.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 10.0,
+    "bpm": 96,
+    "beat_count": 160,
+    "bar_beats": 4
+  }
+}

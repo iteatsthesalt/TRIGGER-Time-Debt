@@ -25,7 +25,7 @@ func build() -> void:
 	location_id = &"atrium"
 	universe_id = 0
 	field_music = &"mus_u0_wind_scene_1024"
-	ambience = &"amb_u0_atrium_tower"
+	ambience = &"amb_u0"
 	camera_distance = 16.0
 	camera_pitch = 34.0
 	map_bounds = Rect2(-13, -13, 26, 26)

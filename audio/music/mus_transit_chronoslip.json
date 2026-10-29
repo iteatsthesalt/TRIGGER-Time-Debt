@@ -1,0 +1,46 @@
+{
+  "id": "mus_transit_chronoslip",
+  "bpm": 0,
+  "meter": [
+    0,
+    0
+  ],
+  "key": "none",
+  "bars": 0,
+  "duration_s": 64.0,
+  "loop_start_s": 0.0,
+  "loop_start_samples": 0,
+  "loop_end_s": 64.0,
+  "sections": [],
+  "stems": {
+    "mix": {
+      "file": "mus_transit_chronoslip.ogg",
+      "default_on": true,
+      "duration_s": 64.0,
+      "channels": 2,
+      "peak_dbfs": -5.58,
+      "rms_dbfs": -21.32,
+      "lufs_i": -23.0,
+      "size_bytes": 1173499
+    }
+  },
+  "mix": {
+    "duration_s": 64.0,
+    "channels": 2,
+    "peak_dbfs": -5.58,
+    "rms_dbfs": -21.32,
+    "lufs_i": -23.0
+  },
+  "rtpc": {
+    "heartbeat": "pitch_scale the whole bed with the heartbeat RTPC (72 \u2192 1.0, 144 \u2192 1.4) or layer sfx/time/chronoslip",
+    "camera_fov": "a slip widens the FOV and muffles everything except this heartbeat: music bus low-pass 400 Hz"
+  },
+  "notes": "No music: brown-noise thermals, a 76 BPM chest heartbeat, a rubber-hose Doppler whoosh every 11\u201316 s. Seamless 64 s loop at \u221223 LUFS.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 0.0,
+    "bpm": 0,
+    "beat_count": 0,
+    "bar_beats": 4
+  }
+}

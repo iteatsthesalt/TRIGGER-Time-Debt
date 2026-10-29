@@ -51,10 +51,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 86.667,
       "channels": 2,
-      "peak_dbfs": -4.05,
+      "peak_dbfs": -3.83,
       "rms_dbfs": -24.44,
       "lufs_i": -21.39,
-      "size_bytes": 1338664
+      "size_bytes": 1338098
     },
     "quartet": {
       "file": "mus_u0_guardia_morning__quartet.ogg",
@@ -62,10 +62,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 86.667,
       "channels": 2,
-      "peak_dbfs": -10.92,
-      "rms_dbfs": -28.27,
+      "peak_dbfs": -10.83,
+      "rms_dbfs": -28.26,
       "lufs_i": -22.39,
-      "size_bytes": 1288746
+      "size_bytes": 1288453
     },
     "crackle": {
       "file": "mus_u0_guardia_morning__crackle.ogg",
@@ -73,17 +73,22 @@
       "auto_loaded_by_director": true,
       "duration_s": 86.667,
       "channels": 2,
-      "peak_dbfs": -11.27,
-      "rms_dbfs": -40.82,
-      "lufs_i": -37.06,
-      "size_bytes": 2405675
+      "peak_dbfs": -10.94,
+      "rms_dbfs": -41.06,
+      "lufs_i": -37.07,
+      "size_bytes": 2407900
     }
   },
+  "director_stem_order": [
+    "piano",
+    "quartet",
+    "crackle"
+  ],
   "mix": {
     "duration_s": 86.667,
     "channels": 2,
-    "peak_dbfs": -3.97,
-    "rms_dbfs": -22.85,
+    "peak_dbfs": -3.74,
+    "rms_dbfs": -22.86,
     "lufs_i": -20.0
   },
   "rtpc": {

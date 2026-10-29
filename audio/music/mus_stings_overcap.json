@@ -1,0 +1,43 @@
+{
+  "id": "mus_stings_overcap",
+  "bpm": 72,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "C major",
+  "bars": 0,
+  "duration_s": 1.6,
+  "loop_start_s": 0.0,
+  "loop_start_samples": 0,
+  "loop_end_s": 1.6,
+  "sections": [],
+  "stems": {
+    "mix": {
+      "file": "mus_stings_overcap.ogg",
+      "default_on": true,
+      "duration_s": 1.6,
+      "channels": 2,
+      "peak_dbfs": -13.12,
+      "rms_dbfs": -25.35,
+      "lufs_i": -18.0,
+      "size_bytes": 37950
+    }
+  },
+  "mix": {
+    "duration_s": 1.6,
+    "channels": 2,
+    "peak_dbfs": -13.12,
+    "rms_dbfs": -25.35,
+    "lufs_i": -18.0
+  },
+  "rtpc": {},
+  "notes": "A VHS whine (2.4 \u2192 3.1 kHz with flutter) and a tracking snap. Never a fanfare.",
+  "godot_import": {
+    "loop": false,
+    "loop_offset": 0.0,
+    "bpm": 72,
+    "beat_count": 0,
+    "bar_beats": 4
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "id": "mus_stings_victory",
+  "bpm": 72,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "C major",
+  "bars": 0,
+  "duration_s": 6.0,
+  "loop_start_s": 0.0,
+  "loop_start_samples": 0,
+  "loop_end_s": 6.0,
+  "sections": [],
+  "stems": {
+    "mix": {
+      "file": "mus_stings_victory.ogg",
+      "default_on": true,
+      "duration_s": 6.0,
+      "channels": 2,
+      "peak_dbfs": -7.61,
+      "rms_dbfs": -21.56,
+      "lufs_i": -18.0,
+      "size_bytes": 129005
+    }
+  },
+  "mix": {
+    "duration_s": 6.0,
+    "channels": 2,
+    "peak_dbfs": -7.61,
+    "rms_dbfs": -21.56,
+    "lufs_i": -18.0
+  },
+  "rtpc": {},
+  "notes": "The Time cell resolving onto C major with whatever tines remain (render variants with missing tines by the same generator).",
+  "godot_import": {
+    "loop": false,
+    "loop_offset": 0.0,
+    "bpm": 72,
+    "beat_count": 0,
+    "bar_beats": 4
+  }
+}

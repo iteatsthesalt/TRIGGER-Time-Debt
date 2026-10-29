@@ -1,0 +1,2772 @@
+{
+  "music": {
+    "mus_battle_core_u0": {
+      "id": "mus_battle_core_u0",
+      "bpm": 144,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "E minor",
+      "bars": 52,
+      "bar_s": 1.666667,
+      "duration_s": 86.6667,
+      "loop_start_s": 6.6667,
+      "loop_start_samples": 320000,
+      "loop_end_s": 86.6667,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 16,
+          "start_s": 6.6667
+        },
+        {
+          "name": "bridge",
+          "bar": 20,
+          "bars": 8,
+          "start_s": 33.3333
+        },
+        {
+          "name": "b",
+          "bar": 28,
+          "bars": 16,
+          "start_s": 46.6667
+        },
+        {
+          "name": "coda",
+          "bar": 44,
+          "bars": 8,
+          "start_s": 73.3333
+        }
+      ],
+      "stems": {
+        "box": {
+          "file": "mus_battle_core_u0__box.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -21.32,
+          "rms_dbfs": -39.1,
+          "lufs_i": -31.32,
+          "size_bytes": 481994
+        },
+        "tick": {
+          "file": "mus_battle_core_u0__tick.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -11.63,
+          "rms_dbfs": -48.97,
+          "lufs_i": -39.03,
+          "size_bytes": 1441480
+        },
+        "piano": {
+          "file": "mus_battle_core_u0__piano.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -9.07,
+          "rms_dbfs": -27.93,
+          "lufs_i": -24.35,
+          "size_bytes": 1234000
+        },
+        "strings": {
+          "file": "mus_battle_core_u0__strings.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -11.08,
+          "rms_dbfs": -30.35,
+          "lufs_i": -26.31,
+          "size_bytes": 2265528
+        },
+        "bass": {
+          "file": "mus_battle_core_u0__bass.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -12.22,
+          "rms_dbfs": -26.71,
+          "lufs_i": -26.63,
+          "size_bytes": 368048
+        },
+        "drums": {
+          "file": "mus_battle_core_u0__drums.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -10.19,
+          "rms_dbfs": -27.49,
+          "lufs_i": -25.5,
+          "size_bytes": 1837480
+        }
+      },
+      "director_stem_order": [
+        "box",
+        "piano",
+        "strings",
+        "bass",
+        "drums",
+        "tick"
+      ],
+      "mix": {
+        "duration_s": 86.667,
+        "channels": 2,
+        "peak_dbfs": -3.71,
+        "rms_dbfs": -21.81,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "sync_hold": "fade every stem except box to \u2212inf over 0.15 s and mute tick; restore on release",
+        "shave_bonus": "strings stem +4 dB while shave_bonus = 1 (Boost Lv3)",
+        "break": "play sfx/combat/break_gong_vinyl and duck all stems 6 dB for 0.4 s"
+      },
+      "notes": "Hook = Crono's cell up an octave as crotchets, the C held 300 ms (0.72 beat) too long. Box = Time cell at half speed.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 6.6667,
+        "bpm": 144,
+        "beat_count": 208,
+        "bar_beats": 4
+      }
+    },
+    "mus_battle_core_u1": {
+      "id": "mus_battle_core_u1",
+      "bpm": 144,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "E minor",
+      "bars": 52,
+      "bar_s": 1.666667,
+      "duration_s": 86.6667,
+      "loop_start_s": 6.6667,
+      "loop_start_samples": 320000,
+      "loop_end_s": 86.6667,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 16,
+          "start_s": 6.6667
+        },
+        {
+          "name": "bridge",
+          "bar": 20,
+          "bars": 8,
+          "start_s": 33.3333
+        },
+        {
+          "name": "b",
+          "bar": 28,
+          "bars": 16,
+          "start_s": 46.6667
+        },
+        {
+          "name": "coda",
+          "bar": 44,
+          "bars": 8,
+          "start_s": 73.3333
+        }
+      ],
+      "stems": {
+        "box": {
+          "file": "mus_battle_core_u1__box.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -21.9,
+          "rms_dbfs": -39.67,
+          "lufs_i": -31.89,
+          "size_bytes": 477932
+        },
+        "tick": {
+          "file": "mus_battle_core_u1__tick.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -12.21,
+          "rms_dbfs": -49.54,
+          "lufs_i": -39.61,
+          "size_bytes": 1429089
+        },
+        "lead": {
+          "file": "mus_battle_core_u1__lead.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -11.36,
+          "rms_dbfs": -31.13,
+          "lufs_i": -23.92,
+          "size_bytes": 882702
+        },
+        "pad": {
+          "file": "mus_battle_core_u1__pad.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -13.87,
+          "rms_dbfs": -31.46,
+          "lufs_i": -26.91,
+          "size_bytes": 1862291
+        },
+        "bass": {
+          "file": "mus_battle_core_u1__bass.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -17.05,
+          "rms_dbfs": -30.26,
+          "lufs_i": -25.92,
+          "size_bytes": 1428941
+        },
+        "drums": {
+          "file": "mus_battle_core_u1__drums.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -8.14,
+          "rms_dbfs": -22.94,
+          "lufs_i": -23.99,
+          "size_bytes": 1691323
+        }
+      },
+      "director_stem_order": [
+        "box",
+        "bass",
+        "drums",
+        "lead",
+        "pad",
+        "tick"
+      ],
+      "mix": {
+        "duration_s": 86.667,
+        "channels": 2,
+        "peak_dbfs": -4.92,
+        "rms_dbfs": -21.18,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "sync_hold": "fade every stem except box to \u2212inf over 0.15 s and mute tick",
+        "shave_bonus": "pad stem +4 dB while shave_bonus = 1 (Boost Lv3)",
+        "hitstop": "the war drum (drums stem) only on hitstop: play drums at \u2212inf and open it for 0.3 s on each hitstop if the U1 night rule is wanted"
+      },
+      "notes": "Same skeleton as U0: shakuhachi scoops into the hook, koto \u221212 cents, taiko pitched down a minor third and saturated.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 6.6667,
+        "bpm": 144,
+        "beat_count": 208,
+        "bar_beats": 4
+      }
+    },
+    "mus_boss_atrium_cradle": {
+      "id": "mus_boss_atrium_cradle",
+      "bpm": 72,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "C minor",
+      "bars": 28,
+      "bar_s": 3.333333,
+      "duration_s": 93.3333,
+      "loop_start_s": 13.3333,
+      "loop_start_samples": 640000,
+      "loop_end_s": 93.3333,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 8,
+          "start_s": 13.3333
+        },
+        {
+          "name": "bridge",
+          "bar": 12,
+          "bars": 4,
+          "start_s": 40.0
+        },
+        {
+          "name": "b",
+          "bar": 16,
+          "bars": 8,
+          "start_s": 53.3333
+        },
+        {
+          "name": "coda",
+          "bar": 24,
+          "bars": 4,
+          "start_s": 80.0
+        }
+      ],
+      "stems": {
+        "strings": {
+          "file": "mus_boss_atrium_cradle__strings.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 93.333,
+          "channels": 2,
+          "peak_dbfs": -5.77,
+          "rms_dbfs": -25.31,
+          "lufs_i": -21.97,
+          "size_bytes": 2221371
+        },
+        "lead": {
+          "file": "mus_boss_atrium_cradle__lead.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 93.333,
+          "channels": 2,
+          "peak_dbfs": -4.26,
+          "rms_dbfs": -28.59,
+          "lufs_i": -24.93,
+          "size_bytes": 1483153
+        },
+        "drums": {
+          "file": "mus_boss_atrium_cradle__drums.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 93.333,
+          "channels": 2,
+          "peak_dbfs": -9.9,
+          "rms_dbfs": -35.83,
+          "lufs_i": -26.92,
+          "size_bytes": 1291063
+        },
+        "crackle": {
+          "file": "mus_boss_atrium_cradle__crackle.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 93.333,
+          "channels": 2,
+          "peak_dbfs": -12.05,
+          "rms_dbfs": -42.08,
+          "lufs_i": -37.73,
+          "size_bytes": 2640625
+        }
+      },
+      "director_stem_order": [
+        "strings",
+        "drums",
+        "lead",
+        "crackle"
+      ],
+      "mix": {
+        "duration_s": 93.333,
+        "channels": 2,
+        "peak_dbfs": -1.69,
+        "rms_dbfs": -23.34,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "phase": "phase 1 = intro+A, phase 2 = bridge+B (12 fps VHS), phase 3 = coda (gold leaf at bar 25); use AudioStreamInteractive clips per section",
+        "grief_resonance": "not used here; Robo is not Vaelos"
+      },
+      "notes": "Ceramic tings side-chain the other stems to 0.2 for 0.2 s. B gates the quartet at 12 Hz and bit-crushes it.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 13.3333,
+        "bpm": 72,
+        "beat_count": 112,
+        "bar_beats": 4
+      }
+    },
+    "mus_sera_theme": {
+      "id": "mus_sera_theme",
+      "bpm": 72,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "E minor",
+      "bars": 26,
+      "bar_s": 3.333333,
+      "duration_s": 86.6667,
+      "loop_start_s": 6.6667,
+      "loop_start_samples": 320000,
+      "loop_end_s": 86.6667,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 2,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 2,
+          "bars": 8,
+          "start_s": 6.6667
+        },
+        {
+          "name": "bridge",
+          "bar": 10,
+          "bars": 4,
+          "start_s": 33.3333
+        },
+        {
+          "name": "b",
+          "bar": 14,
+          "bars": 8,
+          "start_s": 46.6667
+        },
+        {
+          "name": "coda",
+          "bar": 22,
+          "bars": 4,
+          "start_s": 73.3333
+        }
+      ],
+      "stems": {
+        "lead": {
+          "file": "mus_sera_theme__lead.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -6.31,
+          "rms_dbfs": -24.21,
+          "lufs_i": -21.79,
+          "size_bytes": 1679888
+        },
+        "pad": {
+          "file": "mus_sera_theme__pad.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -10.03,
+          "rms_dbfs": -29.36,
+          "lufs_i": -26.31,
+          "size_bytes": 1856041
+        },
+        "strings": {
+          "file": "mus_sera_theme__strings.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -14.07,
+          "rms_dbfs": -31.76,
+          "lufs_i": -25.31,
+          "size_bytes": 826052
+        }
+      },
+      "director_stem_order": [
+        "strings",
+        "lead",
+        "pad"
+      ],
+      "mix": {
+        "duration_s": 86.667,
+        "channels": 2,
+        "peak_dbfs": -4.93,
+        "rms_dbfs": -22.52,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "translucency": "strings stem (the voices): 100 \u2192 \u221212 dB, 0 \u2192 +3 dB; below 50 add the Debt bus chorus (up to 7 voices)",
+        "slip": "on a slip play the harp stem reversed (AudioStreamPlayer pitch \u22121 is not available: use the reversed section clip from the bridge)"
+      },
+      "notes": "Harp cell E5 B4 D5 B4 E5 (a palindrome: the bridge states it reversed and it sounds the same). Shamisen reversed per bar.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 6.6667,
+        "bpm": 72,
+        "beat_count": 104,
+        "bar_beats": 4
+      }
+    },
+    "mus_stings_defeat": {
+      "id": "mus_stings_defeat",
+      "bpm": 72,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "C major",
+      "bars": 0,
+      "duration_s": 4.0,
+      "loop_start_s": 0.0,
+      "loop_start_samples": 0,
+      "loop_end_s": 4.0,
+      "sections": [],
+      "stems": {
+        "mix": {
+          "file": "mus_stings_defeat.ogg",
+          "default_on": true,
+          "duration_s": 4.0,
+          "channels": 2,
+          "peak_dbfs": -7.79,
+          "rms_dbfs": -24.03,
+          "lufs_i": -18.0,
+          "size_bytes": 84511
+        }
+      },
+      "mix": {
+        "duration_s": 4.0,
+        "channels": 2,
+        "peak_dbfs": -7.79,
+        "rms_dbfs": -24.03,
+        "lufs_i": -18.0
+      },
+      "rtpc": {},
+      "notes": "Tape stop over 0.4 s at 1.15 s, then a porcelain crack and shards as the Debt advances.",
+      "godot_import": {
+        "loop": false,
+        "loop_offset": 0.0,
+        "bpm": 72,
+        "beat_count": 0,
+        "bar_beats": 4
+      }
+    },
+    "mus_stings_overcap": {
+      "id": "mus_stings_overcap",
+      "bpm": 72,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "C major",
+      "bars": 0,
+      "duration_s": 1.6,
+      "loop_start_s": 0.0,
+      "loop_start_samples": 0,
+      "loop_end_s": 1.6,
+      "sections": [],
+      "stems": {
+        "mix": {
+          "file": "mus_stings_overcap.ogg",
+          "default_on": true,
+          "duration_s": 1.6,
+          "channels": 2,
+          "peak_dbfs": -13.12,
+          "rms_dbfs": -25.35,
+          "lufs_i": -18.0,
+          "size_bytes": 37950
+        }
+      },
+      "mix": {
+        "duration_s": 1.6,
+        "channels": 2,
+        "peak_dbfs": -13.12,
+        "rms_dbfs": -25.35,
+        "lufs_i": -18.0
+      },
+      "rtpc": {},
+      "notes": "A VHS whine (2.4 \u2192 3.1 kHz with flutter) and a tracking snap. Never a fanfare.",
+      "godot_import": {
+        "loop": false,
+        "loop_offset": 0.0,
+        "bpm": 72,
+        "beat_count": 0,
+        "bar_beats": 4
+      }
+    },
+    "mus_stings_victory": {
+      "id": "mus_stings_victory",
+      "bpm": 72,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "C major",
+      "bars": 0,
+      "duration_s": 6.0,
+      "loop_start_s": 0.0,
+      "loop_start_samples": 0,
+      "loop_end_s": 6.0,
+      "sections": [],
+      "stems": {
+        "mix": {
+          "file": "mus_stings_victory.ogg",
+          "default_on": true,
+          "duration_s": 6.0,
+          "channels": 2,
+          "peak_dbfs": -7.61,
+          "rms_dbfs": -21.56,
+          "lufs_i": -18.0,
+          "size_bytes": 129005
+        }
+      },
+      "mix": {
+        "duration_s": 6.0,
+        "channels": 2,
+        "peak_dbfs": -7.61,
+        "rms_dbfs": -21.56,
+        "lufs_i": -18.0
+      },
+      "rtpc": {},
+      "notes": "The Time cell resolving onto C major with whatever tines remain (render variants with missing tines by the same generator).",
+      "godot_import": {
+        "loop": false,
+        "loop_offset": 0.0,
+        "bpm": 72,
+        "beat_count": 0,
+        "bar_beats": 4
+      }
+    },
+    "mus_title": {
+      "id": "mus_title",
+      "bpm": 72,
+      "meter": [
+        3,
+        4
+      ],
+      "key": "C major",
+      "bars": 48,
+      "bar_s": 2.5,
+      "duration_s": 120.0,
+      "loop_start_s": 100.0,
+      "loop_start_samples": 4800000,
+      "loop_end_s": 120.0,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 12,
+          "start_s": 10.0
+        },
+        {
+          "name": "bridge",
+          "bar": 16,
+          "bars": 8,
+          "start_s": 40.0
+        },
+        {
+          "name": "b",
+          "bar": 24,
+          "bars": 16,
+          "start_s": 60.0
+        },
+        {
+          "name": "coda",
+          "bar": 40,
+          "bars": 8,
+          "start_s": 100.0
+        }
+      ],
+      "stems": {
+        "box": {
+          "file": "mus_title__box.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 120.0,
+          "channels": 2,
+          "peak_dbfs": -10.51,
+          "rms_dbfs": -26.44,
+          "lufs_i": -22.79,
+          "size_bytes": 1830951
+        },
+        "box_debt60": {
+          "file": "mus_title__box_debt60.ogg",
+          "default_on": false,
+          "auto_loaded_by_director": false,
+          "duration_s": 120.0,
+          "channels": 2,
+          "peak_dbfs": -9.95,
+          "rms_dbfs": -27.07,
+          "lufs_i": -22.79,
+          "size_bytes": 1766541
+        },
+        "box_debt20": {
+          "file": "mus_title__box_debt20.ogg",
+          "default_on": false,
+          "auto_loaded_by_director": false,
+          "duration_s": 120.0,
+          "channels": 2,
+          "peak_dbfs": -9.13,
+          "rms_dbfs": -27.35,
+          "lufs_i": -22.8,
+          "size_bytes": 1638394
+        },
+        "piano": {
+          "file": "mus_title__piano.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 120.0,
+          "channels": 2,
+          "peak_dbfs": -7.36,
+          "rms_dbfs": -27.68,
+          "lufs_i": -23.81,
+          "size_bytes": 1378426
+        },
+        "strings": {
+          "file": "mus_title__strings.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 120.0,
+          "channels": 2,
+          "peak_dbfs": -4.28,
+          "rms_dbfs": -28.78,
+          "lufs_i": -24.65,
+          "size_bytes": 2306516
+        },
+        "hiss": {
+          "file": "mus_title__hiss.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 120.0,
+          "channels": 2,
+          "peak_dbfs": -27.2,
+          "rms_dbfs": -46.66,
+          "lufs_i": -42.47,
+          "size_bytes": 2516102
+        }
+      },
+      "director_stem_order": [
+        "box",
+        "piano",
+        "strings",
+        "hiss"
+      ],
+      "mix": {
+        "duration_s": 120.0,
+        "channels": 2,
+        "peak_dbfs": -2.91,
+        "rms_dbfs": -22.8,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "save_loaded": "replace box with box_debt60 / box_debt20 according to the save's porcelain integrity",
+        "glow_intensity": "box stem volume \u221212 dB \u2026 +2 dB"
+      },
+      "notes": "Through-composed 100 s, then the loop region is the coda: box alone over hiss. Loop lands on bar 40.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 100.0,
+        "bpm": 72,
+        "beat_count": 144,
+        "bar_beats": 3
+      }
+    },
+    "mus_transit_chronoslip": {
+      "id": "mus_transit_chronoslip",
+      "bpm": 0,
+      "meter": [
+        0,
+        0
+      ],
+      "key": "none",
+      "bars": 0,
+      "duration_s": 64.0,
+      "loop_start_s": 0.0,
+      "loop_start_samples": 0,
+      "loop_end_s": 64.0,
+      "sections": [],
+      "stems": {
+        "mix": {
+          "file": "mus_transit_chronoslip.ogg",
+          "default_on": true,
+          "duration_s": 64.0,
+          "channels": 2,
+          "peak_dbfs": -5.58,
+          "rms_dbfs": -21.32,
+          "lufs_i": -23.0,
+          "size_bytes": 1173499
+        }
+      },
+      "mix": {
+        "duration_s": 64.0,
+        "channels": 2,
+        "peak_dbfs": -5.58,
+        "rms_dbfs": -21.32,
+        "lufs_i": -23.0
+      },
+      "rtpc": {
+        "heartbeat": "pitch_scale the whole bed with the heartbeat RTPC (72 \u2192 1.0, 144 \u2192 1.4) or layer sfx/time/chronoslip",
+        "camera_fov": "a slip widens the FOV and muffles everything except this heartbeat: music bus low-pass 400 Hz"
+      },
+      "notes": "No music: brown-noise thermals, a 76 BPM chest heartbeat, a rubber-hose Doppler whoosh every 11\u201316 s. Seamless 64 s loop at \u221223 LUFS.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 0.0,
+        "bpm": 0,
+        "beat_count": 0,
+        "bar_beats": 4
+      }
+    },
+    "mus_u0_fair_1024": {
+      "id": "mus_u0_fair_1024",
+      "bpm": 108,
+      "meter": [
+        6,
+        8
+      ],
+      "key": "G major",
+      "bars": 64,
+      "bar_s": 1.111111,
+      "duration_s": 71.1111,
+      "loop_start_s": 4.4444,
+      "loop_start_samples": 213333,
+      "loop_end_s": 71.1111,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 16,
+          "start_s": 4.4444
+        },
+        {
+          "name": "bridge",
+          "bar": 20,
+          "bars": 8,
+          "start_s": 22.2222
+        },
+        {
+          "name": "b",
+          "bar": 28,
+          "bars": 24,
+          "start_s": 31.1111
+        },
+        {
+          "name": "coda",
+          "bar": 52,
+          "bars": 12,
+          "start_s": 57.7778
+        }
+      ],
+      "stems": {
+        "mix": {
+          "file": "mus_u0_fair_1024.ogg",
+          "default_on": true,
+          "duration_s": 71.111,
+          "channels": 2,
+          "peak_dbfs": -4.96,
+          "rms_dbfs": -23.05,
+          "lufs_i": -20.0,
+          "size_bytes": 1584974
+        }
+      },
+      "director_stem_order": [
+        "mix"
+      ],
+      "mix": {
+        "duration_s": 71.111,
+        "channels": 2,
+        "peak_dbfs": -4.96,
+        "rms_dbfs": -23.05,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "chase": "follow-up: a chase stem of tachyon chirps (sfx/magic/tachyon_travel at 1/8th notes)",
+        "telepod": "at the Telepod detune the band: pitch_scale 0.97 and the Debt bus chorus to 7 voices"
+      },
+      "notes": "6/8 scored at the quaver (324/min, 6 per bar); felt pulse 108. World cell in E Dorian on the fiddle.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 4.4444,
+        "bpm": 108,
+        "beat_count": 128,
+        "bar_beats": 2
+      }
+    },
+    "mus_u0_guardia_morning": {
+      "id": "mus_u0_guardia_morning",
+      "bpm": 72,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "F major",
+      "bars": 26,
+      "bar_s": 3.333333,
+      "duration_s": 86.6667,
+      "loop_start_s": 6.6667,
+      "loop_start_samples": 320000,
+      "loop_end_s": 86.6667,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 2,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 2,
+          "bars": 8,
+          "start_s": 6.6667
+        },
+        {
+          "name": "bridge",
+          "bar": 10,
+          "bars": 4,
+          "start_s": 33.3333
+        },
+        {
+          "name": "b",
+          "bar": 14,
+          "bars": 8,
+          "start_s": 46.6667
+        },
+        {
+          "name": "coda",
+          "bar": 22,
+          "bars": 4,
+          "start_s": 73.3333
+        }
+      ],
+      "stems": {
+        "piano": {
+          "file": "mus_u0_guardia_morning__piano.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -3.83,
+          "rms_dbfs": -24.44,
+          "lufs_i": -21.39,
+          "size_bytes": 1338098
+        },
+        "quartet": {
+          "file": "mus_u0_guardia_morning__quartet.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -10.83,
+          "rms_dbfs": -28.26,
+          "lufs_i": -22.39,
+          "size_bytes": 1288453
+        },
+        "crackle": {
+          "file": "mus_u0_guardia_morning__crackle.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.667,
+          "channels": 2,
+          "peak_dbfs": -10.94,
+          "rms_dbfs": -41.06,
+          "lufs_i": -37.07,
+          "size_bytes": 2407900
+        }
+      },
+      "director_stem_order": [
+        "piano",
+        "quartet",
+        "crackle"
+      ],
+      "mix": {
+        "duration_s": 86.667,
+        "channels": 2,
+        "peak_dbfs": -3.74,
+        "rms_dbfs": -22.86,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "stir_ritual": "the stirring is quantised to the beat (3.333 s bar); when Crono stops stirring, skip the crackle stem 0.5 s forward (the house clock skips)",
+        "porcelain_stress": "music bus low-pass via AudioDirector"
+      },
+      "notes": "World cell at pitch (D4 F4 A4 G4 E4) in F major; the crackle stem carries the house clock at 72 BPM.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 6.6667,
+        "bpm": 72,
+        "beat_count": 104,
+        "bar_beats": 4
+      }
+    },
+    "mus_u0_truce_1024": {
+      "id": "mus_u0_truce_1024",
+      "bpm": 78,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "D Dorian",
+      "bars": 28,
+      "bar_s": 3.076923,
+      "duration_s": 86.1538,
+      "loop_start_s": 12.3077,
+      "loop_start_samples": 590769,
+      "loop_end_s": 86.1538,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 8,
+          "start_s": 12.3077
+        },
+        {
+          "name": "bridge",
+          "bar": 12,
+          "bars": 4,
+          "start_s": 36.9231
+        },
+        {
+          "name": "b",
+          "bar": 16,
+          "bars": 8,
+          "start_s": 49.2308
+        },
+        {
+          "name": "coda",
+          "bar": 24,
+          "bars": 4,
+          "start_s": 73.8462
+        }
+      ],
+      "stems": {
+        "box": {
+          "file": "mus_u0_truce_1024__box.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.154,
+          "channels": 2,
+          "peak_dbfs": -15.31,
+          "rms_dbfs": -34.09,
+          "lufs_i": -26.81,
+          "size_bytes": 606353
+        },
+        "lead": {
+          "file": "mus_u0_truce_1024__lead.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.154,
+          "channels": 2,
+          "peak_dbfs": -6.6,
+          "rms_dbfs": -26.61,
+          "lufs_i": -22.05,
+          "size_bytes": 1388101
+        },
+        "drums": {
+          "file": "mus_u0_truce_1024__drums.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.154,
+          "channels": 2,
+          "peak_dbfs": -8.65,
+          "rms_dbfs": -36.05,
+          "lufs_i": -24.82,
+          "size_bytes": 947168
+        },
+        "bass": {
+          "file": "mus_u0_truce_1024__bass.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.154,
+          "channels": 2,
+          "peak_dbfs": -10.83,
+          "rms_dbfs": -25.94,
+          "lufs_i": -24.04,
+          "size_bytes": 258405
+        },
+        "hiss": {
+          "file": "mus_u0_truce_1024__hiss.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 86.154,
+          "channels": 2,
+          "peak_dbfs": -20.82,
+          "rms_dbfs": -46.09,
+          "lufs_i": -41.4,
+          "size_bytes": 2032203
+        }
+      },
+      "director_stem_order": [
+        "box",
+        "hiss",
+        "bass",
+        "drums",
+        "lead"
+      ],
+      "mix": {
+        "duration_s": 86.154,
+        "channels": 2,
+        "peak_dbfs": -2.17,
+        "rms_dbfs": -22.68,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "crono_hp": "100% \u2192 full mix; towards 20% fade lead and drums to leave bass + box (the hollow marrow pulse)",
+        "breath": "side-chain the bass stem to Crono's idle breath (duck 3 dB on each exhale)",
+        "porcelain_stress": "swap in a box stem with more missing tines (not rendered: use wind_scene box_debt60/20 as the model)"
+      },
+      "notes": "Shamisen bent 15 cents flat with a slow wobble; 808 decays 2.2 s; the box is already missing its B4 tine.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 12.3077,
+        "bpm": 78,
+        "beat_count": 112,
+        "bar_beats": 4
+      }
+    },
+    "mus_u0_wind_scene_1024": {
+      "id": "mus_u0_wind_scene_1024",
+      "bpm": 72,
+      "meter": [
+        3,
+        4
+      ],
+      "key": "C major",
+      "bars": 44,
+      "bar_s": 2.5,
+      "duration_s": 110.0,
+      "loop_start_s": 10.0,
+      "loop_start_samples": 480000,
+      "loop_end_s": 110.0,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 12,
+          "start_s": 10.0
+        },
+        {
+          "name": "bridge",
+          "bar": 16,
+          "bars": 8,
+          "start_s": 40.0
+        },
+        {
+          "name": "b",
+          "bar": 24,
+          "bars": 12,
+          "start_s": 60.0
+        },
+        {
+          "name": "coda",
+          "bar": 36,
+          "bars": 8,
+          "start_s": 90.0
+        }
+      ],
+      "stems": {
+        "box": {
+          "file": "mus_u0_wind_scene_1024__box.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 110.0,
+          "channels": 2,
+          "peak_dbfs": -8.42,
+          "rms_dbfs": -25.63,
+          "lufs_i": -20.89,
+          "size_bytes": 1379869
+        },
+        "box_debt60": {
+          "file": "mus_u0_wind_scene_1024__box_debt60.ogg",
+          "default_on": false,
+          "auto_loaded_by_director": false,
+          "duration_s": 110.0,
+          "channels": 2,
+          "peak_dbfs": -7.99,
+          "rms_dbfs": -25.87,
+          "lufs_i": -20.89,
+          "size_bytes": 1300138
+        },
+        "box_debt20": {
+          "file": "mus_u0_wind_scene_1024__box_debt20.ogg",
+          "default_on": false,
+          "auto_loaded_by_director": false,
+          "duration_s": 110.0,
+          "channels": 2,
+          "peak_dbfs": -7.65,
+          "rms_dbfs": -26.19,
+          "lufs_i": -20.89,
+          "size_bytes": 1205612
+        },
+        "box_debt0": {
+          "file": "mus_u0_wind_scene_1024__box_debt0.ogg",
+          "default_on": false,
+          "auto_loaded_by_director": false,
+          "duration_s": 110.0,
+          "channels": 2,
+          "peak_dbfs": -8.29,
+          "rms_dbfs": -37.88,
+          "lufs_i": -20.89,
+          "size_bytes": 91411
+        },
+        "piano": {
+          "file": "mus_u0_wind_scene_1024__piano.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 110.0,
+          "channels": 2,
+          "peak_dbfs": -7.84,
+          "rms_dbfs": -27.07,
+          "lufs_i": -23.4,
+          "size_bytes": 1345076
+        },
+        "tick": {
+          "file": "mus_u0_wind_scene_1024__tick.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 110.0,
+          "channels": 2,
+          "peak_dbfs": -7.21,
+          "rms_dbfs": -38.41,
+          "lufs_i": -32.7,
+          "size_bytes": 2581374
+        },
+        "wind": {
+          "file": "mus_u0_wind_scene_1024__wind.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 110.0,
+          "channels": 2,
+          "peak_dbfs": -18.74,
+          "rms_dbfs": -36.34,
+          "lufs_i": -33.86,
+          "size_bytes": 2196786
+        },
+        "debt": {
+          "file": "mus_u0_wind_scene_1024__debt.ogg",
+          "default_on": false,
+          "auto_loaded_by_director": false,
+          "duration_s": 110.0,
+          "channels": 2,
+          "peak_dbfs": -7.8,
+          "rms_dbfs": -28.31,
+          "lufs_i": -30.68,
+          "size_bytes": 748506
+        }
+      },
+      "director_stem_order": [
+        "box",
+        "piano",
+        "wind",
+        "tick"
+      ],
+      "mix": {
+        "duration_s": 110.0,
+        "channels": 2,
+        "peak_dbfs": -6.07,
+        "rms_dbfs": -22.99,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "porcelain_stress": "swap the box stem: >60 \u2192 box, 21\u201360 \u2192 box_debt60, 1\u201320 \u2192 box_debt20, 0 \u2192 box_debt0 (the tape stops at 15.2 s); above 60 also fade in the debt stem",
+        "glow_intensity": "box and tick stem volume: 0 \u2192 \u221212 dB, 100 \u2192 +2 dB with saturation",
+        "camera_fov": "music bus low-pass 400 Hz (32\u00b0) \u2192 800 Hz (24\u00b0)",
+        "gate_proximity": "not rendered: layer sfx/status/vhs_fog (U2 gramophone hiss) or a CRT hum near gates",
+        "vaelos_near": "layer mus_vaelos_theme__pad (68 BPM heartbeat) under this track"
+      },
+      "notes": "Tick: 12 quavers per 2-bar phrase, the 8th is a silent click (the missing tooth) so the C4 lands without its tick; mainspring grind every 4 bars from the loop start. Loop region = A+Bridge+B+Coda.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 10.0,
+        "bpm": 72,
+        "beat_count": 132,
+        "bar_beats": 3
+      }
+    },
+    "mus_u1_ashen_morning": {
+      "id": "mus_u1_ashen_morning",
+      "bpm": 48,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "A minor pentatonic",
+      "bars": 16,
+      "bar_s": 5.0,
+      "duration_s": 80.0,
+      "loop_start_s": 10.0,
+      "loop_start_samples": 480000,
+      "loop_end_s": 80.0,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 2,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 2,
+          "bars": 4,
+          "start_s": 10.0
+        },
+        {
+          "name": "bridge",
+          "bar": 6,
+          "bars": 2,
+          "start_s": 30.0
+        },
+        {
+          "name": "b",
+          "bar": 8,
+          "bars": 6,
+          "start_s": 40.0
+        },
+        {
+          "name": "coda",
+          "bar": 14,
+          "bars": 2,
+          "start_s": 70.0
+        }
+      ],
+      "stems": {
+        "mix": {
+          "file": "mus_u1_ashen_morning.ogg",
+          "default_on": true,
+          "duration_s": 80.0,
+          "channels": 2,
+          "peak_dbfs": -1.0,
+          "rms_dbfs": -22.66,
+          "lufs_i": -20.0,
+          "size_bytes": 1902403
+        }
+      },
+      "director_stem_order": [
+        "mix"
+      ],
+      "mix": {
+        "duration_s": 80.0,
+        "channels": 2,
+        "peak_dbfs": -1.0,
+        "rms_dbfs": -22.66,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "movement": "ink-stroke swells on movement: play sfx/weapons/krona_nodachi gesture layer at \u221218 dB on each run start",
+        "silence": "the track is quiet by design (\u221212 LUFS short-term peaks only on the taiko); do not normalise it louder"
+      },
+      "notes": "48 BPM, 5 s bars. World cell on A (A4 C5 E5 D5 B4) with meri scoops. Taiko every two bars; washi crackle at \u221250 dB.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 10.0,
+        "bpm": 48,
+        "beat_count": 64,
+        "bar_beats": 4
+      }
+    },
+    "mus_u1_krona_duel": {
+      "id": "mus_u1_krona_duel",
+      "bpm": 96,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "D minor",
+      "bars": 40,
+      "bar_s": 2.5,
+      "duration_s": 100.0,
+      "loop_start_s": 10.0,
+      "loop_start_samples": 480000,
+      "loop_end_s": 100.0,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 12,
+          "start_s": 10.0
+        },
+        {
+          "name": "bridge",
+          "bar": 16,
+          "bars": 8,
+          "start_s": 40.0
+        },
+        {
+          "name": "b",
+          "bar": 24,
+          "bars": 12,
+          "start_s": 60.0
+        },
+        {
+          "name": "coda",
+          "bar": 36,
+          "bars": 4,
+          "start_s": 90.0
+        }
+      ],
+      "stems": {
+        "mix": {
+          "file": "mus_u1_krona_duel.ogg",
+          "default_on": true,
+          "duration_s": 100.0,
+          "channels": 2,
+          "peak_dbfs": -5.15,
+          "rms_dbfs": -22.65,
+          "lufs_i": -20.0,
+          "size_bytes": 2146002
+        }
+      },
+      "director_stem_order": [
+        "mix"
+      ],
+      "mix": {
+        "duration_s": 100.0,
+        "channels": 2,
+        "peak_dbfs": -5.15,
+        "rms_dbfs": -22.65,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "smear": "the 24 fps smear: a 0.3 s reverb freeze is rendered at the bridge \u2192 B seam (35.0 s); at runtime use AudioEffectReverb with room 1.0 for 0.3 s",
+        "hitstop": "duck the mix 6 dB and play sfx/combat/break_gong_vinyl on hitstop"
+      },
+      "notes": "Krona's cell G C D E\u266d at pitch over a D pedal (Phrygian bruise). Taiko pitched down a minor third and saturated.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 10.0,
+        "bpm": 96,
+        "beat_count": 160,
+        "bar_beats": 4
+      }
+    },
+    "mus_vaelos_theme": {
+      "id": "mus_vaelos_theme",
+      "bpm": 68,
+      "meter": [
+        4,
+        4
+      ],
+      "key": "C Locrian",
+      "bars": 28,
+      "bar_s": 3.529412,
+      "duration_s": 98.8235,
+      "loop_start_s": 14.1176,
+      "loop_start_samples": 677647,
+      "loop_end_s": 98.8235,
+      "sections": [
+        {
+          "name": "intro",
+          "bar": 0,
+          "bars": 4,
+          "start_s": 0.0
+        },
+        {
+          "name": "a",
+          "bar": 4,
+          "bars": 8,
+          "start_s": 14.1176
+        },
+        {
+          "name": "bridge",
+          "bar": 12,
+          "bars": 4,
+          "start_s": 42.3529
+        },
+        {
+          "name": "b",
+          "bar": 16,
+          "bars": 8,
+          "start_s": 56.4706
+        },
+        {
+          "name": "coda",
+          "bar": 24,
+          "bars": 4,
+          "start_s": 84.7059
+        }
+      ],
+      "stems": {
+        "bass": {
+          "file": "mus_vaelos_theme__bass.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 98.824,
+          "channels": 2,
+          "peak_dbfs": -6.11,
+          "rms_dbfs": -20.88,
+          "lufs_i": -22.98,
+          "size_bytes": 1455690
+        },
+        "lead": {
+          "file": "mus_vaelos_theme__lead.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 98.824,
+          "channels": 2,
+          "peak_dbfs": -7.8,
+          "rms_dbfs": -28.01,
+          "lufs_i": -21.33,
+          "size_bytes": 1006528
+        },
+        "pad": {
+          "file": "mus_vaelos_theme__pad.ogg",
+          "default_on": true,
+          "auto_loaded_by_director": true,
+          "duration_s": 98.824,
+          "channels": 2,
+          "peak_dbfs": -6.18,
+          "rms_dbfs": -23.14,
+          "lufs_i": -25.85,
+          "size_bytes": 1901711
+        }
+      },
+      "director_stem_order": [
+        "bass",
+        "lead",
+        "pad"
+      ],
+      "mix": {
+        "duration_s": 98.824,
+        "channels": 2,
+        "peak_dbfs": -2.58,
+        "rms_dbfs": -18.32,
+        "lufs_i": -20.0
+      },
+      "rtpc": {
+        "grief_resonance": "pad stem volume and the Sub bus: 28 Hz \u2192 \u22126 dB, 40 Hz \u2192 +3 dB; also opens the music low-pass to 800 Hz",
+        "vaelos_near": "lay bass + pad under any world track (they phase at 68 against the hub's 72)",
+        "heartbeat": "the pump is fixed at 0.8 Hz here; U8 drives it from the RTPC"
+      },
+      "notes": "Bassoon C2/G\u266d2 on every beat with a sub octave; tenor hum = Crono's cell even and clean, \u221250 cents; pump 0.8 Hz; drone 28\u201340 Hz.",
+      "godot_import": {
+        "loop": true,
+        "loop_offset": 14.1176,
+        "bpm": 68,
+        "beat_count": 112,
+        "bar_beats": 4
+      }
+    }
+  },
+  "sfx": [
+    {
+      "duration_s": 1.05,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -21.68,
+      "lufs_i": -19.36,
+      "file": "audio/sfx/combat/boost_lv1.wav",
+      "size_bytes": 100844,
+      "family": "combat"
+    },
+    {
+      "duration_s": 1.2,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -22.64,
+      "lufs_i": -19.62,
+      "file": "audio/sfx/combat/boost_lv2.wav",
+      "size_bytes": 115244,
+      "family": "combat"
+    },
+    {
+      "duration_s": 1.35,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -22.74,
+      "lufs_i": -19.01,
+      "file": "audio/sfx/combat/boost_lv3.wav",
+      "size_bytes": 129644,
+      "family": "combat"
+    },
+    {
+      "duration_s": 1.5,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -22.14,
+      "lufs_i": -20.85,
+      "file": "audio/sfx/combat/boost_lv4.wav",
+      "size_bytes": 144044,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.4,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -20.78,
+      "lufs_i": -17.5,
+      "file": "audio/sfx/combat/bp_gain.wav",
+      "size_bytes": 38444,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.4,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -21.15,
+      "lufs_i": -17.88,
+      "file": "audio/sfx/combat/bp_spend.wav",
+      "size_bytes": 38444,
+      "family": "combat"
+    },
+    {
+      "duration_s": 6.18,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -20.01,
+      "lufs_i": -17.82,
+      "file": "audio/sfx/combat/break_gong_vinyl.wav",
+      "size_bytes": 593322,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.14,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -20.43,
+      "lufs_i": -21.71,
+      "file": "audio/sfx/combat/shield_chip_01.wav",
+      "size_bytes": 13484,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.14,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.13,
+      "lufs_i": -20.39,
+      "file": "audio/sfx/combat/shield_chip_02.wav",
+      "size_bytes": 13484,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.14,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.76,
+      "lufs_i": -21.02,
+      "file": "audio/sfx/combat/shield_chip_03.wav",
+      "size_bytes": 13484,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.14,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.94,
+      "lufs_i": -21.18,
+      "file": "audio/sfx/combat/shield_chip_04.wav",
+      "size_bytes": 13484,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.14,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -20.15,
+      "lufs_i": -21.41,
+      "file": "audio/sfx/combat/shield_chip_05.wav",
+      "size_bytes": 13484,
+      "family": "combat"
+    },
+    {
+      "duration_s": 1.6,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.67,
+      "lufs_i": -14.75,
+      "file": "audio/sfx/combat/shield_rebuild.wav",
+      "size_bytes": 153644,
+      "family": "combat"
+    },
+    {
+      "duration_s": 4.56,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -25.5,
+      "lufs_i": -22.87,
+      "file": "audio/sfx/combat/statue_shatter.wav",
+      "size_bytes": 437802,
+      "family": "combat"
+    },
+    {
+      "duration_s": 1.047,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -12.21,
+      "lufs_i": -11.55,
+      "file": "audio/sfx/combat/telegraph_loop.wav",
+      "size_bytes": 100574,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.9,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.08,
+      "lufs_i": -15.59,
+      "file": "audio/sfx/combat/weak_bell.wav",
+      "size_bytes": 86444,
+      "family": "combat"
+    },
+    {
+      "duration_s": 0.596,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -15.81,
+      "lufs_i": -12.89,
+      "file": "audio/sfx/creatures/u0_voice_01.wav",
+      "size_bytes": 57256,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.737,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.03,
+      "lufs_i": -13.25,
+      "file": "audio/sfx/creatures/u0_voice_02.wav",
+      "size_bytes": 70800,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.74,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.57,
+      "lufs_i": -13.81,
+      "file": "audio/sfx/creatures/u0_voice_03.wav",
+      "size_bytes": 71090,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.579,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.32,
+      "lufs_i": -13.55,
+      "file": "audio/sfx/creatures/u0_voice_04.wav",
+      "size_bytes": 55662,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.684,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.69,
+      "lufs_i": -14.27,
+      "file": "audio/sfx/creatures/u0_voice_05.wav",
+      "size_bytes": 65754,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.534,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.83,
+      "lufs_i": -15.03,
+      "file": "audio/sfx/creatures/u1_voice_01.wav",
+      "size_bytes": 51324,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.562,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.21,
+      "lufs_i": -15.2,
+      "file": "audio/sfx/creatures/u1_voice_02.wav",
+      "size_bytes": 54038,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.653,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.22,
+      "lufs_i": -14.75,
+      "file": "audio/sfx/creatures/u1_voice_03.wav",
+      "size_bytes": 62736,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.613,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.9,
+      "lufs_i": -15.97,
+      "file": "audio/sfx/creatures/u1_voice_04.wav",
+      "size_bytes": 58906,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.474,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.73,
+      "lufs_i": -16.26,
+      "file": "audio/sfx/creatures/u1_voice_05.wav",
+      "size_bytes": 45590,
+      "family": "creatures"
+    },
+    {
+      "duration_s": 0.09,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.05,
+      "lufs_i": -22.66,
+      "file": "audio/sfx/footsteps/u0_ceramic_01.wav",
+      "size_bytes": 8684,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.09,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.02,
+      "lufs_i": -23.29,
+      "file": "audio/sfx/footsteps/u0_ceramic_02.wav",
+      "size_bytes": 8684,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.09,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.04,
+      "lufs_i": -21.1,
+      "file": "audio/sfx/footsteps/u0_ceramic_03.wav",
+      "size_bytes": 8684,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.09,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.63,
+      "lufs_i": -22.88,
+      "file": "audio/sfx/footsteps/u0_ceramic_04.wav",
+      "size_bytes": 8684,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.09,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.1,
+      "lufs_i": -22.53,
+      "file": "audio/sfx/footsteps/u0_ceramic_05.wav",
+      "size_bytes": 8684,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.16,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -24.84,
+      "lufs_i": -26.41,
+      "file": "audio/sfx/footsteps/u0_moss_01.wav",
+      "size_bytes": 15404,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.16,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -22.47,
+      "lufs_i": -24.18,
+      "file": "audio/sfx/footsteps/u0_moss_02.wav",
+      "size_bytes": 15404,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.16,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -20.18,
+      "lufs_i": -21.9,
+      "file": "audio/sfx/footsteps/u0_moss_03.wav",
+      "size_bytes": 15404,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.16,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -25.0,
+      "lufs_i": -26.83,
+      "file": "audio/sfx/footsteps/u0_moss_04.wav",
+      "size_bytes": 15404,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.16,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -23.89,
+      "lufs_i": -25.72,
+      "file": "audio/sfx/footsteps/u0_moss_05.wav",
+      "size_bytes": 15404,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.13,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.26,
+      "lufs_i": -21.32,
+      "file": "audio/sfx/footsteps/u1_woodblock_01.wav",
+      "size_bytes": 12524,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.13,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.8,
+      "lufs_i": -22.02,
+      "file": "audio/sfx/footsteps/u1_woodblock_02.wav",
+      "size_bytes": 12524,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.13,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.58,
+      "lufs_i": -22.69,
+      "file": "audio/sfx/footsteps/u1_woodblock_03.wav",
+      "size_bytes": 12524,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.13,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.11,
+      "lufs_i": -22.11,
+      "file": "audio/sfx/footsteps/u1_woodblock_04.wav",
+      "size_bytes": 12524,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.13,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.73,
+      "lufs_i": -22.82,
+      "file": "audio/sfx/footsteps/u1_woodblock_05.wav",
+      "size_bytes": 12524,
+      "family": "footsteps"
+    },
+    {
+      "duration_s": 0.4,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -14.61,
+      "lufs_i": -18.14,
+      "file": "audio/sfx/magic/astral_contact.wav",
+      "size_bytes": 38444,
+      "family": "magic"
+    },
+    {
+      "duration_s": 0.6,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.94,
+      "lufs_i": -17.98,
+      "file": "audio/sfx/magic/astral_gesture.wav",
+      "size_bytes": 57644,
+      "family": "magic"
+    },
+    {
+      "duration_s": 3.32,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.53,
+      "lufs_i": -18.3,
+      "file": "audio/sfx/magic/astral_tail.wav",
+      "size_bytes": 318762,
+      "family": "magic"
+    },
+    {
+      "duration_s": 0.5,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.16,
+      "lufs_i": -15.15,
+      "file": "audio/sfx/magic/astral_travel.wav",
+      "size_bytes": 48044,
+      "family": "magic"
+    },
+    {
+      "duration_s": 1.4,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -15.21,
+      "lufs_i": -17.27,
+      "file": "audio/sfx/magic/ruin_contact.wav",
+      "size_bytes": 134444,
+      "family": "magic"
+    },
+    {
+      "duration_s": 0.5,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.18,
+      "lufs_i": -17.63,
+      "file": "audio/sfx/magic/ruin_gesture.wav",
+      "size_bytes": 48044,
+      "family": "magic"
+    },
+    {
+      "duration_s": 4.6,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.48,
+      "lufs_i": -15.83,
+      "file": "audio/sfx/magic/ruin_tail.wav",
+      "size_bytes": 441642,
+      "family": "magic"
+    },
+    {
+      "duration_s": 0.45,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.14,
+      "lufs_i": -15.34,
+      "file": "audio/sfx/magic/ruin_travel.wav",
+      "size_bytes": 43244,
+      "family": "magic"
+    },
+    {
+      "duration_s": 0.6,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -14.6,
+      "lufs_i": -14.39,
+      "file": "audio/sfx/magic/tachyon_contact.wav",
+      "size_bytes": 57644,
+      "family": "magic"
+    },
+    {
+      "duration_s": 1.0,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.75,
+      "lufs_i": -15.4,
+      "file": "audio/sfx/magic/tachyon_gesture.wav",
+      "size_bytes": 96044,
+      "family": "magic"
+    },
+    {
+      "duration_s": 4.48,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -22.39,
+      "lufs_i": -16.67,
+      "file": "audio/sfx/magic/tachyon_tail.wav",
+      "size_bytes": 430122,
+      "family": "magic"
+    },
+    {
+      "duration_s": 0.8,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -14.47,
+      "lufs_i": -14.15,
+      "file": "audio/sfx/magic/tachyon_travel.wav",
+      "size_bytes": 76844,
+      "family": "magic"
+    },
+    {
+      "duration_s": 1.2,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -26.27,
+      "lufs_i": -23.42,
+      "file": "audio/sfx/porcelain/crack_large_01.wav",
+      "size_bytes": 115244,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 1.2,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -29.04,
+      "lufs_i": -26.31,
+      "file": "audio/sfx/porcelain/crack_large_02.wav",
+      "size_bytes": 115244,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 1.2,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -25.87,
+      "lufs_i": -22.42,
+      "file": "audio/sfx/porcelain/crack_large_03.wav",
+      "size_bytes": 115244,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 1.2,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -24.29,
+      "lufs_i": -20.47,
+      "file": "audio/sfx/porcelain/crack_large_04.wav",
+      "size_bytes": 115244,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 1.2,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -24.49,
+      "lufs_i": -20.18,
+      "file": "audio/sfx/porcelain/crack_large_05.wav",
+      "size_bytes": 115244,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.256,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -25.54,
+      "lufs_i": -24.17,
+      "file": "audio/sfx/porcelain/crack_small_01.wav",
+      "size_bytes": 24662,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.257,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -25.59,
+      "lufs_i": -24.21,
+      "file": "audio/sfx/porcelain/crack_small_02.wav",
+      "size_bytes": 24736,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.255,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -25.86,
+      "lufs_i": -24.53,
+      "file": "audio/sfx/porcelain/crack_small_03.wav",
+      "size_bytes": 24478,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.226,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -23.94,
+      "lufs_i": -23.12,
+      "file": "audio/sfx/porcelain/crack_small_04.wav",
+      "size_bytes": 21700,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.255,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -24.2,
+      "lufs_i": -22.88,
+      "file": "audio/sfx/porcelain/crack_small_05.wav",
+      "size_bytes": 24492,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 1.6,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -25.19,
+      "lufs_i": -22.48,
+      "file": "audio/sfx/porcelain/crystalline_spill.wav",
+      "size_bytes": 153644,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 6.0,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -6.66,
+      "lufs_i": -7.65,
+      "file": "audio/sfx/porcelain/galaxy_hum_220.wav",
+      "size_bytes": 576044,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 6.0,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -6.18,
+      "lufs_i": -6.85,
+      "file": "audio/sfx/porcelain/galaxy_hum_432.wav",
+      "size_bytes": 576044,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.1,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.47,
+      "lufs_i": -21.23,
+      "file": "audio/sfx/porcelain/tink_01.wav",
+      "size_bytes": 9644,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.1,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.81,
+      "lufs_i": -21.52,
+      "file": "audio/sfx/porcelain/tink_02.wav",
+      "size_bytes": 9644,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.1,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.18,
+      "lufs_i": -21.92,
+      "file": "audio/sfx/porcelain/tink_03.wav",
+      "size_bytes": 9644,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.1,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.09,
+      "lufs_i": -21.79,
+      "file": "audio/sfx/porcelain/tink_04.wav",
+      "size_bytes": 9644,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 0.1,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.31,
+      "lufs_i": -21.01,
+      "file": "audio/sfx/porcelain/tink_05.wav",
+      "size_bytes": 9644,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 1.8,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.99,
+      "lufs_i": -12.87,
+      "file": "audio/sfx/porcelain/wind_chime_crack.wav",
+      "size_bytes": 172844,
+      "family": "porcelain"
+    },
+    {
+      "duration_s": 6.0,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -6.25,
+      "lufs_i": -13.74,
+      "file": "audio/sfx/status/grief_whisper.wav",
+      "size_bytes": 576044,
+      "family": "status"
+    },
+    {
+      "duration_s": 4.0,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.45,
+      "lufs_i": -20.32,
+      "file": "audio/sfx/status/mercury_slosh.wav",
+      "size_bytes": 384044,
+      "family": "status"
+    },
+    {
+      "duration_s": 6.0,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.39,
+      "lufs_i": -19.75,
+      "file": "audio/sfx/status/oil_drip.wav",
+      "size_bytes": 576044,
+      "family": "status"
+    },
+    {
+      "duration_s": 4.0,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.95,
+      "lufs_i": -19.61,
+      "file": "audio/sfx/status/ruin_tear.wav",
+      "size_bytes": 384044,
+      "family": "status"
+    },
+    {
+      "duration_s": 6.0,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -14.34,
+      "lufs_i": -13.04,
+      "file": "audio/sfx/status/vhs_fog.wav",
+      "size_bytes": 576044,
+      "family": "status"
+    },
+    {
+      "duration_s": 5.257,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.29,
+      "lufs_i": -14.84,
+      "file": "audio/sfx/time/amber_rift.wav",
+      "size_bytes": 504726,
+      "family": "time"
+    },
+    {
+      "duration_s": 5.2,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -21.33,
+      "lufs_i": -12.98,
+      "file": "audio/sfx/time/chronoslip.wav",
+      "size_bytes": 998440,
+      "family": "time"
+    },
+    {
+      "duration_s": 0.8,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -12.55,
+      "lufs_i": -8.97,
+      "file": "audio/sfx/time/fast_forward.wav",
+      "size_bytes": 153644,
+      "family": "time"
+    },
+    {
+      "duration_s": 8.24,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -22.48,
+      "lufs_i": -18.08,
+      "file": "audio/sfx/time/fracture_sky.wav",
+      "size_bytes": 1582120,
+      "family": "time"
+    },
+    {
+      "duration_s": 3.92,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.85,
+      "lufs_i": -10.95,
+      "file": "audio/sfx/time/gate_open_u0.wav",
+      "size_bytes": 376362,
+      "family": "time"
+    },
+    {
+      "duration_s": 3.44,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.47,
+      "lufs_i": -13.55,
+      "file": "audio/sfx/time/gate_open_u1.wav",
+      "size_bytes": 330282,
+      "family": "time"
+    },
+    {
+      "duration_s": 1.393,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -13.03,
+      "lufs_i": -10.43,
+      "file": "audio/sfx/time/rewind.wav",
+      "size_bytes": 267560,
+      "family": "time"
+    },
+    {
+      "duration_s": 1.3,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -13.94,
+      "lufs_i": -10.28,
+      "file": "audio/sfx/time/tape_stop.wav",
+      "size_bytes": 249644,
+      "family": "time"
+    },
+    {
+      "duration_s": 0.8,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -13.49,
+      "lufs_i": -8.47,
+      "file": "audio/sfx/time/universe_switch.wav",
+      "size_bytes": 153644,
+      "family": "time"
+    },
+    {
+      "duration_s": 0.25,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.85,
+      "lufs_i": -15.59,
+      "file": "audio/sfx/ui/cancel.wav",
+      "size_bytes": 48044,
+      "family": "ui"
+    },
+    {
+      "duration_s": 0.4,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.31,
+      "lufs_i": -15.23,
+      "file": "audio/sfx/ui/close.wav",
+      "size_bytes": 76844,
+      "family": "ui"
+    },
+    {
+      "duration_s": 0.3,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -20.36,
+      "lufs_i": -15.27,
+      "file": "audio/sfx/ui/confirm.wav",
+      "size_bytes": 57644,
+      "family": "ui"
+    },
+    {
+      "duration_s": 0.08,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -17.57,
+      "lufs_i": -18.21,
+      "file": "audio/sfx/ui/cursor.wav",
+      "size_bytes": 15404,
+      "family": "ui"
+    },
+    {
+      "duration_s": 2.44,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -27.18,
+      "lufs_i": -19.84,
+      "file": "audio/sfx/ui/door.wav",
+      "size_bytes": 468520,
+      "family": "ui"
+    },
+    {
+      "duration_s": 0.3,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -20.85,
+      "lufs_i": -20.02,
+      "file": "audio/sfx/ui/error.wav",
+      "size_bytes": 57644,
+      "family": "ui"
+    },
+    {
+      "duration_s": 1.68,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -22.24,
+      "lufs_i": -13.51,
+      "file": "audio/sfx/ui/open.wav",
+      "size_bytes": 322600,
+      "family": "ui"
+    },
+    {
+      "duration_s": 0.28,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.83,
+      "lufs_i": -15.14,
+      "file": "audio/sfx/ui/page.wav",
+      "size_bytes": 53804,
+      "family": "ui"
+    },
+    {
+      "duration_s": 2.22,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -25.78,
+      "lufs_i": -18.07,
+      "file": "audio/sfx/ui/save.wav",
+      "size_bytes": 426280,
+      "family": "ui"
+    },
+    {
+      "duration_s": 4.24,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -19.54,
+      "lufs_i": -11.7,
+      "file": "audio/sfx/ui/sync_hold_freeze.wav",
+      "size_bytes": 814120,
+      "family": "ui"
+    },
+    {
+      "duration_s": 1.2,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -21.16,
+      "lufs_i": -14.4,
+      "file": "audio/sfx/ui/tube.wav",
+      "size_bytes": 230444,
+      "family": "ui"
+    },
+    {
+      "duration_s": 0.65,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -14.44,
+      "lufs_i": -17.64,
+      "file": "audio/sfx/weapons/crono_slash_01.wav",
+      "size_bytes": 62444,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.65,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.69,
+      "lufs_i": -19.63,
+      "file": "audio/sfx/weapons/crono_slash_02.wav",
+      "size_bytes": 62444,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.65,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.5,
+      "lufs_i": -19.64,
+      "file": "audio/sfx/weapons/crono_slash_03.wav",
+      "size_bytes": 62444,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.65,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -15.95,
+      "lufs_i": -19.68,
+      "file": "audio/sfx/weapons/crono_slash_04.wav",
+      "size_bytes": 62444,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.65,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.38,
+      "lufs_i": -20.3,
+      "file": "audio/sfx/weapons/crono_slash_05.wav",
+      "size_bytes": 62444,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 1.7,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -14.5,
+      "lufs_i": -16.06,
+      "file": "audio/sfx/weapons/krona_nodachi_01.wav",
+      "size_bytes": 163244,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 1.7,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.53,
+      "lufs_i": -18.04,
+      "file": "audio/sfx/weapons/krona_nodachi_02.wav",
+      "size_bytes": 163244,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 1.7,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -16.2,
+      "lufs_i": -17.61,
+      "file": "audio/sfx/weapons/krona_nodachi_03.wav",
+      "size_bytes": 163244,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 1.7,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -15.79,
+      "lufs_i": -17.3,
+      "file": "audio/sfx/weapons/krona_nodachi_04.wav",
+      "size_bytes": 163244,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 1.7,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -14.26,
+      "lufs_i": -15.71,
+      "file": "audio/sfx/weapons/krona_nodachi_05.wav",
+      "size_bytes": 163244,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.5,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.79,
+      "lufs_i": -15.55,
+      "file": "audio/sfx/weapons/sera_dagger_01.wav",
+      "size_bytes": 48044,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.5,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.41,
+      "lufs_i": -15.03,
+      "file": "audio/sfx/weapons/sera_dagger_02.wav",
+      "size_bytes": 48044,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.5,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.15,
+      "lufs_i": -14.74,
+      "file": "audio/sfx/weapons/sera_dagger_03.wav",
+      "size_bytes": 48044,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.5,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.43,
+      "lufs_i": -15.21,
+      "file": "audio/sfx/weapons/sera_dagger_04.wav",
+      "size_bytes": 48044,
+      "family": "weapons"
+    },
+    {
+      "duration_s": 0.5,
+      "channels": 1,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -18.88,
+      "lufs_i": -15.73,
+      "file": "audio/sfx/weapons/sera_dagger_05.wav",
+      "size_bytes": 48044,
+      "family": "weapons"
+    }
+  ],
+  "ambience": [
+    {
+      "id": "amb_transit",
+      "file": "amb_transit.ogg",
+      "duration_s": 64.0,
+      "loop": true,
+      "loop_offset": 0.0,
+      "size_bytes": 1237470,
+      "channels": 2,
+      "peak_dbfs": -8.19,
+      "rms_dbfs": -24.36,
+      "lufs_i": -26.0,
+      "notes": "Fracture wind with a thin whistle, the chest heartbeat at ~72 BPM, a far glass crack every ~20 s."
+    },
+    {
+      "id": "amb_u0",
+      "file": "amb_u0.ogg",
+      "duration_s": 80.0,
+      "loop": true,
+      "loop_offset": 0.0,
+      "size_bytes": 1553106,
+      "channels": 2,
+      "peak_dbfs": -12.35,
+      "rms_dbfs": -28.27,
+      "lufs_i": -26.0,
+      "notes": "Wind through the Horologe, the fair across the water, the 72 BPM tick with its missing tooth; bells at 14 s and 46 s, gulls, Robo's eye chirp."
+    },
+    {
+      "id": "amb_u1",
+      "file": "amb_u1.ogg",
+      "duration_s": 80.0,
+      "loop": true,
+      "loop_offset": 0.0,
+      "size_bytes": 1987761,
+      "channels": 2,
+      "peak_dbfs": -6.75,
+      "rms_dbfs": -23.43,
+      "lufs_i": -26.0,
+      "notes": "Fire roar under silence, washi crackle, heat shimmer; the temple bell at 9 s and 52 s, crows, banners snapping."
+    }
+  ],
+  "motifs": [
+    "audio/music/motifs/box_000.wav",
+    "audio/music/motifs/box_000.wav.import",
+    "audio/music/motifs/box_020.wav",
+    "audio/music/motifs/box_020.wav.import",
+    "audio/music/motifs/box_060.wav",
+    "audio/music/motifs/box_060.wav.import",
+    "audio/music/motifs/box_100.wav",
+    "audio/music/motifs/box_100.wav.import",
+    "audio/music/motifs/crono_cell.mid",
+    "audio/music/motifs/krona_cell.mid",
+    "audio/music/motifs/sera_cell.mid",
+    "audio/music/motifs/threat_vaelos_cell.mid",
+    "audio/music/motifs/time_cell.mid",
+    "audio/music/motifs/world_cell.mid"
+  ],
+  "targets": {
+    "music_lufs": -20.0,
+    "ambience_lufs": -26.0,
+    "sfx_peak_dbfs": -1.0
+  },
+  "problems": [],
+  "counts": {
+    "music_files": 51,
+    "sfx_files": 112,
+    "ambience_files": 3,
+    "motif_files": 14
+  }
+}

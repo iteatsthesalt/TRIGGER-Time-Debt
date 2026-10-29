@@ -1,0 +1,106 @@
+{
+  "id": "mus_sera_theme",
+  "bpm": 72,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "E minor",
+  "bars": 26,
+  "bar_s": 3.333333,
+  "duration_s": 86.6667,
+  "loop_start_s": 6.6667,
+  "loop_start_samples": 320000,
+  "loop_end_s": 86.6667,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 2,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 2,
+      "bars": 8,
+      "start_s": 6.6667
+    },
+    {
+      "name": "bridge",
+      "bar": 10,
+      "bars": 4,
+      "start_s": 33.3333
+    },
+    {
+      "name": "b",
+      "bar": 14,
+      "bars": 8,
+      "start_s": 46.6667
+    },
+    {
+      "name": "coda",
+      "bar": 22,
+      "bars": 4,
+      "start_s": 73.3333
+    }
+  ],
+  "stems": {
+    "lead": {
+      "file": "mus_sera_theme__lead.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -6.31,
+      "rms_dbfs": -24.21,
+      "lufs_i": -21.79,
+      "size_bytes": 1679888
+    },
+    "pad": {
+      "file": "mus_sera_theme__pad.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -10.03,
+      "rms_dbfs": -29.36,
+      "lufs_i": -26.31,
+      "size_bytes": 1856041
+    },
+    "strings": {
+      "file": "mus_sera_theme__strings.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -14.07,
+      "rms_dbfs": -31.76,
+      "lufs_i": -25.31,
+      "size_bytes": 826052
+    }
+  },
+  "director_stem_order": [
+    "strings",
+    "lead",
+    "pad"
+  ],
+  "mix": {
+    "duration_s": 86.667,
+    "channels": 2,
+    "peak_dbfs": -4.93,
+    "rms_dbfs": -22.52,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "translucency": "strings stem (the voices): 100 \u2192 \u221212 dB, 0 \u2192 +3 dB; below 50 add the Debt bus chorus (up to 7 voices)",
+    "slip": "on a slip play the harp stem reversed (AudioStreamPlayer pitch \u22121 is not available: use the reversed section clip from the bridge)"
+  },
+  "notes": "Harp cell E5 B4 D5 B4 E5 (a palindrome: the bridge states it reversed and it sounds the same). Shamisen reversed per bar.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 6.6667,
+    "bpm": 72,
+    "beat_count": 104,
+    "bar_beats": 4
+  }
+}

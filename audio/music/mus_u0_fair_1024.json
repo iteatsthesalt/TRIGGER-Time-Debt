@@ -1,0 +1,81 @@
+{
+  "id": "mus_u0_fair_1024",
+  "bpm": 108,
+  "meter": [
+    6,
+    8
+  ],
+  "key": "G major",
+  "bars": 64,
+  "bar_s": 1.111111,
+  "duration_s": 71.1111,
+  "loop_start_s": 4.4444,
+  "loop_start_samples": 213333,
+  "loop_end_s": 71.1111,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 4,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 4,
+      "bars": 16,
+      "start_s": 4.4444
+    },
+    {
+      "name": "bridge",
+      "bar": 20,
+      "bars": 8,
+      "start_s": 22.2222
+    },
+    {
+      "name": "b",
+      "bar": 28,
+      "bars": 24,
+      "start_s": 31.1111
+    },
+    {
+      "name": "coda",
+      "bar": 52,
+      "bars": 12,
+      "start_s": 57.7778
+    }
+  ],
+  "stems": {
+    "mix": {
+      "file": "mus_u0_fair_1024.ogg",
+      "default_on": true,
+      "duration_s": 71.111,
+      "channels": 2,
+      "peak_dbfs": -4.96,
+      "rms_dbfs": -23.05,
+      "lufs_i": -20.0,
+      "size_bytes": 1584974
+    }
+  },
+  "director_stem_order": [
+    "mix"
+  ],
+  "mix": {
+    "duration_s": 71.111,
+    "channels": 2,
+    "peak_dbfs": -4.96,
+    "rms_dbfs": -23.05,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "chase": "follow-up: a chase stem of tachyon chirps (sfx/magic/tachyon_travel at 1/8th notes)",
+    "telepod": "at the Telepod detune the band: pitch_scale 0.97 and the Debt bus chorus to 7 voices"
+  },
+  "notes": "6/8 scored at the quaver (324/min, 6 per bar); felt pulse 108. World cell in E Dorian on the fiddle.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 4.4444,
+    "bpm": 108,
+    "beat_count": 128,
+    "bar_beats": 2
+  }
+}

@@ -23,7 +23,7 @@ func build() -> void:
 	location_id = &"guardia_kitchen"
 	universe_id = 0
 	field_music = &"mus_u0_guardia_morning"
-	ambience = &"amb_u0_castle_interior"
+	ambience = &"amb_u0"
 	camera_distance = 13.0
 	camera_pitch = 32.0
 	map_bounds = Rect2(-9.5, -7.5, 23.5, 12.5)
@@ -446,7 +446,7 @@ func _on_cradle_trigger(body: Node3D) -> void:
 	controller.enabled = false
 	for a in party_actors:
 		a.velocity = Vector3.ZERO
-	Audio.play_music(&"mus_stings_boss_approach", 0.3)
+	Audio.play_sfx("time/fracture_sky")
 	await get_tree().create_timer(0.3).timeout
 	controller.enabled = true
 	await Story.run(&"prologue_cradle_sequence")

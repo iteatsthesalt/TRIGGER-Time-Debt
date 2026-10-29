@@ -2,7 +2,7 @@
 
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
-uid="uid://bmg738bd242ig"
+uid="uid://3a6s20ulwtr6"
 path="res://.godot/imported/mus_title__box_debt60.ogg-9de899b5fca04d915aeaf57df090bf01.oggvorbisstr"
 
 [deps]
@@ -12,8 +12,8 @@ dest_files=["res://.godot/imported/mus_title__box_debt60.ogg-9de899b5fca04d915ae
 
 [params]
 
-loop=false
-loop_offset=0
-bpm=0
-beat_count=0
-bar_beats=4
+loop=true
+loop_offset=100
+bpm=72
+beat_count=144
+bar_beats=3

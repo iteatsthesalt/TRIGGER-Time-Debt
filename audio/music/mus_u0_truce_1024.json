@@ -51,10 +51,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 86.154,
       "channels": 2,
-      "peak_dbfs": -15.39,
-      "rms_dbfs": -34.16,
-      "lufs_i": -26.87,
-      "size_bytes": 606359
+      "peak_dbfs": -15.31,
+      "rms_dbfs": -34.09,
+      "lufs_i": -26.81,
+      "size_bytes": 606353
     },
     "lead": {
       "file": "mus_u0_truce_1024__lead.ogg",
@@ -62,10 +62,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 86.154,
       "channels": 2,
-      "peak_dbfs": -6.88,
-      "rms_dbfs": -26.67,
-      "lufs_i": -22.11,
-      "size_bytes": 1388248
+      "peak_dbfs": -6.6,
+      "rms_dbfs": -26.61,
+      "lufs_i": -22.05,
+      "size_bytes": 1388101
     },
     "drums": {
       "file": "mus_u0_truce_1024__drums.ogg",
@@ -73,10 +73,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 86.154,
       "channels": 2,
-      "peak_dbfs": -8.95,
-      "rms_dbfs": -36.11,
-      "lufs_i": -24.88,
-      "size_bytes": 946997
+      "peak_dbfs": -8.65,
+      "rms_dbfs": -36.05,
+      "lufs_i": -24.82,
+      "size_bytes": 947168
     },
     "bass": {
       "file": "mus_u0_truce_1024__bass.ogg",
@@ -84,10 +84,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 86.154,
       "channels": 2,
-      "peak_dbfs": -10.51,
-      "rms_dbfs": -23.52,
-      "lufs_i": -23.88,
-      "size_bytes": 244840
+      "peak_dbfs": -10.83,
+      "rms_dbfs": -25.94,
+      "lufs_i": -24.04,
+      "size_bytes": 258405
     },
     "hiss": {
       "file": "mus_u0_truce_1024__hiss.ogg",
@@ -95,17 +95,24 @@
       "auto_loaded_by_director": true,
       "duration_s": 86.154,
       "channels": 2,
-      "peak_dbfs": -22.02,
-      "rms_dbfs": -46.12,
-      "lufs_i": -41.46,
-      "size_bytes": 2033545
+      "peak_dbfs": -20.82,
+      "rms_dbfs": -46.09,
+      "lufs_i": -41.4,
+      "size_bytes": 2032203
     }
   },
+  "director_stem_order": [
+    "box",
+    "hiss",
+    "bass",
+    "drums",
+    "lead"
+  ],
   "mix": {
     "duration_s": 86.154,
     "channels": 2,
-    "peak_dbfs": -2.41,
-    "rms_dbfs": -21.39,
+    "peak_dbfs": -2.17,
+    "rms_dbfs": -22.68,
     "lufs_i": -20.0
   },
   "rtpc": {

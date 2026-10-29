@@ -1,0 +1,118 @@
+{
+  "id": "mus_boss_atrium_cradle",
+  "bpm": 72,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "C minor",
+  "bars": 28,
+  "bar_s": 3.333333,
+  "duration_s": 93.3333,
+  "loop_start_s": 13.3333,
+  "loop_start_samples": 640000,
+  "loop_end_s": 93.3333,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 4,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 4,
+      "bars": 8,
+      "start_s": 13.3333
+    },
+    {
+      "name": "bridge",
+      "bar": 12,
+      "bars": 4,
+      "start_s": 40.0
+    },
+    {
+      "name": "b",
+      "bar": 16,
+      "bars": 8,
+      "start_s": 53.3333
+    },
+    {
+      "name": "coda",
+      "bar": 24,
+      "bars": 4,
+      "start_s": 80.0
+    }
+  ],
+  "stems": {
+    "strings": {
+      "file": "mus_boss_atrium_cradle__strings.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 93.333,
+      "channels": 2,
+      "peak_dbfs": -5.77,
+      "rms_dbfs": -25.31,
+      "lufs_i": -21.97,
+      "size_bytes": 2221371
+    },
+    "lead": {
+      "file": "mus_boss_atrium_cradle__lead.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 93.333,
+      "channels": 2,
+      "peak_dbfs": -4.26,
+      "rms_dbfs": -28.59,
+      "lufs_i": -24.93,
+      "size_bytes": 1483153
+    },
+    "drums": {
+      "file": "mus_boss_atrium_cradle__drums.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 93.333,
+      "channels": 2,
+      "peak_dbfs": -9.9,
+      "rms_dbfs": -35.83,
+      "lufs_i": -26.92,
+      "size_bytes": 1291063
+    },
+    "crackle": {
+      "file": "mus_boss_atrium_cradle__crackle.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 93.333,
+      "channels": 2,
+      "peak_dbfs": -12.05,
+      "rms_dbfs": -42.08,
+      "lufs_i": -37.73,
+      "size_bytes": 2640625
+    }
+  },
+  "director_stem_order": [
+    "strings",
+    "drums",
+    "lead",
+    "crackle"
+  ],
+  "mix": {
+    "duration_s": 93.333,
+    "channels": 2,
+    "peak_dbfs": -1.69,
+    "rms_dbfs": -23.34,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "phase": "phase 1 = intro+A, phase 2 = bridge+B (12 fps VHS), phase 3 = coda (gold leaf at bar 25); use AudioStreamInteractive clips per section",
+    "grief_resonance": "not used here; Robo is not Vaelos"
+  },
+  "notes": "Ceramic tings side-chain the other stems to 0.2 for 0.2 s. B gates the quartet at 12 Hz and bit-crushes it.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 13.3333,
+    "bpm": 72,
+    "beat_count": 112,
+    "bar_beats": 4
+  }
+}

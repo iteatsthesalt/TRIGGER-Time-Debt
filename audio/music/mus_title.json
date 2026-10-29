@@ -51,10 +51,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 120.0,
       "channels": 2,
-      "peak_dbfs": -10.19,
-      "rms_dbfs": -26.08,
-      "lufs_i": -22.43,
-      "size_bytes": 1837825
+      "peak_dbfs": -10.51,
+      "rms_dbfs": -26.44,
+      "lufs_i": -22.79,
+      "size_bytes": 1830951
     },
     "box_debt60": {
       "file": "mus_title__box_debt60.ogg",
@@ -62,10 +62,10 @@
       "auto_loaded_by_director": false,
       "duration_s": 120.0,
       "channels": 2,
-      "peak_dbfs": -9.65,
-      "rms_dbfs": -26.71,
-      "lufs_i": -22.43,
-      "size_bytes": 1777399
+      "peak_dbfs": -9.95,
+      "rms_dbfs": -27.07,
+      "lufs_i": -22.79,
+      "size_bytes": 1766541
     },
     "box_debt20": {
       "file": "mus_title__box_debt20.ogg",
@@ -73,10 +73,10 @@
       "auto_loaded_by_director": false,
       "duration_s": 120.0,
       "channels": 2,
-      "peak_dbfs": -8.82,
-      "rms_dbfs": -26.99,
-      "lufs_i": -22.44,
-      "size_bytes": 1646951
+      "peak_dbfs": -9.13,
+      "rms_dbfs": -27.35,
+      "lufs_i": -22.8,
+      "size_bytes": 1638394
     },
     "piano": {
       "file": "mus_title__piano.ogg",
@@ -84,10 +84,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 120.0,
       "channels": 2,
-      "peak_dbfs": -6.11,
-      "rms_dbfs": -27.3,
-      "lufs_i": -23.44,
-      "size_bytes": 1382486
+      "peak_dbfs": -7.36,
+      "rms_dbfs": -27.68,
+      "lufs_i": -23.81,
+      "size_bytes": 1378426
     },
     "strings": {
       "file": "mus_title__strings.ogg",
@@ -95,10 +95,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 120.0,
       "channels": 2,
-      "peak_dbfs": -9.09,
-      "rms_dbfs": -30.06,
-      "lufs_i": -24.5,
-      "size_bytes": 2193443
+      "peak_dbfs": -4.28,
+      "rms_dbfs": -28.78,
+      "lufs_i": -24.65,
+      "size_bytes": 2306516
     },
     "hiss": {
       "file": "mus_title__hiss.ogg",
@@ -106,17 +106,23 @@
       "auto_loaded_by_director": true,
       "duration_s": 120.0,
       "channels": 2,
-      "peak_dbfs": -25.81,
-      "rms_dbfs": -45.41,
-      "lufs_i": -42.07,
-      "size_bytes": 2520847
+      "peak_dbfs": -27.2,
+      "rms_dbfs": -46.66,
+      "lufs_i": -42.47,
+      "size_bytes": 2516102
     }
   },
+  "director_stem_order": [
+    "box",
+    "piano",
+    "strings",
+    "hiss"
+  ],
   "mix": {
     "duration_s": 120.0,
     "channels": 2,
-    "peak_dbfs": -5.03,
-    "rms_dbfs": -22.78,
+    "peak_dbfs": -2.91,
+    "rms_dbfs": -22.8,
     "lufs_i": -20.0
   },
   "rtpc": {

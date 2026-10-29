@@ -1,0 +1,43 @@
+{
+  "id": "mus_stings_defeat",
+  "bpm": 72,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "C major",
+  "bars": 0,
+  "duration_s": 4.0,
+  "loop_start_s": 0.0,
+  "loop_start_samples": 0,
+  "loop_end_s": 4.0,
+  "sections": [],
+  "stems": {
+    "mix": {
+      "file": "mus_stings_defeat.ogg",
+      "default_on": true,
+      "duration_s": 4.0,
+      "channels": 2,
+      "peak_dbfs": -7.79,
+      "rms_dbfs": -24.03,
+      "lufs_i": -18.0,
+      "size_bytes": 84511
+    }
+  },
+  "mix": {
+    "duration_s": 4.0,
+    "channels": 2,
+    "peak_dbfs": -7.79,
+    "rms_dbfs": -24.03,
+    "lufs_i": -18.0
+  },
+  "rtpc": {},
+  "notes": "Tape stop over 0.4 s at 1.15 s, then a porcelain crack and shards as the Debt advances.",
+  "godot_import": {
+    "loop": false,
+    "loop_offset": 0.0,
+    "bpm": 72,
+    "beat_count": 0,
+    "bar_beats": 4
+  }
+}

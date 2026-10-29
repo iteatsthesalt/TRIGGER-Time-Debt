@@ -1,0 +1,13 @@
+{
+  "id": "amb_transit",
+  "file": "amb_transit.ogg",
+  "duration_s": 64.0,
+  "loop": true,
+  "loop_offset": 0.0,
+  "size_bytes": 1237470,
+  "channels": 2,
+  "peak_dbfs": -8.19,
+  "rms_dbfs": -24.36,
+  "lufs_i": -26.0,
+  "notes": "Fracture wind with a thin whistle, the chest heartbeat at ~72 BPM, a far glass crack every ~20 s."
+}

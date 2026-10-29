@@ -2,7 +2,7 @@
 
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
-uid="uid://6x16knlk5dpb"
+uid="uid://drrd4vou3joys"
 path="res://.godot/imported/mus_u0_wind_scene_1024__piano.ogg-1daef29f1cd153bd6f5a422a890cd113.oggvorbisstr"
 
 [deps]
@@ -12,8 +12,8 @@ dest_files=["res://.godot/imported/mus_u0_wind_scene_1024__piano.ogg-1daef29f1cd
 
 [params]
 
-loop=false
-loop_offset=0
-bpm=0
-beat_count=0
-bar_beats=4
+loop=true
+loop_offset=10
+bpm=72
+beat_count=132
+bar_beats=3

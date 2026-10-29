@@ -1,0 +1,81 @@
+{
+  "id": "mus_u1_ashen_morning",
+  "bpm": 48,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "A minor pentatonic",
+  "bars": 16,
+  "bar_s": 5.0,
+  "duration_s": 80.0,
+  "loop_start_s": 10.0,
+  "loop_start_samples": 480000,
+  "loop_end_s": 80.0,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 2,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 2,
+      "bars": 4,
+      "start_s": 10.0
+    },
+    {
+      "name": "bridge",
+      "bar": 6,
+      "bars": 2,
+      "start_s": 30.0
+    },
+    {
+      "name": "b",
+      "bar": 8,
+      "bars": 6,
+      "start_s": 40.0
+    },
+    {
+      "name": "coda",
+      "bar": 14,
+      "bars": 2,
+      "start_s": 70.0
+    }
+  ],
+  "stems": {
+    "mix": {
+      "file": "mus_u1_ashen_morning.ogg",
+      "default_on": true,
+      "duration_s": 80.0,
+      "channels": 2,
+      "peak_dbfs": -1.0,
+      "rms_dbfs": -22.66,
+      "lufs_i": -20.0,
+      "size_bytes": 1902403
+    }
+  },
+  "director_stem_order": [
+    "mix"
+  ],
+  "mix": {
+    "duration_s": 80.0,
+    "channels": 2,
+    "peak_dbfs": -1.0,
+    "rms_dbfs": -22.66,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "movement": "ink-stroke swells on movement: play sfx/weapons/krona_nodachi gesture layer at \u221218 dB on each run start",
+    "silence": "the track is quiet by design (\u221212 LUFS short-term peaks only on the taiko); do not normalise it louder"
+  },
+  "notes": "48 BPM, 5 s bars. World cell on A (A4 C5 E5 D5 B4) with meri scoops. Taiko every two bars; washi crackle at \u221250 dB.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 10.0,
+    "bpm": 48,
+    "beat_count": 64,
+    "bar_beats": 4
+  }
+}

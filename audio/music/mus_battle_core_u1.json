@@ -1,0 +1,143 @@
+{
+  "id": "mus_battle_core_u1",
+  "bpm": 144,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "E minor",
+  "bars": 52,
+  "bar_s": 1.666667,
+  "duration_s": 86.6667,
+  "loop_start_s": 6.6667,
+  "loop_start_samples": 320000,
+  "loop_end_s": 86.6667,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 4,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 4,
+      "bars": 16,
+      "start_s": 6.6667
+    },
+    {
+      "name": "bridge",
+      "bar": 20,
+      "bars": 8,
+      "start_s": 33.3333
+    },
+    {
+      "name": "b",
+      "bar": 28,
+      "bars": 16,
+      "start_s": 46.6667
+    },
+    {
+      "name": "coda",
+      "bar": 44,
+      "bars": 8,
+      "start_s": 73.3333
+    }
+  ],
+  "stems": {
+    "box": {
+      "file": "mus_battle_core_u1__box.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -21.9,
+      "rms_dbfs": -39.67,
+      "lufs_i": -31.89,
+      "size_bytes": 477932
+    },
+    "tick": {
+      "file": "mus_battle_core_u1__tick.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -12.21,
+      "rms_dbfs": -49.54,
+      "lufs_i": -39.61,
+      "size_bytes": 1429089
+    },
+    "lead": {
+      "file": "mus_battle_core_u1__lead.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -11.36,
+      "rms_dbfs": -31.13,
+      "lufs_i": -23.92,
+      "size_bytes": 882702
+    },
+    "pad": {
+      "file": "mus_battle_core_u1__pad.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -13.87,
+      "rms_dbfs": -31.46,
+      "lufs_i": -26.91,
+      "size_bytes": 1862291
+    },
+    "bass": {
+      "file": "mus_battle_core_u1__bass.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -17.05,
+      "rms_dbfs": -30.26,
+      "lufs_i": -25.92,
+      "size_bytes": 1428941
+    },
+    "drums": {
+      "file": "mus_battle_core_u1__drums.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -8.14,
+      "rms_dbfs": -22.94,
+      "lufs_i": -23.99,
+      "size_bytes": 1691323
+    }
+  },
+  "director_stem_order": [
+    "box",
+    "bass",
+    "drums",
+    "lead",
+    "pad",
+    "tick"
+  ],
+  "mix": {
+    "duration_s": 86.667,
+    "channels": 2,
+    "peak_dbfs": -4.92,
+    "rms_dbfs": -21.18,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "sync_hold": "fade every stem except box to \u2212inf over 0.15 s and mute tick",
+    "shave_bonus": "pad stem +4 dB while shave_bonus = 1 (Boost Lv3)",
+    "hitstop": "the war drum (drums stem) only on hitstop: play drums at \u2212inf and open it for 0.3 s on each hitstop if the U1 night rule is wanted"
+  },
+  "notes": "Same skeleton as U0: shakuhachi scoops into the hook, koto \u221212 cents, taiko pitched down a minor third and saturated.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 6.6667,
+    "bpm": 144,
+    "beat_count": 208,
+    "bar_beats": 4
+  }
+}

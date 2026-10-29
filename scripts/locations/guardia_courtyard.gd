@@ -8,7 +8,7 @@ func build() -> void:
 	location_id = &"guardia_courtyard"
 	universe_id = 0
 	field_music = &"mus_u0_truce_1024"
-	ambience = &"amb_u0_rain_canyon"
+	ambience = &"amb_u0"
 	camera_distance = 15.0
 	camera_pitch = 30.0
 	map_bounds = Rect2(-12, -12, 24, 22)

@@ -51,10 +51,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 110.0,
       "channels": 2,
-      "peak_dbfs": -8.44,
-      "rms_dbfs": -25.64,
-      "lufs_i": -20.9,
-      "size_bytes": 1380111
+      "peak_dbfs": -8.42,
+      "rms_dbfs": -25.63,
+      "lufs_i": -20.89,
+      "size_bytes": 1379869
     },
     "box_debt60": {
       "file": "mus_u0_wind_scene_1024__box_debt60.ogg",
@@ -62,10 +62,10 @@
       "auto_loaded_by_director": false,
       "duration_s": 110.0,
       "channels": 2,
-      "peak_dbfs": -7.96,
-      "rms_dbfs": -25.88,
-      "lufs_i": -20.9,
-      "size_bytes": 1300506
+      "peak_dbfs": -7.99,
+      "rms_dbfs": -25.87,
+      "lufs_i": -20.89,
+      "size_bytes": 1300138
     },
     "box_debt20": {
       "file": "mus_u0_wind_scene_1024__box_debt20.ogg",
@@ -73,10 +73,10 @@
       "auto_loaded_by_director": false,
       "duration_s": 110.0,
       "channels": 2,
-      "peak_dbfs": -7.55,
-      "rms_dbfs": -26.2,
-      "lufs_i": -20.9,
-      "size_bytes": 1206225
+      "peak_dbfs": -7.65,
+      "rms_dbfs": -26.19,
+      "lufs_i": -20.89,
+      "size_bytes": 1205612
     },
     "box_debt0": {
       "file": "mus_u0_wind_scene_1024__box_debt0.ogg",
@@ -85,9 +85,9 @@
       "duration_s": 110.0,
       "channels": 2,
       "peak_dbfs": -8.29,
-      "rms_dbfs": -37.89,
-      "lufs_i": -20.9,
-      "size_bytes": 91441
+      "rms_dbfs": -37.88,
+      "lufs_i": -20.89,
+      "size_bytes": 91411
     },
     "piano": {
       "file": "mus_u0_wind_scene_1024__piano.ogg",
@@ -95,10 +95,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 110.0,
       "channels": 2,
-      "peak_dbfs": -7.35,
-      "rms_dbfs": -27.06,
+      "peak_dbfs": -7.84,
+      "rms_dbfs": -27.07,
       "lufs_i": -23.4,
-      "size_bytes": 1345258
+      "size_bytes": 1345076
     },
     "tick": {
       "file": "mus_u0_wind_scene_1024__tick.ogg",
@@ -106,10 +106,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 110.0,
       "channels": 2,
-      "peak_dbfs": -7.22,
-      "rms_dbfs": -38.38,
-      "lufs_i": -32.71,
-      "size_bytes": 2581219
+      "peak_dbfs": -7.21,
+      "rms_dbfs": -38.41,
+      "lufs_i": -32.7,
+      "size_bytes": 2581374
     },
     "wind": {
       "file": "mus_u0_wind_scene_1024__wind.ogg",
@@ -117,10 +117,10 @@
       "auto_loaded_by_director": true,
       "duration_s": 110.0,
       "channels": 2,
-      "peak_dbfs": -18.3,
+      "peak_dbfs": -18.74,
       "rms_dbfs": -36.34,
-      "lufs_i": -33.88,
-      "size_bytes": 2196513
+      "lufs_i": -33.86,
+      "size_bytes": 2196786
     },
     "debt": {
       "file": "mus_u0_wind_scene_1024__debt.ogg",
@@ -128,16 +128,22 @@
       "auto_loaded_by_director": false,
       "duration_s": 110.0,
       "channels": 2,
-      "peak_dbfs": -6.95,
-      "rms_dbfs": -26.66,
-      "lufs_i": -29.14,
-      "size_bytes": 743619
+      "peak_dbfs": -7.8,
+      "rms_dbfs": -28.31,
+      "lufs_i": -30.68,
+      "size_bytes": 748506
     }
   },
+  "director_stem_order": [
+    "box",
+    "piano",
+    "wind",
+    "tick"
+  ],
   "mix": {
     "duration_s": 110.0,
     "channels": 2,
-    "peak_dbfs": -6.01,
+    "peak_dbfs": -6.07,
     "rms_dbfs": -22.99,
     "lufs_i": -20.0
   },

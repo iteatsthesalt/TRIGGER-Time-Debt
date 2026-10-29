@@ -1,0 +1,143 @@
+{
+  "id": "mus_battle_core_u0",
+  "bpm": 144,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "E minor",
+  "bars": 52,
+  "bar_s": 1.666667,
+  "duration_s": 86.6667,
+  "loop_start_s": 6.6667,
+  "loop_start_samples": 320000,
+  "loop_end_s": 86.6667,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 4,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 4,
+      "bars": 16,
+      "start_s": 6.6667
+    },
+    {
+      "name": "bridge",
+      "bar": 20,
+      "bars": 8,
+      "start_s": 33.3333
+    },
+    {
+      "name": "b",
+      "bar": 28,
+      "bars": 16,
+      "start_s": 46.6667
+    },
+    {
+      "name": "coda",
+      "bar": 44,
+      "bars": 8,
+      "start_s": 73.3333
+    }
+  ],
+  "stems": {
+    "box": {
+      "file": "mus_battle_core_u0__box.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -21.32,
+      "rms_dbfs": -39.1,
+      "lufs_i": -31.32,
+      "size_bytes": 481994
+    },
+    "tick": {
+      "file": "mus_battle_core_u0__tick.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -11.63,
+      "rms_dbfs": -48.97,
+      "lufs_i": -39.03,
+      "size_bytes": 1441480
+    },
+    "piano": {
+      "file": "mus_battle_core_u0__piano.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -9.07,
+      "rms_dbfs": -27.93,
+      "lufs_i": -24.35,
+      "size_bytes": 1234000
+    },
+    "strings": {
+      "file": "mus_battle_core_u0__strings.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -11.08,
+      "rms_dbfs": -30.35,
+      "lufs_i": -26.31,
+      "size_bytes": 2265528
+    },
+    "bass": {
+      "file": "mus_battle_core_u0__bass.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -12.22,
+      "rms_dbfs": -26.71,
+      "lufs_i": -26.63,
+      "size_bytes": 368048
+    },
+    "drums": {
+      "file": "mus_battle_core_u0__drums.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -10.19,
+      "rms_dbfs": -27.49,
+      "lufs_i": -25.5,
+      "size_bytes": 1837480
+    }
+  },
+  "director_stem_order": [
+    "box",
+    "piano",
+    "strings",
+    "bass",
+    "drums",
+    "tick"
+  ],
+  "mix": {
+    "duration_s": 86.667,
+    "channels": 2,
+    "peak_dbfs": -3.71,
+    "rms_dbfs": -21.81,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "sync_hold": "fade every stem except box to \u2212inf over 0.15 s and mute tick; restore on release",
+    "shave_bonus": "strings stem +4 dB while shave_bonus = 1 (Boost Lv3)",
+    "break": "play sfx/combat/break_gong_vinyl and duck all stems 6 dB for 0.4 s"
+  },
+  "notes": "Hook = Crono's cell up an octave as crotchets, the C held 300 ms (0.72 beat) too long. Box = Time cell at half speed.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 6.6667,
+    "bpm": 144,
+    "beat_count": 208,
+    "bar_beats": 4
+  }
+}

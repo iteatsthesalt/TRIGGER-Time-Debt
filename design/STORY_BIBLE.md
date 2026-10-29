@@ -658,6 +658,8 @@ Boss levels are fixed (for example Arch-Curator R-66Y Lv 18–20, the Eden Warde
 
 ### U0: Atrium Horologe and Guardia, 1024 A.D.
 
+![The Atrium Horologe: Robo's clock-faced pillar in Porre's gutted clocktower](images/plates/plate-00-u0-atrium-horologe.jpg)
+
 ![Guardia Castle](images/catalog/environment_guardia_castle.jpg)
 
 **Divergence.** None — this is the Golden Timeline, the one the original party saved, and it is the one that is rotting.
@@ -725,7 +727,7 @@ Boss levels are fixed (for example Arch-Curator R-66Y Lv 18–20, the Eden Warde
 | Geno-Foundry and the Conveyor Belt | 17–19 | A factory cathedral; syringes hammer every three seconds — the world's metronome — and each is etched with a date: 1999, 1000, 600, 65M, 12K. Magnetic crushers, reversible belts, an amber tank farm, Lucca's Klein workbench, Atropos-00's memory ribbon, the Unstable Amber Rift. Ruin Decay, Oil-Blight. |
 | Mother Brain's Dyson-Cage | 19–22 | A two-mile drop into a Giger-esque cathedral: a rebar sphere caging Lavos's heart-muscle, a skinless carapace pinned by syringes. Boiling marrow. |
 
-![Geno-Foundry](images/plates/plate-00-u2-geno-foundry-interior.jpg)
+![Geno-Foundry conveyor belt](images/catalog/environment_geno_foundry_conveyor_belt.jpg)
 
 **Canvas.** Twelve-fps stop-motion claymation with Giger-esque analogue horror: sculptor thumbprints on ash drifts, VHS scanlines, chroma bleed, CRT barrel, rusted brass ribcage bridges, porcelain citizen-husks. Ochre clay, iron brown, brass, oil black, mercury silver, amber — and sorrowful blue #7BA4C6 reserved for eyes. U2 is the heaviest world: U0 flows, U1 breathes, U2 stomps.
 

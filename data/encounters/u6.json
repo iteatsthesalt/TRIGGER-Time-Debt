@@ -1,0 +1,12 @@
+{
+  "encounters": [
+    {"id": "third_district_couriers", "universe": 6, "enemies": ["slag_rat_courier", "slag_rat_courier", "slag_rat_courier"], "music": "mus_battle_core_u6", "notes": "Third District laundry wires: couriers steal 1 BP per hit; high Conductivity reveals their routes. Party arrives VHS BLIND."},
+    {"id": "laundry_wires_ram_fixers", "universe": 6, "enemies": ["ram_fixer_twins", "ram_fixer_twins"], "music": "mus_battle_core_u6", "notes": "RAM Fixer Twins (each entry is one twin): both must Break inside the same Sync window or the survivor rewinds a plate."},
+    {"id": "third_district_mixed", "universe": 6, "enemies": ["slag_rat_courier", "slag_rat_courier", "ram_fixer_twins", "ram_fixer_twins"], "music": "mus_battle_core_u6", "notes": "Couriers and a twin pair in the rain."},
+    {"id": "crt_shrine_white_ears", "universe": 6, "enemies": ["white_ear_child_echo", "white_ear_child_echo"], "music": "mus_battle_core_u6", "notes": "Visible only while BLIND, targetable only when Static tunes SIGNAL; sparing them leaves batteries on their CRTs."},
+    {"id": "neo_tokyo_bike_bros", "universe": 6, "enemies": ["oil_fire_bike_bro", "oil_fire_bike_bro"], "music": "mus_battle_core_u6", "notes": "Slide dashes and oil-fire circles; Red Bike chain drops."},
+    {"id": "neon_bloom_pachinko_ice", "universe": 6, "enemies": ["pachinko_ice"], "music": "mus_battle_core_u6", "notes": "Spawns when Neon Bloom stealth fails: the mini-boss's ring swaps a weakness every 6 s until Static's CARRION shows the core."},
+    {"id": "tv_stack_hiss_larvae", "universe": 6, "enemies": ["hiss_larva_drone", "hiss_larva_drone", "hiss_larva_drone"], "music": "mus_battle_core_u6", "notes": "Near the TV stacks the larvae gain +1 plate per second; White Noise confuses, Tracking Hold stops time."},
+    {"id": "shrine_plaza_approach", "universe": 6, "enemies": ["oil_fire_bike_bro", "hiss_larva_drone", "hiss_larva_drone", "white_ear_child_echo"], "music": "mus_battle_core_u6", "notes": "The approach to the CRT Shrine Plaza."}
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "id": "shard_doll_999",
+  "name": "Training Dummy Prime — The 999 Shard Doll",
+  "universe": 0,
+  "level": 4,
+  "hp": 9000,
+  "kind": "boss",
+  "sprite": "enm_u0_training_dummy_prime",
+  "size": 2.0,
+  "body_radius": 0.9,
+  "fps": 60,
+  "is_metal": true,
+  "tags": ["BLUNT"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": [],
+  "adds": [{"key": "shard_doll_split", "count": 3, "phase": "galaxy_giggle", "def": {"shield": 8, "tags": ["BLUNT", "FERRO", "VOLT"], "weak": ["ASTRAL", "RUBBER"], "fps": [60, 24, 12], "notes": "One doll per canvas: U0 watercolour 60 fps, U1 sumi-e 24 fps, U2 clay 12 fps. All three must Break within 3 s of each other or the broken ones rebuild."}}],
+  "phases": [
+    {"id": "recognition", "name": "Recognition", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 12, "weak": ["SWORD", "FERRO"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["BLUNT"],
+     "actions": [
+       {"id": "ceramic_chip", "name": "Ceramic Chip", "tags": ["BLUNT"], "shape": "SINGLE", "power": 0.8, "hits": 1, "target": "random", "weight": 2},
+       {"id": "scan_wave", "name": "Inward Scan Wave", "tags": ["BLUNT", "LIGHT"], "shape": "CIRCLE", "radius": 3.0, "power": 0.9, "hits": 1, "wind_up_s": 2.0, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["plate_reads_shield_12_to_8_minus_4_break", "second_weakness_hidden_until_shield_8", "every_hit_chips_with_rising_ceramic_pitch", "aoe_decal_pulses_cyan_to_orange_with_inward_scan_wave"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 12, plate [SHIELD 12 -> 8 (-4) -> BREAK!], second line [SWORD][?]. Teaches pairing sword and fire. At 8 it reveals the hidden weakness: [FERRO]. NOTE: the bible says 'teaches pairing sword and fire' but names the hidden weakness [FERRO]; the literal weakness list is kept here."},
+    {"id": "contamination", "name": "Contamination", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 18, "weak": ["ASTRAL", "RUBBER"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["BLUNT", "FERRO", "VOLT"],
+     "actions": [
+       {"id": "volt_leg_stomp", "name": "Volt Leg Stomp", "tags": ["FERRO", "VOLT"], "shape": "SINGLE", "power": 1.1, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "hydraulic_hiss", "name": "Hydraulic Hiss", "tags": ["FERRO"], "shape": "CONE", "radius": 2.5, "length": 3.0, "power": 0.9, "hits": 1, "wind_up_s": 1.0, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["tags_gain_ferro_volt", "forces_sera_rewind_doll_gauge_one_turn_plus_5pct_translucency", "holds_6_frames_at_12fps_hydraulic_hiss_gramophone_pop", "teaches_sync_hold_at_99_to_boost_lv3_for_plus_1_shave"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 18. Tags gain [FERRO][VOLT]. Weak [ASTRAL][RUBBER]. Forces Sera's Rewind: rewind the doll's gauge by one turn (+5% translucency). Teaches Sync Hold."},
+    {"id": "galaxy_giggle", "name": "Galaxy Giggle", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 24, "weak": ["ASTRAL", "RUBBER"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["BLUNT", "FERRO", "VOLT"],
+     "actions": [
+       {"id": "triple_giggle", "name": "Triple Giggle", "tags": ["BLUNT", "VOLT"], "shape": "CIRCLE", "radius": 2.5, "power": 0.8, "hits": 1, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["shield_24_split_into_three_dolls_of_8_one_per_canvas", "all_three_must_break_within_3s_or_broken_ones_rebuild", "teaches_venn_double_circle_plus_self_aura", "teaches_lining_targets_up_with_astral_smear_dash"],
+     "on_enter": "The doll splits into three dolls of 8 plates each (see adds shard_doll_split).",
+     "on_break": "",
+     "notes": "Shield 24, split into three dolls of 8 each, one per canvas: U0 watercolour 60 fps, U1 sumi-e 24 fps, U2 clay 12 fps. The weakness list is not restated for this phase; Phase 2's is carried."},
+    {"id": "debt_lesson", "name": "Debt Lesson", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
+     "shield": {"shield": 10, "belief_number": 999, "weak": ["SWORD", "FERRO", "ASTRAL", "RUBBER"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["BLUNT", "FERRO", "VOLT"],
+     "actions": [
+       {"id": "fake_shard_rattle", "name": "Fake Shard Rattle", "tags": ["BLUNT"], "shape": "CIRCLE", "radius": 3.0, "power": 0.7, "hits": 1, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["plate_reads_shield_999_only_10_real_989_fake", "matching_hits_shave_real_plates", "wrong_element_hits_chip_fake_shards_noise_no_progress", "break_fires_crono_wrist_seam_check", "sera_sees_concerned_heals_crono_1_5x_locks_confession_until_camp", "sera_looks_away_plus_10pct_camp_strain_later"],
+     "on_enter": "Vaelos's shields are belief.",
+     "on_break": "Crono's wrist seam check fires. The fight ends when this phase Breaks.",
+     "notes": "The plate reads [SHIELD 999]. Only 10 plates are real; 989 are fake shards. The weakness list for this phase is not stated; all weaknesses revealed so far are carried."}
+  ],
+  "branches": [
+    {"id": "dummy_fate", "after_phase": "galaxy_giggle", "options": [
+      {"id": "spare", "label": "Spare it", "flag": "Atrium_Dummy", "state": "Spared", "requires": "spare it after Phase 3 without Boost Lv3 spam; +10 Light"},
+      {"id": "salvage", "label": "Rip its ring for parts", "flag": "Atrium_Dummy", "state": "Salvaged", "requires": "+15 Dark; the hub masks weep black oil permanently and Glenn later refuses some Dual Techs"},
+      {"id": "doll_meets_doll", "label": "Bring the Bekkler Doll item to it", "flag": "Amber_Rift_U0_DollMeetsDoll", "state": "set", "requires": "the Bekkler Doll item; +15 Prismatic"}
+    ], "notes": ""}
+  ],
+  "drops": [],
+  "flags": {"Atrium_Dummy": ["Spared", "Salvaged"], "Amber_Rift_U0_DollMeetsDoll": ["set"]},
+  "notes": "Chapter 1 tutorial boss. Lv 4. No HP bar: the fight ends when Phase 4 Breaks, so every phase advances on Break (advance_on) and the hp fractions are placeholders; the hp figure is 2,250 x 4 for the stat curve only. Belthasar's first Bekkler doll, the failed copy before Crono-41, rebuilt on a spider base with Cassia-pattern legs and a mini thoracic ring. Zero-fail: it cannot defeat the party, only crack Crono further. Base tags are inferred (the bible only says Phase 2 'gains' [FERRO][VOLT])."
+}

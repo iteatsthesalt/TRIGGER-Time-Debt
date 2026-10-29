@@ -1,0 +1,74 @@
+{
+  "id": "goyama_ashen_daimyo",
+  "name": "Goyama Ashen Daimyo",
+  "universe": 1,
+  "level": 10,
+  "hp": 18000,
+  "kind": "boss",
+  "sprite": "bos_u1_ashen_daimyo",
+  "size": 4.5,
+  "body_radius": 2.0,
+  "fps": 24,
+  "is_metal": false,
+  "tags": ["PAPER", "INK"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["burning_floors", "prism_lantern_on_castle_wall", "oil_veins"],
+  "adds": [{"key": "ashen_ashigaru", "count": 2, "phase": "scribe_of_order", "trigger": "surrender_order"}],
+  "phases": [
+    {"id": "scribe_of_order", "name": "Scribe of Order", "hp_from": 1.0, "hp_to": 0.75,
+     "shield": {"shield": 3, "weak": ["VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["PAPER", "INK"],
+     "actions": [
+       {"id": "brush_strike", "name": "Brush Strike", "tags": ["INK", "PAPER"], "shape": "SINGLE", "power": 1.2, "hits": 1, "wind_up_s": 2.0, "target": "nearest", "weight": 2},
+       {"id": "surrender_order", "name": "Surrender Order", "tags": ["PAPER"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:ashen_ashigaru", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["plate_reads_shield_3_to_2_minus_1_break_vit_hidden", "writes_surrender_orders_that_spawn_ashigaru", "generous_8_frame_ens_parry_window"],
+     "on_enter": "",
+     "on_break": "Petitions scatter and reveal the child Krona's name under white-out. Sets Daimyo_Phase1.",
+     "notes": "Shield 3, plate [SHIELD 3 -> 2 (-1) -> BREAK!] [VIT?][???]. Weak throughout [VITREOUS][TACHYON]: glass reveals the true text beneath ink, a time needle rewinds the petitions to blank."},
+    {"id": "ever_burning_roof", "name": "The Ever-Burning Roof", "hp_from": 0.75, "hp_to": 0.5,
+     "shield": {"shield": 3, "weak": ["VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FIRE", "PAPER"],
+     "actions": [
+       {"id": "fire_wave", "name": "Castle Fire Wave", "tags": ["FIRE", "PAPER"], "shape": "LINE_PIERCE", "length": 10.0, "width": 3.0, "power": 1.5, "hits": 1, "wind_up_s": 2.5, "target": "nearest", "weight": 2},
+       {"id": "ember_scroll", "name": "Ember Scroll", "tags": ["FIRE"], "shape": "SINGLE", "power": 1.0, "hits": 1, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["castle_breathes_fire_wave", "cobalt_wash_reveals_washi_sprinkler_path_that_halves_the_fire", "vitreous_reached_through_prism_lantern_tachyon_needle_through_stained_smoke_carries_vitreous", "vesper_prism_does_it_natively_on_revisit"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 3, Tags [FIRE][PAPER]. In this chapter the [VITREOUS] weakness is reached through the Prism Lantern on the castle wall: a TACHYON Needle fired through the lantern's stained smoke carries [VITREOUS] for that hit."},
+    {"id": "oil_mother", "name": "Oil Mother", "hp_from": 0.5, "hp_to": 0.25,
+     "shield": {"shield": 2, "weak": ["VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["PAPER", "INK", "OIL", "RUIN"],
+     "actions": [
+       {"id": "oil_flood", "name": "Oil Flood", "tags": ["OIL", "RUIN"], "shape": "BATTLEFIELD", "power": 0.6, "hits": 1, "effect": "spawn_ash_field", "wind_up_s": 2.0, "target": "all", "weight": 1},
+       {"id": "oil_blight_drain", "name": "Oil-Blight Drain", "tags": ["OIL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "steal_bp", "bp_steal": 1, "target": "weakest", "weight": 1},
+       {"id": "gourd_heart_pulse", "name": "Gourd Heart Pulse", "tags": ["RUIN", "INK"], "shape": "CIRCLE", "radius": 3.0, "power": 1.1, "hits": 1, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["daimyo_cracks_shows_vein_gourd_heart_like_kronas", "oil_floods_arena_ash_field_slow_plus_shield_chip", "steals_1_bp_every_10s_oil_blight"],
+     "on_enter": "Krona: You drank it too?",
+     "on_break": "",
+     "notes": "Shield 2. Oil floods the arena: Ash Field (slow + shield chip). Steals 1 BP every 10 s (Oil-Blight; a battle-time timer, the drain action is the stand-in)."},
+    {"id": "barren_seal", "name": "The Barren Seal", "hp_from": 0.25, "hp_to": 0.0,
+     "shield": {"shield": 1, "weak": ["VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["PAPER", "INK", "LAVOS"],
+     "actions": [
+       {"id": "barren_seal_pulse", "name": "Barren Seal Pulse", "tags": ["INK", "DARK"], "shape": "CIRCLE", "radius": 5.0, "power": 1.0, "hits": 1, "wind_up_s": 1.5, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["plate_reads_shield_1_break_weak_vitreous_plus_tachyon_dual", "immune_to_everything_except_a_single_hit_carrying_both_vitreous_and_tachyon", "chapter_2_answer_tachyon_needle_through_prism_lantern_while_krona_holds_attention", "vesper_answer_vitreous_refraction_dual", "break_with_3_bp_lv3_hit_triggers_style_bleed"],
+     "on_enter": "",
+     "on_break": "The Daimyo's porcelain cracks to Lavos muscle fibre, the same as Crono's chest at 20%.",
+     "notes": "Shield 1, plate [SHIELD 1 -> BREAK!] [WEAK: VITREOUS + TACHYON DUAL]. Immune to everything except a single hit carrying both [VITREOUS] and [TACHYON] (the weak list cannot express 'both at once'; must be scripted). Boost lesson: Breaking him with a 3 BP Lv3 hit triggers the style bleed (watercolour afterimages, gold leaf flecks)."}
+  ],
+  "branches": [
+    {"id": "goyama_fate", "after_phase": "barren_seal", "options": [
+      {"id": "light", "label": "Repainted", "flag": "Goyama", "state": "Repainted", "requires": "save the house three times, seal the vein; the Dojo opens and teaches Ens Parry +2 frames"},
+      {"id": "dark", "label": "Incinerated", "flag": "Goyama", "state": "Incinerated", "requires": "let it burn three times; the Nodachi gains +15% RUIN damage; U1 is locked to Crimson Night"},
+      {"id": "prismatic", "label": "Both", "flag": "Goyama", "state": "Both", "requires": "seal the vein but keep a vial; Amber Rift"}
+    ], "notes": ""}
+  ],
+  "drops": ["cobalt_nodachi", "vaelos_tooth"],
+  "flags": {"Goyama": ["Repainted", "Incinerated", "Both"], "Daimyo_Phase1": ["set"]},
+  "notes": "Lv 10, HP 18,000. Krona's former pigment lord fused to Goyama castle's burning floors; a body of petition scrolls, 20 ft but always seated. Weak throughout [VITREOUS][TACHYON]. HP windows per phase are not given and are split evenly across the four phases. Loot: Cobalt Nodachi; the Vaelos Tooth relic (it whispers in the clean young Crono voice). Base tags inferred from 'a body of petition scrolls'."
+}

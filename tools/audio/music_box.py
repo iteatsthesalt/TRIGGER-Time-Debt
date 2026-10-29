@@ -107,17 +107,20 @@ def render_notes(notes, length_s: float, missing=(), skip_every: int = 0, dur: f
     return out[: S.samples(length_s)]
 
 
-def render_ticks(times_s, length_s: float, silent_every: int = 8, grind_times_s=(), vel: float = 0.5, seed: int = 101) -> np.ndarray:
-    """The escapement: a tick at each time, every `silent_every`-th a silent click; grinds at grind_times."""
+def render_ticks(times_s, length_s: float, silent_every: int = 8, grind_times_s=(), vel: float = 0.5, seed: int = 101,
+                 silent_positions=None, grind_gain: float = 0.7) -> np.ndarray:
+    """The escapement: a tick at each time, every `silent_every`-th a silent click (or the indices in
+    `silent_positions`); mainspring grinds at grind_times_s."""
     gen = S.rng(seed)
     out = np.zeros(S.samples(length_s) + S.samples(1.5))
     for i, t0 in enumerate(times_s):
-        if silent_every and i % silent_every == silent_every - 1:
+        silent = (i in silent_positions) if silent_positions is not None else (silent_every and i % silent_every == silent_every - 1)
+        if silent:
             S.place(out, silent_click(gen), t0)
         else:
             S.place(out, tick(gen, vel * gen.uniform(0.85, 1.0)), t0)
     for g in grind_times_s:
-        S.place(out, grind(1.1, gen), g, 0.7)
+        S.place(out, grind(1.1, gen), g, grind_gain)
     return out[: S.samples(length_s)]
 
 
@@ -155,6 +158,7 @@ def main(argv=None) -> int:
     os.makedirs(args.out, exist_ok=True)
     for name, x in cell_states(args.bpm).items():
         x = S.normalize_peak(x, -1.0) * 0.8
+        x = x + S.room_tone(len(x) / SR, -60.0) + S.tape_hiss(len(x) / SR, -62.0, stereo=False)
         p = os.path.join(args.out, f"{name}.wav")
         S.write_wav(p, x)
         m = S.measure(x)

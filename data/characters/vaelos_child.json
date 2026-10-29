@@ -1,0 +1,16 @@
+{
+  "id": "vaelos_child", "name": "Vaelos", "element": "NULL_LEARNING", "home_universe": 8, "canvas_fps": 60, "archetype": "caster",
+  "weapon": {"name": "Null Spoon", "tags": ["NULL_LEARNING"], "hits": 1}, "move_range": 6.0,
+  "vulnerable": [], "resistant": [],
+  "sprite": "vaelos_child", "height_m": 1.27,
+  "techs": [
+    {"id": "kintsugi_mend", "unlock": {"on_join": true}},
+    {"id": "porcelain_memory", "unlock": {"on_join": true}},
+    {"id": "null_spoon_hold", "unlock": {"on_join": true}},
+    {"id": "porcelain_promise_child", "unlock": {"on_join": true}},
+    {"id": "family_porcelain", "unlock": {"on_join": true}},
+    {"id": "fake_family_photo_real", "unlock": {"on_join": true}},
+    {"id": "first_light_child", "unlock": {"on_join": true}}
+  ],
+  "passives": ["porcelain_memory"]
+}

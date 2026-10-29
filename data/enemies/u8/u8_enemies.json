@@ -1,0 +1,19 @@
+{
+  "enemies": [
+    {"id": "E76", "key": "atom_eater", "name": "Atom-Eater", "universe": 8, "level": 71, "kind": "regular", "shield": 4, "tags": ["RUIN", "TACHYON", "SWORD"], "weak": ["ASTRAL", "VITREOUS"], "resist": ["FERRO", "FIRE"], "lean": "L", "sprite": "enm_u8_atom_eater", "fps": 15, "body_radius": 0.45,
+     "actions": [{"id": "atom_nip", "name": "Atom Nip", "tags": ["SWORD", "RUIN"], "shape": "SINGLE", "power": 0.9, "hits": 2, "target": "crono"}],
+     "drops": [{"item": "time_atom", "chance": 1.0}],
+     "notes": "Porcelain crabs that eat loose Crono atoms. Break: drops a Time Atom (+0.5 Crono integrity). The teaching enemy for the repair loop. Summoned by Lavic Filament Guardians each time their shield finishes rebuilding."},
+    {"id": "E77", "key": "bekkler_doll_failed", "name": "Bekkler Doll Failed (Type-C)", "universe": 8, "level": 73, "kind": "regular", "shield": 8, "tags": ["NULL", "RUBBER", "SOUND"], "weak": ["SOUND", "FERRO", "ASTRAL"], "resist": ["NULL"], "lean": "P", "sprite": "enm_u8_failed_doll_type_c", "fps": 15, "body_radius": 0.55,
+     "actions": [{"id": "cracked_hum", "name": "Cracked Hum (220 Hz)", "tags": ["SOUND", "NULL"], "shape": "CIRCLE", "radius": 5.0, "power": 0.8, "hits": 1, "target": "nearest", "weight": 2}, {"id": "rubber_slap", "name": "Rubber Slap", "tags": ["RUBBER"], "shape": "SINGLE", "power": 1.1, "hits": 1, "target": "random", "weight": 1}],
+     "drops": [{"item": "gold_leaf_flake", "chance": 1.0}],
+     "notes": "Galaxy reveal always on. Hums the cracked Time Egg note (220 Hz). Within 5 m of Crono, Crono hears his own heartbeat doubled: a cue that his ASTRAL cost is running. Rubber-hose walk on twos plus clay steps. Break: frown mask; drops a Gold Leaf flake."},
+    {"id": "E78", "key": "lavic_filament_guardian", "name": "Lavic Filament Guardian", "universe": 8, "level": 75, "kind": "regular", "shield": 10, "tags": ["FIRE", "FERRO", "SAURIA"], "weak": ["VITREOUS", "INK", "CIRCLE"], "resist": ["FIRE"], "lean": "D", "sprite": "enm_u8_lavic_filament_guardian", "fps": 15, "body_radius": 1.2, "is_metal": true,
+     "actions": [{"id": "filament_lash", "name": "Filament Lash", "tags": ["FIRE", "FERRO"], "shape": "LINE", "length": 6.0, "width": 1.2, "power": 1.4, "hits": 1, "target": "nearest", "weight": 2}, {"id": "antibody_call", "name": "Antibody Call", "tags": ["SAURIA"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:atom_eater", "target": "weakest", "weight": 1}],
+     "notes": "The Heart's antibody. [CIRCLE] is a shape weakness (matched by CIRCLE-shaped actions, not tags). Anchored by a filament that only a LINE_PIERCE can sever; while anchored, it summons an Atom-Eater every time its shield finishes rebuilding (the summon should be tied to break_recovered while anchored, not to turns). Its Break is a deliberate gift: the frozen body is a ShapeCast reposition platform."},
+    {"id": "E79", "key": "paradox_curator_choir", "name": "Paradox Curator Choir", "universe": 8, "level": 77, "kind": "regular", "shield": 12, "tags": ["VOLT", "GUN", "VITREOUS"], "weak": ["TACHYON", "ASTRAL", "SOUND"], "resist": ["VOLT"], "lean": "P", "sprite": "enm_u8_paradox_curator_choir", "fps": 15, "body_radius": 1.8, "is_metal": true,
+     "actions": [{"id": "half_speed_ring", "name": "Half-Speed Gatling Ring", "tags": ["GUN", "VOLT"], "shape": "LINE_PIERCE", "length": 9.0, "width": 1.4, "power": 1.5, "hits": 2, "wind_up_s": 3.0, "target": "random", "weight": 2}, {"id": "two_oil_weep", "name": "Blue and Black Weep", "tags": ["VITREOUS"], "shape": "CIRCLE", "radius": 3.0, "power": 0.9, "hits": 1, "target": "nearest", "weight": 1}],
+     "drops": [{"item": "gramophone_record_crono_lullaby", "chance": 1.0}],
+     "notes": "A remnant of R-66Y: the rotating ring at 0.5x speed (hence the long telegraph). Break: the masks weep blue and black oil at once. Drops the Gramophone Resonance record 'Crono-Original lullaby to Sera in vitro'."}
+  ]
+}

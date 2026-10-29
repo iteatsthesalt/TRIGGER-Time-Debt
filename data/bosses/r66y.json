@@ -1,0 +1,75 @@
+{
+  "id": "r66y",
+  "name": "R-66Y, the Arch-Curator",
+  "universe": 2,
+  "level": 20,
+  "hp": 45000,
+  "kind": "boss",
+  "sprite": "bos_u2_arch_curator_r66y",
+  "size": 6.1,
+  "body_radius": 2.0,
+  "fps": 12,
+  "is_metal": true,
+  "tags": ["FERRO", "GUN", "RUIN"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["oil_blight", "ruin_decay", "boiling_lavos_marrow"],
+  "adds": [{"key": "marrow_umbilical", "count": 4, "phase": "archivist"}],
+  "phases": [
+    {"id": "archivist", "name": "Archivist", "hp_from": 1.0, "hp_to": 0.5,
+     "shield": {"shield": 12, "weak": ["FERRO", "RUIN", "ASTRAL"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FERRO", "GUN", "RUIN"],
+     "actions": [
+       {"id": "gatling_volley", "name": "Laser-Gatling Volley", "tags": ["GUN", "FERRO"], "shape": "LINE_PIERCE", "length": 10.0, "width": 1.4, "power": 1.3, "hits": 3, "wind_up_s": 1.5, "target": "random", "weight": 3},
+       {"id": "mask_weep", "name": "Mask Weep", "tags": ["RUIN"], "shape": "CIRCLE", "radius": 3.0, "power": 0.8, "hits": 1, "effect": "oil_blight", "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["one_barrel_glows_1_5s_before_each_volley", "gatling_ring_safe_inside", "umbilicals_heal_2_per_8s_until_severed_with_ruin", "severing_umbilical_costs_15pct_max_hp_ceiling", "arris_dome_sleeping_minus_4_max_plates_in_finale"],
+     "on_enter": "",
+     "on_break": "Double VHS wobble; the chest fibre flickers between clay and watercolour galaxy.",
+     "notes": "100-50%. Shield 12 + 4 Marrow-Umbilicals (2 each). Tags [FERRO][GUN][RUIN]. Weak [FERRO][RUIN][ASTRAL]. One barrel glows 1.5 s before each volley; the safe spot is inside the ring."},
+    {"id": "possibility_branch", "name": "Possibility Branch", "hp_from": 0.5, "hp_to": 0.5, "advance_on": "branch",
+     "shield": {"shield": 0, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FERRO", "GUN", "RUIN"],
+     "actions": [],
+     "mechanics": ["timeline_freezes_at_99_0", "branch_mercy_or_ruthless"],
+     "on_enter": "The timeline freezes at 99.0.",
+     "on_break": "",
+     "notes": "At 50%. The timeline freezes at 99.0 and the choice is made in-world (see branches)."},
+    {"id": "heart_expose", "name": "Heart Expose", "hp_from": 0.5, "hp_to": 0.0, "hp_from_by_branch": {"R66Y=Rewound": 0.4, "R66Y=Salvaged": 0.5},
+     "shield": {"shield": 12, "shield_by_branch": {"R66Y=Rewound": 8, "R66Y=Salvaged": 12}, "weak": ["ASTRAL", "FERRO", "SOUND"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["RUIN", "FERRO", "FIRE"],
+     "actions": [
+       {"id": "marrow_boil", "name": "Marrow Boil", "tags": ["RUIN", "FIRE"], "shape": "CIRCLE", "radius": 4.0, "power": 1.2, "hits": 1, "wind_up_s": 2.0, "status": "ruin", "target": "weakest", "weight": 2},
+       {"id": "syringe_spray", "name": "Syringe Spray", "tags": ["FERRO", "RUIN"], "shape": "CONE", "radius": 3.0, "length": 5.0, "power": 1.0, "hits": 1, "effect": "oil_blight", "target": "nearest", "weight": 1},
+       {"id": "gatling_volley", "name": "Laser-Gatling Volley", "tags": ["GUN", "FERRO"], "shape": "LINE_PIERCE", "length": 10.0, "width": 1.4, "power": 1.3, "hits": 3, "wind_up_s": 1.5, "target": "random", "weight": 2}
+     ],
+     "mechanics": ["constant_oil_blight_and_ruin_decay_on_arena", "chest_tears_open_over_boiling_lavos_marrow", "cassia_loom_pull_syringes_hold_plugs_heart_for_8s_damage_window", "navigation_agent_freeze_on_break_lines_up_solar_railgun_line_pierce", "arris_choir_sleeping_hums_counter_frequency_grief_resonance_off"],
+     "on_enter": "The chest tears open over boiling Lavos marrow.",
+     "on_break": "NavigationAgent freeze: he is lined up for a Solar Railgun LINE_PIERCE.",
+     "notes": "Below 40% (Mercy) or below 50% (after Salvage). Shield 8 (Mercy: max shield dropped to 8 permanently by the Rewind) or 12 (Ruthless). Tags [RUIN][FERRO][FIRE]. Weak [ASTRAL][FERRO][SOUND]. If the Arris choir was harmonized to sleep, they hum the counter-frequency and Grief-Resonance is off for this phase."},
+    {"id": "mother_brain_unmasked", "name": "Mother Brain Unmasked (secret)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "break", "requires": "Pipe_Overload=Overclocked and the Unstable Amber Rift in Geno-Foundry was then declined",
+     "shield": {"shield": 4, "weak": ["FERRO", "VITREOUS"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FERRO", "MYCELIA", "TACHYON"],
+     "actions": [
+       {"id": "root_graft", "name": "Root Graft", "tags": ["MYCELIA", "FERRO"], "shape": "LINE", "length": 6.0, "width": 1.2, "power": 1.2, "hits": 1, "target": "random", "weight": 2},
+       {"id": "time_stutter", "name": "Time Stutter", "tags": ["TACHYON"], "shape": "CIRCLE", "radius": 3.0, "power": 0.8, "hits": 1, "status": "chrono_lag", "status_seconds": 6, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["press_form_detaches", "mother_brain_grafted_to_lavos_heart_is_luccas_nervous_system_grown_into_a_root", "player_chooses_extract_or_keep", "break_is_lucca_choosing"],
+     "on_enter": "Lucca through the static: Cassia, you have to ask me before you use me—",
+     "on_break": "The Break is Lucca choosing.",
+     "notes": "Secret Phase 4. Only if the Unstable Amber Rift in Geno-Foundry was overcharged and then declined earlier. Shield 4, Tags [FERRO][MYCELIA][TACHYON], Weak [FERRO][VITREOUS]."}
+  ],
+  "branches": [
+    {"id": "r66y_branch", "after_phase": "archivist", "options": [
+      {"id": "mercy", "label": "Lullaby Rewind", "flag": "R66Y", "state": "Rewound", "requires": "in one Sync window, land an ASTRAL tech and Cassia-09's Sound Ring on the exposed chest plate; then Sera casts Rewind on the plate three times (the third is carried by Cassia's lullaby record and costs nothing, 10% in total); Crono pays 25 integrity (his Time Egg fragment); R-66Y's max shield drops to 8 permanently"},
+      {"id": "ruthless", "label": "Empress's Salvage", "flag": "R66Y", "state": "Salvaged", "requires": "tear the tungsten loom through the mask array and rip out the Lavos-fibre core: immediate Break plus a free 370% hit; Cassia Resentment +2, the amber dims, Lucca's voice fades; Krona harvests the Lavos-Grafted Laser Cannon (unlocks the Dual Omega Annihilation)"}
+    ], "notes": "Phase 2 — Possibility Branch at 50%. The timeline freezes at 99.0."},
+    {"id": "lucca_root", "after_phase": "mother_brain_unmasked", "options": [
+      {"id": "extract", "label": "Extract", "flag": "Cassia", "state": "Extract", "requires": "secret Phase 4 only"},
+      {"id": "keep", "label": "Keep", "flag": "Cassia", "state": "Keep_Integrated", "requires": "secret Phase 4 only"}
+    ], "notes": "The Break is Lucca choosing."}
+  ],
+  "drops": ["long_pull", "grief_filter", "syringe_heart_key"],
+  "flags": {"R66Y": ["Rewound", "Salvaged"], "Cassia": ["Keep_Integrated", "Extract"]},
+  "notes": "Lv 20, HP 45,000. A twenty-foot stop-motion Robo goliath with his chassis peeled open, stuffed with Lavos muscle, porcelain theatre masks weeping, eight laser-gatling arms on a rotating thoracic ring. Left eye sorrowful blue #7BA4C6, right eye empty and weeping black oil. Vaelos is present with Sera in a glass birth-pod at 40% translucency. Death: he sits; six legs insect-fold over six frames, the horn droops, the blue eye closes, the masks frown. Organ chord, gatling spin-down, a 120 Hz sine weep, vinyl crack. Drops: Long Pull, Grief Filter (immunity to MP drain in the Foundry), Syringe Heart Key."
+}

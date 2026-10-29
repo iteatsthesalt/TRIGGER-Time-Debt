@@ -515,7 +515,7 @@ def vinyl_crackle(dur_s: float, density_hz: float = 18.0, level_db: float = -36.
     count = max(1, int(density_hz * dur_s))
     idx = gen.integers(0, n, count)
     amp = gen.pareto(2.5, count) + 0.2
-    amp = np.minimum(amp, 6.0) / 6.0
+    amp = np.minimum(amp, 2.2) / 2.2
     for i, a in zip(idx, amp):
         w = int(gen.integers(2, 12))
         seg = gen.standard_normal(w) * np.hanning(w) * a
@@ -526,9 +526,11 @@ def vinyl_crackle(dur_s: float, density_hz: float = 18.0, level_db: float = -36.
         for _ in range(max(1, int(dur_s / 6))):
             i = int(gen.integers(0, n - 2000))
             pop = exp_decay(0.03, 150.0) * np.sin(TWO_PI * gen.uniform(90, 200) * t_axis(0.03))
-            out[i: i + len(pop)] += pop * gen.uniform(0.3, 0.8)
+            out[i: i + len(pop)] += pop * gen.uniform(0.15, 0.4)
     out *= db_to_amp(level_db) / (np.sqrt(np.mean(out ** 2)) + 1e-9)
-    return out
+    # crackle is a texture, not a transient: keep the biggest ticks within 22 dB of the RMS
+    out = np.clip(out, -db_to_amp(level_db + 22.0), db_to_amp(level_db + 22.0))
+    return out * (db_to_amp(level_db) / (np.sqrt(np.mean(out ** 2)) + 1e-9))
 
 
 def room_tone(dur_s: float, level_db: float = -60.0, seed: int = 23) -> np.ndarray:
@@ -724,7 +726,10 @@ def write_wav(path: str, x: np.ndarray, bits: int = 16) -> None:
 
 
 def read_wav(path: str) -> np.ndarray:
-    sr, data = wavfile.read(path)
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        sr, data = wavfile.read(path)
     if data.dtype == np.int16:
         x = data.astype(np.float64) / 32768.0
     elif data.dtype == np.int32:

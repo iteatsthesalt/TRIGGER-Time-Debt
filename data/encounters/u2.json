@@ -1,0 +1,12 @@
+{
+  "encounters": [
+    {"id": "slag_yard_mites", "universe": 2, "enemies": ["slag_mite", "slag_mite", "slag_mite"], "music": "mus_battle_core_u2", "notes": "Proto-Dome Slag-Yards hub: the shave teacher; ASTRAL rings the bell. VHS Static Fog."},
+    {"id": "slag_yard_patrol", "universe": 2, "enemies": ["cassia_pattern_patrol_unit", "slag_mite", "slag_mite"], "music": "mus_battle_core_u2", "notes": "A Cassia-pattern spider with its gramophone cone and mercury pulse."},
+    {"id": "spine_highway_bike_bros", "universe": 2, "enemies": ["bike_bros", "bike_bros"], "music": "mus_battle_core_u2", "notes": "Spine-Highway: the Bike Bros guard the Ferro-Capacitor; Break-lock pins them for a Solar Railgun."},
+    {"id": "spine_highway_leakers", "universe": 2, "enemies": ["mercury_leaker", "mercury_leaker", "porcelain_knight_squire"], "music": "mus_battle_core_u2", "notes": "Mercury pools under a squire's shield wall; 12 fps frame-traps."},
+    {"id": "arris_dome_porcelain_choir", "universe": 2, "enemies": ["porcelain_choir", "porcelain_choir", "porcelain_choir"], "music": "mus_battle_core_u2", "notes": "Choir of Arris Dome: Break-immune without a FERRO ally; harmonize them to sleep (Arris_Dome=Sleeping) or burn them (Arris_Dome=Incinerated)."},
+    {"id": "arris_dome_squires", "universe": 2, "enemies": ["porcelain_knight_squire", "porcelain_knight_squire", "mercury_leaker"], "music": "mus_battle_core_u2", "notes": "Kneeling knights under Grief-Resonance."},
+    {"id": "geno_foundry_press", "universe": 2, "enemies": ["press_golem", "cassia_pattern_patrol_unit"], "music": "mus_battle_core_u2", "notes": "Geno-Foundry conveyor: the press golem's heavy drift and magnetic crushers; syringes hammer every 3 s."},
+    {"id": "dyson_cage_rook", "universe": 2, "enemies": ["loom_bracer_rook", "slag_mite", "slag_mite"], "music": "mus_battle_core_u2", "notes": "Mother Brain's Dyson-Cage: an elite rook pulls allies into Break-locked mites over boiling marrow tiles."}
+  ]
+}

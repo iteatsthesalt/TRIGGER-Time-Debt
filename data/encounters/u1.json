@@ -1,0 +1,12 @@
+{
+  "encounters": [
+    {"id": "kuro_truce_ashigaru", "universe": 1, "enemies": ["ashen_ashigaru", "ashen_ashigaru", "ashen_ashigaru"], "music": "mus_battle_core_u1", "notes": "Kuro-Truce streets at Crimson Night: the first ashigaru line; one repaints itself unless FIRE lands first."},
+    {"id": "paper_street_calligraphers", "universe": 1, "enemies": ["ink_calligrapher", "ink_calligrapher", "ashen_ashigaru"], "music": "mus_battle_core_u1", "notes": "Kanji hitboxes over wet ink; teaches the ink DoT."},
+    {"id": "heimin_gourds", "universe": 1, "enemies": ["gourd_bloated_heimin", "gourd_bloated_heimin", "imp_crackle_sumi", "imp_crackle_sumi"], "music": "mus_battle_core_u1", "notes": "Oil-vein townsfolk and an imp swarm; the Heimin burst into Ash Fields Krona can feed on."},
+    {"id": "petition_yokai_crows", "universe": 1, "enemies": ["surrender_petition_yokai", "surrender_petition_yokai", "omen_crow"], "music": "mus_battle_core_u1", "notes": "Unpainted yokai evade everything until Cobalt Wash or an INK hit paints them; the crow blinds from above."},
+    {"id": "iron_bridge_shrine_1", "universe": 1, "enemies": ["crimson_banner_samurai", "ashen_ashigaru", "ashen_ashigaru"], "music": "mus_battle_core_u1", "notes": "First Iron Bridge shrine: the ash-ronin's 2 s ink pose forces a held Ens Parry."},
+    {"id": "iron_bridge_shrine_2", "universe": 1, "enemies": ["crimson_banner_samurai", "porcelain_captain", "ashen_ashigaru"], "music": "mus_battle_core_u1", "notes": "Second Iron Bridge shrine: a Porcelain Captain leads the line and trails VHS Fog."},
+    {"id": "iron_bridge_shrine_3", "universe": 1, "enemies": ["crimson_banner_samurai", "crimson_banner_samurai", "omen_crow"], "music": "mus_battle_core_u1", "notes": "Third Iron Bridge shrine: two samurai pose at once while the crow applies BLIND."},
+    {"id": "iron_bridge_shrine_4", "universe": 1, "enemies": ["crimson_banner_samurai", "crimson_banner_samurai", "porcelain_captain", "ashen_ashigaru"], "music": "mus_battle_core_u1", "notes": "Fourth Iron Bridge shrine before Goyama: the full parry exam."}
+  ]
+}

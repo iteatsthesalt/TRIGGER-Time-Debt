@@ -1,0 +1,46 @@
+{
+  "id": "krona_duel",
+  "name": "Krona, Barren Heir — Bamboo Grove duel",
+  "universe": 1,
+  "level": 7,
+  "hp": 5000,
+  "kind": "boss",
+  "sprite": "bos_u1_krona_duel",
+  "size": 1.7,
+  "body_radius": 0.5,
+  "fps": 24,
+  "is_metal": false,
+  "tags": ["RUIN", "SWORD", "INK"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["black_ink_pools", "wet_ink"],
+  "adds": [],
+  "phases": [
+    {"id": "ink_and_steel", "name": "Ink and Steel", "hp_from": 1.0, "hp_to": 0.75,
+     "shield": {"shield": 6, "weak": ["ASTRAL", "FIRE"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["RUIN", "SWORD", "INK"],
+     "actions": [
+       {"id": "defiled_masamune", "name": "Defiled Masamune", "tags": ["RUIN", "SWORD", "INK"], "shape": "SINGLE", "power": 1.3, "hits": 1, "target": "crono", "weight": 3},
+       {"id": "ink_pool_cut", "name": "Ink Pool Cut", "tags": ["INK", "RUIN"], "shape": "CONE", "radius": 3.0, "length": 3.0, "power": 1.0, "hits": 1, "wind_up_s": 1.0, "target": "crono", "weight": 1}
+     ],
+     "mechanics": ["masamune_is_antimatter_each_hit_removes_3pct_crono_max_hp_ceiling_for_battle", "canvas_clash_tutorial_astral_burns_black_ink_pools_into_golden_watercolour_patches_restoring_mp", "crono_fights_alone_sera_hovers_out_of_reach"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 6, Tags [RUIN][SWORD][INK], Weak [ASTRAL][FIRE]. Krona's Defiled Masamune is antimatter: each of her hits removes 3% of Crono's max-HP ceiling for the battle."},
+    {"id": "she_ate_the_star", "name": "She Ate the Star", "hp_from": 0.75, "hp_to": 0.5,
+     "shield": {"shield": 8, "weak": ["ASTRAL", "TIME_DEBT"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["RUIN", "SWORD", "INK", "LAVOS"],
+     "actions": [
+       {"id": "defiled_masamune", "name": "Defiled Masamune", "tags": ["RUIN", "SWORD", "INK"], "shape": "SINGLE", "power": 1.3, "hits": 1, "target": "crono", "weight": 2},
+       {"id": "lavos_blood_surge", "name": "Lavos Blood Surge", "tags": ["RUIN", "DARK"], "shape": "CIRCLE", "radius": 3.0, "power": 1.2, "hits": 1, "wind_up_s": 1.5, "target": "crono", "weight": 1}
+     ],
+     "mechanics": ["reveals_she_drank_lavos_blood", "crono_porcelain_wrist_briefly_exposed", "action_prompt_overcharges_epoch_gauntlet_astral_burst_breaks_her_outright", "duel_ends_at_50pct_hp"],
+     "on_enter": "Mid-fight she reveals she drank Lavos's blood.",
+     "on_break": "The ASTRAL burst ends the duel; Krona joins.",
+     "notes": "Shield 8, Weak [ASTRAL][TIME_DEBT]. The duel ends at 50% HP with the Epoch gauntlet overcharge prompt."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {"Krona_Joined": ["set"]},
+  "notes": "Recruitment duel in the Kuro-Truce bamboo grove, a full ukiyo-e and sumi-e canvas. Lv 7, HP 5,000 (the duel ends at 50%). Crono fights alone, Sera hovering out of reach. HP windows per phase are not given; the two phases split the 100-50% duel evenly."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "leviathan_low_tide",
+  "name": "Leviathan of Low Tide",
+  "universe": 4,
+  "level": 39,
+  "hp": 90000,
+  "kind": "boss",
+  "sprite": "bos_u4_leviathan_low_tide",
+  "size": 12.0,
+  "body_radius": 4.0,
+  "fps": 60,
+  "is_metal": false,
+  "tags": ["WATER", "VITREOUS"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["collapsing_nave", "falling_glass_cyan_to_orange", "crush_timer"],
+  "adds": [{"key": "cathedral_choir_jelly", "count": 3, "phase": "jelly_army"}],
+  "phases": [
+    {"id": "cathedral_collapse", "name": "Cathedral Collapse", "hp_from": 1.0, "hp_to": 0.65,
+     "shield": {"shield": 17, "weak": ["VOLT"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["WATER", "VITREOUS"],
+     "actions": [
+       {"id": "falling_glass", "name": "Falling Glass", "tags": ["VITREOUS"], "shape": "CIRCLE", "radius": 4.0, "power": 1.4, "hits": 1, "wind_up_s": 2.5, "target": "weakest", "weight": 2},
+       {"id": "tide_surge", "name": "Tide Surge", "tags": ["WATER"], "shape": "LINE_PIERCE", "length": 10.0, "width": 2.0, "power": 1.2, "hits": 1, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["cathedral_collapse_falling_glass_marks_the_plane_cyan_to_orange"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "100-65%. Shield 17, Weak [VOLT]."},
+    {"id": "jelly_army", "name": "Jelly Army", "hp_from": 0.65, "hp_to": 0.3,
+     "shield": {"shield": 18, "weak": ["FIRE", "VOLT"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["WATER", "VITREOUS", "VOLT"],
+     "actions": [
+       {"id": "summon_jellies", "name": "Raise the Jelly Army", "tags": ["WATER"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:cathedral_choir_jelly", "target": "weakest", "weight": 1},
+       {"id": "tide_surge", "name": "Tide Surge", "tags": ["WATER"], "shape": "LINE_PIERCE", "length": 10.0, "width": 2.0, "power": 1.2, "hits": 1, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["jelly_army_cathedral_choir_jellies_rises"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "65-30%. Shield 18, Weak [FIRE][VOLT]."},
+    {"id": "shattered_glass", "name": "Shattered Glass", "hp_from": 0.3, "hp_to": 0.0,
+     "shield": {"shield": 20, "weak": ["PRISMATIC", "GUN"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["WATER", "VITREOUS"],
+     "actions": [
+       {"id": "glass_shatter", "name": "Glass Shatter", "tags": ["VITREOUS"], "shape": "BATTLEFIELD", "power": 1.0, "hits": 1, "wind_up_s": 2.0, "status": "mercury_slow", "status_seconds": 6, "effect": "fog", "target": "all", "weight": 1},
+       {"id": "drowning_bite", "name": "Drowning Bite", "tags": ["WATER", "VITREOUS"], "shape": "SINGLE", "power": 1.6, "hits": 1, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["stained_glass_shatters_applying_mercury_slow_and_vhs_fog_to_party", "weak_prismatic_three_or_more_element_tags"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "30-0%. Shield 20, Weak [PRISMATIC][GUN]."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "notes": "Optional (codex E22). Lv 39, HP 90,000. The cathedral's drowned nave come alive. Tags inferred (drowned nave: water and glass). The Tide_Memory flag (Kept/Released) in data/flags may belong to this fight but the Combat Laws do not say so."
+}

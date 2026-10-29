@@ -1,0 +1,12 @@
+{
+  "encounters": [
+    {"id": "baptistery_mnemos", "universe": 4, "enemies": ["glass_mnemos", "glass_mnemos", "glass_mnemos"], "music": "mus_battle_core_u4", "notes": "Baptistery: memories frozen in glass; only a magnetic pull shatters them."},
+    {"id": "nave_jellyfish_lanterns", "universe": 4, "enemies": ["jellyfish_lantern", "jellyfish_lantern", "jellyfish_lantern"], "music": "mus_battle_core_u4", "notes": "The Nave: living lamps. Kill one and the Crush timer speeds up; spare and polish for +10 s of air."},
+    {"id": "nave_vitrified_choir", "universe": 4, "enemies": ["vitrified_choir", "vitrified_choir", "cathedral_choir_jelly"], "music": "mus_battle_core_u4", "notes": "Kneeling zealots whose hymn stuns polishers; the jelly adds Grief and refraction fog."},
+    {"id": "library_anemone_scribes", "universe": 4, "enemies": ["anemone_scribe", "anemone_scribe", "zealot_chandelier"], "music": "mus_battle_core_u4", "notes": "Library: trick-weak scribes under a chandelier of zealots."},
+    {"id": "library_lead_lector", "universe": 4, "enemies": ["lead_lector", "vitrified_choir", "glass_mnemos"], "music": "mus_battle_core_u4", "notes": "The lector's lead barriers recolour every beam; reach ICE through an Azure pane."},
+    {"id": "low_tide_ruin_eels", "universe": 4, "enemies": ["ruin_eel", "ruin_eel", "cathedral_choir_jelly"], "music": "mus_battle_core_u4", "notes": "Low tide: oil trails and Oil-Blight."},
+    {"id": "rose_window_zealians", "universe": 4, "enemies": ["enlightened_zealian", "enlightened_zealian", "mammon_conduit"], "music": "mus_battle_core_u4", "notes": "Porcelain ghosts quoting Zeal lore around a Mammon remnant that applies Ruin."},
+    {"id": "mammon_siphon_tendrils", "universe": 4, "enemies": ["mammon_siphon_tendril", "mammon_siphon_tendril", "vaelos_siphon_tubule", "vaelos_siphon_tubule"], "music": "mus_battle_core_u4", "notes": "The elite pair at 28 Hz; sever the tubules or they feed the tendrils 1 plate per 8 s. Time Atoms on Break."}
+  ]
+}

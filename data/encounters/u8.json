@@ -1,0 +1,10 @@
+{
+  "encounters": [
+    {"id": "navel_string_atom_eaters", "universe": 8, "enemies": ["atom_eater", "atom_eater", "atom_eater"], "music": "mus_battle_core_u8", "notes": "Navel String: porcelain crabs eating loose Crono atoms; Time Atoms on Break teach the repair loop."},
+    {"id": "gallery_failed_dolls", "universe": 8, "enemies": ["bekkler_doll_failed", "bekkler_doll_failed", "atom_eater"], "music": "mus_battle_core_u8", "notes": "Gallery of Time Eggs: failed Type-C dolls humming 220 Hz; Crono hears his heartbeat doubled within 5 m."},
+    {"id": "gallery_filament_guardian", "universe": 8, "enemies": ["lavic_filament_guardian", "atom_eater", "atom_eater"], "music": "mus_battle_core_u8", "notes": "Sever the guardian's filament with a LINE_PIERCE or it summons an Atom-Eater every time its shield rebuilds."},
+    {"id": "cradle_paradox_choir", "universe": 8, "enemies": ["paradox_curator_choir"], "music": "mus_battle_core_u8", "notes": "A remnant of R-66Y with its ring at half speed; drops the Crono-Original lullaby record."},
+    {"id": "cradle_guardians", "universe": 8, "enemies": ["lavic_filament_guardian", "lavic_filament_guardian"], "music": "mus_battle_core_u8", "notes": "Two antibodies in zero gravity; their Broken bodies are reposition platforms."},
+    {"id": "gallery_mixed", "universe": 8, "enemies": ["bekkler_doll_failed", "lavic_filament_guardian", "atom_eater"], "music": "mus_battle_core_u8", "notes": "The Heart's full roster below Prismatic 45, when the canvases fight for dominance."}
+  ]
+}

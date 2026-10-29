@@ -1,0 +1,15 @@
+{
+  "id": "omega", "name": "Omega-Spekkio", "element": "NULL", "home_universe": 7, "canvas_fps": 24, "archetype": "caster",
+  "weapon": {"name": "Folding", "tags": ["NULL"], "hits": 1}, "move_range": 6.0,
+  "vulnerable": [], "resistant": [],
+  "sprite": "omega", "height_m": 2.4,
+  "techs": [
+    {"id": "null_omega", "unlock": {"on_join": true}},
+    {"id": "miura_fold", "unlock": {"on_join": true}},
+    {"id": "lotus_reverse", "unlock": {"on_join": true}},
+    {"id": "gold_leaf_severance", "unlock": {"on_join": true}},
+    {"id": "origami_requiem", "unlock": {"flag": "Kami_Ori_Wounds_Kept"}},
+    {"id": "omega_triple", "unlock": {"on_join": true}}
+  ],
+  "passives": ["gold_leaf_stacks"]
+}

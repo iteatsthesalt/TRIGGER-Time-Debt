@@ -1,0 +1,28 @@
+{
+  "id": "glenn", "name": "Pierrot-Glenn", "element": "GUILE", "home_universe": 5, "canvas_fps": 12, "archetype": "balanced",
+  "weapon": {"name": "Prop Arsenal", "tags": ["BLUNT", "RUBBER"], "hits": 3}, "move_range": 7.0,
+  "vulnerable": ["FIRE", "SWORD"], "resistant": ["BLUNT", "RUBBER"],
+  "sprite": "glenn", "height_m": 1.8,
+  "techs": [
+    {"id": "sleight_of_arm", "unlock": {"on_join": true}},
+    {"id": "guile_feint", "unlock": {"on_join": true}},
+    {"id": "swap_face", "unlock": {"on_join": true}},
+    {"id": "balloon_escape", "unlock": {"on_join": true}},
+    {"id": "honest_laugh", "unlock": {"on_join": true}},
+    {"id": "prop_hammer", "unlock": {"drop": "strongman_dummy"}},
+    {"id": "guile_elastic", "unlock": {"level": 46}},
+    {"id": "prop_cannon", "unlock": {"flag": "Cyrus_Left_Hanging"}},
+    {"id": "the_last_joke", "unlock": {"chapter": 9}},
+    {"id": "masque_feint", "unlock": {"on_join": true}},
+    {"id": "guilt_halo", "unlock": {"on_join": true}},
+    {"id": "honest_stage", "unlock": {"on_join": true}},
+    {"id": "ashen_bash", "unlock": {"on_join": true}},
+    {"id": "mercy_leap", "unlock": {"on_join": true}},
+    {"id": "ruin_elastic", "unlock": {"on_join": true}},
+    {"id": "delta_storm", "unlock": {"on_join": true}},
+    {"id": "carnival_of_souls", "unlock": {"on_join": true}},
+    {"id": "chrono_laugh", "unlock": {"flag": "Re_String"}},
+    {"id": "washi_hollow_rebirth", "unlock": {"flag": "Kami_Ori_Wounds_Kept"}}
+  ],
+  "passives": ["punchline", "accordion_dodge", "low_hp_tell"]
+}

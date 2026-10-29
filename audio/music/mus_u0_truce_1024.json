@@ -1,0 +1,124 @@
+{
+  "id": "mus_u0_truce_1024",
+  "bpm": 78,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "D Dorian",
+  "bars": 28,
+  "bar_s": 3.076923,
+  "duration_s": 86.1538,
+  "loop_start_s": 12.3077,
+  "loop_start_samples": 590769,
+  "loop_end_s": 86.1538,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 4,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 4,
+      "bars": 8,
+      "start_s": 12.3077
+    },
+    {
+      "name": "bridge",
+      "bar": 12,
+      "bars": 4,
+      "start_s": 36.9231
+    },
+    {
+      "name": "b",
+      "bar": 16,
+      "bars": 8,
+      "start_s": 49.2308
+    },
+    {
+      "name": "coda",
+      "bar": 24,
+      "bars": 4,
+      "start_s": 73.8462
+    }
+  ],
+  "stems": {
+    "box": {
+      "file": "mus_u0_truce_1024__box.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.154,
+      "channels": 2,
+      "peak_dbfs": -15.39,
+      "rms_dbfs": -34.16,
+      "lufs_i": -26.87,
+      "size_bytes": 606359
+    },
+    "lead": {
+      "file": "mus_u0_truce_1024__lead.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.154,
+      "channels": 2,
+      "peak_dbfs": -6.88,
+      "rms_dbfs": -26.67,
+      "lufs_i": -22.11,
+      "size_bytes": 1388248
+    },
+    "drums": {
+      "file": "mus_u0_truce_1024__drums.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.154,
+      "channels": 2,
+      "peak_dbfs": -8.95,
+      "rms_dbfs": -36.11,
+      "lufs_i": -24.88,
+      "size_bytes": 946997
+    },
+    "bass": {
+      "file": "mus_u0_truce_1024__bass.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.154,
+      "channels": 2,
+      "peak_dbfs": -10.51,
+      "rms_dbfs": -23.52,
+      "lufs_i": -23.88,
+      "size_bytes": 244840
+    },
+    "hiss": {
+      "file": "mus_u0_truce_1024__hiss.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.154,
+      "channels": 2,
+      "peak_dbfs": -22.02,
+      "rms_dbfs": -46.12,
+      "lufs_i": -41.46,
+      "size_bytes": 2033545
+    }
+  },
+  "mix": {
+    "duration_s": 86.154,
+    "channels": 2,
+    "peak_dbfs": -2.41,
+    "rms_dbfs": -21.39,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "crono_hp": "100% \u2192 full mix; towards 20% fade lead and drums to leave bass + box (the hollow marrow pulse)",
+    "breath": "side-chain the bass stem to Crono's idle breath (duck 3 dB on each exhale)",
+    "porcelain_stress": "swap in a box stem with more missing tines (not rendered: use wind_scene box_debt60/20 as the model)"
+  },
+  "notes": "Shamisen bent 15 cents flat with a slow wobble; 808 decays 2.2 s; the box is already missing its B4 tine.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 12.3077,
+    "bpm": 78,
+    "beat_count": 112,
+    "bar_beats": 4
+  }
+}

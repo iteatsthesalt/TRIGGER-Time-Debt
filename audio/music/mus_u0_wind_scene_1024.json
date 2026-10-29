@@ -1,0 +1,159 @@
+{
+  "id": "mus_u0_wind_scene_1024",
+  "bpm": 72,
+  "meter": [
+    3,
+    4
+  ],
+  "key": "C major",
+  "bars": 44,
+  "bar_s": 2.5,
+  "duration_s": 110.0,
+  "loop_start_s": 10.0,
+  "loop_start_samples": 480000,
+  "loop_end_s": 110.0,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 4,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 4,
+      "bars": 12,
+      "start_s": 10.0
+    },
+    {
+      "name": "bridge",
+      "bar": 16,
+      "bars": 8,
+      "start_s": 40.0
+    },
+    {
+      "name": "b",
+      "bar": 24,
+      "bars": 12,
+      "start_s": 60.0
+    },
+    {
+      "name": "coda",
+      "bar": 36,
+      "bars": 8,
+      "start_s": 90.0
+    }
+  ],
+  "stems": {
+    "box": {
+      "file": "mus_u0_wind_scene_1024__box.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 110.0,
+      "channels": 2,
+      "peak_dbfs": -8.44,
+      "rms_dbfs": -25.64,
+      "lufs_i": -20.9,
+      "size_bytes": 1380111
+    },
+    "box_debt60": {
+      "file": "mus_u0_wind_scene_1024__box_debt60.ogg",
+      "default_on": false,
+      "auto_loaded_by_director": false,
+      "duration_s": 110.0,
+      "channels": 2,
+      "peak_dbfs": -7.96,
+      "rms_dbfs": -25.88,
+      "lufs_i": -20.9,
+      "size_bytes": 1300506
+    },
+    "box_debt20": {
+      "file": "mus_u0_wind_scene_1024__box_debt20.ogg",
+      "default_on": false,
+      "auto_loaded_by_director": false,
+      "duration_s": 110.0,
+      "channels": 2,
+      "peak_dbfs": -7.55,
+      "rms_dbfs": -26.2,
+      "lufs_i": -20.9,
+      "size_bytes": 1206225
+    },
+    "box_debt0": {
+      "file": "mus_u0_wind_scene_1024__box_debt0.ogg",
+      "default_on": false,
+      "auto_loaded_by_director": false,
+      "duration_s": 110.0,
+      "channels": 2,
+      "peak_dbfs": -8.29,
+      "rms_dbfs": -37.89,
+      "lufs_i": -20.9,
+      "size_bytes": 91441
+    },
+    "piano": {
+      "file": "mus_u0_wind_scene_1024__piano.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 110.0,
+      "channels": 2,
+      "peak_dbfs": -7.35,
+      "rms_dbfs": -27.06,
+      "lufs_i": -23.4,
+      "size_bytes": 1345258
+    },
+    "tick": {
+      "file": "mus_u0_wind_scene_1024__tick.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 110.0,
+      "channels": 2,
+      "peak_dbfs": -7.22,
+      "rms_dbfs": -38.38,
+      "lufs_i": -32.71,
+      "size_bytes": 2581219
+    },
+    "wind": {
+      "file": "mus_u0_wind_scene_1024__wind.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 110.0,
+      "channels": 2,
+      "peak_dbfs": -18.3,
+      "rms_dbfs": -36.34,
+      "lufs_i": -33.88,
+      "size_bytes": 2196513
+    },
+    "debt": {
+      "file": "mus_u0_wind_scene_1024__debt.ogg",
+      "default_on": false,
+      "auto_loaded_by_director": false,
+      "duration_s": 110.0,
+      "channels": 2,
+      "peak_dbfs": -6.95,
+      "rms_dbfs": -26.66,
+      "lufs_i": -29.14,
+      "size_bytes": 743619
+    }
+  },
+  "mix": {
+    "duration_s": 110.0,
+    "channels": 2,
+    "peak_dbfs": -6.01,
+    "rms_dbfs": -22.99,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "porcelain_stress": "swap the box stem: >60 \u2192 box, 21\u201360 \u2192 box_debt60, 1\u201320 \u2192 box_debt20, 0 \u2192 box_debt0 (the tape stops at 15.2 s); above 60 also fade in the debt stem",
+    "glow_intensity": "box and tick stem volume: 0 \u2192 \u221212 dB, 100 \u2192 +2 dB with saturation",
+    "camera_fov": "music bus low-pass 400 Hz (32\u00b0) \u2192 800 Hz (24\u00b0)",
+    "gate_proximity": "not rendered: layer sfx/status/vhs_fog (U2 gramophone hiss) or a CRT hum near gates",
+    "vaelos_near": "layer mus_vaelos_theme__pad (68 BPM heartbeat) under this track"
+  },
+  "notes": "Tick: 12 quavers per 2-bar phrase, the 8th is a silent click (the missing tooth) so the C4 lands without its tick; mainspring grind every 4 bars from the loop start. Loop region = A+Bridge+B+Coda.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 10.0,
+    "bpm": 72,
+    "beat_count": 132,
+    "bar_beats": 3
+  }
+}

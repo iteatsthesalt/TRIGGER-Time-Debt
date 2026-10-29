@@ -152,7 +152,8 @@ class Score:
             if chans is not None and ch not in chans:
                 continue
             order += 1
-            msgs.append((0, order - 1000, mido.Message("control_change", channel=ch, control=0, value=bank, time=0)))
+            if 0 <= bank < 128:  # the percussion channel is bank 128 by itself in FluidSynth
+                msgs.append((0, order - 1000, mido.Message("control_change", channel=ch, control=0, value=bank, time=0)))
             msgs.append((0, order - 999, mido.Message("program_change", channel=ch, program=prog, time=0)))
         for beat, o, kind, d in self.events:
             if chans is not None and d["ch"] not in chans:

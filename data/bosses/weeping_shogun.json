@@ -1,0 +1,57 @@
+{
+  "id": "weeping_shogun",
+  "name": "The Weeping Shogun — Amalgam Spawn",
+  "universe": 1,
+  "level": 11,
+  "hp": 24000,
+  "kind": "boss",
+  "sprite": "bos_u1_weeping_shogun",
+  "size": 7.0,
+  "body_radius": 2.5,
+  "fps": 24,
+  "is_metal": false,
+  "tags": ["INK", "RUIN", "LAVOS"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["mammon_furnace", "wet_ink", "sera_caged_hover_support"],
+  "adds": [],
+  "phases": [
+    {"id": "ink_body", "name": "Ink Body", "hp_from": 1.0, "hp_to": 0.6,
+     "shield": {"shield": 8, "weak": ["ASTRAL", "FIRE"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["INK", "RUIN", "LAVOS"],
+     "actions": [
+       {"id": "ink_drag", "name": "Ink Drag", "tags": ["INK", "RUIN"], "shape": "LINE", "length": 6.0, "width": 1.4, "power": 1.2, "hits": 1, "wind_up_s": 1.0, "status": "ink_dot", "status_seconds": 4, "target": "nearest", "weight": 2},
+       {"id": "lavos_spew", "name": "Lavos Spew", "tags": ["LAVOS", "RUIN"], "shape": "CONE", "radius": 3.0, "length": 5.0, "power": 1.3, "hits": 1, "wind_up_s": 2.0, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["ink_half_drags_itself_in_24fps_holds", "wet_strokes_dot", "sera_hover_support_turn_bar_daggers_rewind_ally_hp_or_fast_forward_gauge_plus_25"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "100-60%. Shield 8, Tags [INK][RUIN][LAVOS], Weak [ASTRAL][FIRE]. The ink half drags itself in 24 fps holds and leaves wet strokes that DoT."},
+    {"id": "clay_centipede", "name": "Clay Centipede", "hp_from": 0.6, "hp_to": 0.25,
+     "shield": {"shield": 10, "weak": ["RUIN", "VOLT"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FERRO", "BLUNT"],
+     "actions": [
+       {"id": "tail_sweep", "name": "Tail Sweep", "tags": ["FERRO", "BLUNT"], "shape": "CONE", "radius": 4.0, "length": 5.0, "power": 1.4, "hits": 1, "wind_up_s": 1.5, "status": "mercury_slow", "status_seconds": 6, "target": "nearest", "weight": 2},
+       {"id": "segment_crush", "name": "Segment Crush", "tags": ["BLUNT"], "shape": "SINGLE", "power": 1.6, "hits": 1, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["centipede_half_takes_over_at_12fps", "each_segment_is_a_separate_hit_target_line_pierce_hits_whole_length", "mercury_slow_on_tail_sweep", "is_metal_in_this_phase"],
+     "on_enter": "The clay centipede takes over at 12 fps.",
+     "on_break": "",
+     "notes": "60-25%. Shield 10, Tags [FERRO][BLUNT], Weak [RUIN][VOLT]. Each segment is a separate hit target, so LINE_PIERCE techs hit the whole length. The body counts as metal in this phase."},
+    {"id": "the_weeping", "name": "The Weeping", "hp_from": 0.25, "hp_to": 0.0,
+     "shield": {"shield": 6, "weak": ["ASTRAL", "RUIN", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["INK", "RUIN", "LAVOS", "FERRO", "BLUNT"],
+     "actions": [
+       {"id": "two_rate_scream", "name": "Two-Rate Scream", "tags": ["INK", "FERRO", "LAVOS"], "shape": "BATTLEFIELD", "power": 1.0, "hits": 1, "wind_up_s": 2.0, "effect": "grief", "target": "all", "weight": 1},
+       {"id": "amalgam_lash", "name": "Amalgam Lash", "tags": ["INK", "BLUNT"], "shape": "SINGLE", "power": 1.3, "hits": 2, "target": "random", "weight": 2}
+     ],
+     "mechanics": ["both_halves_scream_in_two_frame_rates_at_once", "eclipse_x_strike_crono_krona_intended_finisher_splits_screen_watercolour_sumi_e", "break_opens_cage_sera_rejoins"],
+     "on_enter": "",
+     "on_break": "The cage opens, and Sera rejoins for the next stretch of story.",
+     "notes": "25-0%. Shield 6, Weak [ASTRAL][RUIN][TACHYON]."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "notes": "Mammon Furnace finale. Lv 11, HP 24,000. The first three-way multiversal boss: an ink Lavos Spawn lower body fused to a claymation clockwork centipede. Sera is in a geometric cage above the furnace, flickering through all seven ghost styles, and fights as Hover Support (Turn-Bar daggers: rewind an ally's HP to its last turn start, or fast-forward an ally's gauge +25). Party: Crono and Krona. Canvas is MIX (24 fps ink / 12 fps clay); fps 24 is the ink half."
+}

@@ -1,0 +1,12 @@
+{
+  "encounters": [
+    {"id": "root_approach_monks", "universe": 7, "enemies": ["washi_hollow_monk", "washi_hollow_monk"], "music": "mus_battle_core_u7", "notes": "Root Approach: Washi-Hollow Monks flip to a blank gold-marked back when struck wrong. Glaze Erosion applies."},
+    {"id": "root_approach_lanterns", "universe": 7, "enemies": ["marrow_lantern", "marrow_lantern", "washi_hollow_monk"], "music": "mus_battle_core_u7", "notes": "Lanterns stay harmless until cracked Crono's light lights them; they erase themselves on Break (the NULL lesson)."},
+    {"id": "negative_space_vertebray", "universe": 7, "enemies": ["vertebray"], "music": "mus_battle_core_u7", "notes": "A seven-vertebra stag charging out of the white with only gold dust as warning; sheds two fawns at 50%."},
+    {"id": "white_field_ink_eaters", "universe": 7, "enemies": ["ink_eater", "ink_eater", "washi_hollow_monk"], "music": "mus_battle_core_u7", "notes": "Clear the smudges within 12 s or the party is Ink Blotted."},
+    {"id": "kirie_keeper_shrine_1", "universe": 7, "enemies": ["kirie_keeper", "washi_hollow_monk", "washi_hollow_monk"], "music": "mus_battle_core_u7", "notes": "First Kirie Keeper: its two monks share a 10-plate shield that must Break before the Keeper can be shaved. 13 Kirie Scales."},
+    {"id": "kirie_keeper_shrine_2", "universe": 7, "enemies": ["kirie_keeper", "washi_hollow_monk", "washi_hollow_monk", "ink_eater"], "music": "mus_battle_core_u7", "notes": "Second Kirie Keeper, with an Ink-Eater spreading under the fight."},
+    {"id": "kirie_keeper_shrine_3", "universe": 7, "enemies": ["kirie_keeper", "washi_hollow_monk", "washi_hollow_monk", "marrow_lantern"], "music": "mus_battle_core_u7", "notes": "Third Kirie Keeper; sparing all three is Light, killing yields Prismatic Shards."},
+    {"id": "bone_tree_crown_approach", "universe": 7, "enemies": ["vertebray", "ink_eater", "washi_hollow_monk"], "music": "mus_battle_core_u7", "notes": "The climb to the Crown of Horns."}
+  ]
+}

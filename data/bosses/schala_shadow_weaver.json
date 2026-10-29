@@ -1,0 +1,72 @@
+{
+  "id": "schala_shadow_weaver",
+  "name": "Schala — Shadow Weaver",
+  "universe": 4,
+  "level": 38,
+  "hp": 86000,
+  "kind": "boss",
+  "sprite": "bos_u4_schala_shadow_weaver",
+  "size": 8.0,
+  "body_radius": 2.5,
+  "fps": 60,
+  "is_metal": false,
+  "tags": ["VITREOUS", "WARD", "TACHYON"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["crush_timer", "rose_window_light_pools", "caustic_floor"],
+  "adds": [{"key": "crono_porcelain_hollow", "count": 2, "phase": "shadow_weaver", "def": {"tags": ["VITREOUS", "ASTRAL"], "weak": ["ASTRAL", "VITREOUS"], "notes": "Crono Porcelain Hollows that mirror his galaxy; plates not given."}}],
+  "phases": [
+    {"id": "librarian", "name": "Librarian", "hp_from": 1.0, "hp_to": 0.65,
+     "shield": {"shield": 12, "weak": ["SWORD", "ASTRAL"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["VITREOUS", "WARD", "TACHYON"],
+     "actions": [
+       {"id": "razor_filament", "name": "Razor Filament", "tags": ["VITREOUS", "TACHYON"], "shape": "LINE_PIERCE", "length": 8.0, "width": 1.0, "power": 1.2, "hits": 2, "target": "random", "weight": 2},
+       {"id": "shuttle_throw", "name": "Shuttle Throw", "tags": ["VITREOUS"], "shape": "SINGLE", "power": 1.1, "hits": 1, "wind_up_s": 1.0, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["sword_scratches_glass_astral_2_0x_polish", "reversed_shuttles_hit_her", "each_hit_in_the_colour_the_plate_shows_shaves_2", "break_spills_buff_pools_red_atk_blue_mp_drain_to_stander_gold_debt_rebate_minus_1_camp_strain_per_s"],
+     "on_enter": "Schala: Stay still, stay beautiful. Sera: You're tired. You can put it down.",
+     "on_break": "Spills buff pools: red (ATK), blue (MP drain to the stander), gold (a Debt rebate).",
+     "notes": "Shield 12, Tags [VITREOUS][WARD][TACHYON], Weak [SWORD] (scratch the glass), [ASTRAL] (2.0x, polish). Aim her shuttles back at her. HP windows are not given for Schala; 1.0-0.65, 0.65-0.3, 0.3-0 are an even split."},
+    {"id": "cat_unraveled", "name": "Cat Unraveled", "hp_from": 0.65, "hp_to": 0.3,
+     "shield": {"shield": 16, "weak": ["FERRO", "RUIN"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["VITREOUS", "MYCELIA", "TACHYON", "LIGHT"],
+     "actions": [
+       {"id": "cat_pounce", "name": "Shadow-Cat Pounce", "tags": ["MYCELIA", "VITREOUS"], "shape": "SINGLE", "power": 1.4, "hits": 1, "wind_up_s": 1.5, "target": "random", "weight": 2},
+       {"id": "caustic_sweep", "name": "Caustic Sweep", "tags": ["LIGHT", "VITREOUS"], "shape": "CONE", "radius": 3.5, "length": 6.0, "power": 1.1, "hits": 1, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["ferro_anchor_ruin_2_6x_at_boost_lv3", "rose_shatters_giant_shadow_cat_of_missed_caustics_stalks_at_30fps", "outside_light_pool_crush_5pct_hp_per_s", "cat_places_safe_pools_for_whoever_polishes", "crono_can_pay_12pct_ceiling_camp_strain_to_freeze_sun_10s", "break_extended_hold_window"],
+     "on_enter": "Vesper: Schala, are you still reading? The cat: I was reading you. Entry 5-01: He finally looked.",
+     "on_break": "Extended HOLD window.",
+     "notes": "Shield 16, Tags [VITREOUS][MYCELIA][TACHYON][LIGHT], Weak [FERRO] (anchor), [RUIN] (2.6x at Boost Lv3)."},
+    {"id": "shadow_weaver", "name": "Shadow Weaver", "hp_from": 0.3, "hp_to": 0.0,
+     "shield": {"shield": 10, "weak": ["VITREOUS", "ASTRAL"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": true},
+     "tags": ["NULL", "VITREOUS", "ASTRAL"],
+     "actions": [
+       {"id": "shadow_loom", "name": "Shadow Loom", "tags": ["NULL", "VITREOUS"], "shape": "BATTLEFIELD", "power": 0.9, "hits": 1, "wind_up_s": 2.0, "target": "all", "weight": 1},
+       {"id": "thread_lash", "name": "Thread Lash", "tags": ["VITREOUS", "ASTRAL"], "shape": "LINE", "length": 7.0, "width": 1.2, "power": 1.3, "hits": 3, "target": "random", "weight": 2},
+       {"id": "weave_hollows", "name": "Weave Hollows", "tags": ["NULL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:crono_porcelain_hollow", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["weak_only_to_a_hit_carrying_both_vitreous_and_astral_duo_required_chrono_prism", "mucha_loom_weaves_shadows_into_glass", "adds_crono_porcelain_hollows_mirroring_his_galaxy", "align_three_rose_shards_to_project_true_sun_and_burn_threads", "every_hit_this_phase_is_vitreous_and_gains_one_extra_hit_at_random_angle", "two_breaks_at_10_plates_and_at_0", "break_renders_unified_60fps_gold"],
+     "on_enter": "",
+     "on_break": "The mask falls, she is crying; the Break renders the unified 60 fps gold (Vaelos's dream of one perfect timeline, rejected).",
+     "notes": "Shield 20 with two Breaks (at 10 plates and at 0): written as shield 10 with refill_once. Tags [NULL][VITREOUS][ASTRAL]. Weak: a hit carrying both [VITREOUS] and [ASTRAL] (the weak list cannot express 'both'; a single-tag hit must not shave)."},
+    {"id": "mercy", "name": "Mercy (conditional)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "scripted", "requires": "Light was kept (Central_Eye=Broken route)",
+     "shield": {"shield": 0, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["VITREOUS"],
+     "actions": [],
+     "mechanics": ["no_combat", "cat_curls_into_cronos_cracked_chest_and_purrs", "time_resumes_citizens_fall_like_leaves"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Shield 0. If Light was kept, there is no combat. Skipped on the Polished route."}
+  ],
+  "branches": [
+    {"id": "central_eye", "after_phase": "shadow_weaver", "options": [
+      {"id": "broken", "label": "Shatter the perfect window", "flag": "Central_Eye", "state": "Broken", "requires": "Light: free her; Vesper learns Fractured Lens, Sera's HOLD lengthens, +15 Light, the cathedral fills with air"},
+      {"id": "polished", "label": "Preserve the eternity", "flag": "Central_Eye", "state": "Polished", "requires": "Dark: Vesper's Prism Guard stores more stacks but never self-shatters, the boss gains +25% shield and skips Phase 4, constant Grief-Resonance hum, +15 Dark"},
+      {"id": "weave_anew", "label": "Weave It Anew", "flag": "Weave_It_Anew", "state": "set", "requires": "align all seven colours using the secret U3 shard, with Crono at 20% showing his galaxy deliberately during the final alignment: +10 Prismatic and the Triple Chrono Prism fragment"}
+    ], "notes": ""}
+  ],
+  "drops": ["chrono_prism_fragment"],
+  "flags": {"Central_Eye": ["Broken", "Polished"], "Weave_It_Anew": ["set"]},
+  "notes": "Lv 38, HP 86,000. A massive Art Nouveau portrait of herself in the Rose Window with the cat in her lap and a loom. She throws razor filament that refracts white light into coloured stacks. The chrono_prism_fragment drop is the Weave It Anew reward only. On the Polished route the boss gains +25% shield."
+}

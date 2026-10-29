@@ -1,0 +1,41 @@
+{
+  "id": "shogun_memory_flame",
+  "name": "Shogun's Memory Flame",
+  "universe": 1,
+  "level": 10,
+  "hp": 12000,
+  "kind": "boss",
+  "sprite": "enm_u1_shogun_memory_flame",
+  "size": 3.0,
+  "body_radius": 1.2,
+  "fps": 24,
+  "is_metal": false,
+  "tags": ["FIRE", "RUIN"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["wet_ink"],
+  "adds": [{"key": "ashen_ashigaru", "count": 2, "phase": "living_fire", "trigger": "every_20pct_hp_lost"}],
+  "phases": [
+    {"id": "living_fire", "name": "Living Fire", "hp_from": 1.0, "hp_to": 0.0,
+     "shield": {"shield": 6, "weak": ["WATER", "ICE"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FIRE", "RUIN"],
+     "actions": [
+       {"id": "flame_lash", "name": "Flame Lash", "tags": ["FIRE", "RUIN"], "shape": "CONE", "radius": 3.0, "length": 5.0, "power": 1.2, "hits": 1, "effect": "grief", "target": "nearest", "weight": 2},
+       {"id": "memory_blaze", "name": "Memory Blaze", "tags": ["FIRE"], "shape": "CIRCLE", "radius": 4.0, "power": 1.4, "hits": 1, "wind_up_s": 2.0, "target": "weakest", "weight": 1},
+       {"id": "summon_ashigaru", "name": "Summon Ashigaru", "tags": ["RUIN"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:ashen_ashigaru", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["summons_two_ashen_ashigaru_at_every_20pct_hp_lost", "applies_grief", "kill_without_water_or_ice_hit_counts_as_dark", "snuff_with_water_reveals_childs_name_on_burnt_wall_prismatic_lean"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "Field boss (codex E07). Shield 6, Tags [FIRE][RUIN], Weak [WATER][ICE]. Summons two Ashen Ashigaru at every 20% of HP lost (the summon action is the stand-in; the trigger is HP thresholds, not turns). Applies Grief."}
+  ],
+  "branches": [
+    {"id": "how_it_dies", "after_phase": "living_fire", "options": [
+      {"id": "dark", "label": "Burn it out", "flag": "", "state": "", "lean": "Dark", "requires": "kill it without a [WATER] or [ICE] hit landing"},
+      {"id": "prismatic", "label": "Snuff it with water", "flag": "", "state": "", "lean": "Prismatic", "requires": "a [WATER] hit lands; reveals a child's name painted on the burnt wall"}
+    ], "notes": "No named flag in data/flags; the outcome is a lean only."}
+  ],
+  "drops": [],
+  "flags": {},
+  "notes": "Chapter 2 field boss (E07). Lv 10, HP 12,000. Single phase."
+}

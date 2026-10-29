@@ -1,0 +1,61 @@
+{
+  "id": "mycelia_matriarch",
+  "name": "Mycelia Matriarch",
+  "universe": 3,
+  "level": 27,
+  "hp": 60000,
+  "kind": "boss",
+  "sprite": "bos_u3_mycelia_matriarch",
+  "size": 5.0,
+  "body_radius": 2.0,
+  "fps": 30,
+  "is_metal": false,
+  "tags": ["MYCELIA", "SPORE"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["fungal_river", "root_wall_lanes", "pollen_haze"],
+  "adds": [{"key": "porcelain_raptor", "count": 2, "phase": "spore_mother"}],
+  "phases": [
+    {"id": "root_walls", "name": "Root Walls", "hp_from": 1.0, "hp_to": 0.6,
+     "shield": {"shield": 15, "weak": ["FIRE"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["MYCELIA", "SPORE"],
+     "actions": [
+       {"id": "root_wall", "name": "Root Wall", "tags": ["MYCELIA"], "shape": "LINE", "length": 8.0, "width": 1.5, "power": 0.8, "hits": 1, "wind_up_s": 1.5, "target": "nearest", "weight": 1},
+       {"id": "spore_burst", "name": "Spore Burst", "tags": ["SPORE", "MYCELIA"], "shape": "CIRCLE", "radius": 3.0, "power": 1.1, "hits": 1, "target": "weakest", "weight": 2}
+     ],
+     "mechanics": ["raises_root_walls_that_split_the_battle_plane_into_lanes"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "100-60%. Shield 15, Weak [FIRE]. Root Wall leaves a blocker line on the plane (lanes)."},
+    {"id": "spore_mother", "name": "Spore Mother", "hp_from": 0.6, "hp_to": 0.25,
+     "shield": {"shield": 16, "weak": ["ICE", "FIRE"], "resist": [], "keyed_plates": [], "regenerating": true, "refill_once": false},
+     "tags": ["MYCELIA", "SPORE"],
+     "actions": [
+       {"id": "summon_raptors", "name": "Summon Raptors", "tags": ["MYCELIA"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:porcelain_raptor", "target": "weakest", "weight": 1},
+       {"id": "tendril_slam", "name": "Tendril Slam", "tags": ["MYCELIA"], "shape": "SINGLE", "power": 1.4, "hits": 1, "wind_up_s": 1.5, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["summons_porcelain_raptors", "shield_rebuilds_18pct_per_s_after_3s_no_shave_even_when_not_broken"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "60-25%. Shield 16, Weak [ICE][FIRE]. Regenerating shield."},
+    {"id": "gold_leaf_interior", "name": "Gold Leaf Interior", "hp_from": 0.25, "hp_to": 0.0,
+     "shield": {"shield": 18, "weak": ["PRISMATIC"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["MYCELIA", "SPORE"],
+     "actions": [
+       {"id": "spore_storm", "name": "Spore Storm", "tags": ["SPORE", "MYCELIA"], "shape": "BATTLEFIELD", "power": 0.9, "hits": 1, "wind_up_s": 2.0, "target": "all", "weight": 1},
+       {"id": "tendril_slam", "name": "Tendril Slam", "tags": ["MYCELIA"], "shape": "SINGLE", "power": 1.4, "hits": 1, "wind_up_s": 1.5, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["weak_prismatic_any_hit_carrying_three_or_more_element_tags", "self_cracks_to_show_gold_leaf_interior_like_u7_bone_tree"],
+     "on_enter": "She self-cracks to show a gold-leaf interior.",
+     "on_break": "",
+     "notes": "25-0%. Shield 18, Weak [PRISMATIC]."}
+  ],
+  "branches": [
+    {"id": "spare_her", "after_phase": "gold_leaf_interior", "options": [
+      {"id": "spared", "label": "Leave her Broken", "flag": "", "state": "", "lean": "Light", "requires": "leave her Broken at the end of Phase 3; she gives a seed that heals Ruin stacks (one stack per use, three uses)"}
+    ], "notes": "No named flag in data/flags; Light lean only."}
+  ],
+  "drops": ["matriarch_seed"],
+  "flags": {},
+  "notes": "Optional Floor field boss (codex E17). Lv 27, HP 60,000. A Spore Mother rooted in the fungal river. The seed drop is the Spared reward. Tags inferred (Spore Mother)."
+}

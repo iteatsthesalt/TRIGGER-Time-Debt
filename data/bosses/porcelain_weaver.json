@@ -1,0 +1,57 @@
+{
+  "id": "porcelain_weaver",
+  "name": "The Porcelain Weaver — Mother of Threads",
+  "universe": 2,
+  "level": 14,
+  "hp": 26000,
+  "kind": "boss",
+  "sprite": "bos_u2_porcelain_weaver",
+  "size": 3.5,
+  "body_radius": 1.4,
+  "fps": 12,
+  "is_metal": true,
+  "tags": ["FERRO", "SOUND"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["amber_tank_no_strike_zone"],
+  "adds": [{"key": "porcelain_knight_squire", "count": 2, "phase": "mother_brain_override"}],
+  "phases": [
+    {"id": "mother_brain_override", "name": "Mother Brain Override", "hp_from": 1.0, "hp_to": 0.65,
+     "shield": {"shield": 11, "weak": ["FIRE", "SWORD"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FERRO", "SOUND"],
+     "actions": [
+       {"id": "brass_leg_stomp", "name": "Brass Leg Stomp", "tags": ["FERRO", "BLUNT"], "shape": "SINGLE", "power": 1.2, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "summon_squires", "name": "Summon Squires", "tags": ["FERRO"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:porcelain_knight_squire", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["never_strike_the_amber_tank", "strike_the_mother_brain_antennae_on_her_back", "spawns_porcelain_knight_squires"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "100-65%. Shield 11, Weak [FIRE][SWORD]. Spawns Porcelain Knight Squires."},
+    {"id": "antennae_rise", "name": "Antennae Rise", "hp_from": 0.65, "hp_to": 0.3,
+     "shield": {"shield": 12, "weak": ["VOLT"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FERRO", "SOUND", "VOLT"],
+     "actions": [
+       {"id": "hydraulic_hiss", "name": "Hydraulic Hiss", "tags": ["FERRO", "SOUND"], "shape": "CONE", "radius": 2.5, "length": 3.5, "power": 1.1, "hits": 1, "wind_up_s": 1.0, "effect": "fog", "target": "nearest", "weight": 2},
+       {"id": "antenna_arc", "name": "Antenna Arc", "tags": ["VOLT", "FERRO"], "shape": "LINE", "length": 6.0, "width": 1.2, "power": 1.3, "hits": 1, "target": "random", "weight": 1}
+     ],
+     "mechanics": ["hydraulic_hiss_and_vhs_shatter", "antennae_rise", "overclocked_short_circuit_crono_krona_arcs_through_antennae_without_touching_tank_intended_answer"],
+     "on_enter": "",
+     "on_break": "",
+     "notes": "65-30%. Shield 12, Weak [VOLT]."},
+    {"id": "amber_tank_exposed", "name": "Amber Tank Exposed", "hp_from": 0.3, "hp_to": 0.0,
+     "shield": {"shield": 13, "weak": ["ASTRAL"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["FERRO", "SOUND"],
+     "actions": [
+       {"id": "loom_thread_lash", "name": "Loom Thread Lash", "tags": ["FERRO"], "shape": "LINE", "length": 5.0, "width": 1.0, "power": 1.4, "hits": 1, "target": "random", "weight": 2},
+       {"id": "override_scream", "name": "Override Scream", "tags": ["SOUND"], "shape": "CIRCLE", "radius": 3.0, "power": 1.0, "hits": 1, "effect": "grief", "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["amber_tank_exposed", "hits_on_tank_deal_0_shave_0_and_cost_lucca_a_line_of_future_dialogue", "break_by_antennae_only", "override_fails_lucca_speaks_through_gramophone_cassia_joins"],
+     "on_enter": "",
+     "on_break": "The override fails, Lucca speaks through the gramophone, Cassia-09 joins.",
+     "notes": "30-0%. Shield 13, Weak [ASTRAL]. Any hit that lands on the tank deals 0 damage, shaves nothing and costs Lucca's voice a line of future dialogue (the tank is a sub-target that must be modelled)."}
+  ],
+  "branches": [],
+  "drops": [],
+  "flags": {},
+  "notes": "Cassia-09 recruitment boss (codex E12). Lv 14, HP 26,000. Cassia-09 under Mother Brain's override, descending on six brass legs with Lucca's nervous system glowing in her amber furnace. Puzzle combat: never strike the amber tank; strike the Mother Brain antennae on her back. Tags inferred from Cassia-09's kit (FERRO, gramophone SOUND)."
+}

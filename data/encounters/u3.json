@@ -1,0 +1,12 @@
+{
+  "encounters": [
+    {"id": "mycelia_floor_nestlings", "universe": 3, "enemies": ["nestling", "nestling", "nestling"], "music": "mus_battle_core_u3", "notes": "Mycelia Floor: Nestlings steal Shared orbs and drop feather maps."},
+    {"id": "mycelia_floor_wisps", "universe": 3, "enemies": ["eden_wisp", "eden_wisp", "nestling", "nestling"], "music": "mus_battle_core_u3", "notes": "Wisps restore plates to the nestlings every 6 s; break the healers first."},
+    {"id": "mycelia_floor_moon_egg", "universe": 3, "enemies": ["moon_egg", "eden_wisp"], "music": "mus_battle_core_u3", "notes": "Mercy puzzle: the egg never attacks; shatter it for Sunlight x3 or leave it Broken to hatch later (+Light)."},
+    {"id": "mid_city_gene_scribes", "universe": 3, "enemies": ["gene_scribe", "gene_scribe", "synod_acolyte"], "music": "mus_battle_core_u3", "notes": "Mid-City: FAILED ink slows the floor while the acolyte mends plates in moonlight."},
+    {"id": "mid_city_bramble_rex", "universe": 3, "enemies": ["bramble_rex_saurian", "porcelain_raptor", "porcelain_raptor"], "music": "mus_battle_core_u3", "notes": "A charger that snaps trees into cover, flanked by cloaking raptors."},
+    {"id": "canopy_crown_saurian", "universe": 3, "enemies": ["crown_saurian", "synod_acolyte"], "music": "mus_battle_core_u3", "notes": "Canopy: the Crown Saurian is untouchable until a Tether snap drags it down."},
+    {"id": "canopy_lichen_colony", "universe": 3, "enemies": ["lichen_colony", "lichen_colony", "lichen_colony"], "music": "mus_battle_core_u3", "notes": "Three bodies sharing damage across a living tether; burning Shared too fast triggers the Fake Carrier Burn."},
+    {"id": "canopy_unfallen_pupa", "universe": 3, "enemies": ["unfallen_pupa", "eden_wisp"], "music": "mus_battle_core_u3", "notes": "The pupa never attacks unless attacked; killing it unprovoked is +10 Dark and closes the Golden Light ending."}
+  ]
+}

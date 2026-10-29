@@ -34,6 +34,7 @@ func _register_defaults() -> void:
 	locations[&"bamboo_grove"] = "res://scenes/u1/bamboo_grove.tscn"
 	locations[&"kuro_truce"] = "res://scenes/u1/kuro_truce.tscn"
 	locations[&"test_diorama"] = "res://scenes/test/diorama.tscn"
+	locations[&"test_arena"] = "res://scenes/test/arena.tscn"
 
 
 func register(id: StringName, path: String) -> void:

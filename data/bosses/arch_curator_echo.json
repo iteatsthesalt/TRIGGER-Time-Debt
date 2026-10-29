@@ -1,0 +1,47 @@
+{
+  "id": "arch_curator_echo",
+  "name": "Arch-Curator Echo",
+  "universe": 4,
+  "level": 37,
+  "hp": 40000,
+  "kind": "boss",
+  "sprite": "bos_u4_arch_curator_glass",
+  "size": 6.1,
+  "body_radius": 2.0,
+  "fps": 60,
+  "is_metal": true,
+  "tags": ["SWORD", "FERRO", "VITREOUS"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["crush_timer", "vhs_crackle_from_u2"],
+  "adds": [],
+  "phases": [
+    {"id": "lead_and_organ", "name": "Lead and Organ", "hp_from": 1.0, "hp_to": 0.4,
+     "shield": {"shield": 18, "weak": ["RUIN"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["SWORD", "FERRO", "VITREOUS"],
+     "actions": [
+       {"id": "organ_pipe_blast", "name": "Organ Pipe Blast", "tags": ["VITREOUS", "FERRO"], "shape": "CONE", "radius": 3.0, "length": 6.0, "power": 1.3, "hits": 1, "wind_up_s": 1.5, "effect": "fog", "target": "nearest", "weight": 2},
+       {"id": "mask_blade", "name": "Mask Blade", "tags": ["SWORD", "VITREOUS"], "shape": "SINGLE", "power": 1.2, "hits": 2, "target": "random", "weight": 2}
+     ],
+     "mechanics": ["ruin_2_0x_ink_dissolves_the_lead", "vhs_crackle_leaks_from_u2_when_it_hits", "three_masks_fall_on_break_become_prism_ammunition"],
+     "on_enter": "",
+     "on_break": "Its three masks fall and become prism ammunition.",
+     "notes": "Single 18-plate shield for the whole fight; above 40% HP only [RUIN] counts."},
+    {"id": "fibre_exposed", "name": "Fibre Exposed", "hp_from": 0.4, "hp_to": 0.0, "carry_shield": true,
+     "shield": {"shield": 18, "weak": ["RUIN", "ASTRAL"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["SWORD", "FERRO", "VITREOUS"],
+     "actions": [
+       {"id": "organ_pipe_blast", "name": "Organ Pipe Blast", "tags": ["VITREOUS", "FERRO"], "shape": "CONE", "radius": 3.0, "length": 6.0, "power": 1.3, "hits": 1, "wind_up_s": 1.5, "effect": "fog", "target": "nearest", "weight": 2},
+       {"id": "mask_blade", "name": "Mask Blade", "tags": ["SWORD", "VITREOUS"], "shape": "SINGLE", "power": 1.2, "hits": 2, "target": "random", "weight": 2},
+       {"id": "fibre_lash", "name": "Lavos-Fibre Lash", "tags": ["FERRO"], "shape": "LINE", "length": 6.0, "width": 1.2, "power": 1.4, "hits": 1, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["astral_weakness_only_below_40pct_hp", "shield_carries_over_from_phase_1_not_reset"],
+     "on_enter": "",
+     "on_break": "Its three masks fall and become prism ammunition.",
+     "notes": "Below 40% HP the [ASTRAL] weakness is added. carry_shield: the plate count continues from the previous phase; this is one shield, split into two phases only to express the conditional weakness."}
+  ],
+  "branches": [],
+  "drops": ["bubble_lens"],
+  "flags": {},
+  "notes": "Mid-boss (codex E51). Lv 37, HP 40,000, Shield 18, Tags [SWORD][FERRO][VITREOUS]. Weak [RUIN] (2.0x, ink dissolves the lead), [ASTRAL] only below 40% HP. Twenty feet of masks and organ pipes around a Lavos-fibre chest. Drops the Bubble Lens (traversal; defeats the cathedral adds)."
+}

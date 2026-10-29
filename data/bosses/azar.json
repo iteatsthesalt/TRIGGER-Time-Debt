@@ -1,0 +1,88 @@
+{
+  "id": "azar",
+  "name": "Azar — Divinity Warden",
+  "universe": 3,
+  "level": 27,
+  "hp": 64000,
+  "kind": "boss",
+  "sprite": "bos_u3_azar",
+  "size": 2.8,
+  "body_radius": 1.0,
+  "fps": 30,
+  "is_metal": false,
+  "tags": ["LIGHT", "WIND", "DIVINE"],
+  "resist": [],
+  "immune": [],
+  "arena_hazards": ["divinity_field", "pollen_haze", "thermals", "moon_pulse"],
+  "adds": [{"key": "ghost_bekkler_doll", "count": 1, "phase": "archive", "trigger": "refuse_the_bargain", "def": {"tags": ["RUBBER", "GUILT"], "weak": ["SWORD", "TACHYON"], "notes": "Scribe's Shame spawns a ghost Bekkler doll at 100% HP when the memory-erase bargain is refused; plates not given."}}],
+  "phases": [
+    {"id": "liturgy", "name": "Liturgy", "hp_from": 1.0, "hp_to": 0.75,
+     "shield": {"shield": 14, "weak": ["ASTRAL", "RUIN", "FERRO"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["LIGHT", "WIND", "DIVINE"],
+     "actions": [
+       {"id": "ligne_purge", "name": "Ligne Purge", "tags": ["LIGHT", "DIVINE"], "shape": "LINE_PIERCE", "length": 8.0, "width": 1.2, "power": 1.2, "hits": 1, "wind_up_s": 1.5, "target": "random", "weight": 2},
+       {"id": "procession", "name": "Slow Procession", "tags": ["WIND", "DIVINE"], "shape": "CIRCLE", "radius": 3.0, "power": 0.8, "hits": 1, "status": "silence", "status_seconds": 5, "target": "nearest", "weight": 1}
+     ],
+     "mechanics": ["divinity_plus_1_temp_plate_per_5s_cap_20pct", "ligne_purge_line_pierce_of_hatching_lingers_4s", "moving_fast_punished_silence_5s", "standing_still_meditating_earns_sunlight", "break_within_20s_or_polished_relic_seals_one_random_tech_30s"],
+     "on_enter": "",
+     "on_break": "Silence 15 s (on her) and her Divinity Field turns off for 5 s.",
+     "notes": "100-75%. Shield 14, Tags [LIGHT][WIND][DIVINE], Weak [ASTRAL][RUIN][FERRO]. Divinity +1 plate per 5 s (cap 20%). The procession's Silence applies only to allies who moved fast."},
+    {"id": "archive", "name": "Archive", "hp_from": 0.75, "hp_to": 0.45,
+     "shield": {"shield": 18, "weak": ["FIRE", "ASTRAL", "FERRO"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": true},
+     "tags": ["MYCELIA", "PAPER", "DIVINE", "LIGHT"],
+     "actions": [
+       {"id": "papyrus_wall", "name": "Papyrus Wall", "tags": ["PAPER", "MYCELIA"], "shape": "CONE", "radius": 3.0, "length": 5.0, "power": 1.0, "hits": 1, "target": "nearest", "weight": 2},
+       {"id": "scribes_shame", "name": "Scribe's Shame", "tags": ["LIGHT", "DIVINE"], "shape": "SINGLE", "power": 1.3, "hits": 1, "wind_up_s": 2.0, "target": "crono", "weight": 1}
+     ],
+     "mechanics": ["shield_refills_once", "mantle_unfurls_into_papyrus_walls", "each_spectator_in_gallery_adds_1_plate_per_5s", "bargain_offer_memory_erase_u0_porcelain_reveal_for_updraft_and_sunlight", "refuse_scribes_shame_spawns_ghost_bekkler_doll_at_100pct_hp", "offer_u0_reveal_debt_minus_3_plus_15_light_locks_u7_gold_leaf_repair"],
+     "on_enter": "Azar: Little pot. You were fired wrong. Let me glaze you again — still. Crono: ...no.",
+     "on_break": "",
+     "notes": "75-45%. Shield 18 (refills once), Tags [MYCELIA][PAPER][DIVINE][LIGHT], Weak [FIRE][ASTRAL][FERRO]."},
+    {"id": "pilgrimage", "name": "Pilgrimage", "hp_from": 0.45, "hp_to": 0.15,
+     "shield": {"shield": 22, "weak": ["VITREOUS", "ICE", "ASTRAL"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["WIND", "MYCELIA", "DIVINE"],
+     "actions": [
+       {"id": "moon_sling", "name": "Moon-Sling", "tags": ["LIGHT", "DIVINE"], "shape": "LINE_PIERCE", "length": 9.0, "width": 1.2, "power": 1.4, "hits": 1, "wind_up_s": 1.5, "target": "random", "weight": 2},
+       {"id": "thermal_shear", "name": "Thermal Shear", "tags": ["WIND"], "shape": "CIRCLE", "radius": 3.5, "power": 1.0, "hits": 1, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["no_floor_fight_on_thermals", "mobile_divinity_field_40m_follows_azar_drains_2_shared_per_s", "still_anchored_ally_keeps_gliders_fed", "fake_carrier_burn_fires_here_confuses_her_one_action", "moon_sling_chime", "break_freezes_mid_glide_full_break", "crono_galaxy_reveal_at_20pct_reflects_the_moon", "break_frees_clutch_xyloph_joins_via_borrowed_future_duplicate"],
+     "on_enter": "",
+     "on_break": "She freezes mid-glide. This Break frees the clutch, and Xyloph joins through Sera's Borrowed Future duplicate.",
+     "notes": "45-15%. Shield 22, Tags [WIND][MYCELIA][DIVINE], Weak [VITREOUS][ICE][ASTRAL]. The Synod: Child of Moon? No... child of Fall that never was."},
+    {"id": "unwound", "name": "Unwound", "hp_from": 0.15, "hp_to": 0.0,
+     "shield": {"shield": 12, "weak": ["ASTRAL", "VITREOUS", "FERRO", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["DIVINE", "RUIN", "MYCELIA"],
+     "actions": [
+       {"id": "overgrow", "name": "Overgrow", "tags": ["MYCELIA", "RUIN"], "shape": "BATTLEFIELD", "power": 0.6, "hits": 1, "effect": "shared_damage", "target": "all", "weight": 1},
+       {"id": "mantle_tear", "name": "Mantle Tear", "tags": ["RUIN", "DIVINE"], "shape": "SINGLE", "power": 1.5, "hits": 1, "wind_up_s": 2.0, "target": "nearest", "weight": 2}
+     ],
+     "mechanics": ["tears_mantle_shows_sterile_mammal_embryo", "field_collapses", "every_break_silences_herself_15s", "overgrow_tethers_party_40pct_damage_share", "ally_snaps_own_tether_to_bloom_then_photosynthetic_burst_converts_tags"],
+     "on_enter": "",
+     "on_break": "She silences herself for 15 s.",
+     "notes": "Below 15%. Shield 12, Tags [DIVINE][RUIN][MYCELIA], Weak [ASTRAL][VITREOUS][FERRO][TACHYON]."},
+    {"id": "red_moon", "name": "Red Moon (secret, Prismatic)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "break", "requires": "Worship Gaze three times during the chapter plus the Vaelos sliver from U2",
+     "shield": {"shield": 6, "weak": ["MYCELIA", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "tags": ["NULL", "ASTRAL", "DIVINE"],
+     "actions": [
+       {"id": "god_that_failed", "name": "Am I a God That Failed to Fall", "tags": ["NULL", "DIVINE"], "shape": "CIRCLE", "radius": 4.0, "power": 1.2, "hits": 1, "wind_up_s": 2.0, "target": "weakest", "weight": 1}
+     ],
+     "mechanics": ["moon_turns_red_vaelos_speaks_through_azar", "must_be_broken_by_a_chronoslip_sera_rewind_or_borrowed_future_hit", "plus_15_prismatic"],
+     "on_enter": "Vaelos through Azar: Am I a god that failed to fall?",
+     "on_break": "",
+     "notes": "Phase 4b. +6 plates, Tags [NULL][ASTRAL][DIVINE], Weak [MYCELIA][TACHYON]. Sets Red_Moon."}
+  ],
+  "branches": [
+    {"id": "archive_bargain", "after_phase": "archive", "options": [
+      {"id": "offer", "label": "Offer the memory (the U0 porcelain reveal)", "flag": "Moon_Memory", "state": "Sacrificed", "requires": "Debt -3, +15 Light, the U7 Gold Leaf repair is locked; grants an updraft and Sunlight"},
+      {"id": "refuse", "label": "Refuse", "flag": "Moon_Memory", "state": "Kept", "requires": "Scribe's Shame spawns a ghost Bekkler doll at 100% HP"}
+    ], "notes": "Mapping of the Archive bargain onto the Moon_Memory flag (Kept/Sacrificed, +15 Light on Sacrificed) is an assumption: the bible does not name the flag."},
+    {"id": "azar_fate", "after_phase": "unwound", "options": [
+      {"id": "scholar", "label": "Scholar", "flag": "Azar", "state": "Scholar", "requires": "Light: she sits, folds her wings, and the feathers scatter wind maps"},
+      {"id": "predator", "label": "Predator", "flag": "Azar", "state": "Predator", "requires": "Dark: the eggs fossilize, the Moon sliver embeds in Crono (-5 integrity, +25 Dark) and Divinity Field becomes learnable"},
+      {"id": "red_moon", "label": "Red Moon", "flag": "Red_Moon", "state": "set", "requires": "secret Phase 4b broken by a Chronoslip; +15 Prismatic"}
+    ], "notes": ""}
+  ],
+  "drops": [],
+  "flags": {"Azar": ["Scholar", "Predator"], "Moon_Memory": ["Kept", "Sacrificed"], "Red_Moon": ["set"]},
+  "notes": "Lv 27, HP 64,000. A 2.8 m mantle that is a living archive, beak holding a sliver of the Moon, Xyloph's clutch held in stasis."
+}

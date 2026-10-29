@@ -1,0 +1,12 @@
+{
+  "encounters": [
+    {"id": "midway_ash_cotton", "universe": 5, "enemies": ["ash_cotton_swirl", "ash_cotton_swirl", "ash_cotton_swirl", "popcorn_husk"], "music": "mus_battle_core_u5", "notes": "Outer Midway: sticky ash clings to Crono; polish it off."},
+    {"id": "gacha_plaza_jugglers", "universe": 5, "enemies": ["charred_juggler", "charred_juggler", "popcorn_husk", "popcorn_husk"], "music": "mus_battle_core_u5", "notes": "Gacha Plaza: a prism reveals the jugglers' second weakness."},
+    {"id": "puppet_stage_strongman", "universe": 5, "enemies": ["strongman_dummy", "time_smoke_stringer", "time_smoke_stringer"], "music": "mus_battle_core_u5", "notes": "Puppet stage: squash the inflating dummy with a BLUNT hit; sword hits on the stringers count as thread cuts. Six cuts collapse the stage."},
+    {"id": "puppet_stage_barker", "universe": 5, "enemies": ["ticket_golem_barker", "strongman_dummy", "ash_cotton_swirl"], "music": "mus_battle_core_u5", "notes": "Puppet stage: the Laugh Track drains MP until the Barker Breaks; its ticket plate needs FERRO."},
+    {"id": "puppet_stage_laugh_track", "universe": 5, "enemies": ["laugh_track_choir", "laugh_track_choir", "laugh_track_choir"], "music": "mus_battle_core_u5", "notes": "One shared 6-plate shield across the whole choir; MYCELIA silences the mouths."},
+    {"id": "hall_of_mirrors_hecklers", "universe": 5, "enemies": ["heckler_harlequin", "heckler_harlequin", "charred_juggler"], "music": "mus_battle_core_u5", "notes": "Hall of Mirrors: hecklers steal BP every 10 s and turn invulnerable if ignored for 15 s."},
+    {"id": "big_top_jester_box", "universe": 5, "enemies": ["jester_box", "heckler_harlequin"], "music": "mus_battle_core_u5", "notes": "Inner Big Top: the elite mimic is Break-immune until its three spring puppets are cut; holds a Charred Laurel fragment."},
+    {"id": "puppet_stage_full_bill", "universe": 5, "enemies": ["strongman_dummy", "strongman_dummy", "ticket_golem_barker", "heckler_harlequin"], "music": "mus_battle_core_u5", "notes": "Puppet stage: Cyrus's Phase 1 cast as a regular bill, two dummies, a barker and a heckler."}
+  ]
+}

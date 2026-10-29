@@ -1,0 +1,101 @@
+{
+  "id": "mus_u0_guardia_morning",
+  "bpm": 72,
+  "meter": [
+    4,
+    4
+  ],
+  "key": "F major",
+  "bars": 26,
+  "bar_s": 3.333333,
+  "duration_s": 86.6667,
+  "loop_start_s": 6.6667,
+  "loop_start_samples": 320000,
+  "loop_end_s": 86.6667,
+  "sections": [
+    {
+      "name": "intro",
+      "bar": 0,
+      "bars": 2,
+      "start_s": 0.0
+    },
+    {
+      "name": "a",
+      "bar": 2,
+      "bars": 8,
+      "start_s": 6.6667
+    },
+    {
+      "name": "bridge",
+      "bar": 10,
+      "bars": 4,
+      "start_s": 33.3333
+    },
+    {
+      "name": "b",
+      "bar": 14,
+      "bars": 8,
+      "start_s": 46.6667
+    },
+    {
+      "name": "coda",
+      "bar": 22,
+      "bars": 4,
+      "start_s": 73.3333
+    }
+  ],
+  "stems": {
+    "piano": {
+      "file": "mus_u0_guardia_morning__piano.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -4.05,
+      "rms_dbfs": -24.44,
+      "lufs_i": -21.39,
+      "size_bytes": 1338664
+    },
+    "quartet": {
+      "file": "mus_u0_guardia_morning__quartet.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -10.92,
+      "rms_dbfs": -28.27,
+      "lufs_i": -22.39,
+      "size_bytes": 1288746
+    },
+    "crackle": {
+      "file": "mus_u0_guardia_morning__crackle.ogg",
+      "default_on": true,
+      "auto_loaded_by_director": true,
+      "duration_s": 86.667,
+      "channels": 2,
+      "peak_dbfs": -11.27,
+      "rms_dbfs": -40.82,
+      "lufs_i": -37.06,
+      "size_bytes": 2405675
+    }
+  },
+  "mix": {
+    "duration_s": 86.667,
+    "channels": 2,
+    "peak_dbfs": -3.97,
+    "rms_dbfs": -22.85,
+    "lufs_i": -20.0
+  },
+  "rtpc": {
+    "stir_ritual": "the stirring is quantised to the beat (3.333 s bar); when Crono stops stirring, skip the crackle stem 0.5 s forward (the house clock skips)",
+    "porcelain_stress": "music bus low-pass via AudioDirector"
+  },
+  "notes": "World cell at pitch (D4 F4 A4 G4 E4) in F major; the crackle stem carries the house clock at 72 BPM.",
+  "godot_import": {
+    "loop": true,
+    "loop_offset": 6.6667,
+    "bpm": 72,
+    "beat_count": 104,
+    "bar_beats": 4
+  }
+}

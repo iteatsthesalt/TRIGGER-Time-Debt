@@ -1,0 +1,21 @@
+{
+  "id": "static", "name": "Static", "element": "HZ", "home_universe": 6, "canvas_fps": 15, "archetype": "caster",
+  "weapon": {"name": "CRT Goggles and Battery Sling", "tags": ["HZ"], "hits": 2}, "move_range": 6.0,
+  "vulnerable": ["NULL", "SOUND"], "resistant": ["HZ", "VOLT"],
+  "sprite": "static", "height_m": 1.45,
+  "techs": [
+    {"id": "tune", "unlock": {"on_join": true}},
+    {"id": "hz_static", "unlock": {"on_join": true}},
+    {"id": "hz_white_noise", "unlock": {"level": 53}},
+    {"id": "56k_prayer", "unlock": {"level": 54}},
+    {"id": "red_bike_ghost", "unlock": {"level": 56}},
+    {"id": "akira_in_utero", "unlock": {"level": 60}},
+    {"id": "omega_annihilation", "unlock": {"on_join": true}},
+    {"id": "tachyon_static", "unlock": {"on_join": true}},
+    {"id": "anachronism_glass", "unlock": {"on_join": true}},
+    {"id": "graviton_whiteout", "unlock": {"on_join": true}},
+    {"id": "solar_railgun_static", "unlock": {"level": 58}},
+    {"id": "omega_triple", "unlock": {"chapter": 8}}
+  ],
+  "passives": ["vhs_blind"]
+}

@@ -29,6 +29,28 @@ on the account (ids given); only the listed remaining animations are needed for 
 
 Catalog images live at `https://raw.githubusercontent.com/iteatsthesalt/TRIGGER-Time-Debt/main/design/images/catalog/<file>.jpg`.
 
+## Sprite tiers and variants (one character is a set of sprites)
+
+Nich's rule: a character has several sprites, by situation and size, plus variants. The tiers, their PixelLab
+settings and the game file they land in (`assets/<group>/<id>/`). Every request below names its tier; a
+request without one means **field**.
+
+| Tier | Used for | PixelLab | Look | Game file |
+|---|---|---|---|---|
+| **map** | the overworld / world map, once it opens (Chapter 3 and later) | pro, `size=64`, 4 directions; clips `breathing-idle`, `walking` | tiny, bold silhouette, 2–3 colours per material | `<id>_map.png` |
+| **field** | walking around locations and biomes, and battle (battles happen on the map, so battle uses the field sprite with the battle clips added) | pro, `size=128`, `view="low top-down"`, 8 directions; field clips, then battle clips | Chrono Trigger chibi, about 3.5 heads tall (Crono 95 px) | `<id>_field.png` |
+| **action** | action sequences and cinematic close-ups: Dual and Triple Tech cut-ins, story beats, the Fair descent, duel intros | pro or v3, `size=256` (or `width`/`height` 256), the directions the sequence needs (often S, W, E only); custom v3 clips per sequence, 8–12 frames | realistic proportions, about 5.5 heads tall (Crono ~120 px in a 256 cell), full costume detail. Reference: `design/images/refs/crono_action_tier_reference.png` | `<id>_action_<clip>.png` |
+| **portrait** | dialogue busts, menus | `create_image_pro` 512×512, eight expressions (Batch 5) | painted bust in the character's canvas | `<id>_portrait_<expr>.png` |
+| **variant** | the same character in another universe's art style, or a story state | the tier above it, generated again with that canvas's prompt tail (Reference Bible §1.11) and a `style_character_id` of the base sprite so the identity holds | U1 three-ink sumi-e, U2 clay with VHS, U3 ligne claire, U4 stained glass, U5 rubber-hose, U6 cel, U7 gold leaf; states `_debt60`, `_debt20`, `_debt0`, `_broken`, `_salvaged`, `_rewound` | `<id>_<variant>_<tier>.png`, e.g. `sera_u1_field.png`, `crono_debt20_field.png` |
+
+Naming in PixelLab: `TRIGGER <Name> <tier> v1`, and for variants `TRIGGER <Name> <variant> <tier> v1`
+(`TRIGGER Crono action v1`, `TRIGGER Sera u1 field v1`). The importer reads the tier and variant from the name.
+
+Which variants exist is a design call per character (Reference Bible §2.6 keeps each character in their own
+canvas by default, with Sera's seven ghost layers, Vaelos's forms and the state suffixes as the exceptions);
+Nich decides and adds them to the list. Already on the account: a realistic 5.5-head Crono
+(`d1df31ab-e2cc-47c7-a8b7-6b293769a293`, "Crono 41 (v3 from pro sprite)") is the **action** tier's base.
+
 ## Batch 1: the playable cast and the Prologue's people (U0 watercolour)
 
 | # | Asset key | Request |

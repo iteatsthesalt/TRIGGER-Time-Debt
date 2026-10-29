@@ -23,6 +23,7 @@ func run() -> void:
 		test_belief_plates,
 		test_break_timing_lock_rebuild_resume,
 		test_hold_extends_lock,
+		test_shard_doll_split_holds_breaks_for_the_director,
 		test_damage_state_multipliers,
 		test_damage_broken_def_and_crit,
 		test_falloff_and_perfect_frame,
@@ -380,6 +381,28 @@ func test_hold_extends_lock() -> void:
 	check_eq(sh.rebuild_pct, 0.0, "no rebuild yet")
 	sh.tick(0.2)
 	check(sh.rebuild_pct > 0.0, "rebuild starts after the extended lock")
+
+
+func test_shard_doll_split_holds_breaks_for_the_director() -> void:
+	# The 999 Shard Doll's split lesson: a broken doll waits for the director's window instead of
+	# rebuilding on its own lock, so the rebuild count and the "stay broken" escape can both happen.
+	var doll := _enemy(&"shard_doll_split", 1, Vector3.ZERO, 8, ["ASTRAL"])
+	var sh := ShieldComponent.of(doll)
+	var director: RefCounted = load("res://scripts/battle/bosses/shard_doll_999.gd").new()
+	var ctrl := BossController.new()
+	_track(ctrl)
+	ctrl.coordinator = BattleCoordinator.new()
+	_track(ctrl.coordinator)
+	ctrl.phase_index = 2
+	for i in 8:
+		sh.apply_strike([&"ASTRAL"], 0, doll)
+	check(sh.is_broken, "eight matching hits break a doll")
+	director.on_add_break(ctrl, doll)
+	sh.tick(100.0)
+	check(sh.is_broken, "a held Break never ends on its own")
+	check(director.break_times.has(doll), "the director remembers when the doll broke")
+	sh.reset_shields()
+	check(not sh.is_broken and sh.current_shield == 8, "the director's rebuild restores every plate")
 
 
 # ---------------------------------------------------------------- damage

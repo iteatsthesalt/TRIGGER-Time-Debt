@@ -24,7 +24,8 @@ func _ready() -> void:
 				ids.append(StringName(p))
 			Game.set_party(ids)
 		elif arg.begins_with("--chapter="):
-			Game.chapter = int(arg.trim_prefix("--chapter="))
+			# set_chapter, not the bare field: it unlocks the chapter-gated kit entries (probes need the techs)
+			Game.set_chapter(int(arg.trim_prefix("--chapter=")))
 		elif arg.begins_with("--integrity="):
 			Game.set_integrity(float(arg.trim_prefix("--integrity=")))
 		elif arg.begins_with("--level="):

@@ -3,6 +3,26 @@
 The hand-off between runs. Keep it honest: what exists, what is verified, what is next, what is broken.
 Two agents work this repository in turns (the build agent and the studio assistant); Nich makes the art.
 
+## Run 3 (2026-10-29 from 10:20 EDT): the build lead is Claude Code (Fable) on Nich's Windows PC
+
+- **Machine:** repo at `C:\Users\names\dev\TRIGGER-Time-Debt`; Godot 4.7.2 and python shims in `.tools/bin`
+  (CLAUDE.md "Environment notes"); `bash tools/check.sh` passes on Windows (parse, 440 unit checks, data lint,
+  smoke boot without xvfb).
+- **Chapter 1 Shard Doll fixed, verified:** `ch1_probe.gd -- --autobattle` prints `PROBE_END ok=true` (split
+  lesson: rebuilds 0→8, then the dolls stay broken, phase 4, the rest of the chapter through the Fair call).
+  Three causes, all in `scripts/battle/bosses/shard_doll_999.gd` (see DECISIONS "The 999 Shard Doll's split
+  dolls"): a broken doll's Break is now held until the director rebuilds it; the dolls are undamageable
+  during the split (they died at ~100 HP with plates up); the dummy's integrity bleed is capped at five
+  floors (10 integrity; a slow party lost all 100).
+- **Probes:** `--chapter=<n>` at boot now calls `Game.set_chapter()` (kits unlock); `battle_probe.gd` and
+  `ch1_probe.gd` print each add's plates, BROKEN, and a director's `rebuilds`.
+- **Autobattle hook:** `BattleScene._auto_pick_tech()` chooses the tech the AI casts (currently random; a
+  multi-target preference for fights like the split is the next tuning step).
+- **Team hub:** Slack `#all-trigger` (workspace "Trigger"): Nich's kickoff, the build-lead protocol
+  (`[BUILD]` threads, hourly import replies). Read it before every push.
+- **In progress:** `docs/ASSET_REQUESTS.md` is being expanded from Batches 1–9 to the complete game (every
+  Reference Bible §11 row, tiers map/field/action/portrait, variants, cut-ins) as Batches 10+.
+
 ## State on 2026-10-29 (run 2, in progress)
 
 ### The plan now (from Nich, read first)
@@ -40,8 +60,8 @@ Two agents work this repository in turns (the build agent and the studio assista
 - Boot args: `--scene=<id>`, `--spawn=<marker>`, `--checkpoint=<id>`, `--party=a,b,c`, `--chapter=<n>`,
   `--integrity=<n>`, `--level=<n>`, `--flag=Name:State`, `--say=text`, `--autobattle`.
 - Probes: `tools/build/prologue_probe.gd -- --autobattle` (whole Prologue, passes), `ch1_probe.gd -- --autobattle`
-  (Chapter 1; **stalls in the Shard Doll's third phase**, see Known issues), `battle_probe.gd -- --scene=test_arena
-  --autobattle --boss=<id> --party=crono,sera,marle --level=4`.
+  (Chapter 1, passes since run 3), `battle_probe.gd -- --scene=test_arena --autobattle --boss=<id>
+  --party=crono,sera,marle --chapter=1 --level=4` (pass `--chapter` so the kits are unlocked).
 - Captures: `bash tools/capture/render.sh <scene_id> <prefix> [frames] [-- args]` → `/tmp/captures/`.
 
 ### What exists and is verified (unchanged from run 1 unless noted)
@@ -60,9 +80,9 @@ delivers art per `docs/BOT_REVIEW.md`; ChatGPT writes the text layer per `docs/J
 `data/text/`.
 
 ## Next steps (start here)
-1. **Hourly: check the PixelLab library and import** (see the plan). Import `villager_m` when its jobs finish.
-2. **Fix the 999 Shard Doll phase 3** so `ch1_probe.gd` reaches `PROBE_END ok=true`; then play the rest of
-   Chapter 1 (Glenn, rest → midnight, hearth, Fair call).
+1. **Hourly: check the PixelLab library / `data/art/incoming.json` and import** (see the plan). Import
+   `villager_m` when its jobs finish. Read Slack `#all-trigger` first.
+2. **Finish the complete `docs/ASSET_REQUESTS.md`** (Batches 10+, in progress in run 3) and post it in Slack.
 3. **Leene Square and the Fair** (`scenes/u0/leene_square.tscn`, Story Bible Ch1 beat 10): crowds, Bekkler's
    tent, Lucca's Telepod pavilion, the chase, the rift-spawn battle (`fair_rift_spawn` encounter), Vaelos's
    descent (action tier A7 when it arrives; placeholder until then), the leap → `bamboo_grove`.
@@ -74,9 +94,9 @@ delivers art per `docs/BOT_REVIEW.md`; ChatGPT writes the text layer per `docs/J
 7. Keep `docs/DECISIONS.md`, `docs/QUESTIONS_FOR_NICH.md`, `docs/ASSET_REQUESTS.md`, `docs/screenshots/` current.
 
 ## Known issues
-- **Chapter 1 Shard Doll phase 3** (three dolls must Break within 3 s): the autobattle party stays at 1 HP and
-  the phase never advances (probe: `shield=24/24 adds=3` for 500 s). Suspects: the adds are not targeted by the
-  autobattle AI, or `on_add_break` never fires. Fix next.
+- **The autobattle AI single-targets**, so the Shard Doll's split lesson takes ~5 min headless (eight
+  rebuilds before the dolls stay broken) and Crono is floored often; `BattleScene._auto_pick_tech()` is the
+  place to prefer LINE/CONE/CIRCLE techs when several enemies share a weakness.
 - Rooms, textures, props and enemies are placeholders until Nich's assets land (ASSET_REQUESTS batches 2–9).
 - Marle's imported sprite is realistic-proportioned beside a chibi cast (Nich to decide).
 - Autobattle AI never heals, so probe losses overstate difficulty; defeat costs −5 integrity each retry.

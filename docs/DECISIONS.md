@@ -8,6 +8,7 @@ Each entry: what, why, which bible section it touches.
 - **JSON for content, not .tres.** Techs, enemies, characters, flags, items, encounters and dialogue live in `data/**/*.json`, loaded by the `Data` autoload into typed `TechDef`/`EnemyDef` objects and validated on load (unknown tags, duplicate ids, dangling references). Reason: generated and edited by Python tools and subagents without resource UIDs; diffable; lintable outside Godot (`tools/build/lint_data.py`). Touches Combat Laws §18.2 (which named `.tres`; the fields are the same).
 - **Tests load the suite at runtime.** `tests/run_tests.gd` is a bootstrap that loads `tests/suite_core.gd`, because a `--script` entry point compiles before autoload singletons exist. Touches Reference §10.1.
 - **Autoload names:** `Data`, `Flags` (PossibilityEngine), `Game`, `Saves`, `Universe` (UniverseSwitcher), `Audio` (AudioDirector), `Router`, `Story`. Reference §10.1 named `TimeDebt` as an autoload; Crono's integrity and Sera's debt live on `Game` and are mirrored into the battle components.
+- **Windows build machine (2026-10-29).** The build lead now runs on Nich's Windows PC. `tools/check.sh` runs there under Git Bash with `.tools/bin/godot` and `.tools/bin/python3` shims on PATH (the WinGet Godot 4.7.2 console build; Windows' own `python3` alias is a Store stub), and the visual smoke runs the window directly when `xvfb-run` is absent. `--chapter=<n>` at boot now goes through `Game.set_chapter()` so the chapter-gated kit entries unlock for probes; the battle probe prints BROKEN plates, add counts and a director's `rebuilds`. Touches CLAUDE.md "Environment notes".
 
 ## Combat
 
@@ -20,6 +21,8 @@ Each entry: what, why, which bible section it touches.
 - **Borrowed Future's Token Duplicate** re-runs the ally's last recorded action immediately with the same Boost level and a fixed variance of 1.0, so the copy matches the original; if the ally has no recorded action this battle, it is placed at the gate instead.
 - **Prologue integrity values:** Teach Her To Land 60, Hold The Copy Together 40, The Bowl Still Whole 50 (Combat Laws Appendix A.35).
 - **Krona's Oil-Drinker auto-sip** fires once per enemy action against her when she is below 25% HP; the command form heals the party 10% each.
+
+- **The 999 Shard Doll's split dolls hold their Break for the director (Combat Laws §14.3).** When a split doll Breaks, the director extends its lock indefinitely, so the only thing that ever rebuilds it is the lesson's own window (3 s, then 12 s with 3 plates after four rebuilds, then never after eight). Before, the shield's own 3 s lock plus 18 %/s rebuild (~8.6 s) raced that window: once the window grew past it the dolls rebuilt uncounted, the rebuild count froze at four and the "stay broken" escape could never arrive, so an autobattle party sat in phase 3 forever (`ch1_probe.gd` stalled 850 s). A held Break means a broken doll cannot act, which is what the lesson wants. The dolls are also **undamageable** for the whole split (the coordinator's `undamageable` list, as a sealed boss is): at their ~100 HP a basic attack or two killed them with their plates still up, and a dead doll is neither broken nor rebuilt, so the split had nothing left to Break. The director kills them itself when phase 4 begins.
 
 ## Rendering
 

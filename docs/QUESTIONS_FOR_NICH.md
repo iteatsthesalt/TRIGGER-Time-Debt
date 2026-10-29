@@ -6,6 +6,13 @@ Things I'd like your view on when you have a moment. None of them block the buil
 2. **Crono's first lie.** I added "hold the wrist out" as a third option in the kitchen (Light +5). Is an honest Crono in the Prologue acceptable, or should the lie be forced so the Chapter 1 hearth is his first chance to tell?
 3. **Dialogue data format.** Story scripts are JSON command lists (data/dialogue). If you'd rather write in a screenplay-like text format, I can add a converter.
 
+## Combat (2026-10-29, run 3)
+- **How much may the 999 Shard Doll crack Crono?** A floor (a member left at 1 HP) now costs 2 integrity
+  for the first five floors only (10 total); before, a slow party lost all 100 during the split lesson. Is 10
+  the right ceiling for a tutorial, or should the dummy cost nothing at all?
+- **Should the split dolls be killable?** They are undamageable now so the lesson is about Breaks (they had
+  ~100 HP and died to plain hits with plates up). If you want them killable, they need the boss's HP pool.
+
 ## Art (2026-10-29, run 2)
 - **Marle's proportions.** Your `npc_marle` is realistic (5.5 heads, 124 px); Crono/Sera/Krona are chibi (3.5
   heads, 86–101 px). Keep it as her field sprite, or regenerate a chibi v2 for field and use this one as her

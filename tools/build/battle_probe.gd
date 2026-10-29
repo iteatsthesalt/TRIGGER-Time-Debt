@@ -82,8 +82,12 @@ func _report() -> void:
 			var st2: Node = e.get_node_or_null("CombatantStats")
 			var sh: Node = e.get_node_or_null("ShieldComponent")
 			if st2:
-				line += " | %s hp=%d/%d sh=%d/%d" % [String(st2.get("actor_id")), int(st2.get("hp")), int(st2.call("max_hp")), int(sh.get("current_shield")) if sh else -1, int(sh.call("max_total")) if sh else -1]
+				line += " | %s hp=%d/%d sh=%d/%d%s" % [String(st2.get("actor_id")), int(st2.get("hp")), int(st2.call("max_hp")), int(sh.get("current_shield")) if sh else -1, int(sh.call("max_total")) if sh else -1, " BROKEN" if sh and bool(sh.get("is_broken")) else ""]
 	var boss: Node = battle.get("boss")
 	if boss != null:
-		line += " | boss phase=%d sealed=%s" % [int(boss.get("phase_index")), str(boss.call("is_sealed"))]
+		line += " | boss phase=%d sealed=%s adds=%d" % [int(boss.get("phase_index")), str(boss.call("is_sealed")), (boss.get("adds_alive") as Array).size()]
+		# directors that count rebuilds (the 999 Shard Doll) show how far the split lesson has gone
+		var director: Variant = boss.get("director")
+		if director != null and "rebuilds" in director:
+			line += " rebuilds=%d" % int(director.get("rebuilds"))
 	print(line)

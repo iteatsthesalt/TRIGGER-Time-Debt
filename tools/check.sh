@@ -45,10 +45,20 @@ fi
 if [ "$VISUAL" = 1 ]; then
   step "smoke boot (600 frames, software Vulkan)"
   mkdir -p /tmp/captures
-  timeout 900 xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --rendering-driver vulkan --audio-driver Dummy \
-    --resolution 1280x720 --script res://tools/capture/smoke.gd -- --frames=600 > /tmp/check_smoke.log 2>&1
+  # Godot is a native executable: under Git Bash it needs the Windows spelling of /tmp/captures.
+  CAP_DIR=/tmp/captures
+  if command -v cygpath >/dev/null 2>&1; then CAP_DIR="$(cygpath -m /tmp/captures)"; fi
+  if command -v xvfb-run >/dev/null 2>&1; then
+    timeout 900 xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --rendering-driver vulkan --audio-driver Dummy \
+      --resolution 1280x720 --script res://tools/capture/smoke.gd -- --frames=600 --out="$CAP_DIR" > /tmp/check_smoke.log 2>&1
+  else
+    # A desktop with a real GPU (Nich's Windows machine): run the window directly.
+    timeout 900 godot --path . --rendering-driver vulkan --audio-driver Dummy \
+      --resolution 1280x720 --script res://tools/capture/smoke.gd -- --frames=600 --out="$CAP_DIR" > /tmp/check_smoke.log 2>&1
+  fi
   SMOKE_RC=$?
-  if grep -E "SCRIPT ERROR|ERROR:" /tmp/check_smoke.log | grep -v "lavapipe\|llvmpipe" | head -20; then
+  # "resources still in use at exit" is the known-harmless ObjectDB leak report (PROGRESS known issues)
+  if grep -E "SCRIPT ERROR|ERROR:" /tmp/check_smoke.log | grep -v "lavapipe\|llvmpipe\|resources still in use at exit" | head -20; then
     echo "SMOKE: errors in log"; FAIL=1
   fi
   if [ "$SMOKE_RC" != 0 ]; then echo "SMOKE: FAIL (rc=$SMOKE_RC)"; FAIL=1; else echo "SMOKE: OK"; fi

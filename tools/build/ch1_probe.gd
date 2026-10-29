@@ -109,6 +109,14 @@ func _run() -> void:
 				if boss:
 					var sh: Node = boss.get("actor").get("shield")
 					line += " phase=%d shield=%d/%d adds=%d" % [int(boss.get("phase_index")), int(sh.get("current_shield")), int(sh.call("max_total")), boss.get("adds_alive").size()]
+					# the split lesson: each doll's plates, and how often the director has rebuilt one
+					for a in boss.get("adds_alive"):
+						var ash: Node = a.get_node_or_null("ShieldComponent") if is_instance_valid(a) else null
+						if ash != null:
+							line += " [%d%s]" % [int(ash.get("current_shield")), "B" if bool(ash.get("is_broken")) else ""]
+					var director: Variant = boss.get("director")
+					if director != null and "rebuilds" in director:
+						line += " rebuilds=%d" % int(director.get("rebuilds"))
 				for u in coord.get("party"):
 					line += " %s=%d" % [String(u.get("actor_id")), int(u.get("stats").get("hp"))]
 			print(line)

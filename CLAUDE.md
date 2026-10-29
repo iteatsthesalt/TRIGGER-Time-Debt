@@ -67,7 +67,12 @@ Nich and other tools (Claude Code, Cursor) must be able to keep building from th
 
 ## Environment notes
 
-- Ubuntu 24.04 x86_64, no GPU, up to 8 GB RAM and 10 GB disk. `--headless` cannot render; captures use
+- **Nich's Windows PC (the build lead from 2026-10-29):** Git Bash. Godot 4.7.2 is the WinGet console build and
+  Windows' `python3` is a Store stub, so put shims on PATH before any check:
+  `mkdir -p .tools/bin; printf '#!/usr/bin/env bash\nexec "<path to Godot_v4.7.2-stable_win64_console.exe>" "$@"\n' > .tools/bin/godot; printf '#!/usr/bin/env bash\nexec python "$@"\n' > .tools/bin/python3; chmod +x .tools/bin/*; export PATH="$PWD/.tools/bin:$PATH"`.
+  `bash tools/check.sh` then works as written (the smoke boot opens a real window; there is a GPU). Slack
+  `#all-trigger` is the team hub: read it at the start of a work block and before every push, answer in threads.
+- The Console container (earlier runs): Ubuntu 24.04 x86_64, no GPU, up to 8 GB RAM and 10 GB disk. `--headless` cannot render; captures use
   `xvfb-run` with software Vulkan (~2 fps), so keep them under ~600 frames.
 - Keep `.godot/`, `.tools/`, builds and `/tmp` out of git; every committed file under 50 MB; builds go to
   `/mnt/session/outputs/`. Never print, log or commit secrets or tokens.

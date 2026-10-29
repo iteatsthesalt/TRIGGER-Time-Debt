@@ -3,6 +3,16 @@
 ## dolls, one per canvas, that must all Break within 3 s. Phase 4 shows 999 shields of which 10 are real.
 extends RefCounted
 
+## A broken doll is held in its Break until this director rebuilds it. Left alone, the shield's own
+## 3 s lock plus rebuild (~8.6 s) raced the lesson's window: once the window grew past it the dolls
+## rebuilt uncounted, `rebuilds` froze and the "stay broken" escape never came, so the fight never ended.
+const HOLD_S: float = 1.0e6
+
+## The dummy "can only crack him": each floor costs Crono 2 integrity, but only the first few. A slow
+## party (the autobattle takes ~5 min over the split) was floored fifty times and left Chapter 1 at 0.
+const CRACKING_FALLS: int = 5
+const CRACK_PER_FALL: float = 2.0
+
 var break_times: Dictionary = {}
 var boost3_count: int = 0
 var falls: int = 0
@@ -38,6 +48,10 @@ func on_phase(ctrl: BossController, i: int) -> void:
 			for a in ctrl.adds_alive:
 				if not is_instance_valid(a):
 					continue
+				# The lesson is about Breaks, so a doll cannot be killed outright (at ~100 HP a basic
+				# attack or two did, with its plates still up, and the split then had nothing left to Break).
+				if not ctrl.coordinator.undamageable.has(a):
+					ctrl.coordinator.undamageable.append(a)
 				var ca := a as CombatActor
 				match k % 3:
 					0:
@@ -55,7 +69,10 @@ func on_phase(ctrl: BossController, i: int) -> void:
 			if sc != null:
 				sc.remove(&"untargetable")
 			for a in ctrl.adds_alive:
-				if is_instance_valid(a) and CombatantStats.of(a).is_alive():
+				if not is_instance_valid(a):
+					continue
+				ctrl.coordinator.undamageable.erase(a)
+				if CombatantStats.of(a).is_alive():
 					CombatantStats.of(a).apply_damage(999999, true)
 			ctrl.scene.hud.show_message("The plate reads 999. Vaelos's shields are belief. Only the matching hits count.")
 
@@ -69,8 +86,8 @@ func on_tick(ctrl: BossController, _delta: float) -> void:
 			falls += 1
 			st.heal(roundi(float(st.max_hp()) * 0.25))
 			var crono: Node = ctrl.coordinator.unit_by_id(&"crono")
-			if crono is CombatActor and (crono as CombatActor).time_debt != null:
-				(crono as CombatActor).time_debt.pay_integrity(2.0)
+			if falls <= CRACKING_FALLS and crono is CombatActor and (crono as CombatActor).time_debt != null:
+				(crono as CombatActor).time_debt.pay_integrity(CRACK_PER_FALL)
 				Game.set_integrity((crono as CombatActor).time_debt.integrity)
 				(crono as CombatActor).set_porcelain_visuals()
 			ctrl.scene.hud.show_message("The dummy cannot kill anyone. It can only crack him.")
@@ -104,7 +121,7 @@ func _tick_split(ctrl: BossController) -> void:
 		return
 	# a broken doll rebuilds if the others are still standing 3 s later. The lesson must not become a
 	# wall: after four rebuilds the window widens to 12 s and a rebuilt doll comes back with 3 plates;
-	# after eight the broken ones simply stay broken.
+	# after eight the broken ones simply stay broken (their Breaks are held, see on_add_break).
 	if rebuilds >= 8:
 		return
 	var window: float = 3.0 if rebuilds < 4 else 12.0
@@ -130,6 +147,9 @@ func _tick_split(ctrl: BossController) -> void:
 func on_add_break(ctrl: BossController, unit: Node) -> void:
 	if ctrl.phase_index == 2:
 		break_times[unit] = ctrl.coordinator.battle_time
+		var sh := ShieldComponent.of(unit)
+		if sh != null:
+			sh.extend_lock(HOLD_S)
 
 
 func on_defeat(ctrl: BossController) -> void:

@@ -550,7 +550,7 @@ func _auto_act() -> void:
 	var techs: Array[TechDef] = coordinator.available_techs(actor).filter(func(x: TechDef) -> bool: return x.is_attack and x.target in ["enemy", "point"] and x.effect == &"")
 	var b: int = mini(coordinator.bank.bp, randi() % 3)
 	if not techs.is_empty() and randf() < 0.6:
-		var tech: TechDef = techs[randi() % techs.size()]
+		var tech: TechDef = _auto_pick_tech(techs, targetable)
 		var r: Dictionary = coordinator.cmd_tech(actor, tech.id, t, coordinator.position_of(t), b, coordinator.partners_for(tech, actor))
 		if bool(r.get("ok", false)):
 			actor.sprite.play(&"attack", &"ready")
@@ -559,6 +559,15 @@ func _auto_act() -> void:
 	var r2: Dictionary = coordinator.cmd_attack(actor, t, b)
 	if not bool(r2.get("ok", true)):
 		coordinator.cmd_guard(actor)
+
+
+## Which of the actor's attack techs the autobattle casts this turn. `techs` are the castable attacks,
+## `targetable` the enemies that can be hit right now (the 999 Shard Doll's split puts three up at once).
+func _auto_pick_tech(techs: Array[TechDef], _targetable: Array) -> TechDef:
+	# TODO(human): when more than one enemy is targetable, prefer a tech whose shape can catch several
+	# (TechDef.Shape.LINE_PIERCE, CONE, CIRCLE, CROSS, DELTA, SPLIT_CONE) and whose tags hit a weakness of at
+	# least two of them (ShieldComponent.of(e).hits_weakness(tech.tags)); otherwise keep the random pick.
+	return techs[randi() % techs.size()]
 
 
 # ------------------------------------------------------------------ presentation

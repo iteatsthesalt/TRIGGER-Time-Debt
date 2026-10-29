@@ -4,8 +4,29 @@ class_name SceneKit
 extends RefCounted
 
 const TILE_M := 16.0  # a 1024 px texture covers 16 m at 64 px/m
+## Where the studio assistant's textures land (docs/REQUESTS_FOR_STUDIO.md): <material>_albedo.png + _normal.png.
+const GENERATED_DIR := "res://assets/textures/generated"
+## Placeholder materials by name until the generated ones exist.
+const PLACEHOLDER_BY_NAME := {
+	"castle_flagstone": "stone_mossy", "castle_wall_block": "castle_wall", "oak_plank": "wood", "oak_beam": "wood",
+	"stone_steps": "stone_mossy", "cobble_wet": "stone_mossy", "plaster_cream": "castle_wall",
+}
 
 static var _mat_cache: Dictionary = {}
+
+
+## A material by material name: the generated texture pair when it exists, else the named placeholder in
+## assets/textures/. Triplanar by default so kits and primitives share one 64 px/m density.
+static func named(material_name: String, roughness: float = 0.95, tint: Color = Color.WHITE, triplanar: bool = true) -> StandardMaterial3D:
+	var albedo: String = "%s/%s_albedo.png" % [GENERATED_DIR, material_name]
+	var normal: String = "%s/%s_normal.png" % [GENERATED_DIR, material_name]
+	if not ResourceLoader.exists(albedo):
+		var fallback: String = String(PLACEHOLDER_BY_NAME.get(material_name, material_name))
+		albedo = "res://assets/textures/%s_albedo.png" % fallback
+		normal = "res://assets/textures/%s_normal.png" % fallback
+		if not ResourceLoader.exists(normal):
+			normal = "res://assets/textures/stone_normal.png"
+	return material(albedo, normal, roughness, tint, triplanar)
 
 
 static func material(albedo_path: String, normal_path: String = "", roughness: float = 0.95, tint: Color = Color.WHITE, triplanar: bool = false) -> StandardMaterial3D:

@@ -110,10 +110,90 @@ described in the prompt, plus `taking-punch`.
 | 20 | `bos_u0_atrium_cradle` | **Pro Flash character, 256×256, 8-dir, template `custom`** (3.2 m tall; `create_8_direction_object` at 168 is the fallback). Concept: `enemy_arch_curator_r_66y.jpg` as a smaller proto version (describe it; Pro Flash takes no concept image). Prompt: `a prototype Arch-Curator: a hulking robot on six brass insect legs, a rotating thoracic ring of eight gun barrels, a porcelain theatre-mask face with one sorrowful blue eye, copper vines and oil, peeled chassis showing red muscle fibre, painterly watercolour pixel art with clay-and-brass detail`. Anims: `breathing-idle` (the ring turns), attack (`the barrel ring spins and fires a volley`), `taking-punch`, `falling-back-death` (legs fold). |
 | 21 | `enm_u0_training_dummy_prime` (the 999 Shard Doll) | **Pro Flash character, 192×192, 8-dir, template `custom`** (2.0 m tall; pro mode cannot exceed 128). Describe the Crono doll from `playable_crono.jpg`. Prompt: `a life-size porcelain Bekkler doll of Crono with goggles pushed up and a glowing Time Egg replica set in its chest, standing on six reverse-jointed brass spider legs, a tungsten bracer on one arm and a mercury-silver shoulder, small porcelain masks orbiting its collar, giggling expression, gold cracks, painterly watercolour pixel art`. Anims: `breathing-idle` (head tilt), attack (`it rears up and stamps with two legs`), `taking-punch`, `falling-back-death` (cracks open on a galaxy inside). |
 
-## Batch 4: Chapter 2 (U1 Crimson Shogunate, sumi-e)
+## Batch 4: Chapter 2, the Crimson Shogunate (U1, sumi-e)
 
-Requested once Batch 1–3 are in. The build agent adds the U1 enemy list, the Krona duel-boss variant and the
-Ashen Daimyo here with prompts in the three-ink sumi-e style when Chapter 2 scene work starts.
+The whole of U1: its people, creatures, bosses, landmarks, world kit and textures. Everything here is drawn
+in **four inks only**: sumi black `#1A1A1A`, cobalt `#0D2640`, cinnabar `#8C1D18` (fire and banners), paper
+white `#F2EED8`. No gold, no grey gradients, dither inside the ink instead. Luminance is ink density. End
+every prompt with the U1 tail: `sumi-e and ukiyo-e woodblock on washi, four inks only: sumi black, cobalt,
+cinnabar, paper white, dry-brush edges, pixel art`. Deliver per `docs/BOT_REVIEW.md`.
+
+### 4a. People (characters, pro, 128, 8-dir, `style_character_id` = Krona's `6af5c834-e7a7-4e8b-83d7-8fb2b4222695`)
+
+| # | Asset key | Prompt and clips |
+|---|---|---|
+| 22 | `krona_duel` (boss variant of Krona) | Same identity as Krona's field sprite but **armed**: `Krona in cracked black lacquered o-yoroi with the melted pauldron, war-knot hair, two long nodachi of snapped steel and red chitin drawn and ready, oil dripping from the hip gourd, bare feet planted in wet ink`. Clips: `fight-stance-idle-8-frames`, attack (`a two-handed overhead nodachi cut that splashes ink`), a second attack (`a low sweeping slash from right to left`), `taking-punch`, `falling-back-death` (she kneels, not dies), v3 **disarm** (6 frames: `she lowers both blades and lets one fall`). |
+| 23 | `krona_retainer_a`, `krona_retainer_b`, `krona_retainer_c` | Three retainers: `a half-corroded samurai retainer in cracked lacquered armour, a plain paper mask over the face with the lacquer flaking at the edges, kneeling-stiff posture, oil stains at the joints` (vary: spear, bow, bare hands). Clips: `breathing-idle` only (they kneel). |
+| 24 | `u1_citizen_m`, `u1_citizen_f`, `u1_painter`, `u1_child` | Kuro-Truce townsfolk: `a townsman in a plain paper mask and indigo work robe carrying a bucket of white paint`; `a townswoman in a paper mask and grey kimono with a brush`; `a gate painter on a short ladder with a wide brush, white paint dripping`; `a child in a paper mask too big for its face, holding a paper crane`. Clips: `breathing-idle`, `walking`. |
+| 25 | `lord_ashinaga_npc` (the Daimyo before the fight, seated) | `an old daimyo seated on a dais in black court robes with a cinnabar mon, writing with a long brush, face hidden by a paper mask that is a surrender petition, armour at the joints weeping black oil`. Clips: `breathing-idle` (writing). Used for the throne-room approach; the fight uses #35. |
+
+### 4b. Enemies (`create_character_pro_flash`, 128, `template_id="custom"` unless noted; clips `breathing-idle`, the attack described, `taking-punch`)
+
+| # | Asset key | Prompt |
+|---|---|---|
+| 26 | `enm_u1_ashen_ashigaru` | `a foot soldier in armour made of folded paper plates lacquered black, a conical paper hat, a plain white mask, a short yari spear, ash on the shoulders, about 100 px`; attack: `a quick spear thrust`; extra v3 clip **repaint** (4 frames: `he slaps fresh white paper over his own chest plate`). |
+| 27 | `enm_u1_porcelain_captain` | `a taller ashigaru captain in cracked porcelain armour over paper, a cinnabar sashimono banner on his back, a katana, a mask with one crack from brow to jaw, about 110 px`; attack: `a commanding katana cut`. |
+| 28 | `enm_u1_ink_calligrapher` | `a robed scribe with a brush taller than himself, sleeves soaked black, writing in the air, the strokes he leaves hang as wet black kanji, about 100 px`; attack: `he writes a single huge kanji that slams forward`. |
+| 29 | `enm_u1_gourd_bloated_heimin` | `a peasant swollen and shiny with oil, a gourd fused to his belly, skin cracking like lacquer with black oil in the cracks, slow and sad, about 100 px`; attack: `he lurches and bursts into a cloud of ash`. Add `falling-back-death` (the burst). |
+| 30 | `enm_u1_surrender_petition_yokai` | `a surrender petition folded into an origami yokai, a paper body with brushed kanji showing through, a seal stamp for a face, hovering, about 90 px`; attack: `it unfolds flat and snaps shut around the target`. |
+| 31 | `enm_u1_crimson_banner_samurai` | `an elite samurai in full black lacquered armour carrying a tall cinnabar war banner, mask with a drawn snarl, katana sheathed, about 112 px`; attack: v3 (8 frames: `he holds a frozen ink pose for a long beat, then draws and cuts in one stroke`); the hold must read as a telegraph. |
+| 32 | `enm_u1_omen_crow` (template `custom`, flying) | `a large crow whose feathers are strips of VHS tape and scanline static, eyes of white noise, perched then flaring, about 80 px wide`; attack: `it flares its wings and a burst of static blinds`. |
+| 33 | `enm_u1_imp_crackle` | `a small sumi-ink imp made of a single splashed brush stroke with two white dot eyes, trailing wet ink on the floor, about 56 px`; attack: `it skids and paints a black streak`. |
+| 34 | `enm_u1_shogun_memory_flame` (field boss, 256) | `a column of living cinnabar fire in the rough shape of a kneeling shogun, armour outlines in the flames, a paper mask floating where the face would be, about 200 px tall`; attack: `the flame rears and sweeps a burning sleeve`. Clips: `breathing-idle` (flame loop), attack, `taking-punch`, `falling-back-death` (gutters out). |
+
+### 4c. Bosses (`create_character_pro_flash` or `create_8_direction_object`, 256 unless noted)
+
+| # | Asset key | Prompt |
+|---|---|---|
+| 35 | `bos_u1_ashen_daimyo` (256; phases are the same body) | `Lord Ashinaga the Ashen Daimyo: a twenty-foot seated giant whose whole body is thousands of folded surrender petitions stacked and bound into the shape of a daimyo in court armour, brush in hand, armour joints weeping black oil, fire licking the floor around him, a gourd-shaped shadow where his heart is`. Clips: `breathing-idle` (writing), attack **scribe** (`he finishes a petition and flicks it off the brush`), attack **roof** (`he raises both arms and fire breathes across the floor`), `taking-punch` (petitions scatter), **crack** v3 (6 frames: `his chest cracks open to show a glowing gourd heart`), `falling-back-death` (he comes apart as porcelain over red fibre). |
+| 36 | `bos_u1_weeping_shogun` (256, concept image `enemy_weeping_shogun.jpg`) | Two bodies in one: `the Weeping Shogun: the lower body a black sumi-ink Lavos spawn with spiked brush-stroke legs, fused at a ragged seam to a brass and clay clockwork centipede with segmented armour and a weeping porcelain face; the ink half brushed, the clay half with visible thumbprints and VHS scanlines`. Clips: `breathing-idle`, attack **ink** (`the ink legs rake forward`), attack **clay** (`the centipede head slams down`), `taking-punch`, `falling-back-death` (the two halves fall apart in opposite directions). The importer splits the ink and clay halves by colour if you also deliver a mask; otherwise one sheet is fine. |
+
+### 4d. Landmarks and props (`create_1_direction_object` or `create_object_pro_flash`, `view="low top-down"`, transparent)
+
+| # | Asset key | Prompt |
+|---|---|---|
+| 37 | `prp_u1_leene_bell_guillotine` (256) | `a tall execution guillotine whose blade and frame are cast from a melted bronze bell, black lacquered timber, cinnabar paint, bell inscriptions still visible on the blade`. |
+| 38 | `prp_u1_sera_cage` (256, concept image `prop_sera_geometric_cage.jpg`) | `a hexagonal birdcage-like prison of black iron bars hanging from chains, red glints on the bars, geometric facets, ink and clay mixed media`. Add a 4-frame **swing** clip. |
+| 39 | `prp_u1_clay_gear` (256) | `a house-sized clockwork gear of thumbprinted grey clay, half buried in a shattered pagoda roof of black chitin tiles, turning slowly, one burned jetbike wheel wedged in its teeth`. Add a 4-frame **turn** clip stepping at 12 fps feel. |
+| 40 | `prp_u1_torii` (256) | `a mossy wooden torii gate in black ink with cinnabar paint flaking, a paper charm hanging from the crossbeam`. |
+| 41 | `prp_u1_petitions_banners` (128, three objects) | `a stack of surrender petition scrolls tied with black cord`; `a tall cinnabar war banner with a black mon on a bamboo pole`; `a paper lantern painted bone white, unlit`. |
+| 42 | `prp_u1_sake_gourd` (64) | `a dripping hip gourd of dark lacquered wood with a cord, black oil beading at the stopper`. |
+| 43 | `prp_u1_vault_blade_stand` (128) | `a sword stand of black lacquer holding one long nodachi whose blade is a single stroke of deep cobalt blue`. |
+| 44 | `prp_u1_dojo_set` (128, four objects) | `a burned tatami mat with one clean corner`; `a weapon rack of charred wood with two katana`; `a kneeling cushion of grey cloth`; `a rusted katana on an oil-stained cloth`. |
+| 45 | `prp_u1_street_set` (128, six objects) | `a paper-screen door freshly painted bone white with paste still wet`; `the same door with the paper peeled, char and small soot handprints beneath`; `a wooden bucket of white paint with a brush`; `a ladder of dark timber`; `a stone lantern with a cinnabar paper panel`; `a stack of charred roof tiles`. |
+| 46 | `prp_u1_pagoda_finial` (128) | `a horned finial of black chitin from a pagoda roof, cracked, cinnabar under the curve`. |
+
+### 4e. World kit (tilesets and tiles: `create_topdown_tileset`, `create_isometric_tile` 128, or `create_image_pixen` tileable 256; delivered as PNG under `assets/incoming/`)
+
+| # | Asset key | What |
+|---|---|---|
+| 47 | `tex_u1_ink_ground` | tileable ground of wet black ink with faint paper fibre showing through; a second tile `tex_u1_ink_ground_burned` of the same ground scorched to golden watercolour (the Astral burn result). |
+| 48 | `tex_u1_washi_floor` | tileable floor of white washi paper over dark boards (the castle's paper floors), subtle brush texture. |
+| 49 | `tex_u1_castle_wall` | tileable plaster-and-timber castle wall in black ink lines on paper white, cinnabar trim strip; a `_burned` variant with char climbing from the bottom. |
+| 50 | `tex_u1_iron_bridge_deck` | tileable dark timber planks with black iron strapping. |
+| 51 | `tex_u1_carved_waves` | tileable water as carved ukiyo-e wave lines in cobalt on paper white, never transparent. |
+| 52 | `tex_u1_bamboo_wall` | tileable wall of black ink bamboo stalks with cinnabar leaves (for the grove's edges). |
+| 53 | `tex_u1_street_cobble` | tileable cobbles as ink outlines with dither, ash in the joints. |
+| 54 | `tex_u1_roof_chitin` | tileable roof of black insect-chitin scales with a cobalt sheen line. |
+| 55 | `tiles_u1_kuro_truce` | a top-down tileset: ink ground → street cobble → washi floor transitions (`create_topdown_tileset` chained), for the streets. |
+| 56 | `tiles_u1_hinterlands` | a top-down tileset: paper-white negative space → faint mountain wash → mossy ground, for the Hinterlands. |
+
+### 4f. U1 VFX and Krona's signatures (`animate_image`, 128 cells, four inks; `create_image_pro` for the first frame)
+
+| # | Asset key | What |
+|---|---|---|
+| 57 | `vfx_teppo_ash_cut` | a 180° wet-ink slash arc, 8 frames, leaving a wet zone; `vfx_ash_field` a tileable ash-ground decal. |
+| 58 | `vfx_ens_parry` | a sumi circle closing to a ring, 6 frames, then a ring shield loop 4 frames. |
+| 59 | `vfx_eclipse_x_strike` | the X slash frames, 8, half watercolour half ink (the split itself is a shader). |
+| 60 | `vfx_cobalt_iai` | a 12-frame horizontal cobalt slice that goes indigo → white. |
+| 61 | `vfx_ruin_purge` | an expanding ash circle with a buff glyph shattering, 8 frames. |
+| 62 | `vfx_ink_bleed_impact` | an ink impact bloom that feathers over 12 frames (the U1 hit decal). |
+| 63 | `vfx_u1_rain_strokes` | vertical calligraphy-stroke rain, 6-frame loop, tileable. |
+| 64 | `vfx_petition_spawn` | a petition folding itself into a soldier, 8 frames. |
+
+### 4g. Portraits (U1 four-ink busts, 512, eight expressions each, see Batch 5)
+
+krona (if not already done in Batch 5), lord_ashinaga, u1_citizen_m, u1_citizen_f, krona_retainer_a.
 
 ## Batch 5: portraits (dialogue busts)
 

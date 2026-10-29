@@ -48,3 +48,21 @@ and the Seal lifts when he pays. The phase script explains it instead of paying 
 The breakfast fall choice offers "[Astral Smear Dash] Catch the bowl" directly (the clearest moment
 for a first-time player), and the Cradle's third phase keeps the bible's route: a perfect parry on the
 Crack-Slide opens a 1.5 s Prismatic window in which Astral Smear Dash grants the flag if it is not set.
+
+## All current art is placeholder (direction from Nich, 2026-10-29)
+Every sprite, texture and room in the game today is a stand-in: `tools/art/spritegen.py` paper-doll
+characters, `tools/art/make_textures.py` procedural tiles, rooms built from textured primitives in
+`SceneKit`, and placeholder blobs for enemies. The visual target is Chrono Trigger's hand-pixelled
+characters (Toriyama proportions, expressive faces, strong silhouettes) in Octopath Traveler-grade
+HD-2D dioramas (painterly pixel textures on real modelled geometry, detailed props, volumetric light,
+depth of field), pushed further. Nothing may ship reading as blocky, boxy or voxel. From the next run an
+art pipeline with real tools (PixelLab for 8-direction characters, animations, tilesets, objects, VFX and
+normal maps; an image model for portraits, textures, concept frames and painted backdrops) is expected via
+`/mnt/session/uploads/secrets.env`. Until it lands, effort goes into systems, chapters, scripts, dialogue,
+bosses, menus, saves and music, and the generators are not polished further. What the engine keeps, so
+generated art drops straight in: the fixed sheet contracts (characters: 4 rows S/W/E/N × the 70-column
+table in `SpriteLibrary.DEFAULT_TABLE`, 128 px cells, `<id>_field.png` + `<id>_frames.json`, optional
+`_field_n.png` normal and `_field_m.png` mask sheets; enemies: `<key>_sheet.png` + `<key>_frames.json`
+under `assets/enemies/u<n>/<key>/`), the naming in `assets/`, the import settings written by the tools,
+and the per-canvas post-processing (ink line, palette snap, desaturation) applied as a final pass so a
+PixelLab sheet can be run through the same `finish_frame` step as a generated one.

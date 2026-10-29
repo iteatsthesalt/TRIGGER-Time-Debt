@@ -37,8 +37,13 @@ static func apply(sprite: ActorSprite, id: String, fps: float) -> void:
 			var table: Dictionary = _load_table(table_path, fps)
 			var cell: int = int(table.get("_cell", 128))
 			var mirror: bool = bool(table.get("_mirror_w", false))
+			var height_px: int = int(table.get("_height_px", 0))
+			var height_m: float = float(table.get("_height_m", 0.0))
 			table.erase("_cell")
 			table.erase("_mirror_w")
+			table.erase("_height_px")
+			table.erase("_height_m")
+			sprite.set_height(height_px, height_m)
 			sprite.set_sheet(tex, cell, table, fps, mirror)
 			var n_path: String = "%s/%s_field_n.png" % [dir, id]
 			if ResourceLoader.exists(n_path):
@@ -65,9 +70,15 @@ static func apply_enemy(sprite: ActorSprite, def: EnemyDef) -> void:
 				if ResourceLoader.exists(sheet_path):
 					var table: Dictionary = _load_table("%s/%s_frames.json" % [dir, cand], def.fps)
 					var cell: int = int(table.get("_cell", 128))
+					var mirror: bool = bool(table.get("_mirror_w", true))
+					var height_px: int = int(table.get("_height_px", 0))
+					var height_m: float = float(table.get("_height_m", 0.0))
 					table.erase("_cell")
 					table.erase("_mirror_w")
-					sprite.set_sheet(load(sheet_path), cell, table, def.fps, true)
+					table.erase("_height_px")
+					table.erase("_height_m")
+					sprite.set_height(height_px, height_m)
+					sprite.set_sheet(load(sheet_path), cell, table, def.fps, mirror)
 					return
 				var painted: String = "%s/%s_painted.png" % [dir, cand]
 				if ResourceLoader.exists(painted):
@@ -87,6 +98,8 @@ static func _load_table(path: String, fps: float) -> Dictionary:
 				var d: Dictionary = json.data
 				table["_cell"] = int(d.get("cell", 128))
 				table["_mirror_w"] = bool(d.get("mirror_w", false))
+				table["_height_px"] = int(d.get("height_px", 0))
+				table["_height_m"] = float(d.get("height_m", 0.0))
 				var anims: Dictionary = d.get("anims", {})
 				for k in anims.keys():
 					var a: Dictionary = anims[k]

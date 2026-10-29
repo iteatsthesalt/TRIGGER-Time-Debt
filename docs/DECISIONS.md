@@ -66,3 +66,24 @@ table in `SpriteLibrary.DEFAULT_TABLE`, 128 px cells, `<id>_field.png` + `<id>_f
 under `assets/enemies/u<n>/<key>/`), the naming in `assets/`, the import settings written by the tools,
 and the per-canvas post-processing (ink line, palette snap, desaturation) applied as a final pass so a
 PixelLab sheet can be run through the same `finish_frame` step as a generated one.
+
+## Character art route: PixelLab pro from the catalog paintings, chibi proportions (2026-10-29, run 2)
+The PixelLab MCP tools are available in-session (no key file needed). Two routes were tried on Crono from
+`design/images/catalog/playable_crono.jpg`: (A) `create_character(mode="pro", concept_image_url=…, size=128)`,
+which designs eight directions from the painting and returned a ~3.5-head Chrono Trigger / Octopath chibi,
+95 px tall; and (B) `create_image_pro` with the painting as a labelled reference (four 120 px candidates
+at ~5.5 heads) rotated by `create_character(mode="v3", reference_image_url=…)`. Both rotate cleanly and
+keep the gauntlet on the right arm. **(A) is the house style**: it matches plate-06 and Chrono Trigger's
+own sprites, the face reads at the game camera (FOV 32°, 15° high), and `style_character_id` lets every
+later character match it. Every playable, NPC and humanoid enemy goes through (A) from its catalog image
+(or from text with Crono as the style anchor), then template animations (`animate_character`, 1–3
+generations per direction at 128 px) for walk/run/idle/hurt/KO/revive/cast, and v3 custom clips for the
+weapon-specific attack, charge and victory. Route (B)'s set (`d1df31ab…`) is kept on the PixelLab
+account as an unused alternative.
+
+**Scale.** Pro mode's canvas tops out at 128 px, so humans come out ~90–100 px tall rather than the
+bible's 114 px (§1.2). Rather than rescale pixel art, `<id>_frames.json` now carries `height_px` and
+`height_m`, and `ActorSprite.set_height` sizes the quad so the character stands at the bible's metres
+(Crono 1.78 m). Character pixels are therefore ~1.2× the environment's 64 px/m texel, as in Octopath.
+Touches Reference Bible §1.2 (pixel density) and §1.4 CHR-F (the sheet now has eight direction rows:
+s, w, e, n, sw, se, nw, ne; the first four keep the old order so four-row sheets still load).

@@ -5,7 +5,9 @@ class_name ActorSprite
 extends MeshInstance3D
 
 const PIXELS_PER_METRE := 64.0
-const DIRECTIONS: Array[StringName] = [&"s", &"w", &"e", &"n"]
+## Sheet rows in order. Four-row sheets use the first four; eight-row sheets add the diagonals.
+const DIRECTIONS: Array[StringName] = [&"s", &"w", &"e", &"n", &"sw", &"se", &"nw", &"ne"]
+const CARDINALS: Array[StringName] = [&"s", &"w", &"e", &"n"]
 
 var cell: int = 128
 var columns: int = 1
@@ -23,6 +25,9 @@ var _finished: bool = false
 var _one_shot_return: StringName = &""
 var _reverse_left: float = 0.0
 var _sheet_size: Vector2 = Vector2(128, 128)
+## Metres per sheet pixel. 1/64 by default (Reference Bible §1.2); a generated sheet may carry its own
+## height so the character stands at the bible's height whatever its drawn pixel height.
+var pixel_size: float = 1.0 / PIXELS_PER_METRE
 
 static var _shader: Shader
 static var _galaxy: Cubemap
@@ -94,8 +99,17 @@ func _apply_sheet(tex: Texture2D) -> void:
 
 func _set_quad_size(w: int, h: int) -> void:
 	var q := mesh as QuadMesh
-	q.size = Vector2(float(w) / PIXELS_PER_METRE, float(h) / PIXELS_PER_METRE)
-	q.center_offset = Vector3(0.0, q.size.y * 0.5 - 8.0 / PIXELS_PER_METRE, 0.0)
+	q.size = Vector2(float(w) * pixel_size, float(h) * pixel_size)
+	q.center_offset = Vector3(0.0, q.size.y * 0.5 - 8.0 * pixel_size, 0.0)
+
+
+## Scale the sheet so `height_px` drawn pixels stand `height_m` metres tall (feet stay on the ground line).
+func set_height(height_px: int, height_m: float) -> void:
+	if height_px > 0 and height_m > 0.0:
+		pixel_size = height_m / float(height_px)
+	else:
+		pixel_size = 1.0 / PIXELS_PER_METRE
+	_set_quad_size(cell, cell)
 
 
 func set_normal_sheet(tex: Texture2D) -> void:
@@ -144,14 +158,32 @@ func play(name: StringName, return_to: StringName = &"") -> void:
 
 
 func set_facing(dir: StringName) -> void:
+	if rows < 8 and not CARDINALS.has(dir):
+		dir = _to_cardinal(dir)
 	if DIRECTIONS.has(dir) and dir != facing:
 		facing = dir
 		_update_rect()
 
 
+static func _to_cardinal(dir: StringName) -> StringName:
+	match dir:
+		&"sw", &"se":
+			return &"s"
+		&"nw", &"ne":
+			return &"n"
+	return dir
+
+
 func face_vector(v: Vector3) -> void:
 	var flat := Vector2(v.x, v.z)
 	if flat.length() < 0.05:
+		return
+	if rows >= 8:
+		# Eight-way: 45° sectors around +z = south.
+		var ang: float = atan2(flat.x, flat.y)  # 0 = south, +90° = east, ±180° = north, -90° = west
+		var sector: int = wrapi(int(round(ang / (PI * 0.25))), 0, 8)
+		var by_sector: Array[StringName] = [&"s", &"se", &"e", &"ne", &"n", &"nw", &"w", &"sw"]
+		set_facing(by_sector[sector])
 		return
 	if absf(flat.x) > absf(flat.y):
 		set_facing(&"e" if flat.x > 0.0 else &"w")
@@ -220,10 +252,16 @@ func _update_rect() -> void:
 	var row: int = 0
 	var flip: bool = false
 	if rows >= 4:
-		row = DIRECTIONS.find(facing)
-		if mirror_w_from_e and facing == &"w":
+		var f: StringName = facing if rows >= 8 else _to_cardinal(facing)
+		row = DIRECTIONS.find(f)
+		if mirror_w_from_e and f == &"w":
 			row = DIRECTIONS.find(&"e")
 			flip = true
+		elif mirror_w_from_e and rows >= 8 and (f == &"sw" or f == &"nw"):
+			row = DIRECTIONS.find(&"se" if f == &"sw" else &"ne")
+			flip = true
+		if row < 0 or row >= rows:
+			row = 0
 	elif rows >= 1 and a.has("row"):
 		row = int(a["row"])
 	var cw: float = float(cell) / _sheet_size.x

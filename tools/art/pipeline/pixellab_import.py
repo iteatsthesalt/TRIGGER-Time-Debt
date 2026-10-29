@@ -26,6 +26,7 @@ import zipfile
 
 import numpy as np
 from PIL import Image
+from scipy import ndimage
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "tools", "art"))
@@ -203,11 +204,59 @@ def finish(img, canvas):
     return img
 
 
+def _thumb(img, size=16):
+    """A small RGBA thumbnail of the opaque content, for direction comparisons."""
+    bb = img.getbbox()
+    if not bb:
+        return None
+    crop = img.crop(bb)
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    s = size / max(crop.width, crop.height)
+    small = crop.resize((max(1, int(crop.width * s)), max(1, int(crop.height * s))), Image.BOX)
+    canvas.paste(small, ((size - small.width) // 2, (size - small.height) // 2), small)
+    a = np.asarray(canvas).astype(float)
+    return a
+
+
+def _distance(a, b):
+    if a is None or b is None:
+        return 1e9
+    w = (a[..., 3] + b[..., 3]) / 510.0
+    return float((np.abs(a[..., :3] - b[..., :3]).sum(axis=2) * w).mean() + np.abs(a[..., 3] - b[..., 3]).mean())
+
+
+def check_directions(rotations, animations):
+    """Flag an animation direction whose first frame looks more like another rotation than its own.
+    PixelLab occasionally returns a front view for a back-facing clip; this catches it before it ships."""
+    thumbs = {d: _thumb(img) for d, img in rotations.items()}
+    problems = []
+    for name, dirs in animations.items():
+        for d, frames in dirs.items():
+            if not frames or d not in thumbs:
+                continue
+            t = _thumb(frames[0])
+            own = _distance(t, thumbs[d])
+            best_d, best = d, own
+            for od, ot in thumbs.items():
+                dist = _distance(t, ot)
+                if dist < best:
+                    best, best_d = dist, od
+            # Opposite-facing confusions are the real failures; neighbours (s vs sw) differ little.
+            opposite = {"south": "north", "north": "south", "east": "west", "west": "east",
+                        "south-west": "north-east", "north-east": "south-west", "south-east": "north-west",
+                        "north-west": "south-east"}
+            if best_d != d and best < own * 0.8 and (best_d == opposite[d] or best_d.split("-")[0] == opposite[d].split("-")[0]):
+                problems.append((name, d, best_d))
+    return problems
+
+
 def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps=60.0, anim_map=None,
                 extra_rows=None, mirror_missing=True):
     """Pack rotations and animations into the game sheet and write the frame table."""
     anim_map = anim_map or {}
     rotations, animations = load_state(meta, src_dir)
+    for name, d, looks_like in check_directions(rotations, animations):
+        print(f"WARNING {game_id}: animation '{name}' {d} looks like the {looks_like} rotation; regenerate that direction")
     # Ground line and height from the south rotation (the idle reference).
     south = rotations["south"]
     ground = feet_line(south)
@@ -294,6 +343,9 @@ def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps
     os.makedirs(out_dir, exist_ok=True)
     sheet_path = os.path.join(out_dir, f"{game_id}_field.png")
     sheet.save(sheet_path, optimize=True)
+    n_path = os.path.join(out_dir, f"{game_id}_field_n.png")
+    normal_sheet(sheet, cell).save(n_path, optimize=True)
+    write_import(n_path, normal=True)
     data = {
         "cell": cell,
         "rows": [SHORT[d] for d in ROWS],
@@ -308,6 +360,43 @@ def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps
         json.dump(data, f, indent=1)
     write_import(sheet_path)
     return sheet, data, missing
+
+
+def normal_sheet(sheet, cell, inflate=0.55, detail=0.35, light_from_top_left=True):
+    """A tangent-space normal map for a sprite sheet (Reference Bible §1.5, §1.12 `_n` sheets).
+
+    Height = silhouette inflation (a rounded pillow from the distance to the edge, so a lit sprite shades
+    like a form instead of a flat card) + a little shading detail read from the art's own luminance (pixel
+    art paints its light from the top-left, so brighter pixels are treated as facing that way).
+    Returns an RGB image in the OpenGL convention (green = up) with the sheet's alpha."""
+    a = np.asarray(sheet.convert("RGBA")).astype(float)
+    alpha = a[..., 3] > 127
+    rows, cols = sheet.height // cell, sheet.width // cell
+    height = np.zeros(alpha.shape, dtype=float)
+    lum = (a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114) / 255.0
+    for r in range(rows):
+        for c in range(cols):
+            ys, xs = slice(r * cell, (r + 1) * cell), slice(c * cell, (c + 1) * cell)
+            m = alpha[ys, xs]
+            if not m.any():
+                continue
+            d = ndimage.distance_transform_edt(m)
+            dmax = max(1.0, float(d.max()))
+            t = np.clip(d / dmax, 0.0, 1.0)
+            pillow = np.sqrt(1.0 - (1.0 - t) ** 2)  # quarter-circle profile: steep at the edge, flat inside
+            fine = ndimage.gaussian_filter(lum[ys, xs] * m, 0.8)
+            height[ys, xs] = pillow * inflate * cell * 0.25 + fine * detail * 6.0
+    # Gradients; the outer edge (where alpha ends) is clamped so the rim does not read as a cliff.
+    gy, gx = np.gradient(height)
+    nx = -gx
+    ny = gy if light_from_top_left else -gy
+    nz = np.ones_like(height) * 1.0
+    n = np.dstack([nx, ny, nz])
+    n /= np.linalg.norm(n, axis=2, keepdims=True)
+    rgb = ((n * 0.5 + 0.5) * 255.0).astype(np.uint8)
+    rgb[~alpha] = (128, 128, 255)
+    out = Image.fromarray(np.dstack([rgb, (alpha * 255).astype(np.uint8)]), "RGBA")
+    return out
 
 
 IMPORT_TEMPLATE = """[remap]

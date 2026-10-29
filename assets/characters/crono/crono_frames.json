@@ -37,10 +37,22 @@
    "fps": 12,
    "loop": true
   },
-  "hurt": {
+  "ready": {
    "col": 16,
+   "count": 8,
+   "fps": 8,
+   "loop": true
+  },
+  "hurt": {
+   "col": 24,
    "count": 6,
    "fps": 12,
+   "loop": false
+  },
+  "ko": {
+   "col": 30,
+   "count": 7,
+   "fps": 10,
    "loop": false
   }
  }

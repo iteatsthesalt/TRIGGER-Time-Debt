@@ -74,6 +74,7 @@ func set_standin(tex: Texture2D, fps: float = 60.0) -> void:
 	anims = {&"idle": {"col": 0, "count": 1, "fps": fps, "loop": true, "holds": []}}
 	_apply_sheet(tex)
 	_set_quad_size(tex.get_width(), tex.get_height())
+	anim = &""  # force play() to set the frame rect even if we were already on idle
 	play(&"idle")
 
 
@@ -87,6 +88,7 @@ func set_sheet(tex: Texture2D, cell_px: int, table: Dictionary, fps: float = 60.
 	mirror_w_from_e = mirror_w
 	_apply_sheet(tex)
 	_set_quad_size(cell_px, cell_px)
+	anim = &""  # force play() to set the frame rect even if we were already on idle
 	play(&"idle")
 
 

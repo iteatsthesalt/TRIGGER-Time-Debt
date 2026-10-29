@@ -247,7 +247,9 @@ def check_directions(rotations, animations):
             opposite = {"south": "north", "north": "south", "east": "west", "west": "east",
                         "south-west": "north-east", "north-east": "south-west", "south-east": "north-west",
                         "north-west": "south-east"}
-            if best_d != d and best < own * 0.8 and (best_d == opposite[d] or best_d.split("-")[0] == opposite[d].split("-")[0]):
+            # A wrong-way clip is far closer to the other side (front vs back ≈ 0.3×); a lively pose on the
+            # right side stays above 0.6×, so 0.55 separates the two without eyeballing every frame.
+            if best_d != d and best < own * 0.55 and (best_d == opposite[d] or best_d.split("-")[0] == opposite[d].split("-")[0]):
                 problems.append((name, d, best_d))
     return problems
 

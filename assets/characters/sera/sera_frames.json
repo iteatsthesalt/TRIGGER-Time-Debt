@@ -30,6 +30,12 @@
    "count": 6,
    "fps": 10,
    "loop": true
+  },
+  "run": {
+   "col": 10,
+   "count": 6,
+   "fps": 12,
+   "loop": true
   }
  }
 }

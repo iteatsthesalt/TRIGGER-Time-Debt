@@ -1,0 +1,36 @@
+{
+  "group_id": "f6c33bdd-e3ff-41d6-9382-75d2798617e7",
+  "states": [
+    {
+      "character": {
+        "id": "05c8ee87-ac36-41af-870a-f1bf8bc4dabc",
+        "name": "Idle",
+        "prompt": "Queen Nadia (Marle), 40-year-old queen, blonde ponytail, ceremonial faded royal blue and cream gown with a fitted bodice, brown boots, a ledger book tucked under one arm, tired regal posture, painterly cel-shaded watercolour look, desaturated muted colours, soft edges, slate grey, faded royal blue, bone cloth, single subject, full body, no text",
+        "size": {
+          "width": 128,
+          "height": 128
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-10-29T13:11:04.889755+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-10-29T13:23:01.810253"
+}

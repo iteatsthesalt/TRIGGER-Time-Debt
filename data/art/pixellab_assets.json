@@ -42,14 +42,49 @@
   "cell": 128,
   "anims": {
    "idle": 4,
-   "walk": 6
+   "walk": 6,
+   "run": 6
   },
   "missing": [
-   "north-east:idle",
-   "north-west:idle",
-   "south-east:idle",
-   "south-west:idle"
+   "north-east:idle"
   ],
+  "history": []
+ },
+ "krona": {
+  "pixellab_id": "6af5c834-e7a7-4e8b-83d7-8fb2b4222695",
+  "pixellab_name": "Idle",
+  "kind": "character",
+  "group": "characters",
+  "path": "assets/characters/krona",
+  "imported": "2026-10-29",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 1.72,
+  "height_px": 101,
+  "cell": 128,
+  "anims": {
+   "idle": 4,
+   "walk": 6
+  },
+  "missing": [],
+  "history": []
+ },
+ "marle": {
+  "pixellab_id": "05c8ee87-ac36-41af-870a-f1bf8bc4dabc",
+  "pixellab_name": "Idle",
+  "kind": "character",
+  "group": "characters",
+  "path": "assets/characters/marle",
+  "imported": "2026-10-29",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.68,
+  "height_px": 124,
+  "cell": 128,
+  "anims": {
+   "idle": 1
+  },
+  "missing": [],
   "history": []
  }
 }

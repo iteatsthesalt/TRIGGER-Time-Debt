@@ -209,14 +209,6 @@
               "Idle/animations/hurt/east/frame_004.png",
               "Idle/animations/hurt/east/frame_005.png"
             ],
-            "south": [
-              "Idle/animations/hurt/south/frame_000.png",
-              "Idle/animations/hurt/south/frame_001.png",
-              "Idle/animations/hurt/south/frame_002.png",
-              "Idle/animations/hurt/south/frame_003.png",
-              "Idle/animations/hurt/south/frame_004.png",
-              "Idle/animations/hurt/south/frame_005.png"
-            ],
             "north-west": [
               "Idle/animations/hurt/north-west/frame_000.png",
               "Idle/animations/hurt/north-west/frame_001.png",
@@ -224,6 +216,14 @@
               "Idle/animations/hurt/north-west/frame_003.png",
               "Idle/animations/hurt/north-west/frame_004.png",
               "Idle/animations/hurt/north-west/frame_005.png"
+            ],
+            "south": [
+              "Idle/animations/hurt/south/frame_000.png",
+              "Idle/animations/hurt/south/frame_001.png",
+              "Idle/animations/hurt/south/frame_002.png",
+              "Idle/animations/hurt/south/frame_003.png",
+              "Idle/animations/hurt/south/frame_004.png",
+              "Idle/animations/hurt/south/frame_005.png"
             ],
             "north-east": [
               "Idle/animations/hurt/north-east/frame_000.png",
@@ -437,5 +437,5 @@
     }
   ],
   "export_version": "3.1",
-  "export_date": "2026-10-29T13:06:02.211868"
+  "export_date": "2026-10-29T13:22:38.820812"
 }

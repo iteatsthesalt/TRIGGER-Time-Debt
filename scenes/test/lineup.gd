@@ -27,7 +27,7 @@ func _ready() -> void:
 	var stone := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.9, 0.9, 0.9), true)
 	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.95, 0.95, 0.95), true)
 	SceneKit.floor_plane(self, Vector2(30, 30), Vector3.ZERO, stone)
-	SceneKit.box(self, Vector3(30, 5, 0.6), Vector3(0, 2.5, -4.0), wall, "BackWall")
+	SceneKit.box(self, Vector3(30, 5, 0.6), Vector3(0, 2.5, -4.0 - float(ids.size()) * 1.4), wall, "BackWall")
 	var centre := Node3D.new()
 	centre.name = "Centre"
 	add_child(centre)

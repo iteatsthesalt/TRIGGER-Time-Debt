@@ -8,8 +8,7 @@ content; this file is how we work.
 ## Session protocol
 
 1. `cd` into the repository, `git pull --rebase`, read `PROGRESS.md` (then `README.md` if you are new).
-   Set `git config user.name "Fable (TRIGGER build agent)"` / `user.email fable-agent@users.noreply.github.com`
-   if no user is set.
+   Commit as yourself (Claude Code uses the machine's git identity); the history shows who built what.
 2. `source tools/setup_godot.sh` (Godot 4.7.2 on PATH; `.tools/` is git-ignored).
 3. Take the most valuable next step from `PROGRESS.md`. Build it, run `bash tools/check.sh` (or
    `--no-visual` for data/system work), look at any capture yourself, fix what broke, commit, `git pull --rebase`,
@@ -27,13 +26,15 @@ content; this file is how we work.
   operation, size and view, animation list, full prompt from the Reference Bible brief and catalog image).
   Keep that file current: the first undone entry is the most urgent; move entries to **Done** with the PixelLab
   id and date as they are imported; add the next chapter's batch before its scene work starts.
-- **Build agents (you, and the studio assistant whenever this run stops) build everything else:** combat,
-  systems, scenes, scripts, dialogue, data, tests, menus, saves, music. You do not generate art beyond what
+- **Build lead (you: the Claude Code session Nich runs) builds everything else:** combat, systems, scenes,
+  scripts, dialogue, data, tests, menus, saves, music. The studio assistant (a second Claude session) audits the
+  bot's deliveries in `docs/BOT_REVIEW.md`, keeps `docs/ASSET_REQUESTS.md` ahead of you, and writes the next
+  chapters' dialogue (`data/dialogue/chapter<N>.json`) in its own lane; it never touches scenes or scripts. You do not generate art beyond what
   proves the pipeline (Crono is the finished template). Until an asset arrives, use the existing code-drawn
   placeholder and keep building.
-- **Check for incoming art at least hourly and before any scene work:** list the PixelLab account's
-  characters, objects, tilesets and UI assets through the MCP tools; import anything new and completed whose
-  name matches an asset key (or is clearly for the game) with
+- **Check for incoming art at least hourly and before any scene work:** `git pull --rebase`, read
+  `data/art/incoming.json` (the bot registers every PixelLab item there, see `docs/BOT_REVIEW.md`) and import
+  anything not yet in `data/art/pixellab_assets.json` with
   `python3 tools/art/import_pixellab.py <id|url> <asset_key>`; wire it into the scene that needs it; screenshot
   it; it is recorded in `data/art/pixellab_assets.json` (PixelLab id, key, date). **Never delete anything in
   the PixelLab library.** Name any character you do create `TRIGGER <Name> vN`.

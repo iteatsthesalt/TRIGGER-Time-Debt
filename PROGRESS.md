@@ -51,6 +51,14 @@ Two agents work this repository in turns (the build agent and the studio assista
 - `PortraitCache` looks in `assets/portraits/<id>/<id>_<expr>.png` first; `SceneKit.named("<material>")` looks in
   `assets/textures/generated/` first (import targets for Nich's portraits and textures).
 
+## Lead hand-off (2026-10-29 09:50 EDT)
+
+The Console build agent ran out of credit at 09:46 after pushing everything. **The build lead is now the Claude
+Code session Nich runs on his machine** (same working agreement, `CLAUDE.md`). The studio assistant keeps its
+lanes: bot audits (`docs/BOT_REVIEW.md`), `docs/ASSET_REQUESTS.md`, and Chapter 3+ dialogue. Nich's bot
+delivers art per `docs/BOT_REVIEW.md`; ChatGPT writes the text layer per `docs/JOB_CHATGPT.md` into
+`data/text/`.
+
 ## Next steps (start here)
 1. **Hourly: check the PixelLab library and import** (see the plan). Import `villager_m` when its jobs finish.
 2. **Fix the 999 Shard Doll phase 3** so `ch1_probe.gd` reaches `PROBE_END ok=true`; then play the rest of

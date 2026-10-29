@@ -2,7 +2,22 @@
 
 The hand-off between runs. Keep it honest: what exists, what is verified, what is next, what is broken.
 
-## State on 2026-10-29 (run 1, continued: the Prologue plays end to end)
+## State on 2026-10-29 (run 1, end of run: Prologue plays end to end, Chapter 1 hub built, art is placeholder)
+
+### Direction from Nich (read first)
+All current art is placeholder: code-generated sprites (`tools/art/spritegen.py`), procedural textures
+(`tools/art/make_textures.py`), rooms built from textured primitives, blob enemies. The target is Chrono
+Trigger-grade hand-pixelled characters in Octopath-grade HD-2D dioramas; nothing blocky, boxy or voxel may
+ship. **Do not polish the generators further.** From the next run, `/mnt/session/uploads/secrets.env` may hold
+API keys (PixelLab for 8-direction characters, animations, tilesets, objects, VFX and normal maps; an image
+model for portraits, textures, concept frames, painted backdrops). First job when it exists: build
+`tools/art/pipeline/` that calls those services and writes straight into the existing contracts (sheet
+layouts in `SpriteLibrary.DEFAULT_TABLE`, 128 px cells, `<id>_field.png` + `_frames.json` + optional
+`_field_n.png`/`_field_m.png`; enemies `<key>_sheet.png` under `assets/enemies/u<n>/<key>/`; textures by
+the names `SceneKit` already loads), then run the same per-canvas finish (`finish_frame`) and import
+settings. Until then: systems, chapters, scripts, dialogue, bosses, menus, saves, music. Keep
+`docs/screenshots/` (six captures + README) refreshed after every visual milestone. Never print or commit
+the keys.
 
 ### How to run and check
 - `source tools/setup_godot.sh` (Godot 4.7.2 on PATH). `bash tools/check.sh` = import, parse-all, unit tests (423 checks), data lint, visual smoke with captures; `--no-visual` for headless only.
@@ -27,17 +42,18 @@ The hand-off between runs. Keep it honest: what exists, what is verified, what i
 Kitchen with the party and the dialogue box, title screen, hall with placeholder enemies, generated sprites lit with shadows in the arena. The Cradle fight itself has only been verified headless (probe) and by the HUD capture from the arena earlier.
 
 ## Next steps (start here)
-1. **Chapter 1 beats in the Atrium** (Story Bible §6 Ch1): loft wake + crack check (focus), the nightmare + Rewind tutorial (a scripted mini-battle or a field verb), Father Tank window, 999 Shard Doll boss (`data/bosses/shard_doll_999.json` exists; needs a director: fake belief plates, three-doll split at 20%, Spared/Salvaged/DollMeetsDoll flags, `Pushing Sera to 40%`), Krona's ink footprints (`Ink Path`), Seed of Doan watering (counter `seed_waters`), Glenn's honour check, midnight hearth choice (`Crono_Confession` tell/hide), the Fair trigger.
-2. **Leene Square and the Fair** (`scenes/u0/leene_square.tscn`): crowds (villager sprites), chestnut vendors, Bekkler's tent (`Bekkler_Confessed`), Telepod pavilion, the chase, rift-spawn battle from seven universes, Vaelos descent (needs a Vaelos sprite: tall alabaster, fibre-optic mane), the leap into the seam → `bamboo_grove`.
-3. **Chapter 2 opening**: `scenes/u1/bamboo_grove.tscn` (ink canvas), Krona duel (`krona_duel.json`), Pagoda fracture, Kuro-Truce, Krona joins (`recruit`), Eclipse X-Strike. Then the rest of Chapter 2.
-4. **Enemy and boss art**: a code-drawn enemy sprite generator (Dust Mote Cluster, Porcelain Shardling, Ashen Spoon, Vaelos Echo, Bellkeeper, Moss-Mouse, Bekkler Fragment, Ferro-Drone, Cradle, Shard Doll) — everything is a grey placeholder blob now.
-5. **Environment quality pass** for U0: flagstone/plank textures at 64 px/m with proper grout (the current stone reads as cracked mud), hearth fire particles, props (pots with handles, dishes), Blender kit for arches/columns/the Robo pillar face. Replace the title backdrop with our own Atrium render.
-6. **Battle presentation**: verify the Cradle fight visually; boss name/phase banner; Pay Time Debt moment VFX; Sorrowful Blue 12 fps step; the Sera ring on the HUD; a save/load + party menu (Tab).
-7. Fonts (Reference Bible §7.6), icon set (§7.4), theme.
-8. Keep `docs/DECISIONS.md` and `docs/QUESTIONS_FOR_NICH.md` current.
+0. If `/mnt/session/uploads/secrets.env` exists: copy nothing into git; write `tools/art/pipeline/` (PixelLab characters → `assets/characters/<id>/`, enemies, tilesets; image model → portraits/textures/backdrops), regenerate Crono/Sera/Marle/Krona first, look at them in the kitchen, refresh `docs/screenshots/`.
+1. **Verify Chapter 1 end to end**: `godot --headless --path . --script res://tools/build/ch1_probe.gd -- --autobattle`. Loft → crack check → Rewind → Father Tank all pass; the 999 Shard Doll's phase 3 (three dolls, all Break within 3 s) was still stalling the autobattle at cutoff. The director now tires the dolls after 4 rebuilds (12 s window, 3 plates) and stops rebuilding after 8; re-run the probe, then play the rest (Glenn, rest → midnight, hearth, Fair call).
+2. **Leene Square and the Fair** (`scenes/u0/leene_square.tscn`, Story Bible Ch1 beat 10): crowds, chestnut vendors, Bekkler's tent (`Bekkler_Confessed`), Lucca's Telepod pavilion, the chase through Sera's ghosts, the seven-canvas rift-spawn battle (write `data/encounters/u0.json` `fair_rift_spawn` from low-level U1–U7 enemies), Vaelos's descent (sprite needed), the leap → `bamboo_grove`. `leave_for_fair()` in the Atrium already routes there with Crono alone.
+3. **Chapter 2 opening**: `scenes/u1/bamboo_grove.tscn` (U1 ink canvas, `Universe.set_universe(1)`), Krona duel (`data/bosses/krona_duel.json`, needs a director), Pagoda fracture, Kuro-Truce, Krona joins (`recruit`), Eclipse X-Strike. Then the rest of Chapter 2.
+4. Menus: a Tab menu (party, techs, items, relics, settings, save slots) and a save/load screen; the title's Options stub.
+5. Music hooks: `Audio.set_rtpc` consumers (porcelain_stress → box stems, sync_hold duck, translucency → Sera's strings), boss phase stems, the Fair chase stem.
+6. Boss directors for Chapter 2+ as their chapters are built; mechanics listed as notes-only in `docs/reports/enemy_codex_report.md`.
+7. Keep `docs/DECISIONS.md`, `docs/QUESTIONS_FOR_NICH.md` and `docs/screenshots/` current.
 
 ## Known issues
-- Enemies and bosses are placeholder blobs (`SpriteLibrary.placeholder`); the Cradle and the Shard Doll especially need art.
+- All art is placeholder (see the direction above). Enemies and bosses are grey blobs; the two art subagents of this run (enemy sprites, textures) were cut off by the credit limit before writing files.
+- Chapter 1 Shard Doll phase 3 not yet verified to complete under autobattle (see next step 1).
 - Autobattle AI (used by probes) never heals, so probe losses overstate difficulty; still, defeat costs −5 integrity each retry, which can drain a Prologue (probe ended at 29–50 integrity). Consider a story-battle exemption or a floor during the Prologue.
 - The floor textures read as cracked mud at diorama distance; the kitchen lights are flat; the hearth has no fire.
 - A faint rectangle shows inside the dialogue box bottom-right (some child control's default style); harmless, not yet traced.

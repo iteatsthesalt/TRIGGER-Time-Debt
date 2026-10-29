@@ -102,19 +102,27 @@ func _tick_split(ctrl: BossController) -> void:
 		Audio.play_sfx("combat/break_gong_vinyl")
 		ctrl.advance_phase()
 		return
-	# a broken doll rebuilds if the others are still standing 3 s later; after four rebuilds the dolls
-	# tire and the window widens (the lesson should not become a wall)
+	# a broken doll rebuilds if the others are still standing 3 s later. The lesson must not become a
+	# wall: after four rebuilds the window widens to 12 s and a rebuilt doll comes back with 3 plates;
+	# after eight the broken ones simply stay broken.
+	if rebuilds >= 8:
+		return
 	var window: float = 3.0 if rebuilds < 4 else 12.0
 	for a in living:
 		var sh := ShieldComponent.of(a)
 		if sh.is_broken and break_times.has(a) and now - float(break_times[a]) > window:
 			sh.reset_shields()
+			if rebuilds >= 4:
+				sh.current_shield = mini(sh.current_shield, 3)
+				sh.shield_changed.emit(sh.current_shield, sh.max_total())
 			break_times.erase(a)
 			rebuilds += 1
 			if a is CombatActor:
 				(a as CombatActor).on_recover()
 			if rebuilds == 4:
-				ctrl.scene.hud.show_message("The dolls are tiring. Their rhythm slows.")
+				ctrl.scene.hud.show_message("The dolls are tiring. Their rhythm slows and their plates thin.")
+			elif rebuilds == 8:
+				ctrl.scene.hud.show_message("The dolls give up rebuilding. Finish them.")
 			else:
 				ctrl.scene.hud.show_message("The broken doll rebuilds. All three within three seconds.")
 

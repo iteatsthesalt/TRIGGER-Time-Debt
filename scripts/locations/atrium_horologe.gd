@@ -472,14 +472,9 @@ func _use_dummy(_by: Node) -> void:
 func _spawn_glenn() -> void:
 	if glenn_npc != null:
 		return
-	glenn_npc = add_npc(&"glenn_marshall", "glenn_marshall", get_marker("glenn"), "w", 60.0, &"", "Glenn")
-	var it: Interactable = glenn_npc.get_node_or_null("Talk")
-	if it:
-		it.callback = func(_by: Node) -> void:
-			if Flags.has(&"Glenn_Honour_Checked"):
-				Story.run(&"ch1_glenn_after")
-			else:
-				Story.run(&"ch1_glenn_honour")
+	# his Talk is his own, never borrowed from the Atrium's ambient lines (STORY-12)
+	glenn_npc = add_npc(&"glenn_marshall", "glenn_marshall", get_marker("glenn"), "w", 60.0, &"", "Glenn", 0.0, func(_by: Node) -> void:
+		Story.run(&"ch1_glenn_after" if Flags.has(&"Glenn_Honour_Checked") else &"ch1_glenn_honour"))
 
 
 func _masks_weep_oil() -> void:

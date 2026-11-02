@@ -387,6 +387,15 @@ func test_location_music_defaults_from_its_universe() -> void:
 	_track(loc)
 	check_eq(loc.field_music, &"", "the test arena names no field track")
 	check_eq(loc.field_track(), StringName(String(Data.universe(0)["music_field"])), "so it plays U0's music_field")
+	# STORY-12: an NPC's own Talk callback never depends on the location having ambient lines
+	check(Data.ambient_lines(loc.location_id).is_empty(), "the arena has no ambient chatter")
+	var talked: Array = []
+	var npc: FieldNPC = loc.add_npc(&"test_talker", "glenn_marshall", Vector3(2, 0, 2), "s", 60.0, &"", "Talk", 0.0, func(_by: Node) -> void: talked.append(true))
+	var it: Interactable = npc.get_node_or_null("Talk")
+	check(it != null, "an NPC given a talk callback has a Talk anyway")
+	it.callback.call(null)
+	check_eq(talked.size(), 1, "and it runs the callback")
+	check(loc.add_npc(&"test_mute", "glenn_marshall", Vector3(3, 0, 2)).get_node_or_null("Talk") == null, "without one (and no chatter) it has none")
 
 
 # ---------------------------------------------------------------- data checks (DATA-13, DATA-15, DATA-17, DATA-23, STORY-12)

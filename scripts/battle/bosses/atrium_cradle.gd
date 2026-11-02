@@ -1,11 +1,21 @@
 ## Director for the Atrium Cradle (Prologue boss, Story Bible §6 Prologue, Combat Laws §14.1).
-## Phase 1: the Break Signature decides whether Crono's crack holds (LIGHT) or widens (SWORD/FIRE).
+## Phase 1: the Break Signature decides whether Crono's crack holds (LIGHT) or widens (SWORD/FIRE: 3 integrity).
 ## Phase 2: the Dollhouse Seal is paid inside the phase script (5% integrity, permanent).
-## Phase 3: every Break swaps the canvas to U7 gold leaf for three seconds; a perfect parry on the
+## Phase 3: every Break swaps the canvas to U7 gold leaf for three battle seconds; a perfect parry on the
 ## Crack-Slide opens a 1.5 s Prismatic window in which Astral Smear Dash catches the bowl.
 extends RefCounted
 
-var _u7_timer: SceneTreeTimer
+const CRACK_WIDENS: float = 3.0
+const GOLD_LEAF_S: float = 3.0
+
+## The canvas the fight began on, which the gold-leaf swap returns to.
+var home_universe: int = 0
+## battle_time at which the gold leaf ends (0 = no swap showing).
+var gold_until: float = 0.0
+
+
+func on_setup(_ctrl: BossController) -> void:
+	home_universe = Universe.target
 
 
 func on_phase(ctrl: BossController, i: int) -> void:
@@ -16,26 +26,46 @@ func on_phase(ctrl: BossController, i: int) -> void:
 			Audio.set_rtpc("vaelos_near", 0.6)
 
 
-func on_break(ctrl: BossController, signature: Array[StringName]) -> void:
+func on_break(ctrl: BossController, signature: Array[StringName]) -> Dictionary:
 	match ctrl.phase_index:
 		0:
 			if signature.has(&"LIGHT"):
 				ctrl.scene.hud.show_message("Broken with Light. The crack holds.")
 				Flags.add_lean(0, "L")
+				return {"handled": true}
 			elif signature.has(&"SWORD") or signature.has(&"FIRE"):
 				ctrl.scene.hud.show_message("Broken with the blade. The crack widens.")
-				Game.set_integrity(Game.crono_integrity - 3.0)
 				Flags.add_lean(0, "D")
-				var crono: Node = ctrl.coordinator.unit_by_id(&"crono")
-				if crono is CombatActor:
-					var td := TimeDebtComponent.of(crono)
-					if td != null:
-						td.pay_integrity(3.0)
-					(crono as CombatActor).set_porcelain_visuals()
+				_widen_crack(ctrl)
+				return {"handled": true}
 		2:
 			Universe.set_universe(7, true)
-			_u7_timer = ctrl.get_tree().create_timer(3.0)
-			_u7_timer.timeout.connect(func() -> void: Universe.set_universe(0, false))
+			gold_until = ctrl.coordinator.battle_time + GOLD_LEAF_S
+	return {}
+
+
+## Crono pays the widening through his TimeDebtComponent and Game mirrors it (one source, as every other charge).
+func _widen_crack(ctrl: BossController) -> void:
+	var crono: Node = ctrl.coordinator.unit_by_id(&"crono")
+	var td := TimeDebtComponent.of(crono) if crono != null else null
+	if td == null:
+		Game.set_integrity(Game.crono_integrity - CRACK_WIDENS)
+		return
+	td.pay_integrity(CRACK_WIDENS)
+	Game.set_integrity(td.integrity)
+	if crono is CombatActor:
+		(crono as CombatActor).set_porcelain_visuals()
+
+
+func on_tick(ctrl: BossController, _delta: float) -> void:
+	if gold_until > 0.0 and ctrl.coordinator.battle_time >= gold_until:
+		_end_gold_leaf()
+
+
+func _end_gold_leaf() -> void:
+	if gold_until > 0.0:
+		gold_until = 0.0
+		Universe.set_universe(home_universe, false)
 
 
 func on_parry(ctrl: BossController, _ally: Node, perfect: bool, action: Dictionary) -> void:
@@ -58,6 +88,12 @@ func on_action(ctrl: BossController, info: Dictionary) -> void:
 
 
 func on_defeat(ctrl: BossController) -> void:
-	Universe.set_universe(0, false)
+	_end_gold_leaf()
 	Audio.set_rtpc("vaelos_near", 0.0)
 	ctrl.scene.hud.show_message("The Cradle shuts down. Six legs fold.")
+
+
+## A loss (or any end) inside the gold leaf still puts the canvas back.
+func on_battle_end(_ctrl: BossController, _victory: bool) -> void:
+	_end_gold_leaf()
+	Audio.set_rtpc("vaelos_near", 0.0)

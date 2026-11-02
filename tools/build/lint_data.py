@@ -124,6 +124,26 @@ if text:
 # (scripts/autoload/scene_router.gd) or a Location.location_id. A key for a location that is not built yet is a
 # warning (the lines wait for the scene); the lead checks it against the planned scene list.
 warnings = []
+# Bosses (BossDef, BossController): every phase gate is one the controller or a director opens, a director-only gate
+# without scripts/battle/bosses/<id>.gd stalls (warned: the chapter that builds the boss writes it), a phase script
+# exists, a boss phase script nobody names is a warning, and a drop the dialogue also hands out is a warning.
+GENERIC_GATES = {"break", "adds_defeated", "arm_broken", "branch"}
+DIRECTOR_GATES = {"scripted", "threads_cut", "honest_lines", "sera_voluntary_phase_out", "stand_still_12s", "ending"}
+named_scripts = set()
+for bid, b in bosses.items():
+    has_director = (ROOT / "scripts/battle/bosses" / f"{bid}.gd").exists()
+    for i, ph in enumerate(b.get("phases", [])):
+        gate = ph.get("advance_on", "")
+        if gate and gate not in GENERIC_GATES | DIRECTOR_GATES: errors.append(f"boss {bid} phase {i}: unknown advance_on {gate}")
+        elif gate in DIRECTOR_GATES and not has_director: warnings.append(f"boss {bid} phase {i}: advance_on {gate} needs scripts/battle/bosses/{bid}.gd (it stalls without one)")
+        if ph.get("script"):
+            named_scripts.add(ph["script"])
+            if ph["script"] not in dialogue: errors.append(f"boss {bid} phase {i}: unknown script {ph['script']}")
+    for d in b.get("drops", []):
+        if d in granted: warnings.append(f"boss {bid}: drop {d} is also handed out by dialogue (it would be given twice)")
+for sid in dialogue:
+    if re.search(r"_(phase\d+|p\d+|mid)$", sid) and sid not in named_scripts:
+        warnings.append(f"dialogue {sid} looks like a boss phase script but no boss phase names it")
 router_src = (ROOT / "scripts/autoload/scene_router.gd").read_text()
 location_ids = set(re.findall(r'locations\[&"([a-z0-9_]+)"\]', router_src))
 for p in sorted((ROOT / "scripts/locations").glob("*.gd")):

@@ -297,7 +297,7 @@ func _award_xp() -> Dictionary:
 			continue
 		if spared.has(e):
 			total += roundi(float(st.xp_reward) * 0.5)
-		elif not st.is_alive():
+		elif not st.is_alive() or e.has_meta(&"boss_defeated"):  # a boss that ends its fight standing (BossController.end_fight)
 			total += st.xp_reward
 	var out: Dictionary = {}
 	for u in party:

@@ -27,7 +27,7 @@
      "on_enter": "",
      "on_break": "",
      "notes": "Shield 6, Tags [RUIN][SWORD][INK], Weak [ASTRAL][FIRE]. Krona's Defiled Masamune is antimatter: each of her hits removes 3% of Crono's max-HP ceiling for the battle."},
-    {"id": "she_ate_the_star", "name": "She Ate the Star", "hp_from": 0.75, "hp_to": 0.5,
+    {"id": "she_ate_the_star", "name": "She Ate the Star", "hp_from": 0.75, "hp_to": 0.5, "script": "ch2_duel_mid",
      "shield": {"shield": 8, "weak": ["ASTRAL", "TIME_DEBT"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["RUIN", "SWORD", "INK", "LAVOS"],
      "actions": [
@@ -42,5 +42,5 @@
   "branches": [],
   "drops": [],
   "flags": {"Krona_Joined": ["set"]},
-  "notes": "Recruitment duel in the Kuro-Truce bamboo grove, a full ukiyo-e and sumi-e canvas. Lv 7, HP 5,000 (the duel ends at 50%). Crono fights alone, Sera hovering out of reach. HP windows per phase are not given; the two phases split the 100-50% duel evenly."
+  "notes": "Recruitment duel in the Kuro-Truce bamboo grove, a full ukiyo-e and sumi-e canvas. Lv 7, HP 5,000 (the duel ends at 50%). Crono fights alone, Sera hovering out of reach. HP windows per phase are not given; the two phases split the 100-50% duel evenly. The duel ends when the last window closes at 50% (the boss yields: BossDef.ends_at) or at once when the ch2_duel_mid overcharge is taken (scripts/battle/bosses/krona_duel.gd)."
 }

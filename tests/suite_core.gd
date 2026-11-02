@@ -1143,7 +1143,7 @@ func test_boss_defs_validate_and_phase_windows() -> void:
 			print("    boss %s: %s" % [id, ", ".join(errs)])
 		for i in b.phase_count():
 			var pdef: EnemyDef = b.phase_def(i)
-			check(pdef.hp_override == b.hp and pdef.kind == "boss", "%s phase %d carries the boss HP pool" % [id, i])
+			check(pdef.hp_override == b.hp and pdef.kind == String(b.raw.get("kind", "boss")), "%s phase %d carries the boss HP pool and the file's kind" % [id, i])
 	check_eq(problems, 0, "every boss file validates")
 	var cradle: BossDef = BossDef.from_dict(Data.bosses[&"atrium_cradle"])
 	check_eq(cradle.phase_count(), 3, "the Cradle has three phases")

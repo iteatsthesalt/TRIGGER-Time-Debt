@@ -10,12 +10,6 @@ extends "res://tests/suite_base.gd"
 const ARENA := "res://scenes/test/arena.tscn"
 const DT := 1.0 / 60.0
 
-## Techniques whose cast changes plates their preview cannot see yet (KNOWN GAP GAP3-7, §18.7 #23): Eclipse
-## X-Strike's crossing erases one more plate after its hits (TechEffects "eclipse_x_strike"), and Chrono Laugh's
-## row auto-Breaks the smallest shield it hit (EffectOps "auto_break"). The check below fails when this list and
-## the mismatches disagree, so fixing either (or breaking another technique) shows up here.
-const PREVIEW_GAPS: Array[String] = ["chrono_laugh", "eclipse_x_strike"]
-
 var _test_bosses: Array[StringName] = []
 
 
@@ -392,9 +386,9 @@ func test_check_22_one_steal_takes_at_most_three_bp_and_duplicates_none() -> voi
 
 # ---------------------------------------------------------------- #23: every technique's plate preview
 
-## The plate preview of `tech` cast by its first actor set, aimed at the first of three bodies weak to all its
-## tags, against the plates the cast leaves. Returns {cast, multi, shapes, mismatched (tech ids), lines}.
-func _preview_parity(boost: int) -> Dictionary:
+## The plate preview of every technique cast by its first actor set, aimed at the first of three bodies weak to all
+## its tags (or to nothing), against the plates the cast leaves. Returns {cast, multi, shapes, mismatched, lines}.
+func _preview_parity(boost: int, weak: bool) -> Dictionary:
 	var out := {"cast": 0, "multi": 0, "shapes": {}, "mismatched": [], "lines": []}
 	var ids: Array = Data.techs.keys()
 	ids.sort()
@@ -412,7 +406,7 @@ func _preview_parity(boost: int) -> Dictionary:
 			CombatantStats.of(party[0]).hp = 40000  # under 60%: the Crono-hurt rows are castable
 		var bodies: Array = []
 		for p in [Vector3(0.8, 0, 0), Vector3(1.6, 0, 0.5), Vector3(1.4, 0, -0.6)]:
-			bodies.append(_enemy(&"body", 40, p, 40, Array(t.tags), {"hp": 9000000}))
+			bodies.append(_enemy(&"body", 40, p, 40, Array(t.tags) if weak else [], {"hp": 9000000}))
 		_start(c, party, bodies, {"techs": Data.techs, "max_bp": 9})
 		for b in bodies:
 			StatusComponent.of(b).add(&"time_stop", 600.0)
@@ -447,19 +441,21 @@ func _preview_parity(boost: int) -> Dictionary:
 
 
 ## #23: the shield preview equals the shave the hit then does, for every technique and shape: every technique in
-## data/techs aimed at enemies, cast by its actors (partners from the Ready Pool) at three bodies, at Boost Lv0 and
-## Lv3; at least 60 of the casts catch two or more bodies, and every enemy shape is cast.
+## data/techs aimed at enemies, cast by its actors (partners from the Ready Pool) at three bodies weak to its tags
+## and at three weak to nothing, at Boost Lv0 and Lv3; at least 60 casts catch two or more bodies, every enemy
+## shape is cast, and the plates after the cast are the plates the preview showed (its after-effects included).
 func test_check_23_every_technique_previews_the_plates_its_cast_leaves() -> void:
 	var snap: Dictionary = Flags.to_save().duplicate(true)
 	for boost in [0, 3]:
-		var r: Dictionary = _preview_parity(boost)
-		check(int(r["cast"]) >= 85, "Boost Lv%d: %d techniques cast" % [boost, int(r["cast"])])
-		check(int(r["multi"]) >= 60, "Boost Lv%d: %d casts caught two or more bodies" % [boost, int(r["multi"])])
-		var shapes: Array = (r["shapes"] as Dictionary).keys()
-		shapes.sort()
-		check_eq(str(shapes), str([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11]), "Boost Lv%d: every enemy shape was cast (all but PARTY)" % boost)
-		# KNOWN GAP GAP3-7: PREVIEW_GAPS (the crossing plate, the auto-Break) are pinned, not passed; see the const.
-		check_eq(str(r["mismatched"]), str(PREVIEW_GAPS), "Boost Lv%d: every plate preview equals what the cast leaves, but for the known gaps (%s)" % [boost, "; ".join(PackedStringArray(r["lines"]))])
+		for weak in [true, false]:
+			var r: Dictionary = _preview_parity(boost, weak)
+			var tag: String = "Boost Lv%d, bodies %s" % [boost, "weak to its tags" if weak else "weak to nothing"]
+			check(int(r["cast"]) >= 85, "%s: %d techniques cast" % [tag, int(r["cast"])])
+			check(int(r["multi"]) >= 60, "%s: %d casts caught two or more bodies" % [tag, int(r["multi"])])
+			var shapes: Array = (r["shapes"] as Dictionary).keys()
+			shapes.sort()
+			check_eq(str(shapes), str([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11]), "%s: every enemy shape was cast (all but PARTY)" % tag)
+			check_eq(str(r["mismatched"]), "[]", "%s: every plate preview equals what the cast leaves (%s)" % [tag, "; ".join(PackedStringArray(r["lines"]))])
 	Flags.from_save(snap)
 	Game.new_game()
 

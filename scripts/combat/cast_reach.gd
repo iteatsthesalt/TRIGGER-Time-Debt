@@ -1,7 +1,8 @@
 ## What a technique's cast reaches, read by the resolution and by the plate preview alike, so the plate shows the
 ## shave the hit then does for every technique and shape (Combat Laws Bible §4.6, §18.7 #23): whether the cast
 ## strikes enemies at all, the extra origins a multi-caster shape takes from the partners (DELTA's corners), and
-## the filter a technique applies to the bodies its shape caught (Overclocked Short-Circuit arcs through metal).
+## the filter a technique applies to the bodies its shape caught (Overclocked Short-Circuit arcs through metal), its
+## row's pre ops (more hits, stacks as beams) and the plates its after-effects take beyond the hits.
 class_name CastReach
 extends RefCounted
 
@@ -43,6 +44,52 @@ static func caught(c: BattleCoordinator, tech: TechDef, found: Array) -> Array:
 	if not filter.is_valid():
 		return found
 	return found.filter(func(h: Dictionary) -> bool: return bool(filter.call(h["node"])))
+
+
+## The plates a cast's own after-effects take beyond its hits, applied to the plate preview `out` (body -> plate):
+## a row's shave_any tops each body it hit up to `n` plates, its auto_break Breaks the smallest shield it hit
+## (EffectOps), and Eclipse X-Strike's crossing erases one more plate within its radius of the aim (§11).
+static func after_plates(c: BattleCoordinator, tech: TechDef, actor: Node, out: Dictionary, aim: Vector3, boost: int) -> void:
+	if tech == null or out.is_empty():
+		return
+	var open: Array = out.keys().filter(func(e: Node) -> bool: return ShieldComponent.of(e) != null and not bool(out[e]["breaks"]) and not bool(out[e]["already_broken"]))
+	if tech.effect == &"eclipse_x_strike":
+		for e in open:
+			var sh := ShieldComponent.of(e)
+			if c.position_of(e).distance_to(aim) <= tech.radius and int(out[e]["after"]) > 0:
+				var tag: StringName = sh.weaknesses[0] if not sh.weaknesses.is_empty() else &"SWORD"  # as the handler strikes
+				_take(out[e], mini(1, int(sh.preview_action([tag], 1, 0)["shave"])), sh)
+		return
+	if TechEffects.HANDLED.has(tech.effect) or not EffectTable.has_row(tech.effect):
+		return
+	var broke: Array = out.keys().filter(func(e: Node) -> bool: return bool(out[e]["breaks"]))
+	var ctx := {"c": c, "tech": tech, "action": {}, "boost": boost, "attacker": actor, "casters": [actor], "info": {"breaks": broke}}
+	for op in EffectTable.row(tech.effect).get("after", []):
+		if String(op.get("on", "hit")) != "hit":
+			continue
+		var each: Array = open.filter(func(e: Node) -> bool: return not bool(out[e]["breaks"]) and EffectTable.holds(op.get("if", {}), ctx, e))
+		match String(op.get("op", "")):
+			"shave_any":
+				for e in each:
+					_take(out[e], maxi(0, int(op["n"]) - int(out[e]["shave"])), ShieldComponent.of(e))
+			"auto_break":
+				if String(op.get("pick", "smallest")) != "smallest" or each.is_empty():
+					continue  # "zero" picks bodies already at 0, which the plates show as Broken when they can be
+				var best: Node = each[0]
+				for e in each:
+					if int(out[e]["after"]) < int(out[best]["after"]):
+						best = e
+				if ShieldComponent.of(best).can_break_now():
+					_take(out[best], int(out[best]["after"]), ShieldComponent.of(best))
+
+
+static func _take(p: Dictionary, n: int, sh: ShieldComponent) -> void:
+	if n <= 0:
+		return
+	var take: int = mini(n, int(p["after"]))
+	p["shave"] = int(p["shave"]) + take
+	p["after"] = int(p["after"]) - take
+	p["breaks"] = int(p["after"]) <= 0 and sh.can_break_now()
 
 
 ## The hits per body a cast of `tech` resolves: its count as its effect row's `pre` ops leave it (Prism

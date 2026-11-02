@@ -783,6 +783,7 @@ func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int,
 		p["sealed"] = undamageable.has(e)  # a sealed body takes no HP damage; the plates still shave
 		p["damage"] = 0 if p["sealed"] else _estimate_damage(actor, tech, e, boost, hits * int(h["hits"]), int(h["rank"]), t_tags)
 		out[e] = p
+	CastReach.after_plates(self, tech, actor, out, aim_point, boost)  # shave_any, auto_break, a crossing plate
 	return out
 
 

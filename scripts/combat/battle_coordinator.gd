@@ -62,6 +62,8 @@ var arena_center: Vector3 = Vector3.ZERO
 var tech_library: Dictionary = {}
 var enemy_defs: Dictionary = {}
 var is_boss_battle: bool = false
+## A battle the story started (Location._on_story_battle): its script owns the ending, so no Withdraw.
+var is_story_battle: bool = false
 var hover_sera: Node = null
 var prometheus_available: bool = false
 var prometheus_used: bool = false
@@ -141,6 +143,7 @@ func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: D
 	arena_center = center
 	universe = int(config.get("universe", universe))
 	is_boss_battle = bool(config.get("boss", false))
+	is_story_battle = bool(config.get("story", false))
 	tech_library = config.get("techs", tech_library)
 	enemy_defs = config.get("enemy_defs", enemy_defs)
 	hover_sera = config.get("hover_sera", null)
@@ -210,7 +213,9 @@ func _init_unit(u: Node, gauge: float) -> void:
 		td.battle_strain = 0.0
 
 
-func _finish(victory: bool, reason: String = "") -> void:
+## Ends the battle. A withdraw (reason "withdraw", WithdrawRules) is not a defeat: it charges no integrity.
+## `extra` is merged into the summary (the withdraw point).
+func _finish(victory: bool, reason: String = "", extra: Dictionary = {}) -> void:
 	if state == State.VICTORY or state == State.DEFEAT or state == State.IDLE:
 		return
 	state = State.VICTORY if victory else State.DEFEAT
@@ -227,6 +232,7 @@ func _finish(victory: bool, reason: String = "") -> void:
 			st.defeated.disconnect(_ko_callables[u])
 	_ko_callables.clear()
 	var summary: Dictionary = {"victory": victory, "reason": reason, "xp": {}, "spared": spared.size(), "battle_time": battle_time, "integrity_lost": 0.0}
+	summary.merge(extra)
 	if victory:
 		summary["xp"] = _award_xp()
 	for u in party + bench:
@@ -234,7 +240,7 @@ func _finish(victory: bool, reason: String = "") -> void:
 			continue
 		var td := TimeDebtComponent.of(u)
 		if td != null:
-			if not victory:
+			if not victory and reason != "withdraw":
 				td.pay_integrity(CombatConstants.CRONO_DEFEAT_INTEGRITY)
 				summary["integrity_lost"] = CombatConstants.CRONO_DEFEAT_INTEGRITY
 			td.end_battle()
@@ -665,24 +671,9 @@ func can_spare(target: Node) -> bool:
 	return sh != null and sh.is_broken and st.hp_ratio() <= CombatConstants.SPARE_HP_PCT
 
 
+## Withdraw (§4.2, §16.5): the fall-back move, the edge and gauge rules and the outcome live in WithdrawRules.
 func cmd_withdraw(actor: Node) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
-	if is_boss_battle:
-		return _fail("cannot withdraw from a boss")
-	var half: float = CombatConstants.PLANE_SIZE * 0.5
-	var p: Vector3 = position_of(actor)
-	var edge_dist: float = minf(minf(absf(p.x - (arena_center.x - half)), absf(p.x - (arena_center.x + half))), minf(absf(p.z - (arena_center.z - half)), absf(p.z - (arena_center.z + half))))
-	if edge_dist > 2.0:
-		return _fail("must be within 2 m of the plane's edge")
-	state = State.EXECUTING
-	for e in enemies:
-		if _alive(e) and float(gauges.get(e, 0.0)) > CombatConstants.WITHDRAW_MAX_ENEMY_GAUGE:
-			_finish_turn(actor, 0.0)
-			_after_party_action({"kind": "withdraw", "ok": false})
-			return {"ok": true, "withdrew": false}
-	_finish(false, "withdraw")
-	return {"ok": true, "withdrew": true}
+	return WithdrawRules.attempt(self, actor)
 
 
 ## Arm the Ens Parry for a guarding ally (§4.2). Perfect if a hit lands within the window.

@@ -21,7 +21,8 @@ var last_enemy_action: Dictionary = {}
 ## battle_time until which a Prismatic window stays open (0 = closed).
 var window_until: float = 0.0
 var window_kind: StringName = &""
-## Adds spawned by this controller (directors read it; dead ones are pruned lazily).
+## Adds spawned by this controller (directors read it and skip the dead; the dead are pruned on the next
+## summon, never mid-iteration). The Location frees every add's body after the battle (BattleAftermath).
 var adds_alive: Array[Node] = []
 
 
@@ -165,6 +166,7 @@ func _on_summon(key: StringName, count: int, near: Node) -> void:
 	if edef == null:
 		push_warning("Boss %s: unknown add %s" % [def.id, key])
 		return
+	adds_alive = Array(adds_alive.filter(func(a: Variant) -> bool: return is_instance_valid(a) and CombatantStats.of(a).is_alive()), TYPE_OBJECT, &"Node", null)
 	var r: Dictionary = _call_director("on_summon", [self, key, count])
 	if r.get("handled", false):
 		return

@@ -31,6 +31,7 @@ var _walk_speed: float = WALK_SPEED
 var _walk_done: bool = true
 var _statue_left: float = 0.0
 var _label: Label3D
+var _fade: Tween
 
 
 func _ready() -> void:
@@ -176,10 +177,29 @@ func die() -> void:
 	if sprite:
 		sprite.play(&"death")
 	frozen = true
-	var tw := create_tween()
-	tw.tween_interval(0.9)
-	tw.tween_property(sprite, "transparency", 1.0, 0.5)
-	tw.tween_callback(func() -> void: visible = false)
+	_fade = create_tween()
+	_fade.tween_interval(0.9)
+	_fade.tween_property(sprite, "transparency", 1.0, 0.5)
+	_fade.tween_callback(func() -> void: visible = false)
+
+
+## Undo die(), become_statue() and on_break() on the body once a battle is over: standing, visible, opaque,
+## untinted, the Break hull down and free to walk (BattleAftermath). HP and shields are the caller's.
+func restore_body() -> void:
+	if _fade != null and _fade.is_valid():
+		_fade.kill()
+	_fade = null
+	_statue_left = 0.0
+	visible = true
+	frozen = false
+	velocity = Vector3.ZERO
+	if break_hull:
+		break_hull.visible = false
+	if sprite:
+		sprite.transparency = 0.0
+		sprite.set_opacity(1.0)
+		sprite.set_tint(Color.WHITE)
+		sprite.play(&"idle")
 
 
 func set_porcelain_visuals() -> void:

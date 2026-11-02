@@ -148,8 +148,21 @@ func level_of(id: StringName) -> int:
 
 
 func set_party(ids: Array[StringName]) -> void:
+	for id in ids:
+		_ensure_guest_row(id)
 	active_party = ids.duplicate()
 	party_changed.emit()
+
+
+## A guest (Combat Laws 2.2: Marle in the Prologue; her kit says "guest": true) walks with the party without
+## being recruited, so she never sits on the Bench, but she gets a roster row the first time she is in a
+## party (her join level, her kit's unlocked techs) so her level, XP, HP and Tech deck work like anyone's.
+func _ensure_guest_row(id: StringName) -> void:
+	if recruited.has(id) or not bool(Data.character(id).get("guest", false)):
+		return
+	if not roster.has(id):
+		roster[id] = {"level": join_level_for(id), "xp": 0, "hp_ratio": 1.0, "known_techs": [], "equipment": {}, "flags": {}}
+	_learn_defaults(id)
 
 
 func bench_ids() -> Array[StringName]:

@@ -15,6 +15,9 @@ const HOVER_STATES: Array[String] = ["hover", "hover_support"]
 var bench: Array[CombatActor] = []
 var hover: CombatActor = null
 var _field: Array[CombatActor] = []
+## Every reserve this battle spawned, wherever a Swap has put it since (the bench, or the party in place
+## of a field member): finish() writes each one back and frees it.
+var _spawned: Array[CombatActor] = []
 
 
 ## Who sits where, from the roster fields: `recruited` and `active` are id lists, `sera_state` is
@@ -56,6 +59,7 @@ func _spawn(host: Node3D, id: StringName, center: Vector3) -> CombatActor:
 	host.add_child(a)
 	a.global_position = center + Vector3(0.0, 0.0, 7.5)
 	_park(a, true)
+	_spawned.append(a)
 	return a
 
 
@@ -126,20 +130,18 @@ func hover_deck(c: BattleCoordinator, actor: CombatActor) -> Array:
 	return items
 
 
-## Battle over: the field party stands again where it is, the reserves write back and leave.
-func finish() -> void:
+## Battle over: the field party stands again where it is, the reserves (benched, hovering or swapped in)
+## write back (level, XP, HP ratio, Crono's integrity, Sera's Debt; one still down records `fallen_ratio`)
+## and leave.
+func finish(fallen_ratio: float = 0.3) -> void:
 	for a in _field:
 		if is_instance_valid(a):
 			_park(a, false)
-	for r in [hover] + Array(bench):
-		if r == null or not is_instance_valid(r) or _field.has(r):
+	for r in _spawned:
+		if not is_instance_valid(r) or _field.has(r):
 			continue
-		var row: Dictionary = Game.roster.get(r.actor_id, {})
-		row["level"] = r.stats.level
-		row["xp"] = r.stats.xp
-		row["hp_ratio"] = r.stats.hp_ratio() if r.stats.is_alive() else 0.3
-		if r.solidity:
-			Game.set_debt(r.solidity.debt)
+		BattleAftermath.write_back(r, fallen_ratio)
 		r.queue_free()
+	_spawned.clear()
 	bench.clear()
 	hover = null

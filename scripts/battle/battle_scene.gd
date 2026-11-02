@@ -95,7 +95,7 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 		"advantage": String(cfg.get("advantage", "normal")), "universe": universe, "boss": bool(cfg.get("boss", false)),
 		"techs": Data.techs, "enemy_defs": defs, "bench": roster.bench, "hover_sera": roster.hover,
 		"prometheus": Game.prometheus_core, "parry_frames": Game.parry_frames, "max_bp": Game.max_bp, "max_spend": Game.max_spend,
-		"sera_present": Game.sera_in_story != "absent",
+		"sera_present": Game.sera_in_story != "absent", "story": bool(cfg.get("story", false)),
 	}
 	hud.register_units(party, enemies, roster.hover)
 	for e in enemies:
@@ -219,7 +219,7 @@ func _open_main_deck() -> void:
 	items.append({"label": "Spare", "cmd": "spare", "enabled": spareable})
 	if boss != null and boss.is_sealed() and actor.time_debt != null:
 		items.append({"label": "Pay Time Debt (5%% integrity, now %d)" % roundi(Game.crono_integrity), "cmd": "pay_debt"})
-	if not coordinator.is_boss_battle:
+	if WithdrawRules.offered(coordinator):
 		items.append({"label": "Withdraw", "cmd": "withdraw"})
 	hud.open_deck(actor.stats.display_name, items)
 
@@ -802,22 +802,7 @@ func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
 	for e in telegraphs.values():
 		e.queue_free()
 	telegraphs.clear()
-	if victory:
-		Audio.play_sting("victory")
-		for p in party:
-			if p.stats.is_alive():
-				p.sprite.play(&"victory", &"idle")
-		var xp: Dictionary = summary.get("xp", {})
-		var parts: Array = []
-		for id in xp.keys():
-			var lv: int = int(xp[id]["levels"])
-			parts.append("%s +%d XP%s" % [String(id).capitalize(), int(xp[id]["xp"]), (" (Lv up ×%d)" % lv) if lv > 0 else ""])
-		if int(summary.get("spared", 0)) > 0:
-			parts.append("%d spared" % int(summary.get("spared", 0)))
-		hud.show_message("  ".join(PackedStringArray(parts)))
-	else:
-		hud.show_message("The Debt advances: Crono −%s integrity." % str(summary.get("integrity_lost", 5)))
-		Audio.play_sting("defeat")
+	BattleEndNotice.announce(hud, party, victory, summary)
 	var tw := create_tween()
 	tw.tween_interval(1.4 if victory else 1.0)
 	tw.tween_property(plane_mat, "shader_parameter/reveal", 0.0, 0.6)
@@ -829,5 +814,6 @@ func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
 			p.sprite.set_opacity(1.0)
 			if p.stats.is_alive():
 				p.sprite.play(&"idle")
-		roster.finish()
+		# reserves still down are recorded at the floor the field party stands up with (BattleAftermath)
+		roster.finish(BattleAftermath.floor_ratio(BattleAftermath.outcome(victory, summary), bool(summary["story"])))
 		finished.emit(victory, summary))

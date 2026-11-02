@@ -76,6 +76,8 @@ func _ready() -> void:
 		Audio.play_ambience(ambience)
 	Story.battle_requested.connect(_on_story_battle)
 	Story.camera_requested.connect(_on_story_camera)
+	Game.integrity_changed.connect(_on_game_integrity)
+	Game.debt_changed.connect(_on_game_debt)
 	_start_after_ready()
 
 
@@ -92,6 +94,9 @@ func _exit_tree() -> void:
 		Story.battle_requested.disconnect(_on_story_battle)
 	if Story.camera_requested.is_connected(_on_story_camera):
 		Story.camera_requested.disconnect(_on_story_camera)
+	if Game.integrity_changed.is_connected(_on_game_integrity):
+		Game.integrity_changed.disconnect(_on_game_integrity)
+		Game.debt_changed.disconnect(_on_game_debt)
 
 
 ## Override: geometry, markers, interactables, zones, NPCs.
@@ -213,8 +218,8 @@ func get_prop(key: StringName) -> PropBillboard:
 func add_cast(id: StringName, pos: Vector3, facing: String = "s", script: StringName = &"", prompt: String = "Talk") -> CombatActor:
 	var a: CombatActor = CombatActor.create_party_member(id)
 	a.name = "Cast_" + String(id)
-	a.collision_layer = 1
 	add_child(a)
+	a.collision_layer = 1  # after add_child: CombatActor._ready puts party bodies on layer 2, which the leader walks through
 	a.global_position = pos
 	a.face(facing)
 	npc_actors[id] = a
@@ -425,6 +430,16 @@ func _refresh_porcelain() -> void:
 		a.set_porcelain_visuals()
 
 
+## Game is the ledger for Crono's integrity and Sera's Debt (Story commands, the gate toll): the bodies follow
+## it, each value on its own signal so a write-back of one never resets the other from a stale Game field.
+func _on_game_integrity(_v: float) -> void:
+	BattleAftermath.sync_from_game(party_actors, true, false)
+
+
+func _on_game_debt(_v: float) -> void:
+	BattleAftermath.sync_from_game(party_actors, false, true)
+
+
 # ------------------------------------------------------------------ battle hand-off
 
 func _on_zone_triggered(zone: EncounterZone, advantage: String) -> void:
@@ -433,6 +448,10 @@ func _on_zone_triggered(zone: EncounterZone, advantage: String) -> void:
 
 
 func _on_story_battle(encounter_id: StringName, cmd: Dictionary) -> void:
+	if _in_battle:  # a battle command from a phase script mid-fight: spawn nothing, release the script
+		push_warning("Location: story battle %s requested during a battle; skipped" % encounter_id)
+		Story.report_battle_result({"reason": "busy"})
+		return
 	var enc: Dictionary = Data.encounters.get(encounter_id, {})
 	var enemies: Array[CombatActor] = []
 	var idx: int = 0
@@ -473,6 +492,7 @@ func start_battle(enemies: Array, center: Vector3, config: Dictionary, zone: Enc
 	_in_battle = true
 	controller.enabled = false
 	follow.paused = true
+	BattleAftermath.sync_from_game(party_actors)
 	for a in party_actors:
 		a.velocity = Vector3.ZERO
 		a.sprite.update_from_velocity(Vector3.ZERO)
@@ -492,10 +512,17 @@ func _on_battle_finished(victory: bool, summary: Dictionary, zone: EncounterZone
 	rig.set_truth(false)
 	controller.enabled = true
 	follow.paused = false
+	var result: String = BattleAftermath.outcome(victory, summary)
+	var story: bool = bool(summary.get("story", false))
+	if battle != null:
+		BattleAftermath.settle_enemies(battle.enemies, battle.coordinator.spared if battle.coordinator else [], zone, result)
+	var ratio: float = BattleAftermath.floor_ratio(result, story)
+	BattleAftermath.restore_party(party_actors, ratio)
+	for a in party_actors:
+		BattleAftermath.write_back(a, ratio)
+	if result == BattleAftermath.WITHDRAW:
+		BattleAftermath.regroup(party_actors, summary.get("withdraw_at", null))
 	follow.snap_behind()
-	if zone != null:
-		zone.clear_defeated()
-	_write_back_party()
 	_refresh_porcelain()
 	if field_music != &"":
 		Audio.play_music(field_music)
@@ -504,43 +531,15 @@ func _on_battle_finished(victory: bool, summary: Dictionary, zone: EncounterZone
 		battle = null
 	battle_finished.emit(victory)
 	Story.report_battle_result(summary)
-	if not victory:
-		if bool(summary.get("story", false)):
-			_revive_party(0.5)
-		else:
-			_on_defeat()
+	if result == BattleAftermath.DEFEAT and not story:
+		_on_defeat()
 
 
-func _write_back_party() -> void:
-	for a in party_actors:
-		var r: Dictionary = Game.roster.get(a.actor_id, {})
-		r["level"] = a.stats.level
-		r["xp"] = a.stats.xp
-		r["hp_ratio"] = a.stats.hp_ratio() if a.stats.is_alive() else 0.3
-		if a.time_debt:
-			Game.set_integrity(a.time_debt.integrity)
-		if a.solidity:
-			Game.set_debt(a.solidity.debt)
-
-
-## Defeat: no Game Over. Sera jumps the party back to the moment before the encounter (§16.1).
+## Defeat: no Game Over. Sera jumps the party back to the moment before the encounter (§16.1); the party
+## already stands at the defeat floor and the zone's enemies are reset (BattleAftermath).
 func _on_defeat() -> void:
 	Audio.tape_stop()
-	_revive_party(0.3)
 	place_party(Game.spawn_point)
-
-
-func _revive_party(ratio: float) -> void:
-	for a in party_actors:
-		if not a.stats.is_alive():
-			a.stats.revive(ratio)
-		else:
-			a.stats.hp = maxi(a.stats.hp, roundi(float(a.stats.max_hp()) * ratio))
-		a.visible = true
-		a.frozen = false
-		a.sprite.set_opacity(1.0)
-		a.sprite.set_tint(Color.WHITE)
-		a.sprite.play(&"idle")
 
 
 func _on_story_camera(mode: String, focus: Node) -> void:

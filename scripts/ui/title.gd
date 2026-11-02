@@ -58,7 +58,7 @@ func _ready() -> void:
 	add_child(menu)
 	_build_menu()
 	var foot := Label.new()
-	foot.text = "a sequel to Chrono Trigger  ·  Godot 4.7  ·  arrows / Enter"
+	foot.text = "Godot 4.7  ·  arrows / Enter"
 	foot.add_theme_font_size_override("font_size", 7)
 	foot.add_theme_color_override("font_color", Color(0.9, 0.86, 0.78, 0.7))
 	foot.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)

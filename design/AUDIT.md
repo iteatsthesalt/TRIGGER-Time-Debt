@@ -14,6 +14,9 @@ Audited 2026-10-29. Every source was read, compared and merged into the Story, C
 | Combined Master Bible (V2 merge) | 11 pp | Conflict register C1–C18 | Every conflict settled below |
 | Story Bible v0.1 | 1 p | Confirmation-process stub | Facts kept |
 | Chrono Apocrypha — Agent Production Bible | 45 pp | Earlier build-agent bible | Facts kept |
+| Chrono-Style Recreation Breakdown (Nich, Nov 1 2026) | PDF, ~1,800 lines of text | Art direction for an HD-2D take on the 16-bit style: 64 px three-head sprites, one locked palette, SNES-density world, engine settings, PixelLab workflow, originality rules | Adopted as the art direction on 2026-11-02 (DECISIONS "Direction"); its text is `STYLE_BREAKDOWN_2026-11-01.md` |
+| Hybrid HD-2D Combat Architecture (uploaded 2026-11-02) | ~580 lines | The architecture note the Combat Laws grew from: in-place diorama lock, Action Gate with Sync Hold, compound tag shaving, Break-locked geometry, pooled Boost | Reference only, kept as `COMBAT_ARCHITECTURE_HYBRID.md`; scored against the build in the 2026-11-02 audit (ARCH rows) |
+| Chrono Apocrypha — Master Design Bible (uploaded 2026-11-02) | ~490 lines | An earlier master bible: the Time Debt premise, aged cast, nine playables, canvases, open zones, the Possibilities Engine | Compared in the 2026-11-02 audit (APOC rows); every difference is settled there or in the Story Bible |
 
 The 12 plates (FINAL and V2 hold the same 12 images) are in `images/plates/`.
 

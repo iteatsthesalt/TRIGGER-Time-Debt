@@ -254,3 +254,891 @@ Settled while applying the verified docs audit (the full list is `docs/reports/W
   shadow map, 2D transform snap; world textures (placeholders and generated) import with mipmaps and without
   Detect-3D compression, and `import_texture.py` writes that sidecar. Not done: rounding each sprite's drawn
   position to its pixel size (the right place is a render-side snap in `ActorSprite`).
+
+## Code-audit fixes, second pass (2026-11-02)
+
+The verified code audit (docs/reports/WORKSPACE_AUDIT_2026-11-02.md, section A) was fixed in fifteen clusters,
+each by one agent and reviewed read-only by another, with one re-fix round where the review asked for it (commits
+c52baeb to dc83e3f). Each call names what was built, why, and the bible section it reads; where a re-fix restated
+a call, the later text is kept.
+
+### Story runner
+
+- **The gate toll: first traversal per gate, hub free, charged by the Router.** A gate jump is charged the first
+  time the party arrives in a universe other than U0 along the thread: Crono −0.4 integrity
+  (TimeDebtComponent.on_gate_jump, so Reinforced halves it), Sera +5 Translucency Debt
+  (SolidityComponent.on_gate_jump), both mirrored into Game by delta; actors without live components are charged
+  on Game directly, and Sera is charged whether she is with the party, hovering or taken. Returning to the Atrium
+  (U0) and going back through an opened gate are free; a direct U_n → U_m jump opens gate m and pays once. Opened
+  gates are Flags counters `gate_opened_u<n>`. Router.go charges it whenever the loaded location's universe
+  differs from the one left; the Story `universe` command charges it only with `"jump": true`, so canvas swaps
+  (ch1_nightmare's U7, the Cradle's flashes) cost nothing. Implemented in scripts/world/gate_jump.gd. Why: Combat
+  Laws §10.1/§10.2 and Story Bible §9.4/§9.5 state the costs and the 'hub and back through an opened gate is free'
+  exception but never say where a gate is traversed in code; the Router is the one place every location change
+  passes, and the story `universe` command is also used for dreams, so it needs an opt-in. Sera's debt is 'the
+  story's clock … each universe is one of her seven days', which is why it accrues even while she is captive.
+  (COMBAT_LAWS_BIBLE §10.1, §10.2; STORY_BIBLE §9.4, §9.5)
+- **Story commands compose: side effects, then actions, then one verb.** Every dialogue command runs
+  `_apply_side_effects` (set_flag, give_item, counter, var, …), then the scene actions (move, face, anim,
+  show/hide, teleport, camera, universe, music, sfx, fade, emote, shake, run, call, battle, go), then its verb:
+  say / caption / choice (in that precedence), then a numeric `wait`, then goto / if / end. A bool `wait` belongs
+  to `move`; a numeric `fade` belongs to `stop_music`; `label` is a pure marker. A choice's picked option still
+  applies its own side effects and goto; `battle` (on_win/on_lose) and `go` jump before any verb. Why:
+  say/caption/choice/goto/if/end/wait returned before the side-effect chain, so any sibling key was dropped
+  silently (Chapter 2 already had two {fade, wait} beats). One shared path is simpler than a one-verb lint rule
+  and matches how the generator already writes commands. README's command list states this order. (README
+  'Dialogue and cutscenes' (engineering, no bible rule))
+- **"Name:State" is a first-class flag form everywhere the runner reads a flag.** `set_flag`, the `flag` condition
+  and the `not_flag` condition accept "Name:State" (split once on the first colon) as well as a separate `state`
+  key; an explicit `state` wins over the colon part. `{"not_flag": "Name:State"}` means 'not in that state'. Why:
+  README documents the colon form, boot.gd's --flag= already parses it and Chapter 2 writes it twelve times; the
+  runner was the only reader that did not split it. (STORY_BIBLE §9.2, §9.3 (the flag list); README 'A flag')
+- **Router.go reports its verdict; a refused story `go` ends the script and says so.** Router.go returns true when
+  the location is up and false when a transition is already running (warning), the id is unknown or unbuilt
+  (error) or the scene fails to load. Story's `go` records `last_refused_go`, warns with the script id and
+  destination, and still ends the script when `end_after` is true (default), so the location stays interactive
+  rather than running the commands that followed the departure. Title's Continue checks has_location before go so
+  a save in an unbuilt location leaves the title usable. The registry keeps unbuilt entries (leene_square,
+  bamboo_grove, kuro_truce) as scaffolding; has_location checks the file. Why: go() was void and silent, so
+  callers mutated state and the title's _busy flag before a transition that never happened; ending the script on
+  refusal is the safer runtime behaviour because the lines after a `go` usually belong to other labels. (none
+  (engineering))
+- **Story vars travel with the save and reset per run; history is capped.** Story.to_save()/from_save() store the
+  `var` dictionary under a new "story" key in the save (old saves load with empty vars); Game.new_game() emits
+  `new_game_started` and Story.reset() clears vars and history; the dialogue history keeps the last 200 lines.
+  Why: README advertises `var` as a command and condition; without persistence a Continue forgot every branch and
+  without a reset a New Game inherited them; the history grew for the whole session. (README 'Dialogue and
+  cutscenes' (engineering))
+- **Runner accepts the Chapter 2 generator's forms: face `to`, show `at`, music "stop", camera focus by marker.**
+  `face` with `to` turns the actor toward another actor or a marker (face_toward); `show` with `at` teleports to
+  that marker first; `music: "stop"` stops the music (its `fade` key is the seconds) instead of playing a track
+  named stop; a camera `focus` that names no actor resolves to the location's marker node of that name (read from
+  the scene's `markers` dictionary). Why: Five generator forms were silent no-ops (STORY-8); accepting them in the
+  runner is generic and keeps the generator and chapter JSON untouched. README's command list should mention `to`,
+  `at`, `music: stop` and marker focus. (README 'Dialogue and cutscenes')
+
+### After a battle
+
+- **Post-battle restore (BattleAftermath).** Every battle ends in one outcome: victory, defeat or withdraw. The
+  fallen stand up at 1 HP after a win or a withdraw, at 30% (living raised to 30%) after a field defeat, and at
+  50% after a scripted story loss. Bodies are fully restored (fade killed, transparency 0, visible, unfrozen,
+  untinted, hull down). The write-back runs after the restore, so the roster matches the bodies. Reserves still
+  down record the same floor. Why: The owner's direction 'after battle: fallen members revive at 1 HP' (cited by
+  GAP1-1). Before this, a member KO'd in a won fight stayed invisible at 0 HP and started the next fight KO'd.
+  Combat Laws 16.2 only covers in-battle revives. (COMBAT_LAWS 16.1, 16.2)
+- **Withdraw.** Withdraw is a command on the ally's window. The ally first falls back toward the battle plane's
+  nearest edge with its move for the window: at most its move range (SLOW halves it), aimed 1 m inside the 28 m
+  plane edge. In the field the plane is laid over the room (§2.1), so the fall-back lands only on ground the party
+  can stand on (WalkableGround). That means inside the Location's map_bounds less 0.6 m, with world floor
+  (collision layer 1) under the body's whole 0.4 m footprint within a 0.5 m step up or 0.6 m drop, and no world
+  solid overlapping the body. The fall-back is walked in 0.5 m samples. A sample a solid takes (crate, ledge, gate
+  post) is passed over, as the battle's Move passes over it, and the walk ends where the floor or the bounds end.
+  The ally then attempts the withdraw if it stands within 2 m of the plane's edge, or within 2 m of the room's
+  walkable edge along its fall-back line, so a withdraw can succeed in rooms smaller than the plane. The attempt
+  succeeds when no enemy gauge is above 80 and otherwise costs the turn. A fall-back that ends short of both edges
+  costs the turn. Success ends the battle as its own outcome (reason 'withdraw'): no integrity, no defeat sting,
+  no Sera jump-back. The zone's enemies stay, at full strength, un-Broken and wandering. The leader regroups where
+  the ally broke away, or where it stood before the battle when the ground there cannot hold it. Followers the
+  ground cannot hold step back toward the leader. Withdraw is never offered in boss or story battles. Why: The
+  first version aimed at a fixed 13 m plane edge and teleported the ally there. In the shipped Atrium that point
+  is 14.2 m from the hall centre, past its 13.5 m floor, so the ally fell mid-battle and the regrouped leader fell
+  forever, a soft-lock. The plane conforms to the terrain (§2.1), so the room's walkable edge is the edge that
+  matters indoors. (COMBAT_LAWS_BIBLE §4.1, §4.2 (command table), §16.5, §2.1)
+- **Enemies after a battle.** On a win or withdraw, dead and spared enemies leave the zone. A field defeat stands
+  every foe of the encounter up again (the jump back to the moment before). Survivors are reset to full HP,
+  shields, no statuses, un-Broken, on fresh wander routes. A zone re-arms only once the leader has stepped out of
+  contact. Bodies no zone owns (story foes, bosses, adds, summons) are freed after the battle. Why: Spared enemies
+  stayed in the zone, invisible and spareable again for XP and lean. Broken survivors stayed frozen gold forever.
+  Story-battle bodies stacked on every retry. (COMBAT_LAWS 4.2, 16.1, 16.5)
+- **Game is the ledger for integrity and Debt.** Location syncs the field Crono's TimeDebtComponent and Sera's
+  SolidityComponent from Game whenever Game.integrity_changed or debt_changed fires (each signal syncs only its
+  own value), and again at battle start. Why: Story writes (Prologue set_integrity, the Cradle loss's +5 Debt,
+  Chapter 2 phase-script integrity) went to Game only and were overwritten by stale component values at the next
+  battle's write-back. (COMBAT_LAWS 16.1; STORY_BIBLE Prologue)
+- **Guests have roster rows.** Game.set_party gives any kit marked "guest": true that is not recruited a roster
+  row at its join level and teaches its unlocked kit. Guests are never recruited and never sit on the bench. Why:
+  Marle (Combat Laws 2.2: 'with her own small kit') had no techs in the Cradle, so phase 1's LIGHT plates could
+  never be shaved, and her XP was discarded. (COMBAT_LAWS 2.2, 14.2)
+- **Engagement by facing.** Pre-emptive when the leader stands more than ~107 degrees off the enemy's facing
+  (behind it) or the enemy is frozen, asleep, stunned or time-stopped. Ambush when the leader faces away from the
+  enemy. Normal otherwise, back to back included. Contact distance is max(1.1 m, enemy body_radius + 0.6 m). Why:
+  The old rule read velocities: a stationary enemy approached from behind was 'normal', and a standing leader
+  approached face-on was 'ambushed'. Large enemies had to be entered before contact registered. (COMBAT_LAWS 2.1,
+  2.3)
+- **Post-battle restore: Game follows the bodies during a battle.** From battle start
+  (BattleAftermath.enter_battle) until the write-back (write_back), Game.crono_integrity and Game.sera_debt follow
+  Crono's TimeDebtComponent and Sera's SolidityComponent through their change signals. Outside battle, Game stays
+  the ledger and the field bodies sync from it, as before. Why: Story's mid-battle writes are relative to Game
+  (for example a phase script's integrity -2). With Game stale during the fight, the absolute Game-to-body sync
+  discarded in-battle tech costs and repairs. Following during the battle only keeps field writers, such as
+  GateJump's delta pattern, from double-counting. (COMBAT_LAWS_BIBLE §10.1, §16.1)
+- **Break hull and avoidance after a Break.** The Break hull is monitorable (layer 5) only while the body is
+  Broken or a statue. on_recover() and restore_body() give back the NavigationAgent avoidance the Break found,
+  where on_recover used to force it on. Why: restore_body left avoidance off and the hull detectable. A fresh
+  enemy is created with avoidance off and should get none from a recovery. (COMBAT_LAWS_BIBLE §5.4)
+
+### Battle scene and deck
+
+- **A Swap is the window's action.** Both swaps end the acting ally's turn the way any command does (_finish_turn,
+  then _after_party_action): the ordinary Swap from the Bench, and the swap of a KO'd ally from within 3 m
+  (SwapRules.KO_REACH_M). Hover Sera holds no party slot and cannot swap. A KO'd reserve cannot be swapped in. The
+  first Swap still pays +1 BP and the newcomer arrives with gauge 50. Why: Combat Laws 4.2 lists Swap among the
+  window's actions and says nothing about a free KO swap. The free version left the coordinator in COMMAND_WAIT
+  with no deck (GAP4-2) and skipped the turn bookkeeping (COMBAT-21). (COMBAT_LAWS_BIBLE §4.1, §4.2 (Swap row),
+  §3.6)
+- **One move per decision window.** cmd_move refuses a second move in the same window (moved_this_window resets
+  when a window opens). Withdraw's fall-back is that window's move. Why: Bible 4.1: 'The ally can move and then
+  take one action'. Repeated moves could cross the plane in one window. (COMBAT_LAWS_BIBLE §4.1)
+- **Pay Time Debt is counted in integrity points.** The Dollhouse Seal costs SealPayment.INTEGRITY_COST = 5 points
+  of Crono's 0-100 integrity. Deck label, floating number and caption all say '5% integrity'. Through
+  TimeDebtComponent.max_hp_factor this lowers his HP ceiling by 2.5 points (the HUD shows ceiling 98% after one
+  payment). The floating number used to say '-5% ceiling'. The bible's '5% of Crono's max HP' stays superseded by
+  the existing DECISIONS entry 'The Dollhouse Seal is paid from the deck', which this one makes precise. Why:
+  BATTLE-12: the cost was 5 integrity points, but the number promised a 5-point ceiling loss (2x wrong). One
+  constant now builds both strings, so they cannot drift. (COMBAT_LAWS_BIBLE §14.1 (Prologue, line ~1507);
+  DECISIONS 'The Dollhouse Seal is paid from the deck')
+- **One summon rule, the summoner's own cap.** EnemySpawner is the only code path that brings summoned enemies in.
+  The cap is the summoner's own max_adds (boss file or enemy entry, default 3): never more than that many of one
+  kind standing beside it. A boss's controller places the boss's own adds, and its director may still take them
+  over. Any other enemy's summon is the BattleScene's, under that enemy's own cap, even inside a boss fight. Adds
+  ring the summoner at 1.8 + 0.4k m and play the revive animation. Why: BATTLE-16: two implementations disagreed.
+  Zone summons had no cap, and a regular enemy beside a boss was capped by the boss's file. CLAUDE.md: generic
+  before wide. (COMBAT_LAWS_BIBLE §14 (adds), §11 summon effects; CLAUDE.md 'Systems are generic before they are
+  wide')
+- **Seals are shown, not just applied.** While a body is undamageable (the Dollhouse Seal, the split dolls), the
+  preview promises 0 damage and the aim line says 'SEALED: no HP damage'. A strike's number reads SEALED and the
+  plate is prefixed [SEALED]. Plates still shave. Why: BATTLE-9: the HUD promised ~N damage, then printed 0 with
+  no persistent cue. Bible 17.5: 'The plate always shows the math'. (COMBAT_LAWS_BIBLE §17.5)
+- **Wind-up tint follows the decal.** Enemy plates and Turn-Bar markers use BattleHUD.telegraph_tint: cyan to
+  orange by wind-up progress (clamped), brightness 0.85 + 0.15*sin(TIME*6), the same formula as
+  aoe_floor_ring.gdshader. Plates are re-projected every frame, including while aiming. Why: BATTLE-19: the plate
+  weight ran from 0.25 to 1.25 and extrapolated past orange. Plates also froze in screen space while the camera
+  eased during targeting. (COMBAT_LAWS_BIBLE §3.5, §17.1 (Telegraph row))
+- **A decision window never stays without its deck.** Every party command goes through
+  BattleScene._run/_after_command. A refusal shows the reason and reopens the actor's deck. An accepted command
+  closes the deck, unless the command itself opened the next window. A frame-level guard reopens the deck for any
+  COMMAND_WAIT window left in Mode.NONE (not in auto, input-blocked, paused or Story-running states). Attack is
+  greyed out when no enemy is targetable. Why: BATTLE-1 and GAP4-2 were both soft-locks from this one hole. A
+  parked ally reopening the floor inside a command had the same problem: the old _after_command closed the deck it
+  had just opened. (COMBAT_LAWS_BIBLE §3.4 (Ready Pool re-prompt), §4.1)
+- **The autobattle exercises effect techs.** AutoBattler casts allowlisted party effect techs (EFFECT_USES:
+  Tachyon Needle, HOLD, Rewind, Ward, Fall Break) when one has a target (30% per window). It boosts to the bank's
+  max_spend one window in four, takes a Sync Hold 10% of the time when SyncHoldRules allows, and prints an
+  'AUTOBATTLE victory=... cmd=n' tally at every battle end. Costly or story-bound techs (Time Debt Seal, Borrowed
+  Future) are never cast. Spare, Withdraw, Swap, parry and Duals stay covered by unit tests only. Why: GAP3-4: a
+  green probe certified only Attack, Guard, Item and pay_debt; TechEffects.apply never ran in automation.
+  (CLAUDE.md quality bar (probes); COMBAT_LAWS_BIBLE §18.7)
+
+### Field and combat actors
+
+- **The Broken-kill statue counts battle time and lives in the coordinator.** StatueTimers (RefCounted, owned by
+  BattleCoordinator) starts an 8 s statue when an enemy dies while Broken and ticks it with battle time inside
+  advance(). It answers whether a dead body still stands as LINE_PIERCE cover, and calls the body's shatter() when
+  time runs out. Dead, spared or fled units no longer tick their Break, so a corpse never recovers. Why: The bible
+  counts Break timing in battle time, and the statue's terrain role belongs to the coordinator's _blockers(), so
+  the statue's clock and its cover must be the same clock. The old CombatActor physics-time countdown never ran
+  and could not have agreed with the coordinator. (COMBAT_LAWS_BIBLE §5.4 'Killed while Broken', §5.5, §18.7 check
+  9)
+- **Scripted walks always resolve.** ScriptedWalk ends a walk on arrival, after 0.75 s with no headway, or after
+  distance/speed + 2 s. It always stops where the walker stands (no snap through colliders) and pushes a warning
+  naming the walker and the target. A frozen walker makes no headway and therefore resolves. Why: An awaited Story
+  move must never soft-lock a cutscene. Snapping to the target could put a body inside a prop collider, so
+  stopping short with a warning is the safer failure and shows content authors where a prop is in the way.
+  (STORY_BIBLE scripted scenes (story_runner move); no bible rule, engine robustness)
+- **One integrator per body per tick.** CombatActor.step() applies gravity and move_and_slide. The field movers
+  (PlayerController, PartyFollow, EncounterZone) run at process_physics_priority -1 and call it. A body only falls
+  on its own when no mover stepped it this tick or the last. A body on a scripted walk is moved only by that walk.
+  Why: Applying gravity twice while airborne doubled fall speed and horizontal step. A shared step keeps one copy
+  of the gravity code instead of four. (CLAUDE.md 'generic before wide')
+- **Sera's Debt is drawn on her sprite.** At 0 Debt she is pristine. From the first point she shows the hairline
+  porcelain state (crack_amount 0.2 + Debt/100, the formula the old Rewind code computed) and her opacity is 1 -
+  0.005 x Debt (about 0.73 at the field cap of 55, floor 0.5). This is applied by set_porcelain_visuals, so the
+  Rewind, the gate toll and the post-battle refresh all show it. Why: Story Bible: the crack 'spreads, like her
+  father's, when she pays', and the Rewind 'costs +5% translucency'. The old code set state 1, which the shader
+  ignores, and never touched her opacity. (STORY_BIBLE §4.2 Sera 'Look', Chapter 1 beat 2 (the nightmare /
+  Rewind))
+- **The battle-time readout is debug-only.** BattleHUD's 't 12.3' label is visible only when Game.debug_mode is
+  true. Why: No bible or doc describes it as player HUD; it is a development readout. (COMBAT_LAWS_BIBLE §17 (HUD
+  feedback))
+- **A focus release during a battle or cutscene still counts.** Releasing focus while the controls are held clears
+  focusing at once. The visual reset (focus_changed(false)) is delivered once the controls are back. Why: A
+  swallowed release left the leader at 0.4x speed and, after a cutscene, the forced porcelain and truth lens
+  stayed on. Delaying only the visual reset avoids cutting a cutscene's own camera. (STORY_BIBLE Ch1 beat 1
+  (Porcelain Insight))
+
+### Bosses
+
+- **A boss phase that comes due during a Break waits for the Break.** When a phase ends while the boss is Broken
+  (its own 'break' gate, an HP window crossed, a director's advance_phase), the whole phase change waits until the
+  boss recovers: banner, script, new shield, tags, seal, adds and director on_phase. The Break keeps its crits and
+  halved DEF on the old plates. Why: The bible says the Break plays out first and the new shield appears when the
+  boss would have recovered. Running the whole change at one moment keeps scripts ("the plate climbs to 18") and
+  directors (reveal_all, untargetable) in step with the plates. (COMBAT_LAWS §14.1 Phase shields)
+- **HP windows are walked one at a time; gates hold; seals hold.** A phase is left when the ratio reaches its
+  hp_to and the next phase's hp_from (resolved by hp_from_by_branch). It is left one window per transition, so
+  every phase is entered. A gated phase (advance_on) is never left by HP until its gate opens, and after that its
+  window still applies. A sealed phase holds its window until the seal is paid. Why: Otherwise one big action
+  skips a phase's script, seal and adds (BATTLE-8), and zero-width branch phases are unreachable (DATA-4). R-66Y's
+  Mercy road gives Heart Expose 'below 40%'. (COMBAT_LAWS §14.1, §14.5)
+- **Generic gates versus director gates.** break, adds_defeated, arm_broken and branch are opened by
+  BossController. scripted, threads_cut, honest_lines, sera_voluntary_phase_out, stand_still_12s and ending belong
+  to each boss's director (open_gate / advance_phase). Any other value is a validation error. A gated last phase
+  ends the fight when its gate opens. Why: Generic before wide: the common mechanics are data, and the bespoke
+  ones are written with their chapters, visible as lint warnings until then. (COMBAT_LAWS §14.1;
+  docs/reports/enemy_codex_report.md schema keys)
+- **A fight that ends with the boss standing pays it as a defeat.** A final Break, the yield at a last window
+  above 0 and a gated last phase all end the battle as a victory once the current action has resolved. The boss's
+  XP is counted as a kill's and its drops are given. Why: The Shard Doll's 60 XP and R-66Y's key drops were
+  otherwise lost, and the bible's 'spare it' outcome needs the doll alive. (COMBAT_LAWS §14.3, §14.4, §14.5)
+- **Krona duel ends at 50%, or at once on the overcharge.** An ungated last phase whose window ends above 0 ends
+  the fight when it closes (BossDef.ends_at), so the Krona duel yields at 50%. Taking 'Overcharge the gauntlet' in
+  ch2_duel_mid Breaks her outright with ASTRAL and ends the duel there. The krona_duel director answers the
+  script's `call duel_overcharge` by watching Story.choice_made, so the future grove scene must not implement
+  duel_overcharge as well. Why: The bible says the duel ends at 50% and the overcharge ends it with an ASTRAL
+  burst that Breaks her outright. No grove scene exists yet, so the director is where this can live. (COMBAT_LAWS
+  §14.4 Krona, Barren Heir)
+- **Possibility Branch fallback is the dialogue box.** A phase with advance_on 'branch' freezes the clock
+  (State.BRANCH while ticking, plus the transition pause) and asks the boss file's branches entry (the one whose
+  after_phase is the previous phase) as a Story choice. The option's flag (Flag:State) is written at once; an
+  option with no flag adds its lean. A director may stage it in-world instead (on_branch returns handled, then
+  answer_branch). An optional branch `prompt` is the line shown; `notes` are never shown. Why: The bible wants an
+  in-world action. A generic menu keeps every branch reachable until each chapter's director stages its action.
+  (COMBAT_LAWS §14.1 Possibility branches)
+- **Boss add rows: counts, triggers, overrides, respawns.** The cap is the file's max_adds, else the largest
+  authored count (minimum 3); the Cradle's recorded 2 stays. Trigger rows never spawn at phase start:
+  every_<N>pct_hp_lost fires on each N% lost, and other triggers wait for a director's spawn_triggered(id). Row
+  overrides (shield, level, weak, resist, tags, hp, xp) apply to a copy of the codex enemy. respawn_s runs on
+  battle time while the row's phase lasts. Why: Authored counts such as 6 arms and 4 umbilicals, the Ashigaru on a
+  surrender order, and Cyrus's 4-plate puppets were wrong or dead before (DATA-3). (COMBAT_LAWS §13.9, §14.4,
+  §14.5, §14.8)
+- **Boss on_break / on_enter strings are design notes.** These strings are never shown in play. The boss's first
+  Break in a fight shows Sera's bestiary break_line (data/text) unless the director handles on_break. Why: Most of
+  these strings are notes to designers ('Sets Daimyo_Phase1.'). The text layer already has the player-facing line.
+  (DECISIONS 2026-11-02 text layer; docs/JOB_CHATGPT.md break_line)
+- **999 Shard Doll retune (DATA-20).** The doll stays Lv 3 (bible §14.3 says Lv 4) with gentle powers for a
+  zero-fail tutorial. HP stays 9000 (the guide curve's 2,250 x 4) as a buffer only, because the fight ends on the
+  phase-4 Break and has no HP bar. Why: A zero-fail first boss for a Lv 3-4 party. The HP figure is not a Lv 3
+  curve value and is kept on purpose so the phases, not the HP pool, end the fight. (COMBAT_LAWS §14.3)
+- **The split dolls fold back instead of dying.** At phase 4 the three split dolls leave through
+  BossController.fold_add: no gold statue, no XP, their bodies slide into the doll as they fade. This amends the
+  earlier 'the director kills them itself' entry. Why: chapter1.json says 'The three fold back into one'. Killing
+  them stood three statues and paid three shares of split-doll XP. (COMBAT_LAWS §14.3; DECISIONS 'The 999 Shard
+  Doll's split dolls hold their Break')
+- **Cradle crack and gold leaf amounts.** A Dark Break Signature widens Crono's crack by 3 integrity, paid once
+  through his TimeDebtComponent and mirrored into Game. The phase-3 U7 gold leaf lasts 3 battle seconds (not
+  wall-clock), returns to the canvas the fight began on, and is restored on any battle end. Why: The bible says
+  only 'the crack widens' and gives no amount. Combat timers run on battle_time. (COMBAT_LAWS §14.2, §18.5)
+- **Drops a scene narrates are not boss drops.** The Daimyo's and the Cradle's drops lists are empty:
+  ch2_daimyo_won, ch2_vault_nodachi and prologue_cradle_defeat hand those items out. Lint warns when a boss drop
+  is also granted by dialogue. Why: A KO drop handed the Cobalt Nodachi out whatever the vault choice was
+  (GAP4-8), and gave the Cradle's bracer twice. (COMBAT_LAWS §14.2, §14.4; DECISIONS 'Audit fixes' (Cobalt
+  Nodachi))
+
+### Statuses, shields and the enemy brain
+
+- **Ruin is battle-scoped until camps exist.** Enemy Ruin lowers the max-HP ceiling for the battle;
+  RuinRules.clear removes the stacks (TimeDebtComponent and StatusComponent) and resets the cap when the battle
+  ends. TimeDebtComponent.rest() still clears Ruin for a future camp. Why: The cluster note asked that Ruin not
+  leak between battles. There is no camp in the build yet (TimeDebtComponent.rest() has no caller), and party
+  actors are rebuilt per location, so 'until camp' would really mean 'until the next location loads'. Persisting
+  it properly needs a Game roster field cleared at camp, which belongs with the camp system. (Combat Laws 12.2
+  (Ruin), Appendix A.45, 18.7 #18)
+- **Where Ruin lives and how the Porcelain Silence cap is found.** Crono's stacks live in
+  TimeDebtComponent.ruin_stacks, inside the 10.1 formula; his StatusComponent 'ruin' entry mirrors them for the
+  HUD. Every other battler's stacks live in the StatusComponent entry, and CombatantStats.max_hp() applies
+  max(0.10, 1 − 0.15 × stacks). The cap is 10 when any boss on the field has an arena_hazards entry starting with
+  'ruin_scaling' (config 'ruin_cap' overrides it), otherwise 3. Why: §12.2 lowers every character's ceiling, not
+  only Crono's. The Porcelain Silence rule is a §12.6 arena hazard and the data already carries it as a string, so
+  no new field is needed. (Combat Laws 12.2, 12.6 (Ending spaces), 14.12 Ending 5)
+- **Statuses that act during an enemy action are read when the action is chosen.** EnemyBrain.choose writes
+  refracted, probability_lock (then removes it, since it covers the 'next action') and the GUILTY redirect
+  ('turned') into the action dictionary, and EnemyStrike reads them. Why: The coordinator counts down turn-based
+  statuses before the action resolves, so a 2-turn status read at resolution would cover only one action. Reading
+  at choose time gives Refracted and GUILTY their two actions. (Combat Laws 7.3, 12.1, 12.2)
+- **GUILTY redirects one attack at one ally.** 50% of a GUILTY enemy's attacks aim at a random living, targetable
+  ally of its own. A redirected attack, even an area one, resolves as a single hit on that ally. Bosses are immune
+  (12.1). Why: The bible says 'hits one of its own allies'. Resolving the shape against enemy bodies would hit a
+  crowd, and resolving it against the party would hit the wrong side. (Combat Laws 7.3, 12.2 GUILTY)
+- **A Jammed enemy whose actions all wind up makes a plain Attack.** When every action winds up and the enemy is
+  Jammed, it strikes with its weapon tags, no wind-up, at the weakest target. It does not skip the turn. When
+  nothing is usable, the brain relaxes the cadence first, then the HP window, and never relaxes Jammed. Why:
+  Jammed forbids starting a wind-up; it is not a stun. A plain strike keeps the enemy's turn and gives HZ a
+  visible payoff against a third of the roster. (Combat Laws 7.3, 12.2 Jammed)
+- **Party accuracy: rolled per strike, only when below 100%.** Each party strike rolls against 1 + accuracy_mod,
+  and only when the mod is negative. A miss shaves nothing and shows 'miss'. The plate preview does not forecast
+  misses: it shows what a hit that lands will shave. Why: BLIND is meant to cost hits (§12.2). Skipping the roll
+  at full accuracy keeps seeded tests and probes drawing the same numbers. Acceptance #23 still holds for every
+  strike that lands. (Combat Laws 12.2 BLIND/Ink Blot/Ash Inhale/White-Noise, 18.7 #23)
+- **Shave penalties are taken per matching strike.** ShaveBonus.penalty: BLIND [BOW]/[GUN] hits lose 1 shave, and
+  Crono's ASTRAL hits under Sticky Ash lose 1. The penalty comes off each matching strike after the flat bonus,
+  floored at 0, in both preview_action and apply_strike. Why: Both rules say hits 'lose 1 shave'. Applying them in
+  the shared shave helper keeps the preview equal to the result. (Combat Laws 12.2 BLIND, Sticky Ash; 18.7 #23)
+- **Ash Inhale counts as one SLOW stack.** Ash Inhale gives gauge ×0.5, movement ×0.5 and −20% accuracy. It does
+  not add to a Mercury SLOW stack for the hitch. Why: The table says 'SLOW (1 stack) and BLIND 20%'. This is the
+  smallest faithful reading. (Combat Laws 12.2 Ash Inhale)
+- **Refills once only matters at a 'break' gate.** consume_refill() is checked when a phase gated by 'break'
+  Breaks: the first Break rebuilds the plates (as every Break does) and the gate stays shut; the second opens it.
+  Phases that advance by HP window are unaffected. Why: Every Break already ends in a full rebuild (§5.4).
+  'Instead of the phase ending' only changes anything where a Break ends the phase. (Combat Laws 5.7 Refills once,
+  14.1)
+- **Break-immune conditions and shared plates.** ferro_in_party holds while a living party member's kit element is
+  FERRO; it is evaluated live, so a swap-in releases a Break that is waiting at 0. Other conditions (springs_cut)
+  hold once BreakConditions.release(body) is called. Conditions are re-armed every battle. For shared plates, the
+  first body of a shared_group holds the count; members show it, Break with it, share lock extensions and recover
+  with it; if the holder dies, the first living member keeps its count running. Why: §5.7 and §13.4 E38 / §13.7
+  E64 describe both rules. Linking to the first body needs no extra node and keeps preview_action's existing
+  routing. (Combat Laws 5.7, 13.4 E38, 13.7 E64)
+- **DoT ticks and regen.** A DoT applied by an enemy hit stores tick = max(1, 15% of that hit's raw damage) and
+  deals tick × stacks each period. It never crits or shaves, and the zero-fail HP floor holds. Regen heals its own
+  tick, or 2% of max HP if it has none. Grief costs 2 MP per stack every 10 s; Laugh Track Drain costs 1 MP every
+  8 s on each bearer (the action hits the whole party). Why: §6.3 fixes DoTs at 15% of one hit's raw damage at
+  cast time; regen has no amount in the bible and 2% matches the spore mat. (Combat Laws 6.3, 12.2)
+- **Boss status rules count Mercury SLOW as SLOW.** Bosses halve slow, mercury_slow, chrono_lag and knock_static
+  (seconds × 0.5; turns halved, at least 1) and are immune to confuse, guilty and time_stop. An entry can lift
+  this by listing statuses under behaviour.takes_statuses. Field ticks (the amber pool) are not halved. Why: §12.1
+  names 'SLOW'; Mercury SLOW is the SLOW status of §12.2. Fields re-apply every second, and halving their 1.5 s
+  would make them flicker. (Combat Laws 12.1)
+- **Glenn's laugh BP and the Ringmaster exception.** The laugh BP comes only from an empty counter. A Broken enemy
+  with behaviour.steal_all_when_broken gives up its whole counter in one steal; the pool's cap still applies. The
+  Ash Ringmaster's phase data carries the flag. Why: §7.5 says 'If the counter is empty, he takes 1 BP from the
+  laugh'. §14.8 makes the Ringmaster's Break the one exception to the 3 BP cap. (Combat Laws 7.5, 14.8, 18.7 #22)
+
+### Resolution pipeline
+
+- **Turn statuses.** A status counted in turns ("N turns") counts the bearer's own actions after the action that
+  gave it. A status added while the bearer's own action is in progress (StatusComponent.begin_action through
+  on_turn_taken: Prism Guard, Rooted, Fragile) is not counted down by that action. A status that lands on a parked
+  ally counts that ally's next action. Why: Without this rule, a self-buff cast on the caster's own turn was used
+  up by that same turn's _finish_turn, so 'until his next turn' meant nothing. Cited in
+  scripts/combat/status_component.gd and battle_coordinator.gd. (COMBAT_LAWS_BIBLE §10.6, §12)
+- **NULL true damage.** NULL damage goes through the full party-hit pipeline (PartyHit.context into
+  DamagePipeline.compute_hit). It ignores DEF and resistances (resist, immunity, absorb). No weakness multiplies
+  it unless NULL itself created that weakness (`nulled_weakness`). Every other term applies as to any hit:
+  synergy, party synergy, home canvas, Boost, the Broken crit, guaranteed crits, perfect frame, falloff,
+  height/ledge, taken_mult, flicker and variance. Why: NULL had been a separate shortcut that skipped synergy, the
+  Broken crit, variance and the other terms. 'True damage' in §6.3 means the defence terms are removed, not the
+  whole pipeline. (COMBAT_LAWS_BIBLE §6.2-§6.4, §8.7, §8.8)
+- **Lv3 fields.** Boost Lv4 leaves the technique's lv4_field; if it has none, its own lv3_field; if neither, its
+  element's default field. Boost Lv3 leaves a field only when the technique's own row says so (lv3_field: Astral
+  Slash's watercolour puddle, Ferro Graviton's mercury pool, Prism Refraction's caustic floor). A plain Attack
+  leaves nothing, and a Boosted Attack scales only its power and shape (no Lv2 debuff, no Lv4 field). The field
+  covers the shape (CIRCLE: the circle; LINE: the line; SINGLE: a 2 m circle under the target) for 6 s of battle
+  time. Lint rejects field kinds BattleFields does not know. Why: The §11 tables give some techniques a field at
+  Lv3, while §7.4 gives every technique an element field at Lv4. One ResidualFields rule covers both and keeps the
+  Attack plain. (COMBAT_LAWS_BIBLE §7.2, §7.4, §4.2, §11)
+- **Floor fields and Sera; the two white blanks.** Every field except divinity_field, astral_field and sound_ring
+  is a floor field, and floor fields never touch Sera, good or bad (spore mat, golden patch, ghost ring, puddle
+  free cast). The Canvas Clash white blank, left by any NULL hit, is terrain only: it erases fields and leaves hit
+  tags alone. The NULL Boost Lv4 residual white blank (strips_tags) erases the tags of hits on targets inside:
+  neutral damage, no shave, no debuff. The caustic floor adds [VITREOUS] to party hits whose path crosses it, or
+  whose target stands in it. Why: If the clash blank also stripped tags, every NULL hit would cancel the fake
+  weakness NULL creates in the same circle. The bible's own 'Quantum Flicker' rule exempts Sera from floor
+  terrain. (Combat Laws 7.4, 9.6, 10.2, 12.1, 12.5)
+- **Divinity Field.** One temporary plate is worth 5% of max HP (FieldEffects.DIVINITY_PLATE_HP = 0.05). The
+  Divinity cap of 20% of max HP as temporary shield is therefore 4 plates on any shielded body, and 20% of max HP
+  of temp shield on an ally, gained at 5% max HP per tick. The thaw (the end-of-field shield return) goes to the
+  field's owners only. Balance note: this replaces the HP-scaled roundi(max_hp*0.2/50) plate cap, which gave a
+  64,000 HP boss about 256 plates, with a flat 4 for every enemy. Allies previously gained 1 HP of temp shield per
+  tick. Retune here if U3 bosses feel too hard to Break inside Divinity. Why: The old formula gave large bosses
+  hundreds of temporary plates, and allies a token 1 HP per tick. One plate-to-HP ratio applies the bible's 20%
+  cap the same way to enemies and allies. (COMBAT_LAWS_BIBLE §12.5, §9.6)
+- **Cap upgrades from flags.** A flag state earns a 15.7 upgrade by naming it under "upgrade" in data/flags:
+  Krona_Joined set gives parry_taught (6 frames); Goyama Repainted gives parry_dojo (8 frames); Central_Eye Broken
+  gives hold_step. CapUpgrades applies these on every flag set, never takes one back, and lint checks the ids.
+  max_bp and max_spend are wired the same way but wait for the Memory Shard and first-Vaelos-rift flags of later
+  chapters. Why: Before this, MAX_BP_UPGRADED, MAX_SPEND_UPGRADED, the parry-frame upgrades and hold_upgraded had
+  no setter. (Combat Laws 15.7, 7.6, 4.2)
+- **Technique signature.** The uniqueness key that lint uses for techniques (TechDef.signature) is casters +
+  effect + sorted tags + shape + radius + length. Same-caster techniques may share tags and size when their effect
+  differs. Why: The bible's own tables give several same-caster pairs one tag set and one size and tell them apart
+  by what they do: Mycelia Tether and Photosynthetic Burst, the three NULL commands, and Sera's SINGLE [TACHYON]
+  commands. Under a key of tags, shape and size alone, §17.5 would reject the bible's own content.
+  (COMBAT_LAWS_BIBLE §17.5, §18.2)
+- **HOLD needs a Broken target.** A technique whose data sets `requires_broken` (HOLD) is refused in cmd_tech
+  before any cost is paid when the target is not Broken. The command window stays open, so nothing needs
+  refunding. HOLD takes its step count from the technique's data `steps` or from options.steps, at +5% solidity
+  cost per extra step. Why: HOLD used to run against unbroken targets and ignored its step count. Refusing before
+  payment is the clean failure the bible asks for. (COMBAT_LAWS_BIBLE §10.2)
+- **Cooldowns are per caster.** A technique cooldown (data `cooldown_turns`) belongs to the caster. It counts that
+  caster's own actions, starting with the next one (the cast itself does not count, as with turn statuses). Each
+  caster of a Dual or Triple carries its own cooldown, and _can_cast refuses a multi-caster technique while any
+  partner's cooldown is running. A field the technique names as its `recharge_field` (Mercury Pulse: the amber
+  pool) clears the actor's own cooldown at once. Known gap: the partner check does not yet honour recharge_field,
+  and it has no dedicated test. Why: A cooldown shared across the party let one actor's turns recharge another's
+  technique. Cassia-09's Mercury Pulse says it 'recharges after 2 of her turns'. (COMBAT_LAWS_BIBLE §7.4, §9.6;
+  Cassia-09 kit)
+- **Party-only ledge term.** The ±10% height term (attacking down from a ledge of 1 m or more: +10%; attacking up:
+  -10%) is live for party strikes through PartyHit.ledge. EnemyStrike has no ledge term yet, and the preview's
+  _estimate_damage leaves it out, so on uneven arenas the preview plate and the actual hit differ by 10%. Why:
+  This records the asymmetry so it can be closed deliberately: add the term to EnemyStrike and to the preview
+  estimate. Shave parity is unaffected. (COMBAT_LAWS_BIBLE §8.8)
+
+### Technique effects
+
+- **Effect table.** A technique `effect` is either a bespoke handler (TechEffects.HANDLED, 40 ids, unchanged), a
+  row of data/effects/effects.json (57 ids), or an entry under `flavour` (prismlight_salvo) or `pending` (none
+  today), each with a reason. Every enemy action effect is an EnemyEffects arm, a summon:<key>, or listed in
+  `enemy_pending` (shared_damage). Every status the data names has a reader or is listed in `status_pending`
+  (confuse). Data.load_all and lint_data.py fail on anything else. Each row is the technique's §11 text turned
+  into conditions, damage and shave modifiers, and ops that run after the hit. Clauses that need a system nobody
+  has built yet go in the row's `unbuilt` text and are not faked. Why: The audit found 58 technique ids and 6
+  enemy ids that resolved silently as plain damage, and no check that could tell an unbuilt rule from a typo. This
+  follows CLAUDE.md's 'content is data, systems generic': most rules become one table row instead of a new match
+  arm. (Combat Laws §11, §5.3, §5.4, §7, §12)
+- **Readings chosen where §11 is ambiguous.** 'Next action' on an enemy is turns 2. Statuses on enemies count down
+  at the start of their own turn, so this matches the Lv2 debuffs: Gramophone Resonance's hitch, Ruin Elastic's
+  decoy, Masque Feint's mirror. A 'heals the party for what it deals' technique (First Light, the child variant)
+  shares the damage it deals evenly across the living party. 'High Cassia Synergy' (Ashtear Paradox) means the
+  Triple's synergy is 2.75 or more, which is the three-universes bonus. 'Lucca was asked' and 'Cassia consenting'
+  read the flag Lucca_Consent:Asked. Prometheus Overload without that flag writes Prometheus_Core:Burned. Rewind
+  Reel puts enemies back at their last turn start, because the engine keeps no 8 s history: wind-ups are undone
+  and the gauge loses 8 s of fill. A hz_static hit gets +30% if Static is tuned or the target is BLIND.
+  Washi-Hollow Rebirth's plate loss never Breaks on its own. Guile Elastic's clone draws the struck enemy's next
+  two actions. Origami Requiem's gold fold lasts the whole battle, because at 1% per 8 s a 6 s field would never
+  thaw anything. The Last Joke is offered only while vaelos or empress_vaelos stands. Why: §11 leaves these open.
+  Each choice is the smallest reading that keeps the rule mechanical and testable. (Combat Laws §11.5-§11.13,
+  §12.1)
+- **Enemy-owned fields hurt the party.** An Ash Field laid by an enemy (owner_team 1) slows the party inside it
+  and chips their temporary shield by one plate's worth every 2 s; the enemy's own side is not affected. It comes
+  from the Daimyo's oil flood (a BATTLEFIELD action covers the whole arena for 12 s) and from the oil-fire bike.
+  The Mercury Leaker's oil pool gives Mercury SLOW to party members standing in it and switches on Oil-Blight.
+  Before this change every ash field hurt enemies only, whoever laid it. Why: The Daimyo's phase data says
+  'oil_floods_arena_ash_field_slow_plus_shield_chip', and §12.2 defines Oil-Blight as a party-wide condition.
+  (Combat Laws §12.5, §14.4)
+
+### Progression and data readers
+
+- **One flag spelling.** Outside dialogue, every flag reference is "Name" (set, any state) or "Name:State"
+  (exactly that state), naming a flag and state defined in data/flags. This covers kit and tech unlocks, tech
+  requires_flags, a boss's *_by_branch keys and the requires of its adds, actions and phases, and universes
+  hazard_by_flag. FlagRef splits and validates; Flags.holds tests. The old Flag_State and Flag=State spellings are
+  rewritten and rejected by Data.load_all and lint_data.py. Pseudo-flags became real unlocks: Dark_40 ->
+  {dark_min: 40}; Act1_Done -> {chapter: 2}, because Story 'Acts of the hub' ends Act 1 when U1 opens in Chapter
+  2; True_Ending_Route -> {story: true_ending_route}. Why: Dialogue and README already use Name:State
+  (story_runner, boot --flag=). The kit Flag_State and boss Flag=State forms could never hold against Flags'
+  exact-id lookup. (Story Bible §9.3; Combat Laws §11 Unlock column)
+- **Kit unlocks.** A kit entry's unlock is a set of conditions that must all hold: chapter, on_join, level, flag,
+  light_min / dark_min / prismatic_min, drop (an enemy key whose drops have been awarded this cycle, Game.looted)
+  or story (never automatic; the chapter script teaches it with `learn`). Recruit and set_chapter check every
+  kind. A flag or affinity change re-checks the flag kinds, a level-up (BattleAftermath.write_back ->
+  Game.set_level) re-checks level, and an awarded drop re-checks drop. The tech file's `unlock` stays as the
+  bible's Unlock column for reference; the kit entry is what Game evaluates. New Game still leaves the chapter-0
+  kit to the Prologue's story teaches. Why: §15.8's level-gated techs had no grant path. The flag `learn`
+  convention covered only two techs. suite_aftermath pins the Prologue teaching Crono in story. (Combat Laws §11,
+  §15.8; supersedes the passing note in DECISIONS 'Audit fixes of 2026-11-02' (Cobalt Nodachi) that
+  _learn_defaults honours only chapter and on_join)
+- **Item kinds.** Each data/items/items.json item has a kind: consumable or material (inventory), key (key_items),
+  relic (relics) or counter (adds to the Flags counter it names; Kirie Scales -> kirie_scales for Ending 8).
+  Game.grant routes boss drops, enemy drops and dialogue give_item / key_item / relic by that kind, and the verb
+  is only the fallback for an unlisted id. Kinds follow Combat Laws §11.14 for relics (Vaelos Tooth, Grief Filter,
+  Charred Laurel, Bubble Lens, Kintsugi Brush, Vapor Memory Core, Long Pull, Syringe Heart Key, Null Shield).
+  cobalt_nodachi (the vault pigment) is a key item, Thoracic Ring and Gold-Leaf Memory Flake are materials. The
+  Matriarch's seed drops x3 (three uses). Only consumables with a battle effect are offered in the Item deck. Why:
+  29 referenced ids were undefined, and the boss path turned every unknown id into a relic. (Combat Laws §11.14,
+  §13 drop notes, §14.6; Story Bible 3.6)
+- **Rewards: XP, drops and leans at victory.** RewardResolver pays on victory only (a defeat or a withdraw pays
+  nothing). XP: a defeated enemy pays full, a spared one half. Drops: every defeated, non-boss enemy rolls its
+  drops ({item, chance, count}) through Game.grant; a boss's drops go through the same RewardResolver.give when
+  its fight ends. Leans: an enemy feeds its codex lean only when resolved the signature way: L when spared, D when
+  salvaged (killed while Broken by a RUIN or FERRO finisher) or incinerated (FIRE finisher), P when a Dual or
+  Triple finished it. Anything else feeds nothing; bosses lean through their branches. The +1 crafting part from a
+  salvage waits for crafting. Why: Every spare used to add Light whatever the enemy's lean, and no regular enemy
+  ever dropped anything. (Combat Laws §5.2 (Spare, Salvage), §13.1 Lean column, §15.2)
+- **Effective Rank Level.** Regular and elite encounter enemies spawn at ERL + (authored level - universe band
+  minimum), with ERL = round(active party average level) + universes.json bias + hazard. Hazard is the encounter
+  row's `hazard` field (0-2), raised by the universe's hazard_by_flag (U3: Azar:Predator gives 4). The authored
+  level is read as the enemy's rank inside the band, so a band-floor party in U0 meets the authored levels and the
+  codex spread survives. A party under the band minimum meets nothing below band minimum - 2. Above band maximum +
+  5 the encounter is under Time Shear (+15% speed; SLOW immunity, the vignette and the extra consumables wait for
+  their systems). Bosses, mini-bosses and an encounter row's explicit `level` keep their levels. universes.json
+  `cap` is the player stat cap (§15.1, §15.6), not part of ERL. Why: §15.3 says regular encounters scale to the
+  party, but level_band and bias were read by nothing. (Combat Laws §15.1, §15.3, §13.2 (Atrium Echoes rescale))
+- **Universe tables are data.** Universe reads fps and name from data/universes/universes.json.
+  CanvasStackEffect.GRADES is the only grade table, and the battle plane's paper tint comes from it via paper_of;
+  a test keeps its fps column equal to the data. Universe.leaks is deleted (HD2DWorld.set_leak is the hub leak). A
+  location without field_music plays its universe's music_field, and a battle with no music of its own plays
+  music_battle. Kit `passives` and `element` stay as bible reference fields. Why: There were two or three copies
+  of the per-universe numbers, and they had already drifted. (Reference Bible §2.4, §3.1)
+- **Keyed plates decide the count.** When a phase or enemy keys its plates, `shield` must equal the summed weights
+  (EnemyDef validation and lint). The Vaelos Child's Tantrum and Hide and Seek now say 5, the count the fight
+  already played; the bible's 6 waits on Nich. Why: ShieldComponent always plays the keyed sum, so the mismatch
+  was invisible and unchecked. (Combat Laws §14.12)
+
+### Engine, saves and the possibility engine
+
+- **An Amber Rift flag pays its +15 through the rift alone.** When a flag with amber_rift reaches its rift_state,
+  set_flag registers the rift under rift_source (or the flag id), once per source. Prismatic from an override or
+  from the state is not paid on top; other affinities are. Goyama gets amber_rift/rift_state Both/rift_source
+  Amber_Rift_U1_Goyama with an empty Both affinity. The Cradle no longer passes {prismatic: 15}. Why: The Bowl
+  Still Whole and Goyama Both are +15 in the bible, and both routes of the Bowl must pay the same. A shared
+  rift_source lets the flag and its dialogue's `rift` command name one rift. (Story Bible 9.1, 9.3; Combat Laws
+  15.9)
+- **Flags are permanent for the cycle; a few are mutable.** A flag defined in data/flags keeps its first state
+  this cycle; a second state is refused with a warning. Defs may say "mutable": true; today that is Seed_of_Doan
+  (Grown -> Ash), Robo_Ribbon (Equipped -> Lost), Sera_Clone (Rescued -> Lost) and Glenn_Duals (Refused -> Granted
+  via the Bekkler doll). Script-local flags with no definition are unrestricted. A Codex re-break API
+  (post-ending, 8.1) will be the explicit exception when it is built. Why: Story Bible 9.2 says flags are
+  permanent for the cycle, but 9.3 lists flags that legitimately change state within a cycle (the verifier's
+  refutation), so the rule is per definition. It also stops a boss retry from writing both branches' affinity.
+  (Story Bible 9.2, 9.3)
+- **The endings are data.** data/endings/endings.json holds each ending's inclusive affinity bounds, FlagRef
+  `flags` / `not_flags`, counter minimums and rift count; EndingRules evaluates it, and Data.load_all and
+  lint_data.py validate its flag references. Spellings follow the data: Seed_of_Doan:Grown; Sera_First_Voluntary
+  stands for 'an earlier voluntary phase-out'; 100 Kirie Scales is the kirie_scales counter, the live writer
+  through Game.grant. NULL mastery, Kintsugi repairs and the siege are counters. New flags:
+  Native_Duplicate_Given, Crono_Entered_Heart_At_20, Porcelain_Stress_Held_100, Seed_of_Doan_Full,
+  Mycelia_Tether_Mastery, Codex_True_Null, each with a Codex Keeper page. Why: Content belongs in data, and the
+  validator makes it impossible for a predicate to test a flag nothing can set (DECISIONS 'One flag spelling').
+  (Story Bible 7.1, 9.3)
+- **Codex leans grant no Beckons.** add_lean writes affinity but no Beckons. Why: Combat Laws 7.7 says Beckons
+  come from story choices and 'are never earned in battle'; leans are battle rewards (5.8). 15.9's 'every affinity
+  write' is read as the story writes 7.7 describes. (Combat Laws 7.7, 15.9)
+- **Settings live in their own file.** Player options live in user://settings.cfg, read at boot and written on
+  every Game.set_setting; save slots no longer carry them. A version 1 slot's settings are adopted once while no
+  settings file exists, only for known keys of the right type and inside SETTING_RANGES (flow_speed 0.75-1.25,
+  text_size 0.5-2, volumes 0-1). Title Options step battle flow through 0.75 / 1.0 / 1.25. Why: Options are the
+  player's, not the run's. An option toggled on the title must survive Continue, and must persist without waiting
+  for a checkpoint. The ranges keep probe pollution (flow_speed 4.0 in old slot_00 files) out of a real install.
+  (Combat Laws 3.7, 17.5)
+- **Save files are atomic and versioned.** Every save and settings write goes through a .tmp file renamed over the
+  target. Saves.VERSION is 2; Saves.status returns empty / ok / corrupt / newer, and only ok loads. The title
+  hides Continue otherwise. summaries() lists slot 0 (autosave) first. The `universe` field stays in the save.
+  Why: A crash mid-autosave must not leave a Continue row that does nothing. The universe field is not redundant
+  since c52baeb: Continue sets the saved universe before Router.go, so landing in a U1 location is not charged as
+  a gate jump. (Combat Laws 18.x save data line (siege count, flags persist))
+- **Headless runs never touch the player's files.** Saves.suspended, or the --no-save user argument, moves slots
+  and settings to user://scratch. The prologue, ch1 and battle probes and the test runner set it; the runner also
+  resets options to DEFAULT_SETTINGS. Why: The README tells everyone to run the probes, and they used to overwrite
+  the real autosave with probe state (and flow_speed 4.0).
+- **The Atrium Siege, first cut.** Integrity 0 outside a battle starts the siege's frame once the field is idle:
+  tape stop; an optional `atrium_siege` dialogue script (for the studio assistant to write); Atrium_Siege +1; Sera
+  reglazes to 20; a jump to the last Atrium checkpoint, meaning the spawn of the last save made in the Atrium
+  (Game.atrium_spawn). Before the Atrium is home (the Prologue) the party stays where the defeat rewind put it.
+  The three waves and the vendor-family losses wait for their encounter data. An ordinary defeat still rewinds to
+  the encounter. Why: Acceptance check 25 requires that integrity 0 starts the Siege, and Ending 5 needs the
+  counter. This is the smallest faithful version that gives integrity 0 a consequence and a way back to 20.
+  (Combat Laws 16.1, 16.3, 18.7 #25; Story Bible 9.3 Atrium_Siege)
+- **porcelain_stress follows integrity.** Audio sets porcelain_stress = 100 - Crono's integrity on every integrity
+  change and at boot; it drives the existing Music low-pass (20 kHz at stress 0 down to 2.5 kHz at 100). Why:
+  16.3: at integrity 0 porcelain_stress hits 100; 17.3's music-box thresholds read as integrity values. (Combat
+  Laws 16.3, 17.3)
+- **New Game+ biases toward the finished cycle's dominant affinity.** Game.new_game with new_game_plus resets the
+  cycle with Flags.dominant_affinity() (+10). A fresh New Game resets Sera's permanent baseline to 0.
+  Game.new_game is the only cycle reset. Why: 15.10 / Story Bible 7.2. The old code forwarded a stale bias, and
+  the title reset the cycle a second time. (Combat Laws 15.10; Story Bible 7.2)
+- **A location may hold its opening black.** Location.holds_black, set before its first await, makes Router.go
+  skip its own fade-in; the kitchen's wake uses it. Why: The Router faded in over the 'wake in the dark' lines one
+  frame after the kitchen set alpha 1.
+
+### Shipped locations
+
+- **The Fair waits for Leene Square.** leave_for_fair writes Ch1_Fair_Left and sets the [crono] party only once
+  the Router will accept the go (has_location and no transition running). Until then ch1_fair_call captions that
+  the square is not built and the hub stays as it was. The CP_FAIR autosave, at the hearth, replays the call on
+  Continue. No save is made at departure: Leene Square's first checkpoint must write the arrival autosave (and set
+  sera_state) when the scene is built. Why: A save at departure would hold the flag with location atrium and
+  resume in a hub with no way forward. Committing before an unbuildable go left Game and the field party
+  disagreeing. Router.go's own refusals are checked first and the go is not awaited, because the Atrium is freed
+  during the transition. (Story Bible Ch1 beat 10 (the Fair))
+- **Every autosave names its marker.** Location.autosave_at(spawn, cp) records the checkpoint and the marker a
+  Continue resumes at. Atrium: loft_bed, ramp_bottom, dummy_center, seed, dais (Robo's rest), hearth. Kitchen:
+  start, gate, cradle_center. A field defeat jumps the party back to where the leader stood when the battle began,
+  and to the spawn marker only when nothing was recorded. Why: Router.go was the only writer of Game.spawn_point,
+  so every save after the time skip resumed in the loft, and a lost hub fight teleported the party up there.
+  Combat Laws 16.1 sends the party back to 'the moment before the encounter'. (Combat Laws 16.1)
+- **Autosaves that do not end the day.** Slot 0 is written after the 999 Shield Dummy's result, after Glenn's
+  honour check and after the Seed's first water, without changing the checkpoint. Robo's 'Rest and save' still
+  ends the day and moves to night. Why: Between the hub opening and the Fair, the only save was the rest that
+  advances the story, so the dummy fight (minutes long), Glenn's verdict and the Seed were lost on quit. (Story
+  Bible Ch1 beats 4-8)
+- **The Seed of Doan has one state.** The flag Seed_of_Doan (Grown or Ash) is the state every consumer reads
+  (Promise Across Rust, Endings 4 and 6, the Bloom Matriarch, the Forge Tendril). The seed_waters counter only
+  counts waterings. Each water pays the Grown state's affinity from data/flags (Light +5); the third water sets
+  Seed_of_Doan:Grown, which pays the last +5, for Light +15 in all. Seed_of_Doan_Full stays a separate Chapter 15
+  flag for Ending 6's full growth. Chapter 1 builds only the first water, because a gate slip must pass between
+  waterings. Why: Waterings awarded no Light, and nothing ever set the ids the endings and the Triple read. (Story
+  Bible §5 (Doan and the Seed: 'watered three times across three visits'), Ch1 beat 7, §9.3 'Grown (Light +5 per
+  water)')
+- **The Cradle wakes at the pantry.** The Prologue's Cradle trigger is now the pantry mouth only (x 6.5..10.5, z
+  -6.8..-2.8). The Shardlings stay at (4.5, 2.5); the Spoons move to (10, 3.2) r1.8; the post-boss Echo moves to
+  (11, -3.5). The probe and --demo=cradle walk to the pantry. Why: The old box covered the hall from x 4.5, so the
+  Spoons' two-tag lesson came only after the boss it prepares for. The locked-exit line already points the player
+  at the pantry wall. (Story Bible Prologue beats 7-8 and its Enemies paragraph)
+- **The lab spawns all four echoes.** After the dummy, the Atrium spawns Moss-Mice, a Bekkler Fragment, the Ashen
+  Echo of Krona (by the hearth) and the Ferro-Drone 09 (by the workbench). The post-dummy caption names all four.
+  Why: The caption promised an Ashen Echo that never appeared, and two validated encounters shipped unused. (Story
+  Bible Ch1 'Enemies')
+- **A field Rewind with nothing to rewind is free.** Pressing R in the hub outside the scripted loft Rewind shows
+  'Nothing here to rewind.' and charges no Translucency Debt. The loft beat's Rewind still costs +5%. Why: The
+  bible prices 'each Rewind in combat or gate jump'. Debt heals only at U7's lotus ponds, so eleven stray key
+  presses could walk Sera to the 55 cap and start every later battle at 45% solidity. (Story Bible §3.4
+  (Translucency), Ch1 beat 2)
+- **The hearth confession is priced in the flag data.** Crono_Confession keeps Told Light +10 and Hidden Dark +10.
+  The values now live in data/flags/flags_u0.json and the dialogue no longer overrides them. Why: The kitchen's
+  first lie (±5, DECISIONS Story) sets this choice up as the chapter's honesty beat, and ±10 matches the dummy's
+  Spared and Bekkler_Hid's Dark +10. The bible lists no affinity for it, so this is a tuning call; before this
+  change, the data file said 0 while the dialogue paid 10. (Story Bible §9.3 (Crono_Confession), Ch1 beat 9)
+- **Location sound cues use files that exist.** Cues with no file now play the nearest existing sound: the stir
+  (ceramic step), the clock skip (sync_hold_freeze), the chronoslip, the frame snap (universe_switch), the doll
+  fall (a low tink), the katana slash (crono_slash), the brass gate (door), the gramophone needle (rewind for the
+  Seed, cursor for the gramophone), the heal chime (save) and the ink puddle (U1 woodblock step). A test pins that
+  every location cue resolves to a file. Why: play_sfx drops a missing id silently, so the Prologue's signature
+  beats played without sound. Generating new audio would touch binary assets, which is out of scope here.
+  (Reference Bible audio (the tools/audio set in docs/reports/audio_build_report.md))
+
+### Chapter dialogue data
+
+- **A lost Chapter 2 fight jumps back; the duel is the one exception.** Each bridge, the Daimyo and the Furnace
+  has a `fight` label before its battle. A loss plays one narration line, adds 5 Debt and jumps back to `fight`.
+  The Krona duel keeps going on after a loss: it reaches ch2_duel_end as a win would, after costing 5 Debt. Why:
+  Combat Laws 16.1: Sera jumps the party back to before the encounter, and the Prologue's Cradle loop does the
+  same. Story Bible 2.1 scripts the duel's killing stroke being rewound, after which Krona stops, so losing there
+  is still progress. The new bridge line is: 'The stroke lands. Then it hasn't. Somewhere a girl turns the page
+  back, and the ronin kneel again.' (COMBAT_LAWS_BIBLE 16.1; STORY_BIBLE Chapter 2, 2.1)
+- **Chapter 2 sound cues use the files that exist.** sfx_time_ink_footstep becomes footsteps/u1_woodblock;
+  sfx_time_rewind becomes time/rewind; sfx_time_fracture_tear becomes time/fracture_sky; sfx_impact_clay_crash
+  becomes porcelain/crack_large; sfx_ui_paper_tear becomes ui/page; sfx_magic_astral_burn becomes
+  magic/astral_contact; sfx_combat_fibre_tear becomes status/ruin_tear; sfx_weapons_nodachi_draw_cobalt becomes
+  weapons/krona_nodachi. No new audio was generated. Why: AudioDirector resolves audio/sfx/<family>/<name>, the
+  flat ids played silence, and the build lead does not generate audio. Each pick is the closest existing sound by
+  meaning. (REFERENCE_BIBLE 8.2)
+- **Chapter 2 music names Reference Bible 8.5 tracks.** mus_boss_goyama_daimyo becomes mus_u1_boss_daimyo,
+  mus_boss_weeping_shogun becomes mus_u1_boss_weeping_shogun, and mus_interlude_ash_kitchen becomes
+  mus_sera_interlude. These stay warnings until their files arrive. The Furnace approach (mus_u1_furnace_approach,
+  which has no file and is not in the table) plays mus_sera_theme, because the scene opens on Sera in the cage.
+  Why: The delivery team produces tracks under the 8.5 ids, so the dialogue has to name those ids.
+  (REFERENCE_BIBLE 8.5)
+- **Missing music must at least be a scheduled track.** lint_data.py reads the Reference Bible 8.5 table. A music
+  id with no file that is not a table row is an error; `mus_battle_core` counts as covering mus_battle_core_u<n>.
+  A scheduled id with no file is still a counted warning. If the table cannot be found, lint warns and falls back
+  to warning only. Why: DATA-11's failure scenario: a typo in a music id could not be detected. Every id
+  referenced today is scheduled, so the rule adds no errors now. (REFERENCE_BIBLE 8.5)
+- **Script-local flags are declared in data/flags/script_local.json.** The eight progress markers that dialogue or
+  code sets and reads are listed with their states under `script_local`: Prologue_Courtyard_Done, Crono_First_Lie,
+  Ch1_Arrived, Ch1_Father_Looked_Away, Ch1_Fair_Left, Dummy_Wrist, Bekkler_Doll_Taken, Glenn_Honour_Checked. They
+  are not added to Data.flags, so they get no codex page, no first-state rule and no affinity. A dialogue flag
+  that is neither defined nor declared is now an error in lint and in Data.load_all. Before, lint only warned
+  (296eba2). Why: CORE-11: a typo used to become a silent new flag. Turning the markers into codex flags would
+  have added codex pages and text gaps for internal state. (STORY_BIBLE 9.2-9.3)
+- **The Router's start-up registry is a const, and dialogue `go` targets are checked against it.** scene_router.gd
+  DEFAULT_LOCATIONS lists every location, built or scheduled. _register_defaults copies it into the registry.
+  ossuary_arrival (res://scenes/u2/ossuary_arrival.tscn) is registered as the Chapter 3 arrival. DialogueCheck and
+  lint read the const: an unknown `go` target is an error, and a registered location whose scene is not built is a
+  warning. Why: Data loads before the Router autoload, so Data.load_all needs a static source. A scheduled entry
+  is how the Router already treats unbuilt scenes (has_location checks the file). (STORY_BIBLE Chapter 3, 3.1)
+- **The chapter's last save follows the interlude and the `go`.** ch2_furnace_won runs the interlude, sets
+  checkpoint ch2_done, runs `go` with end_after false, then saves and ends. If the player quits during the
+  interlude, they replay from the ch2_vault_done save. Why: STORY-25: the interlude's Debt and spoon counters were
+  never saved. A save made before `go` records the scene being left, because Router.go sets Game.location only on
+  arrival. Story Bible: Spoon_Taught needs four lessons across the interludes. (STORY_BIBLE Interlude Day 1)
+- **The Vaelos Tooth is given as a relic.** ch2_daimyo_won uses `relic: vaelos_tooth` instead of key_item. Why:
+  The catalogue already makes it a relic (DATA-10). Game.grant follows the catalogue kind anyway, so the verb now
+  matches and the warning is gone. (COMBAT_LAWS_BIBLE 11.14)
+
+### Tooling and harness
+
+- **The headless probes are part of every check.** tools/check.sh runs prologue_probe, ch1_probe and battle_probe
+  (the README Cradle command) by default, including with --no-visual; only --quick skips them, together with lint
+  and the tool tests. A probe fails the gate unless it prints PROBE_END ok=true and exits 0. Every probe now quits
+  with 1 on failure, and a timeout prints ok=false. Why: The quality bar says 'headless probes keep printing
+  PROBE_END ok=true', but nothing enforced it and the battle probe had no verdict at all. The cost is about 3.5
+  minutes per check, ch1_probe being about 165 s of that. (CLAUDE.md Quality bar; COMBAT_LAWS_BIBLE §18.7
+  acceptance checks)
+- **A debug start learns its chapter's kit (BootArgs).** A start straight into a location applies --party, then
+  --level, then --chapter, in that order whatever the argument order. This covers boot.gd with --scene/--location
+  and the test arena. --level goes through Game.set_level for every roster row, the party's guests included. The
+  chapter's kit is learned through Game.set_chapter: --chapter if given, otherwise the current chapter, which is 0
+  (the Prologue kit). A title start and New Game never take this path, so the Prologue's dialogue `learn` commands
+  still teach its kit in real play. Game.set_chapter now teaches every learner (recruited plus guests with a
+  roster row, Marle), the same set refresh_unlocks uses. Why: The probes and arena runs must fight with the kit
+  and levels a real party would have. The README had promised the Prologue kit by default, but nobody knew a tech
+  without --chapter, and a guest stayed at level 1. (Combat Laws §2.2 (guests), §11 and §15.8 (kit unlocks);
+  DECISIONS 'Kit unlocks')
+- **One uid encoder; existing uids are kept.** tools/common/godot_uid.py (base 34, a-y then 0-8, 63-bit) is used
+  by every .import writer: sheets, textures and audio. The committed uids are not rewritten; they are already
+  Godot's own text, and a test now pins that. Why: The sprite and texture writers used to make base-36 uids that
+  Godot re-encoded on the next --import, which caused one round of tracked .import churn per new asset.
+  (REFERENCE_BIBLE §1.12, §10.2 item 3 (.import files kept in the repository))
+- **A re-import replaces the raw delivery.** After a successful download, the importer clears that key's
+  source_art/.../pixellab* folder before unpacking: frames, metadata.json and the archive. The earlier delivery
+  survives in git history and in the record's `history`. A failed download leaves the cache untouched as the
+  fallback. Why: The prop route rebuilt metadata by scanning the folder, so a v2 delivery inherited v1's rotations
+  and clips. (docs/ART_PIPELINE.md §2, §6)
+- **Four-rotation characters get four-row sheets.** When no diagonal direction was delivered, the character
+  importer writes only the s, w, e, n rows, and ActorSprite maps the diagonals onto them. A missing idle rotation
+  is recorded. The record and frames json list rows, rotations and clips. Why: The contract allows a minimum of
+  four facings. An 8-row sheet would have had transparent diagonal rows, which ActorSprite selects on diagonal
+  movement. (docs/ART_PIPELINE.md §1 Directions, §3)
+- **The hourly importer routes only characters and objects.** Items of kind ui, texture, vfx, tileset or portrait
+  are listed as 'no import route here yet' and imported by hand per ART_PIPELINE. They are no longer forced down
+  the character route. Record keys read tier and variant from the PixelLab name when the item's own fields are
+  empty. Why: Without this, such an item would fail every hourly run, and a character whose tier lived only in its
+  name would be re-imported every hour. (docs/BOT_REVIEW.md item 5)
+- **Placeholder generators never overwrite a delivery; the npcs Marle paper doll is retired.** spritegen refuses
+  any stem that pixellab_assets.json or an importer frames table owns, unless --force is given. Marle's
+  placeholder spec now points at assets/characters (her kit makes her a character). The dead assets/npcs/marle
+  field sheet and frames table are deleted; her painted stand-in and portrait stay in assets/npcs/marle. Why: A
+  README-documented spritegen run would have silently replaced the delivered crono, sera and krona sheets. The
+  npcs copy was a 552 KB duplicate that nothing resolved. (DECISIONS 'All current art is placeholder';
+  REFERENCE_BIBLE §5 Marle file names (superseded by the importer's rule that a character with a kit lives under
+  assets/characters))
+- **Texture tiles must divide the 1024 px sheet.** import_texture refuses a non-square tile or one that does not
+  divide 1024 (valid sizes 16 to 1024 px) instead of resampling it. Why: SceneKit maps every sheet over a fixed 32
+  m, so any other tile size would silently change the world's pixels per metre. (DECISIONS 'Direction' (32 px/m))
+- **The audio manifest's verdict is per group, and null when nothing was measured.** The manifest gains
+  problems_by_group and checked_groups. `problems` covers music and SFX only once both groups have been measured,
+  and is null otherwise; --refresh-manifest writes null. Which SFX loop comes only from write_sfx's loop flag,
+  carried on each manifest row; LOOPED_WAVS is removed. Why: An empty list read as a passed loudness gate when
+  nothing had been evaluated. A new looped SFX would also have been imported trimmed, with loop Disabled.
+  (REFERENCE_BIBLE §1.13 (loudness), §8)
+- **Sprite, portrait and UI sidecars: Detect 3D disabled.** All sprite, stand-in, portrait and UI .import files
+  now use detect_3d/compress_to=0 (still lossless, no mipmaps). World textures stay lossless and mipmapped; the
+  Nov 1 breakdown's lossless rule replaces 1.12's 'VRAM Compressed', so they needed no change. suite_tools
+  enforces both rules. Why: With compress_to=1, an editor session viewing a stand-in in 3D could flip it to VRAM
+  compression and commit that. (REFERENCE_BIBLE §1.12; style breakdown §12)
+- **Reference 10.1/10.2 command block (TOOLS-11).** gdlint and tools/build/build_all.gd are dropped. Nothing is
+  generated (locations are built in code from data), parse_all.gd is the parse gate, and tools/check.sh is the one
+  command: import, parse_all, the GDScript suites, lint_data, test_tools.py, the three probes, the smoke boot and
+  two scene captures. Of 10.2's test scenes, lineup, arena and diorama exist, and lineup and arena are captured by
+  every visual check. canvas_switch, vfx_gallery and audio_board are scheduled for when their content exists.
+  10.2's headless checks: import settings and uids exist now; palette per canvas, frame counts and fps, manifest
+  naming and per-file loudness are open tooling work. Why: A new agent following 10.1 would run commands that do
+  not exist. Recording what the harness really is gives the bible's acceptance net one honest list.
+  (REFERENCE_BIBLE §10.1, §10.2 (to be amended once Nich decides))
+- **check.sh visual step: two scene captures and one known-noise filter.** After the title smoke boot, the visual
+  step captures test_lineup (60 frames) and a test_arena autobattle (120 frames). The smoke and capture logs pass
+  through one filter that drops only the known-harmless lines: lavapipe/llvmpipe, the ObjectDB report at exit, and
+  the Vulkan context failing to start without a surface (Godot then falls back to OpenGL 3). Why: Nothing
+  automated rendered a Location or ActorSprite before this. The pre-existing smoke step also failed in every
+  container, because the Vulkan fallback error was not filtered. (REFERENCE_BIBLE §1.13; CLAUDE.md Environment
+  notes (cloud captures))
+- **The Vulkan-context log exemption applies only under xvfb.** check.sh drops the
+  rendering_context_driver_vulkan.cpp errors and the VK_KHR_surface line from the SMOKE and CAPTURE logs only when
+  that run went through xvfb-run (NO_SURFACE=1). It does not drop them on a GPU desktop. Why: xvfb offers no
+  Vulkan surface, so a container always fails the Vulkan context and Godot falls back to OpenGL 3. On Nich's GPU
+  machine the same error means a real regression, and before cc815f5 the gate failed on it. (CLAUDE.md Quality bar
+  (look at every capture; headless probes keep printing PROBE_END ok=true))
+- **Python tool tests start bash found along PATH.** test_tools.py calls shutil.which("bash") once and passes that
+  path to subprocess. A test that needs bash is skipped when none is on PATH. Why: Windows CreateProcess searches
+  System32 before PATH, so a bare "bash" can start WSL's bash.exe on the build lead's PC and turn TOOL TESTS red
+  for reasons unrelated to the code under test. (CLAUDE.md Environment notes (Nich's Windows PC, Git Bash, the
+  python shim))
+
+### Rendering and sprites
+
+- **Sprite opacity is two passes.** Every character sprite shares one shader body
+  (shaders/sprite_canvas.gdshaderinc) used by two passes. The cut-out pass (sprite_canvas.gdshader) cuts the
+  sheet's edge with discard, never writes ALPHA, and stays opaque with depth and shadows; the engine's
+  GeometryInstance3D.transparency still fades it. The fade pass (sprite_canvas_fade.gdshader) blends at (1 -
+  transparency) * opacity and casts no shadow. ActorSprite.set_opacity below 1 selects the fade pass; 1 returns to
+  the cut-out. No alpha scissor is used. Why: ALPHA = opacity together with ALPHA_SCISSOR_THRESHOLD 0.5 turned
+  opacity into a step function and overrode every transparency tween. Ghosts at 0.45 vanished, a phased Sera at
+  0.18 vanished, and dying enemies never faded. A single shader cannot be both opaque-with-shadows and blended.
+  (Reference Bible 1.7 and 1.9 (hard alpha, one sprite material))
+- **The canvas stack carries HDR past the grade.** The compute pass grades the picture clamped to linear 1.0,
+  which round-trips exactly through its display-space conversion. It adds the light above 1.0 back after the
+  grade, dimmed only by the VHS scanlines and vignette, and leaves that excess ungraded so fire keeps its colour
+  in U1. Why: The display-space round trip capped every pixel at about 1.106 before the Environment glow
+  (threshold 0.9), which flattened the embers, galaxy cracks and U6 neon that 2.3's single glow pass is meant to
+  bloom. This amends 'One compute pass ... Equivalent output'. (Reference Bible 2.2-2.3; DECISIONS Rendering 'One
+  compute pass')
+- **A Chronoslip is staged, and the canvas rate snaps.** Over the 0.8 s slip the paper moves over 0.0-0.3 s and
+  the grade over 0.2-0.6 s (smoothstep within each window). The grade covers saturation, inks, posterise, gold,
+  line colour and amount, VHS, scanline and chroma. The frame rate switches to the new canvas at 0.5 s. The canvas
+  always quantises at the rate of the universe holding the most frame-rate weight, never a weighted average. Hub
+  leaks bleed into the grade and paper but never into the rate. Why: Reference 2.4 gives the three-stage table and
+  'frame rate snaps'. The linear lerp of all fields drifted through fractional rates such as 36 or 42 fps. Section
+  2.4 also says U0 stays home and props keep their source rate inside the hub. (Reference Bible 2.4)
+- **Glow and SDFGI readings of 2.3 (environment unchanged).** The glow row's 'mix blend 0.35' is read as
+  glow_bloom 0.35 under GLOW_BLEND_MODE_SOFTLIGHT (intensity 1.15, strength 0.85, HDR threshold 0.9). SDFGI stays
+  off, section 10.5's low-end setting, until it is judged on a GPU capture and a quality option exists to toggle
+  it at energy 0.2. Why: No GPU in the cloud container to judge SDFGI or a switch to GLOW_BLEND_MODE_MIX. The
+  values are unchanged and only documented in hd2d_world.gd. (Reference Bible 2.3, 10.5)
+- **The breakdown's section 12 settings, row by row.** Already adopted: debanding, physics interpolation, the 4096
+  directional shadow map, 2D transform snap, the 30-degree explore pitch. Kept from the Reference Bible: the
+  640x360 base (Reference 1.12, the pixel scale), the ACES tonemap (Reference 2.2: it keeps watercolour and gold
+  leaf from blowing out on white paper; AgX/Filmic only after a side-by-side capture), and glow 1.15/0.85/0.35/0.9
+  (Reference 2.3) rather than 0.3-0.6/0.05/1.0. Deferred until a GPU capture can judge them: the 4-split sun with
+  shadow_blur, shadow_opacity and angular distance, volumetric fog, and the per-frame sprite snap to pixel_size
+  (the right home is a render-side snap in ActorSprite). Why: Two documents, two directions; this records which
+  one each row follows so agents stop tuning in opposite directions. (style breakdown section 12 (adopted by
+  DECISIONS 'Direction'), Reference Bible 1.12, 2.2, 2.3)
+- **Sprite density constants.** ActorSprite.PIXELS_PER_METRE is SceneKit.PX_PER_M (32). A sheet with
+  height_px/height_m stands at its height. A sheet without one stands at 32 px/m if its cell is 96 or less (the
+  recipe canvas) and at LEGACY_PIXELS_PER_METRE (64) if its cell is larger (the 128 px chibi sets and the 12
+  generated NPC sheets). Painted stand-ins stay at 64 px/m. Generated placeholders are 64 px cells at 32 px/m
+  (enemy placeholders 64/128/256). No shipped sprite changes on-screen size. Why: The Direction entry moves the
+  world to 32 px/m, but the legacy sheets must keep their size until their 64 px replacements arrive. (DECISIONS
+  'Direction'; Reference Bible 1.2)
+- **Frames json keys the engine honours.** `rows` is the sheet's row order. The top-level `fps` is the sheet's
+  canvas rate, used when the caller passes none; Location.add_npc and FieldNPC.make now default to 0, and a
+  character's data canvas_fps still wins. An anim without its own fps steps at the resolved rate. A missing frames
+  json warns once before the 70-column default table is used. An anim past the PNG's last column is cut or dropped
+  with a warning. Why: ART_PIPELINE section 3 documented rows and fps as the contract, but the engine ignored both
+  and fell back silently. (docs/ART_PIPELINE.md section 3)
+- **The action tier's cell as shipped.** The action tier is a 128 px cell as shipped (crono_action: one idle
+  column over eight rows, 120 px figure, 1.78 m). It is to be re-specified at the Direction scale. Amend 'A
+  character is a set of sprites' from 'action (256, ...)' to 'action (128 as shipped; re-specified with
+  Direction)'. ART_PIPELINE 1b now says so. Why: Two documents still said 256 while the data says 128; the next
+  action request would be wrong by 2x. (DECISIONS 'Art comes from Nich; a character is a set of sprites';
+  ART_PIPELINE 1b)
+- **The truth-moment DOF mapping.** 2.3's 'DOF far 12.0' becomes a far blur starting 6 m behind the focus and
+  ramping over 12 m (CombatConstants.DOF_FAR), with a near blur starting 2 m in front of the focus over 2 m and
+  one blur amount of 0.08. The bible's near 0.05 has no separate setting, because Godot 4's
+  CameraAttributesPractical has a single blur amount, so CombatConstants.DOF_NEAR has no reader. Why: Taken
+  literally, far 12 m with the rig 15 m away would blur the subject itself. (Reference Bible 2.3)
+- **Placeholder figure keeps the old metres at the new density.** An enemy placeholder's figure is cell_px * 0.8 *
+  min(1, size / (cell_px / 64)) px at 32 px/m. That is 1.6 m per metre of `size`, capped at 0.8 of its 2/4/8 m
+  quad, the same metres the 64 px/m code drew. Why: The 32 px/m move must not shrink or double any sprite on
+  screen (cluster notes; DECISIONS 'Direction'). 81 of 82 enemies draw as placeholders. (DECISIONS 'Direction' (32
+  px per metre); REFERENCE_BIBLE §1.13)
+- **One body opacity for un-phase and revive.** CombatActor.body_opacity() is Sera's Debt opacity (1 - 0.005 per
+  point, never below 0.5), and 1.0 for every other body. Un-phasing and restore_body return a body to it instead
+  of to 1.0. Why: Opacity now really fades (WORLD-1), so the old reset to 1.0 made Sera visibly pop back to solid.
+  Story Bible §4.2 says her body thins with her Debt. (STORY_BIBLE §4.2 'Look'; COMBAT_LAWS_BIBLE Translucency
+  Debt)
+
+### Acceptance tests
+
+- **Rewind's turn start.** Rewind restores the target to the snapshot taken when its turn began. For an ally that
+  is its window, with the gauge at the gate (99); for an enemy, the start of its turn, before the gauge resets. So
+  a Rewound ally's turn comes round again, and a parked ally keeps its 99 and its Ready Pool place (rewind_unit's
+  ready_pool branch is the same value). suite_acceptance pins this. Why: It is the literal reading of the bible's
+  'state at its own last turn start: HP, gauge and position'. Changing the snapshot moment would also move Time
+  Mines' ghosts and the auto-battler's 'rewindable' test, which is too wide for a test cluster. A question for
+  Nich records the balance and Shard Doll concern. (COMBAT_LAWS_BIBLE §3.6, §10.2 (Rewind), §18.7 #14)
+- **CastReach: the preview reaches what the cast reaches.** scripts/combat/cast_reach.gd is read by both
+  BattleCoordinator.preview and _resolve_action. It answers: whether a cast strikes at all (TechEffects.STRIKING
+  for bespoke handlers, EffectSteps.resolve_mode for rows, the support path otherwise); the partners' extra
+  origins; the handler's target filter; the row's pre ops (hits, beams); and after-effect plates (shave_any,
+  auto_break 'smallest', Eclipse's crossing plate, struck with the body's first weakness as the handler does). A
+  cast that strikes nothing returns an empty preview, so its plates show no change. preview() takes optional
+  partners; BattleScene passes them. Why: Acceptance #23 requires preview equal to resolution for every technique
+  and shape. The every-technique sweep found 36 mismatches across 14 techniques; all now agree.
+  battle_coordinator.gd went from 1624 to 1623 lines, because the extra-origin code moved out. (COMBAT_LAWS_BIBLE
+  §4.6, §11 (Eclipse X-Strike, Ferro Null, Chrono Laugh, Overclocked Short-Circuit, Delta Storm), §18.7 #23)
+- **Fixture techniques come from data.** tests/suite_base.gd _lib() returns Data.techs[id] for LIB_IDS (eight
+  techniques) instead of hand-copied dicts. Why: A retune of those rows is then what the core battle tests
+  exercise (DATA-22). The values matched apart from astral_slash.lv3_field and hold.requires_broken, and no test
+  depended on their absence. (COMBAT_LAWS_BIBLE §18.7 (automate in the headless runner))
+
+### Corrections to earlier entries
+
+- **The action tier is a 128 px cell.** The "set of sprites" entry above says action (256, realistic 5.5-head);
+  the action sheet that ships (`crono_action`) is a 128 px cell with a 120 px figure, one idle column over eight
+  rows (ART_PIPELINE 1b). The 256 px sets the asset team built stay unimported under the Direction entry.
+- **Hand-off numbers.** The unit suite is split into per-area suites under `tests/` (`suite_base.gd` holds the
+  helpers; `run_tests.gd` discovers every `suite_*.gd`), and `tools/check.sh` runs the three headless probes and
+  the Python tool tests on every check. PROGRESS carries the current counts; other documents should not repeat
+  them.
+- **The two reference documents live under design/.** `design/STYLE_BREAKDOWN_2026-11-01.md` (the text layer of
+  Nich's Nov 1 PDF, adopted by the Direction entry) and `design/COMBAT_ARCHITECTURE_HYBRID.md` (the architecture
+  note the Combat Laws grew from, reference only) are in the repository, and design/AUDIT.md's source table names
+  them with the uploaded Chrono Apocrypha Master Design Bible (an earlier Story Bible whose differences are
+  settled in the audit report's APOC rows). Why: the hand-off rule; the Direction entry cited a document that was
+  not in the repository.
+- **Active party stays at four.** Up to four characters on the plane and the rest on the Bench (Combat Laws 3.1),
+  as the code and `BattleRoster` are built. The Reference Bible's "three" and the breakdown's three-column ATB
+  table are presentation notes, not a rule; AUDIT.md lets the Combat Laws numbers win on combat.
+- **The title footer and the project description no longer call the game a sequel.** The working title stays until
+  Nich picks a release title (breakdown section 14; QUESTIONS_FOR_NICH).

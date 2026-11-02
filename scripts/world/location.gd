@@ -527,7 +527,8 @@ func start_battle(enemies: Array, center: Vector3, config: Dictionary, zone: Enc
 	_battle_from = party_actors[0].global_position if not party_actors.is_empty() else null
 	controller.enabled = false
 	follow.paused = true
-	BattleAftermath.sync_from_game(party_actors)
+	BattleAftermath.enter_battle(party_actors)  # the bodies take up Game's ledger; Game follows them till the write-back
+	config["ground"] = WalkableGround.new(self, map_bounds)  # a Withdraw falls back onto the room's floor (WithdrawRules)
 	for a in party_actors:
 		a.velocity = Vector3.ZERO
 		a.sprite.update_from_velocity(Vector3.ZERO)
@@ -555,9 +556,7 @@ func _on_battle_finished(victory: bool, summary: Dictionary, zone: EncounterZone
 	BattleAftermath.restore_party(party_actors, ratio)
 	for a in party_actors:
 		BattleAftermath.write_back(a, ratio)
-	if result == BattleAftermath.WITHDRAW:
-		BattleAftermath.regroup(party_actors, summary.get("withdraw_at", null))
-	follow.snap_behind()
+	BattleAftermath.regroup(follow, party_actors, summary.get("withdraw_at", null), WalkableGround.new(self, map_bounds), _battle_from)
 	_refresh_porcelain()
 	if field_track() != &"":
 		Audio.play_music(field_track())

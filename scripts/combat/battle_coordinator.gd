@@ -64,6 +64,7 @@ var enemy_defs: Dictionary = {}
 var is_boss_battle: bool = false
 ## A battle the story started (Location._on_story_battle): its script owns the ending, so no Withdraw.
 var is_story_battle: bool = false
+var ground: WalkableGround = null  # the field's floor (Location): a Withdraw falls back onto it (WithdrawRules)
 var hover_sera: Node = null
 var prometheus_available: bool = false
 var prometheus_used: bool = false
@@ -110,8 +111,7 @@ func _physics_process(delta: float) -> void:
 
 # ------------------------------------------------------------------ lifecycle
 
-## config: {advantage: normal|preemptive|ambush, universe, boss, techs: Dictionary, enemy_defs,
-##          bench: Array, hover_sera: Node, prometheus: bool, parry_frames, max_bp, max_spend, story}
+## config: {advantage: normal|preemptive|ambush, universe, boss, story, techs, enemy_defs, bench, hover_sera, prometheus, parry_frames, max_bp, max_spend, ground}
 func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: Dictionary = {}) -> void:
 	if state != State.IDLE:
 		return
@@ -148,6 +148,7 @@ func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: D
 	universe = int(config.get("universe", universe))
 	is_boss_battle = bool(config.get("boss", false))
 	is_story_battle = bool(config.get("story", false))
+	ground = config.get("ground") as WalkableGround
 	tech_library = config.get("techs", tech_library)
 	enemy_defs = config.get("enemy_defs", enemy_defs)
 	hover_sera = config.get("hover_sera", null)
@@ -222,8 +223,7 @@ func _init_unit(u: Node, gauge: float) -> void:
 		td.battle_strain = 0.0
 
 
-## Ends the battle. A withdraw (reason "withdraw", WithdrawRules) is not a defeat: it charges no integrity.
-## `extra` is merged into the summary (the withdraw point).
+## Ends the battle. A withdraw (reason "withdraw", WithdrawRules) is no defeat: no integrity; `extra` (its point) joins the summary.
 func _finish(victory: bool, reason: String = "", extra: Dictionary = {}) -> void:
 	if state == State.VICTORY or state == State.DEFEAT or state == State.IDLE:
 		return

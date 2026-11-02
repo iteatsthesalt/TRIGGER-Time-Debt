@@ -38,6 +38,9 @@ var _walk: ScriptedWalk = null
 var _stepped_frame: int = -10
 var _label: Label3D
 var _fade: Tween
+## The NavigationAgent's avoidance as a Break found it (held while Broken): on_recover() and restore_body() hand it back.
+var _avoid_held: bool = false
+var _avoid_before_break: bool = false
 
 
 func _ready() -> void:
@@ -61,7 +64,7 @@ func _make_break_hull() -> void:
 	break_hull.collision_layer = 16
 	break_hull.collision_mask = 0
 	break_hull.monitoring = false
-	break_hull.monitorable = true
+	break_hull.monitorable = false  # terrain only while Broken or a statue (_set_hull)
 	var cs := CollisionShape3D.new()
 	var cyl := CylinderShape3D.new()
 	cyl.radius = (stats.body_radius if stats else 0.5) * (1.0 + CombatConstants.BREAK_HULL_INFLATION)
@@ -165,10 +168,11 @@ func on_break() -> void:
 	frozen = true
 	velocity = Vector3.ZERO
 	if nav:
+		if not _avoid_held:
+			_avoid_before_break = nav.avoidance_enabled
+			_avoid_held = true
 		nav.avoidance_enabled = false
-	if break_hull:
-		break_hull.monitorable = true
-		break_hull.visible = true
+	_set_hull(true)
 	if sprite:
 		sprite.play(&"break")
 		sprite.set_tint(Color(1.0, 0.92, 0.6))
@@ -176,10 +180,8 @@ func on_break() -> void:
 
 func on_recover() -> void:
 	frozen = false
-	if nav:
-		nav.avoidance_enabled = true
-	if break_hull:
-		break_hull.visible = false
+	_restore_avoidance()
+	_set_hull(false)
 	if sprite:
 		sprite.set_tint(Color.WHITE)
 		sprite.play(&"idle")
@@ -190,8 +192,7 @@ func on_recover() -> void:
 func become_statue() -> void:
 	frozen = true
 	statue = true
-	if break_hull:
-		break_hull.visible = true
+	_set_hull(true)
 	if sprite:
 		sprite.set_tint(Color(1.0, 0.85, 0.4))
 		sprite.play(&"break")
@@ -200,8 +201,7 @@ func become_statue() -> void:
 ## The statue's 8 s are up: it shatters in gold and the body is gone from the field (§5.4).
 func shatter() -> void:
 	statue = false
-	if break_hull:
-		break_hull.visible = false
+	_set_hull(false)
 	var parent := get_parent() as Node3D
 	if visible and parent != null:
 		BattleFx.gold_shatter(parent, global_position + Vector3(0.0, height_m * 0.5, 0.0))
@@ -229,13 +229,26 @@ func restore_body() -> void:
 	visible = true
 	frozen = false
 	velocity = Vector3.ZERO
-	if break_hull:
-		break_hull.visible = false
+	_restore_avoidance()
+	_set_hull(false)
 	if sprite:
 		sprite.transparency = 0.0
 		sprite.set_opacity(1.0)
 		sprite.set_tint(Color.WHITE)
 		sprite.play(&"idle")
+
+
+## The Break hull (§5.4's inflated terrain) up or down: shown and detectable on layer 5 together.
+func _set_hull(up: bool) -> void:
+	if break_hull:
+		break_hull.visible = up
+		break_hull.monitorable = up
+
+
+func _restore_avoidance() -> void:
+	if nav and _avoid_held:
+		nav.avoidance_enabled = _avoid_before_break
+	_avoid_held = false
 
 
 ## The porcelain a body shows: Crono's crack states from his integrity and HP (Combat Laws §10.1), Sera's

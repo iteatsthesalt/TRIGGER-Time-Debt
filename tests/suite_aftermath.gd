@@ -122,6 +122,46 @@ func test_story_debt_and_integrity_survive_the_next_battle() -> void:
 	Game.new_game()
 
 
+## STORY-3 (refix): during a battle Game follows the bodies, so a Story write mid-fight (a phase script's
+## `integrity: -2`) starts from the live value: the fight's own charges survive it and the write-back keeps both.
+func test_story_write_mid_battle_keeps_the_fights_own_charges() -> void:
+	var loc: Location = await _arena([&"crono", &"sera"])
+	_zone_battle(loc)
+	var crono: CombatActor = _actor(loc, &"crono")
+	var sera: CombatActor = _actor(loc, &"sera")
+	var start: float = Game.crono_integrity
+	var debt0: float = Game.sera_debt
+	crono.time_debt.pay_integrity(4.0)  # an in-battle charge, as a tech's integrity cost pays it
+	sera.solidity.add_debt(2.0)
+	check_near(Game.crono_integrity, start - 4.0, 0.001, "Game follows Crono's body at once")
+	check_near(Game.sera_debt, debt0 + 2.0, 0.001, "and Sera's")
+	await Story.run(&"t_aftermath_mid", [{"integrity": -2}, {"debt": 1}, {"end": true}])
+	check_near(crono.time_debt.integrity, start - 6.0, 0.001, "the story's -2 lands on top of the fight's -4")
+	check_near(sera.solidity.debt, debt0 + 3.0, 0.001, "the story's +1 Debt on top of the fight's +2")
+	check(await _end(loc, true), "the battle ends")
+	check_near(Game.crono_integrity, start - 6.0, 0.001, "the write-back keeps both charges")
+	check_near(Game.sera_debt, debt0 + 3.0, 0.001, "and both Debts")
+	check(not crono.time_debt.integrity_changed.is_connected(Game.set_integrity), "Game stops following the body at the write-back")
+	Game.new_game()
+
+
+## STORY-3 (refix): the Cradle's blade Break charges Crono 3 integrity once under the Game-to-body listener (the
+## component pays, Game mirrors it), and the write-back keeps exactly 3, not 6.
+func test_cradle_blade_break_costs_three_at_the_write_back() -> void:
+	var loc: Location = await _arena([&"crono", &"sera"])
+	var before: float = Game.crono_integrity
+	loc._on_story_battle(&"", {"boss_id": "atrium_cradle", "boss": true, "at": "boss", "center": "center"})
+	loc.battle.coordinator.auto_tick = false
+	var ctrl: BossController = loc.battle.boss
+	check_eq(ctrl.phase_index, 0, "the Cradle's first phase")
+	ctrl.director.on_break(ctrl, [&"SWORD"] as Array[StringName])
+	check_near(Game.crono_integrity, before - 3.0, 0.001, "Game shows the 3 at once")
+	check_near(_actor(loc, &"crono").time_debt.integrity, before - 3.0, 0.001, "and so does his body")
+	check(await _end(loc, true), "the fight is won")
+	check_near(Game.crono_integrity, before - 3.0, 0.001, "the write-back keeps exactly 3")
+	Game.new_game()
+
+
 # ---------------------------------------------------------------- withdraw
 
 ## BATTLE-6 / COMBAT-2 / GAP1-2: Withdraw falls back toward the nearest edge over the ally's turns and
@@ -279,14 +319,61 @@ func test_story_battle_bodies_are_freed_and_a_retry_does_not_stack() -> void:
 	Game.new_game()
 
 
-## GAP1-10: a story battle asked for during a battle spawns nothing and releases its script.
+## BATTLE-18: a fallen add leaves the boss's adds_alive on the next summon; the living stay tracked.
+func test_dead_adds_are_pruned_on_the_next_summon() -> void:
+	var loc: Location = await _arena([&"crono", &"sera"])
+	loc._on_story_battle(&"", {"boss_id": "atrium_cradle", "boss": true, "at": "boss", "center": "center"})
+	loc.battle.coordinator.auto_tick = false
+	var ctrl: BossController = loc.battle.boss
+	var first: Array[CombatActor] = ctrl._spawn_row(0)
+	check_eq(ctrl.adds_alive.size(), 2, "two Shardlings are tracked")
+	first[0].stats.apply_damage(999999, true)
+	var again: Array[CombatActor] = ctrl._spawn_row(0, 1)
+	check(not ctrl.adds_alive.has(first[0]), "the fallen Shardling is pruned")
+	check(ctrl.adds_alive.has(first[1]), "the living one is kept")
+	check_eq(ctrl.adds_alive.size(), 1 + again.size(), "beside whatever the summon brought")
+	check(await _end(loc, true), "the battle ends")
+	Game.new_game()
+
+
+## restore_body() undoes on_break() whole: the NavigationAgent's avoidance comes back as the Break found it and the
+## Break hull is neither shown nor detectable (it is terrain only while Broken or a statue).
+func test_restore_body_hands_back_avoidance_and_drops_the_hull() -> void:
+	var e := CombatActor.create_enemy(Data.enemy(&"ashen_spoon"))
+	root.add_child(e)
+	_track(e)
+	check(not e.break_hull.monitorable and not e.break_hull.visible, "an unbroken body's hull is down")
+	e.nav.avoidance_enabled = true
+	e.on_break()
+	check(not e.nav.avoidance_enabled and e.break_hull.monitorable and e.break_hull.visible, "Broken: avoidance off, the hull up")
+	e.restore_body()
+	check(e.nav.avoidance_enabled, "restored: avoidance on again, as the Break found it")
+	check(not e.break_hull.monitorable and not e.break_hull.visible, "and the hull down")
+	e.nav.avoidance_enabled = false
+	e.on_break()
+	e.on_recover()
+	check(not e.nav.avoidance_enabled and not e.break_hull.monitorable, "a body that had no avoidance gets none from a recovery")
+
+
+## GAP1-10: a story battle asked for during a battle spawns nothing and releases the script that waits on it.
 func test_story_battle_during_a_battle_is_skipped() -> void:
 	var loc: Location = await _arena([&"crono"])
 	_zone_battle(loc)
 	var before: int = loc.get_child_count()
-	loc._on_story_battle(&"kitchen_spoons", {"boss_id": "atrium_cradle"})
+	var asked: Array = []
+	var done: Array = []
+	var on_request := func(id: StringName, _cmd: Dictionary) -> void: asked.append(id)
+	var on_done := func(id: StringName) -> void: done.append(id)
+	Story.battle_requested.connect(on_request)
+	Story.script_finished.connect(on_done)
+	Story.run(&"t_aftermath_busy", [{"battle": "kitchen_spoons", "boss_id": "atrium_cradle"}, {"end": true}])
+	await get_tree().process_frame
+	await get_tree().process_frame
+	Story.battle_requested.disconnect(on_request)
+	Story.script_finished.disconnect(on_done)
+	check_eq(asked, [&"kitchen_spoons"], "the script asked for its battle (and waits on it)")
 	check_eq(loc.get_child_count(), before, "no bodies spawned beside the running fight")
-	check(not Story._battle_waiting, "a waiting script is released")
+	check(done.has(&"t_aftermath_busy") and not Story._battle_waiting and not Story.is_running(), "the waiting script is released and runs to its end")
 	check_eq(String(Story.battle_result.get("reason", "")), "busy", "with a 'busy' result (neither won nor lost)")
 	check(await _end(loc, true), "the running battle still ends normally")
 	Game.new_game()
@@ -324,6 +411,35 @@ func test_swapped_in_reserve_is_written_back() -> void:
 	check_eq(int(Game.roster[&"krona"]["xp"]), krona.stats.xp, "and its XP")
 	check_near(float(Game.roster[&"krona"]["hp_ratio"]), krona.stats.hp_ratio(), 0.0001, "and its HP")
 	check(krona.is_queued_for_deletion(), "and it leaves with the battle")
+	Game.new_game()
+
+
+## GAP4-1 through the real Swap (BattleRoster.perform): the reserve that came in writes back what it ended with.
+func test_swap_through_perform_writes_the_incoming_reserve_back() -> void:
+	var loc: Location = await _arena([&"crono"])
+	Game.recruit(&"krona")
+	_zone_battle(loc)
+	var scene: BattleScene = loc.battle
+	var c: BattleCoordinator = scene.coordinator
+	c.party_hp_floor = 1
+	var crono: CombatActor = _actor(loc, &"crono")
+	var benched: Array = scene.roster.bench.filter(func(b: CombatActor) -> bool: return b.actor_id == &"krona")
+	check_eq(benched.size(), 1, "Krona sits on the bench")
+	check(_window_for(c, crono), "Crono gets a window")
+	var krona: CombatActor = benched[0] if not benched.is_empty() else null
+	check(bool(scene.roster.perform(scene, crono, {"incoming": krona}).get("ok", false)), "the Swap goes through")
+	check(c.party.has(krona) and scene.roster.bench.has(crono) and not scene.roster.bench.has(krona), "Krona is on the plane, Crono on the bench")
+	var xp0: int = int(Game.roster[&"krona"]["xp"])
+	var lv0: int = int(Game.roster[&"krona"]["level"])
+	krona.stats.xp += 500
+	krona.stats.hp = maxi(1, roundi(float(krona.stats.max_hp()) * 0.2))
+	var seen: Dictionary = {}
+	loc.battle_finished.connect(func(_v: bool) -> void: seen.merge({"xp": krona.stats.xp, "level": krona.stats.level, "hp": krona.stats.hp_ratio()}), CONNECT_ONE_SHOT)
+	check(await _end(loc, true), "the battle ends")
+	check(int(Game.roster[&"krona"]["level"]) > lv0 or int(Game.roster[&"krona"]["xp"]) > xp0, "the roster row moved on from before the fight")
+	check_eq(int(Game.roster[&"krona"]["xp"]), int(seen.get("xp", -1)), "the roster keeps the swapped-in reserve's XP")
+	check_eq(int(Game.roster[&"krona"]["level"]), int(seen.get("level", -1)), "and its level")
+	check_near(float(Game.roster[&"krona"]["hp_ratio"]), float(seen.get("hp", -1.0)), 0.0001, "and its HP")
 	Game.new_game()
 
 

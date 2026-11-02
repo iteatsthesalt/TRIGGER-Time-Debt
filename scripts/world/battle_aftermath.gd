@@ -45,6 +45,31 @@ static func sync_from_game(party: Array, integrity: bool = true, debt: bool = tr
 			ca.solidity.debt = Game.sera_debt
 
 
+## A battle begins: the bodies take up Game's ledger, and until the write-back Game follows Crono's and Sera's
+## components (every in-battle charge or repair lands there first), so a Story write mid-fight (a phase script's
+## `integrity: -2`) starts from the live value and the Game-to-body sync it fires loses nothing.
+static func enter_battle(party: Array) -> void:
+	sync_from_game(party)
+	for a in party:
+		if is_instance_valid(a) and a is CombatActor:
+			follow_ledger(a as CombatActor, true)
+
+
+## Game follows the body's integrity and Debt (on), or stops following it (off, at the write-back).
+static func follow_ledger(a: CombatActor, on: bool) -> void:
+	if a.time_debt != null:
+		_link(a.time_debt.integrity_changed, Game.set_integrity, on)
+	if a.solidity != null:
+		_link(a.solidity.debt_changed, Game.set_debt, on)
+
+
+static func _link(sig: Signal, to: Callable, on: bool) -> void:
+	if on and not sig.is_connected(to):
+		sig.connect(to)
+	elif not on and sig.is_connected(to):
+		sig.disconnect(to)
+
+
 ## Everyone stands again: the fallen get up at `ratio` of max HP (1 HP at 0), the living are raised to it,
 ## and every body is visible, opaque, untinted and free to walk.
 static func restore_party(party: Array, ratio: float) -> void:
@@ -63,6 +88,7 @@ static func restore_party(party: Array, ratio: float) -> void:
 ## Crono's integrity and Sera's Debt into Game. A member still down (a reserve, never stood up) records `ratio`,
 ## and a living one at least `ratio`, matching what restore_party gives the field party.
 static func write_back(a: CombatActor, ratio: float) -> void:
+	follow_ledger(a, false)
 	var row: Dictionary = Game.roster.get(a.actor_id, {})
 	Game.set_level(a.actor_id, a.stats.level)  # level-gated kit techs arrive (KitUnlocks)
 	row["xp"] = a.stats.xp
@@ -94,11 +120,27 @@ static func settle_enemies(fought: Array, spared: Array, zone: EncounterZone, re
 		zone.settle(result, spared)
 
 
-## After a withdraw the party falls back together: the leader stands where the withdrawing ally reached
-## the plane's edge (PartyFollow then snaps the others in behind).
-static func regroup(party: Array, at: Variant) -> void:
-	if party.is_empty() or not (at is Vector3) or not is_instance_valid(party[0]):
+## The party back in the field, standing on ground `ground` says can hold it. After a withdraw the leader stands
+## where the withdrawing ally broke away (`at`), or where it stood before the battle (`fallback`) when the ground
+## there cannot hold it; then the followers snap in behind (PartyFollow), and one the ground cannot hold there
+## steps back toward the leader (a wall, a ledge or the void behind it).
+static func regroup(follow: PartyFollow, party: Array, at: Variant, ground: WalkableGround, fallback: Variant) -> void:
+	if party.is_empty() or not is_instance_valid(party[0]):
 		return
 	var leader := party[0] as CombatActor
-	leader.global_position = Vector3((at as Vector3).x, leader.global_position.y, (at as Vector3).z)
-	leader.reset_physics_interpolation()
+	if at is Vector3:
+		var spot: Variant = ground.stand_at(at) if ground != null else at
+		if spot == null and fallback is Vector3:
+			spot = ground.stand_at(fallback)
+			spot = fallback if spot == null else spot
+		if spot is Vector3:
+			leader.global_position = spot
+			leader.reset_physics_interpolation()
+	if follow != null:
+		follow.snap_behind()
+	for i in range(1, party.size()):
+		var f := party[i] as CombatActor
+		if ground == null or not is_instance_valid(f) or ground.stand_at(f.global_position) != null:
+			continue
+		f.global_position = ground.walk(leader.global_position, f.global_position)["to"]
+		f.reset_physics_interpolation()

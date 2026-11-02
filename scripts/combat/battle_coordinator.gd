@@ -95,6 +95,8 @@ var token_duplicate_active: Node = null
 var paused: bool = false
 ## Units that take no HP damage for now (a boss sealed until a Debt is paid); shields still shave.
 var undamageable: Array[Node] = []
+## The ally that has used its move this window (§4.1: one optional move, then one action).
+var moved_this_window: Node = null
 ## When > 0, enemy hits cannot take a party member below this many HP (zero-fail tutorial fights).
 var party_hp_floor: int = 0
 
@@ -459,6 +461,7 @@ func _open_window(u: Node, grant_bp: bool) -> void:
 	if st != null:
 		st.is_guarding = false
 	active_actor = u
+	moved_this_window = null
 	state = State.COMMAND_WAIT
 	command_requested.emit(u)
 
@@ -485,6 +488,9 @@ func cmd_sync_hold(actor: Node) -> Dictionary:
 func cmd_move(actor: Node, to: Vector3) -> Dictionary:
 	if not _is_turn(actor):
 		return _fail("not this actor's turn")
+	if moved_this_window == actor:
+		return _fail("already moved this window")
+	moved_this_window = actor
 	var st := CombatantStats.of(actor)
 	var from: Vector3 = position_of(actor)
 	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)
@@ -609,45 +615,13 @@ func cmd_item(actor: Node, item: Dictionary, target: Node) -> Dictionary:
 	return {"ok": true, "info": info}
 
 
+## Swap and swap-a-KO'd-ally (§4.2): the rules and the bookkeeping live in SwapRules; both end the turn.
 func cmd_swap(actor: Node, incoming: Node) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
-	if not bench.has(incoming):
-		return _fail("not on the bench")
-	state = State.EXECUTING
-	var idx: int = party.find(actor)
-	party[idx] = incoming
-	bench.erase(incoming)
-	bench.append(actor)
-	_set_position(incoming, position_of(actor))
-	_init_unit(incoming, CombatConstants.SWAP_GAUGE)
-	ready_pool.erase(actor)
-	if not swapped_once:
-		swapped_once = true
-		bank.add(1)
-	active_actor = null
-	_after_party_action({"kind": "swap", "out": actor, "in": incoming})
-	return {"ok": true}
+	return SwapRules.swap(self, actor, incoming)
 
 
-## Swap a KO'd ally out: any ally within 3 m may do it on their turn.
 func cmd_swap_koed(actor: Node, koed: Node, incoming: Node) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
-	if not party.has(koed) or _alive(koed) or not bench.has(incoming):
-		return _fail("invalid swap")
-	if position_of(actor).distance_to(position_of(koed)) > 3.0:
-		return _fail("too far")
-	var idx: int = party.find(koed)
-	party[idx] = incoming
-	bench.erase(incoming)
-	bench.append(koed)
-	_set_position(incoming, position_of(koed))
-	_init_unit(incoming, CombatConstants.SWAP_GAUGE)
-	if not swapped_once:
-		swapped_once = true
-		bank.add(1)
-	return {"ok": true}
+	return SwapRules.swap_koed(self, actor, koed, incoming)
 
 
 func cmd_spare(actor: Node, target: Node) -> Dictionary:
@@ -806,7 +780,8 @@ func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int)
 		if sh != null:
 			p = sh.preview_action(tags, hits * int(h["hits"]), ShaveBonus.against(self, actor, tech, boost, e, tags, bonus_if_status), st.actor_id)
 		p["hits"] = hits * int(h["hits"])
-		p["damage"] = _estimate_damage(actor, tech, e, boost, hits * int(h["hits"]), int(h["rank"]), tags)
+		p["sealed"] = undamageable.has(e)  # a sealed body takes no HP damage; the plates still shave
+		p["damage"] = 0 if p["sealed"] else _estimate_damage(actor, tech, e, boost, hits * int(h["hits"]), int(h["rank"]), tags)
 		out[e] = p
 	return out
 
@@ -884,6 +859,11 @@ func living_enemies() -> Array:
 		if _alive(e) and not spared.has(e) and not fled.has(e):
 			out.append(e)
 	return out
+
+
+## The enemies a command can aim at: living and not untargetable (a doll stepped back for its split, a phase-out).
+func targetable_enemies() -> Array:
+	return enemies.filter(func(e: Node) -> bool: return _alive(e) and not _untargetable(e))
 
 
 func is_broken(u: Node) -> bool:
@@ -1196,7 +1176,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 			if tags.has(CombatTags.HZ) and wind_ups.has(t) and rng.randf() < 0.15:
 				wind_ups.erase(t)
 				telegraph_ended.emit(t)
-			strike_resolved.emit(attacker, t, {"damage": dealt, "shave": res["shaved"], "weakness": res["hit_weakness"], "break": res["caused_break"], "crit": r["crit"], "tags": tags, "absorbed": r["absorbed"]})
+			strike_resolved.emit(attacker, t, {"damage": dealt, "shave": res["shaved"], "weakness": res["hit_weakness"], "break": res["caused_break"], "crit": r["crit"], "tags": tags, "absorbed": r["absorbed"], "sealed": not bool(r["absorbed"]) and undamageable.has(t)})
 		info["damage"][t] = total
 		info["shave"][t] = shaved
 		if boost >= 2 and tst.is_alive():
@@ -1812,9 +1792,8 @@ func unit_by_id(id: StringName) -> Node:
 
 func _enemy_candidates() -> Array:
 	var out: Array = []
-	for e in enemies:
-		if _alive(e) and not _untargetable(e):
-			out.append({"node": e, "pos": position_of(e), "radius": CombatantStats.of(e).body_radius})
+	for e in targetable_enemies():
+		out.append({"node": e, "pos": position_of(e), "radius": CombatantStats.of(e).body_radius})
 	return out
 
 

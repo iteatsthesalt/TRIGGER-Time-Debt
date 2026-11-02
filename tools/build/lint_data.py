@@ -165,6 +165,23 @@ for (kind, ident), srcs in sorted(_audio_refs().items()):
 if missing_audio:
     warnings.append(f"audio: {len(missing_audio)} music/ambience id(s) referenced by data have no track yet (AudioDirector plays silence for them):")
     warnings += [f"    {m}" for m in missing_audio]
+# Sound effects: Audio.play_sfx(id) loads res://audio/sfx/<id>.wav|.ogg or a random <id>_01..05.wav and drops a
+# missing id silently, so every literal id a script plays and every dialogue `sfx` is checked here; ids built at
+# run time ("magic/%s_contact", "time/gate_open_u%d") are not. A warning, counted, until the file is delivered.
+sfx_dir = ROOT / "audio/sfx"
+def _has_sfx(ident):
+    return any((sfx_dir / f"{ident}{ext}").exists() for ext in (".wav", ".ogg", "_01.wav"))
+sfx_refs = {}
+for p in sorted((ROOT / "scripts").rglob("*.gd")):
+    for ident in re.findall(r'play_sfx\("([a-z0-9_/]+)"', p.read_text(encoding="utf-8")):
+        sfx_refs.setdefault(ident, set()).add(p.relative_to(ROOT).as_posix())
+for p in sorted((ROOT / "data/dialogue").glob("*.json")):
+    for ident in re.findall(r'"sfx":\s*"([^"]+)"', p.read_text(encoding="utf-8")):
+        sfx_refs.setdefault(ident, set()).add(p.relative_to(ROOT).as_posix())
+missing_sfx = [f"{i} ({', '.join(sorted(srcs))})" for i, srcs in sorted(sfx_refs.items()) if not _has_sfx(i)]
+if missing_sfx:
+    warnings.append(f"audio: {len(missing_sfx)} sfx id(s) played by scripts or dialogue have no file under audio/sfx/ (they play silence):")
+    warnings += [f"    {m}" for m in missing_sfx]
 # Every Dual and Triple needs a learner: a kit entry in one of its actors (data/characters) or a dialogue `learn`
 # command; otherwise the engine can never offer it. A warning, counted, until the chapter that teaches it is written.
 learned = set()

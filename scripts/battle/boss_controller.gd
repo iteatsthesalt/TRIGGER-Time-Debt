@@ -159,8 +159,10 @@ func _add_def(key: StringName) -> EnemyDef:
 	return null
 
 
+## The boss's own adds (its phase spawns and its `summon:` actions): defined in its file, capped by its
+## `max_adds` through the shared EnemySpawner. A summon cast by any other enemy is the BattleScene's.
 func _on_summon(key: StringName, count: int, near: Node) -> void:
-	if ended:
+	if ended or (near != null and near != actor):
 		return
 	var edef: EnemyDef = _add_def(key)
 	if edef == null:
@@ -170,28 +172,11 @@ func _on_summon(key: StringName, count: int, near: Node) -> void:
 	var r: Dictionary = _call_director("on_summon", [self, key, count])
 	if r.get("handled", false):
 		return
-	# Never more than max_adds of one kind standing at once (bosses re-cast summons every few turns).
-	var living_same: int = 0
-	for e in coordinator.living_enemies():
-		if e != actor and CombatantStats.of(e).actor_id == key:
-			living_same += 1
-	var max_adds: int = int(def.raw.get("max_adds", 3))
-	count = mini(count, maxi(0, max_adds - living_same))
-	if count <= 0:
-		return
-	for k in count:
-		var a: CombatActor = CombatActor.create_enemy(edef, -1, "_add%d_%d" % [phase_index, k + randi() % 1000])
-		scene.get_parent().add_child(a)
-		var base: Vector3 = coordinator.position_of(near) if near != null else coordinator.arena_center
-		var ang: float = randf() * TAU
-		a.global_position = base + Vector3(cos(ang), 0.0, sin(ang)) * (1.8 + float(k) * 0.4)
-		a.face_toward(coordinator.arena_center + Vector3(0, 0, 4))
-		scene.enemies.append(a)
-		coordinator.add_enemy(a, edef)
-		scene.hud.register_enemy(a)
-		a.sprite.play(&"revive", &"idle")
+	var spawned: Array[CombatActor] = EnemySpawner.spawn(scene, edef, actor, count, EnemySpawner.max_adds_of(def.raw), "add%d_" % phase_index)
+	for a in spawned:
 		adds_alive.append(a)
-	scene.hud.show_message("%s calls %s ×%d" % [def.display_name, edef.display_name, count])
+	if not spawned.is_empty():
+		scene.hud.show_message("%s calls %s ×%d" % [def.display_name, edef.display_name, spawned.size()])
 
 
 func _on_unit_broken(unit: Node, _breaker: Node) -> void:

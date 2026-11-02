@@ -80,12 +80,12 @@ func can_swap(c: BattleCoordinator) -> bool:
 
 
 ## The Swap sub-deck for `actor`'s window: each living bench member, as a trade for the actor and,
-## when a KO'd ally lies within 3 m, as a trade for that ally.
+## when a KO'd ally lies within 3 m, as a trade for that ally. Either costs the actor's turn (SwapRules).
 func deck_items(c: BattleCoordinator, actor: CombatActor) -> Array:
 	var items: Array = []
 	var koed: Array = []
 	for u in c.party:
-		if u != actor and not c._alive(u) and c.position_of(actor).distance_to(c.position_of(u)) <= 3.0:
+		if u != actor and not c._alive(u) and c.position_of(actor).distance_to(c.position_of(u)) <= SwapRules.KO_REACH_M:
 			koed.append(u)
 	for b in bench:
 		if not c._alive(b):
@@ -97,15 +97,14 @@ func deck_items(c: BattleCoordinator, actor: CombatActor) -> Array:
 	return items
 
 
-## Perform a swap chosen from the sub-deck. Returns false when the coordinator refused it.
-func perform(scene: BattleScene, actor: CombatActor, payload: Dictionary) -> bool:
+## Perform a swap chosen from the sub-deck; returns the coordinator's verdict ({ok, error}).
+func perform(scene: BattleScene, actor: CombatActor, payload: Dictionary) -> Dictionary:
 	var incoming: CombatActor = payload.get("incoming", null)
 	var koed: CombatActor = payload.get("koed", null)
 	var outgoing: CombatActor = koed if koed != null else actor
 	var r: Dictionary = scene.coordinator.cmd_swap_koed(actor, koed, incoming) if koed != null else scene.coordinator.cmd_swap(actor, incoming)
 	if not bool(r.get("ok", false)):
-		scene.hud.show_message(String(r.get("error", "")))
-		return false
+		return r
 	_park(incoming, false)
 	incoming.face_toward(scene.center + Vector3(0, 0, -5))
 	incoming.sprite.play(&"ready")
@@ -117,7 +116,7 @@ func perform(scene: BattleScene, actor: CombatActor, payload: Dictionary) -> boo
 	bench.append(outgoing)
 	scene.hud.register_units(scene.coordinator.party, scene.enemies, hover)
 	Audio.play_sfx("ui/confirm")
-	return true
+	return r
 
 
 ## The hover deck: Sera's Turn-Bar daggers (her `hover_*` techs she knows) and a pass.

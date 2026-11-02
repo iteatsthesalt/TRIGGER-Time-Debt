@@ -5,9 +5,6 @@ class_name BattleHUD
 extends CanvasLayer
 
 signal command_chosen(cmd: String, payload: Dictionary)
-signal target_changed(index: int)
-signal boost_changed(level: int)
-signal cancelled
 
 const INK := Color("#161821")
 const CREAM := Color("#F2EAD7")
@@ -16,6 +13,11 @@ const DARK := Color("#2D3039")
 const GOLD := Color("#D4AF37")
 const CYAN := Color(0.25, 0.85, 1.0)
 const ORANGE := Color(1.0, 0.65, 0.15)
+## Turn-bar marker and portrait fill per party member.
+const ACTOR_COLOURS := {
+	&"crono": Color(0.26, 0.31, 0.52), &"sera": Color(0.40, 0.33, 0.62), &"krona": Color(0.45, 0.12, 0.12),
+	&"cassia": Color(0.55, 0.38, 0.18), &"marle": Color(0.25, 0.42, 0.6),
+}
 
 var root: Control
 var turn_bar: Control
@@ -43,6 +45,9 @@ var _msg_tween: Tween
 var targeting: bool = false
 var boost_level: int = 0
 var _flow_time_label: Label
+## What the plates last showed (the aim's previews and target): _process re-projects them every frame.
+var _plate_previews: Dictionary = {}
+var _plate_target: Node = null
 
 
 func _ready() -> void:
@@ -131,22 +136,7 @@ func register_units(party: Array, enemies: Array, hover: Node = null) -> void:
 	if hover != null:
 		all.append(hover)
 	for u in all:
-		var st := CombatantStats.of(u)
-		var m := Panel.new()
-		m.custom_minimum_size = Vector2(14, 14)
-		m.size = Vector2(14, 14)
-		var is_party: bool = st != null and st.team == CombatantStats.Team.PARTY
-		var sb := _frame(_actor_colour(st) if is_party else Color(0.35, 0.2, 0.2), CREAM if is_party else Color(0.9, 0.5, 0.4))
-		sb.set_content_margin_all(0)
-		m.add_theme_stylebox_override("panel", sb)
-		var l := Label.new()
-		l.text = String(st.actor_id).left(2).to_upper() if st != null else "?"
-		l.add_theme_font_size_override("font_size", 7)
-		l.add_theme_color_override("font_color", CREAM)
-		l.position = Vector2(1, 1)
-		m.add_child(l)
-		turn_bar.add_child(m)
-		turn_markers[u] = m
+		_add_marker(u)
 	for k in party_rows.keys():
 		party_rows[k].queue_free()
 	party_rows.clear()
@@ -160,11 +150,17 @@ func register_units(party: Array, enemies: Array, hover: Node = null) -> void:
 func register_enemy(u: Node) -> void:
 	if turn_markers.has(u):
 		return
+	_add_marker(u)
+	ensure_plate(u)
+
+
+func _add_marker(u: Node) -> void:
 	var st := CombatantStats.of(u)
 	var m := Panel.new()
 	m.custom_minimum_size = Vector2(14, 14)
 	m.size = Vector2(14, 14)
-	var sb := _frame(Color(0.35, 0.2, 0.2), Color(0.9, 0.5, 0.4))
+	var is_party: bool = st != null and st.team == CombatantStats.Team.PARTY
+	var sb := _frame(_actor_colour(st) if is_party else Color(0.35, 0.2, 0.2), CREAM if is_party else Color(0.9, 0.5, 0.4))
 	sb.set_content_margin_all(0)
 	m.add_theme_stylebox_override("panel", sb)
 	var l := Label.new()
@@ -175,24 +171,10 @@ func register_enemy(u: Node) -> void:
 	m.add_child(l)
 	turn_bar.add_child(m)
 	turn_markers[u] = m
-	ensure_plate(u)
 
 
 func _actor_colour(st: CombatantStats) -> Color:
-	if st == null:
-		return DARK
-	match st.actor_id:
-		&"crono":
-			return Color(0.26, 0.31, 0.52)
-		&"sera":
-			return Color(0.40, 0.33, 0.62)
-		&"krona":
-			return Color(0.45, 0.12, 0.12)
-		&"cassia":
-			return Color(0.55, 0.38, 0.18)
-		&"marle":
-			return Color(0.25, 0.42, 0.6)
-	return DARK
+	return ACTOR_COLOURS.get(st.actor_id, DARK) if st != null else DARK
 
 
 func update_turn_bar() -> void:
@@ -211,8 +193,7 @@ func update_turn_bar() -> void:
 		m.modulate = Color(1, 0.85, 0.4) if broken else (Color(1, 1, 1, 1) if not coordinator.ready_pool.has(u) else Color(0.8, 1.0, 1.0))
 		if coordinator.wind_ups.has(u):
 			var wu: Dictionary = coordinator.wind_ups[u]
-			var t: float = 1.0 - float(wu["left"]) / maxf(0.01, float(wu["total"]))
-			m.modulate = CYAN.lerp(ORANGE, t)
+			m.modulate = telegraph_tint(1.0 - float(wu["left"]) / maxf(0.01, float(wu["total"])))
 	_flow_time_label.text = "t %.1f" % coordinator.battle_time
 
 
@@ -443,6 +424,9 @@ func deck_confirm() -> void:
 func set_targeting(on: bool) -> void:
 	targeting = on
 	preview_label.visible = on
+	if not on:
+		_plate_previews = {}
+		_plate_target = null
 	update_bp()
 
 
@@ -481,7 +465,22 @@ func ensure_plate(enemy: Node) -> Control:
 	return p
 
 
+## The wind-up tint the telegraph decal uses (aoe_floor_ring.gdshader): cyan (read) to orange (commit) over the
+## wind-up, its brightness pulsing by sin(TIME × 6) (§3.5, §17.1). `progress` is 0..1.
+static func telegraph_tint(progress: float, time_s: float = Time.get_ticks_msec() / 1000.0) -> Color:
+	var c: Color = CYAN.lerp(ORANGE, clampf(progress, 0.0, 1.0))
+	var k: float = 0.85 + 0.15 * sin(time_s * 6.0)
+	return Color(c.r * k, c.g * k, c.b * k, 1.0)
+
+
+## Re-project the plates with what they last showed (the camera keeps easing while the player aims).
+func refresh_plates(blind: bool) -> void:
+	update_plates(_plate_previews, blind, _plate_target)
+
+
 func update_plates(previews: Dictionary, blind: bool, target: Node) -> void:
+	_plate_previews = previews
+	_plate_target = target
 	if camera == null or coordinator == null:
 		return
 	for e in plates.keys():
@@ -505,8 +504,10 @@ func update_plates(previews: Dictionary, blind: bool, target: Node) -> void:
 		var l1: Label = p.get_meta("l1")
 		var l2: Label = p.get_meta("l2")
 		var bar: ColorRect = p.get_meta("bar")
+		# a sealed body (the Dollhouse Seal, a split doll) takes no HP damage: the plate says so (§17.5)
+		var seal: String = "[SEALED] " if coordinator.undamageable.has(e) else ""
 		if sh == null:
-			l1.text = st.display_name
+			l1.text = seal + st.display_name
 			l2.text = "HP %d" % st.hp
 			continue
 		var line: String
@@ -531,7 +532,7 @@ func update_plates(previews: Dictionary, blind: bool, target: Node) -> void:
 				line += " %s->%s" % [CombatTags.short(sh.current_material()), CombatTags.short(sh.current_key())]
 		if e == target:
 			line = "◆ " + line
-		l1.text = line
+		l1.text = seal + line
 		var tags: Array[String] = []
 		var vis: Array[StringName] = sh.visible_weaknesses(blind)
 		for w in vis:
@@ -542,8 +543,7 @@ func update_plates(previews: Dictionary, blind: bool, target: Node) -> void:
 		l2.text = " ".join(PackedStringArray(tags)) + hp_txt
 		if coordinator.wind_ups.has(e):
 			var wu: Dictionary = coordinator.wind_ups[e]
-			var t: float = 1.0 - float(wu["left"]) / maxf(0.01, float(wu["total"]))
-			p.modulate = Color.WHITE.lerp(ORANGE, 0.5 + 0.5 * sin(t * TAU * 2.0) * 0.5 + t * 0.5)
+			p.modulate = telegraph_tint(1.0 - float(wu["left"]) / maxf(0.01, float(wu["total"])))
 		else:
 			p.modulate = Color.WHITE
 

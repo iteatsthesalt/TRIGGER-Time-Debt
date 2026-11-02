@@ -1,0 +1,195 @@
+## Shared base for every headless test suite (tests/suite_*.gd): the check helpers, node tracking and
+## the battle fixtures. A suite extends this file, writes `func test_*() -> void` methods and is picked up by
+## tests/run_tests.gd automatically; override run() only to pin an explicit order (suite_core does).
+extends Node
+
+var root: Node
+var exit_code: int = 0
+
+var _passed: int = 0
+var _failed: int = 0
+var _current: String = ""
+var _nodes: Array[Node] = []
+
+
+func run() -> void:
+	var tests: Array[Callable] = []
+	for m in get_method_list():
+		var n: String = m["name"]
+		if n.begins_with("test_"):
+			tests.append(Callable(self, n))
+	await run_list(tests)
+
+
+func run_list(tests: Array[Callable]) -> void:
+	for t in tests:
+		_current = t.get_method()
+		var before: int = _passed + _failed
+		await t.call()
+		check(_passed + _failed > before, "ran no checks; it crashed before its first check")
+		_cleanup()
+	print("\n%s: %d passed, %d failed" % [String(get_script().resource_path).get_file(), _passed, _failed])
+	exit_code = 1 if _failed > 0 else 0
+
+
+func passed() -> int:
+	return _passed
+
+
+func failed() -> int:
+	return _failed
+
+
+# ---------------------------------------------------------------- fixtures
+
+func check(cond: bool, msg: String) -> void:
+	if cond:
+		_passed += 1
+	else:
+		_failed += 1
+		printerr("FAIL [%s]: %s" % [_current, msg])
+
+
+func check_eq(a: Variant, b: Variant, msg: String) -> void:
+	check(a == b, "%s (got %s, want %s)" % [msg, str(a), str(b)])
+
+
+func check_near(a: float, b: float, tol: float, msg: String) -> void:
+	check(absf(a - b) <= tol, "%s (got %s, want %s)" % [msg, str(a), str(b)])
+
+
+func _cleanup() -> void:
+	for n in _nodes:
+		if is_instance_valid(n):
+			n.free()
+	_nodes.clear()
+
+
+func _track(n: Node) -> Node:
+	_nodes.append(n)
+	return n
+
+
+func _party_member(id: StringName, level: int, pos: Vector3) -> Node3D:
+	var body := Node3D.new()
+	body.name = String(id)
+	var st := CombatantStats.new()
+	st.name = "CombatantStats"
+	st.apply_party_curve(id, level)
+	st.weapon_tags = [&"SWORD"]
+	st.weapon_hits = 2
+	if id == &"sera":
+		st.weapon_tags = [&"PIERCING"]
+	body.add_child(st)
+	var sc := StatusComponent.new()
+	sc.name = "StatusComponent"
+	body.add_child(sc)
+	if id == &"crono":
+		var td := TimeDebtComponent.new()
+		td.name = "TimeDebtComponent"
+		body.add_child(td)
+	if id == &"sera":
+		var sol := SolidityComponent.new()
+		sol.name = "SolidityComponent"
+		body.add_child(sol)
+	root.add_child(body)
+	body.global_position = pos
+	st.reset_vitals()
+	_track(body)
+	return body
+
+
+func _enemy(id: StringName, level: int, pos: Vector3, shield: int, weak: Array, opts: Dictionary = {}) -> Node3D:
+	var body := Node3D.new()
+	body.name = String(id)
+	var st := CombatantStats.new()
+	st.name = "CombatantStats"
+	st.actor_id = id
+	st.apply_enemy_curve(level, String(opts.get("kind", "regular")))
+	if opts.has("hp"):
+		st.base_max_hp = int(opts["hp"])
+	st.weapon_tags = CombatTags.to_names(opts.get("weapon_tags", [&"BLUNT"]))
+	st.tags = CombatTags.to_names(opts.get("tags", []))
+	body.add_child(st)
+	var sh := ShieldComponent.new()
+	sh.name = "ShieldComponent"
+	sh.max_shield = shield
+	sh.weaknesses = CombatTags.to_names(weak)
+	if opts.has("keyed"):
+		var kp: Array[Dictionary] = []
+		for k in opts["keyed"]:
+			kp.append(k)
+		sh.keyed_plates = kp
+	if opts.has("belief"):
+		sh.belief_number = int(opts["belief"])
+	if opts.has("resists"):
+		sh.resists = CombatTags.to_names(opts["resists"])
+	body.add_child(sh)
+	var sc := StatusComponent.new()
+	sc.name = "StatusComponent"
+	body.add_child(sc)
+	root.add_child(body)
+	body.global_position = pos
+	st.reset_vitals()
+	sh.reset_shields()
+	_track(body)
+	return body
+
+
+func _tech(d: Dictionary) -> TechDef:
+	return TechDef.from_dict(d)
+
+
+func _coord(seed_v: int = 7) -> BattleCoordinator:
+	var c := BattleCoordinator.new()
+	c.auto_tick = false
+	c.rng_seed = seed_v
+	c.fixed_variance = 1.0
+	root.add_child(c)
+	_track(c)
+	return c
+
+
+func _lib() -> Dictionary:
+	var lib: Dictionary = {}
+	for d in [
+		{"id": "time_slice", "name": "Time Slice", "tier": "single", "actors": ["crono"], "tags": ["ASTRAL", "SWORD", "TIME_DEBT"], "shape": "SINGLE", "hits": 1, "power": 1.6, "uses": "ASTRAL", "costs": {"crono": {"strain_pct": 1}}},
+		{"id": "astral_slash", "name": "Astral Slash", "tier": "single", "actors": ["crono"], "tags": ["ASTRAL", "SWORD", "TIME_DEBT"], "shape": "CONE", "radius": 2.8, "length": 5.5, "aoe_scale": 1.1, "hits": 1, "power": 1.4, "uses": "ASTRAL", "costs": {"crono": {"strain_pct": 2}}},
+		{"id": "rewind", "name": "Rewind", "tier": "single", "actors": ["sera"], "tags": ["TACHYON", "PROBABILITY"], "shape": "SINGLE", "target": "any", "effect": "rewind", "costs": {"sera": {"solidity_pct": 5}}},
+		{"id": "hold", "name": "HOLD", "tier": "single", "actors": ["sera"], "tags": ["TACHYON"], "shape": "SINGLE", "effect": "hold", "costs": {"sera": {"solidity_pct": 5}}},
+		{"id": "borrowed_future", "name": "Borrowed Future", "tier": "single", "actors": ["sera"], "tags": ["TACHYON", "PROBABILITY"], "shape": "PARTY", "target": "party", "effect": "borrowed_future", "costs": {"sera": {"solidity_pct": 10}}},
+		{"id": "tachyon_needle", "name": "Tachyon Needle", "tier": "single", "actors": ["sera"], "tags": ["TACHYON", "PIERCING", "PROBABILITY"], "shape": "LINE_PIERCE", "length": 12.0, "width": 0.8, "hits": 3, "power": 0.9, "uses": "ELEMENTAL", "effect": "tachyon_needle", "costs": {"sera": {"mp": 6}}},
+		{"id": "eclipse_x_strike", "name": "Eclipse X-Strike", "tier": "dual", "actors": ["crono", "krona"], "tags": ["ASTRAL", "RUIN", "CROSS"], "shape": "CROSS", "radius": 1.0, "length": 4.0, "aoe_scale": 1.3, "hits": 2, "power": 1.0, "uses": "BEST", "effect": "eclipse_x_strike", "costs": {"crono": {"strain_pct": 3}, "krona": {"mp": 8}}},
+		{"id": "teppo_ash_cut", "name": "Teppo Ash-Cut", "tier": "single", "actors": ["krona"], "tags": ["RUIN", "ENTROPY", "INK"], "shape": "CONE", "radius": 3.0, "length": 3.0, "hits": 1, "power": 1.2, "uses": "PHYSICAL", "costs": {"krona": {"mp": 5}}},
+	]:
+		var t := TechDef.from_dict(d)
+		lib[t.id] = t
+	return lib
+
+
+func _start(c: BattleCoordinator, party: Array, enemies: Array, cfg: Dictionary = {}) -> void:
+	var config: Dictionary = {"techs": _lib(), "advantage": "normal"}
+	for k in cfg.keys():
+		config[k] = cfg[k]
+	c.start_battle(party, enemies, Vector3.ZERO, config)
+
+
+func _advance_until_window(c: BattleCoordinator, max_s: float = 30.0) -> Node:
+	var t: float = 0.0
+	while c.state != BattleCoordinator.State.COMMAND_WAIT and t < max_s and c.state != BattleCoordinator.State.IDLE:
+		c.advance(1.0 / 60.0)
+		t += 1.0 / 60.0
+	return c.active_actor
+
+
+func _advance_until_actor(c: BattleCoordinator, id: StringName, max_s: float = 60.0) -> Node:
+	var t: float = 0.0
+	while t < max_s and c.state != BattleCoordinator.State.IDLE:
+		var a: Node = _advance_until_window(c, max_s - t)
+		if a == null:
+			return null
+		if CombatantStats.of(a).actor_id == id:
+			return a
+		c.cmd_guard(a)
+		t += 0.5
+	return null

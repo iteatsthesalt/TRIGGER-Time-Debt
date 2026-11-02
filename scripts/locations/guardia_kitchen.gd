@@ -28,10 +28,10 @@ func build() -> void:
 	camera_distance = 13.0
 	camera_pitch = 32.0
 	map_bounds = Rect2(-9.5, -7.5, 23.5, 12.5)
-	var stone := SceneKit.material("res://assets/textures/stone_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.92, 0.9, 0.88), true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.95, 0.95, 0.95), true)
-	var wood := SceneKit.material("res://assets/textures/wood_albedo.png", "res://assets/textures/wood_normal.png", 0.85, Color.WHITE, true)
-	var dark_wood := SceneKit.material("res://assets/textures/wood_albedo.png", "res://assets/textures/wood_normal.png", 0.85, Color(0.6, 0.55, 0.5), true)
+	var stone := SceneKit.named("castle_flagstone", 0.95, Color(0.92, 0.9, 0.88))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.95, 0.95, 0.95))
+	var wood := SceneKit.named("oak_plank", 0.85)
+	var dark_wood := SceneKit.named("oak_beam", 0.85, Color(0.6, 0.55, 0.5))
 	# ---- floors
 	SceneKit.floor_plane(self, Vector2(10.0, 11.0), Vector3(-4.0, 0.0, -1.0), stone, "KitchenFloor")
 	SceneKit.floor_plane(self, Vector2(12.5, 12.0), Vector3(7.25, 0.0, -1.0), stone, "HallFloor")

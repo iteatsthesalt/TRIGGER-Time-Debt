@@ -13,9 +13,9 @@ func build() -> void:
 	camera_distance = 15.0
 	camera_pitch = 30.0
 	map_bounds = Rect2(-12, -12, 24, 22)
-	var stone := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.9, Color(0.85, 0.87, 0.9), true)
-	var gravel := SceneKit.material("res://assets/textures/gravel_albedo.png", "res://assets/textures/gravel_normal.png", 1.0, Color(0.9, 0.9, 0.92), true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.9, 0.9, 0.95), true)
+	var stone := SceneKit.named("castle_flagstone", 0.9, Color(0.85, 0.87, 0.9))
+	var gravel := SceneKit.named("grass_moss", 1.0, Color(0.9, 0.9, 0.92))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.9, 0.9, 0.95))
 	SceneKit.floor_plane(self, Vector2(26, 24), Vector3(0, 0, -1), gravel, "Ground")
 	# a flagstone path from the keep door (north) to the gatehouse (south)
 	SceneKit.box(self, Vector3(3.0, 0.04, 20.0), Vector3(0, 0.02, -1), stone, "Path", false)

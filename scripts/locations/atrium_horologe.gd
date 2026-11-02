@@ -53,10 +53,10 @@ func build() -> void:
 	camera_distance = 16.0
 	camera_pitch = 34.0
 	map_bounds = Rect2(-13, -13, 26, 26)
-	var stone := SceneKit.material("res://assets/textures/stone_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.9, 0.86, 0.78), true)
-	var mossy := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.95, 0.95, 0.9), true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.85, 0.78, 0.65), true)
-	var wood := SceneKit.material("res://assets/textures/wood_albedo.png", "res://assets/textures/wood_normal.png", 0.85, Color.WHITE, true)
+	var stone := SceneKit.named("castle_flagstone", 0.95, Color(0.9, 0.86, 0.78))
+	var mossy := SceneKit.named("stone_mossy", 0.95, Color(0.95, 0.95, 0.9))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.85, 0.78, 0.65))
+	var wood := SceneKit.named("oak_plank", 0.85)
 	var brass := SceneKit.flat_color(Color(0.74, 0.56, 0.28), Color.BLACK, 0.0, 0.35, 0.85)
 	var dark_brass := SceneKit.flat_color(Color(0.42, 0.3, 0.16), Color.BLACK, 0.0, 0.5, 0.8)
 	var copper := SceneKit.flat_color(Color(0.72, 0.42, 0.25), Color(1.0, 0.45, 0.15), 1.2, 0.4, 0.8)

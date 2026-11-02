@@ -24,6 +24,9 @@ var _wait_advance: bool = false
 var _choice_index: int = -1
 var _choice_buttons: Array[Button] = []
 var _vaelos_style: bool = false
+## Bumped by every say(), choose() and hide_box(): an auto-advance or auto-pick timer armed for an earlier
+## line carries its number and does nothing once another line is up.
+var _line: int = 0
 
 
 func _ready() -> void:
@@ -169,18 +172,24 @@ func say(who: String, text: String, expression: String = "neutral", style: Strin
 	text_label.visible_characters = 0
 	_typing = true
 	_wait_advance = true
+	_line += 1
 	if auto_advance > 0.0:
 		# Probes and smoke runs: very short auto-advance means instant text.
 		var t: float = auto_advance + (float(text.length()) / TYPE_CPS if auto_advance >= 0.5 else 0.0)
 		if auto_advance < 0.5:
 			text_label.visible_characters = -1
 			_typing = false
-		get_tree().create_timer(t).timeout.connect(func() -> void:
-			if _wait_advance:
-				_wait_advance = false
-				prompt_arrow.visible = false
-				advanced.emit())
+		get_tree().create_timer(t).timeout.connect(_auto_advance.bind(_line))
 	await advanced
+
+
+## The auto-advance timer of line `line`: advances only if that line is still the one waiting.
+func _auto_advance(line: int) -> void:
+	if line != _line or not _wait_advance:
+		return
+	_wait_advance = false
+	prompt_arrow.visible = false
+	advanced.emit()
 
 
 func caption(text: String, seconds: float) -> void:
@@ -215,8 +224,9 @@ func choose(who: String, prompt: String, options: Array, auto: int = -1) -> int:
 		choice_box.add_child(b)
 		_choice_buttons.append(b)
 	_set_choice(0)
+	_line += 1
 	if auto >= 0:
-		get_tree().create_timer(0.05).timeout.connect(func() -> void: _pick(clampi(auto, 0, options.size() - 1)))
+		get_tree().create_timer(0.05).timeout.connect(_auto_pick.bind(_line, clampi(auto, 0, options.size() - 1)))
 	var idx: int = await chosen
 	_clear_choices()
 	return idx
@@ -237,6 +247,12 @@ func _pick(i: int) -> void:
 	chosen.emit(i)
 
 
+## The auto-pick timer of choice `line` (probes): picks only while that choice is still open.
+func _auto_pick(line: int, i: int) -> void:
+	if line == _line:
+		_pick(i)
+
+
 func _clear_choices() -> void:
 	for b in _choice_buttons:
 		b.queue_free()
@@ -249,3 +265,4 @@ func hide_box() -> void:
 	_clear_choices()
 	_typing = false
 	_wait_advance = false
+	_line += 1

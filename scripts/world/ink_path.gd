@@ -14,7 +14,6 @@ var prismatic: bool = false
 var _timer: float = 0.0
 var _prints: Array[MeshInstance3D] = []
 static var _tex: ImageTexture
-static var _mat: StandardMaterial3D
 
 
 static func make(parent: Node, pts: Array, life_s: float = 6.0) -> InkPath:

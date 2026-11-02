@@ -2,7 +2,7 @@
   "id": "sera", "name": "Sera", "element": "TACHYON", "home_universe": -1, "canvas_fps": 60, "archetype": "caster",
   "weapon": {"name": "Twin Pendulum Blades", "tags": ["PIERCING"], "hits": 2}, "move_range": 8.0,
   "vulnerable": ["NULL", "HZ"], "resistant": ["TACHYON"],
-  "sprite": "sera", "height_m": 1.62,
+  "sprite": "sera", "height_m": 1.62, "y_offset": 0.0625,
   "techs": [
     {"id": "fall_break", "unlock": {"chapter": 0}},
     {"id": "rewind", "unlock": {"chapter": 1}},

@@ -4,8 +4,18 @@
 class_name ActorSprite
 extends MeshInstance3D
 
-const PIXELS_PER_METRE := 64.0
-## Sheet rows in order. Four-row sheets use the first four; eight-row sheets add the diagonals.
+## The world's density (SceneKit.PX_PER_M, DECISIONS "Direction"): a sheet drawn on the Nov 1 recipe's
+## 64-96 px canvas with no height in its frames json stands at 32 px per metre.
+const PIXELS_PER_METRE := SceneKit.PX_PER_M
+## The superseded density of the 128 px chibi cells, the painted stand-ins and every older sheet without a
+## height (Reference Bible §1.2): they keep their on-screen size until their 64 px replacements arrive.
+const LEGACY_PIXELS_PER_METRE := 64.0
+## A height-less sheet whose cell is above this was drawn at the legacy density.
+const RECIPE_MAX_CELL := 96
+## Below this opacity the sprite draws with the blended fade shader instead of the cut-out one.
+const OPAQUE_AT := 0.999
+## Sheet rows in order. Four-row sheets use the first four; eight-row sheets add the diagonals. A frames json
+## may name its own order (`rows`); this is the default and the order the importer writes.
 const DIRECTIONS: Array[StringName] = [&"s", &"w", &"e", &"n", &"sw", &"se", &"nw", &"ne"]
 const CARDINALS: Array[StringName] = [&"s", &"w", &"e", &"n"]
 
@@ -26,17 +36,22 @@ var anim: StringName = &"idle"
 var facing: StringName = &"s"
 var frame: int = 0
 var mirror_w_from_e: bool = false
+## The sheet's row order (its frames json `rows`, else DIRECTIONS).
+var row_order: Array[StringName] = DIRECTIONS.duplicate()
+## 0..1; below OPAQUE_AT the fade shader draws it blended (set_opacity).
+var opacity: float = 1.0
 var material: ShaderMaterial
 var _accum: float = 0.0
 var _finished: bool = false
 var _one_shot_return: StringName = &""
 var _reverse_left: float = 0.0
 var _sheet_size: Vector2 = Vector2(128, 128)
-## Metres per sheet pixel. 1/64 by default (Reference Bible §1.2); a generated sheet may carry its own
-## height so the character stands at the bible's height whatever its drawn pixel height.
-var pixel_size: float = 1.0 / PIXELS_PER_METRE
+## Metres per sheet pixel. A sheet with a height in its frames json stands at that height whatever its
+## drawn pixel height (set_height); one without falls back to its cell's density (fallback_pixel_size).
+var pixel_size: float = 1.0 / LEGACY_PIXELS_PER_METRE
 
 static var _shader: Shader
+static var _shader_fade: Shader
 static var _galaxy: Cubemap
 static var _crack: Texture2D
 
@@ -46,6 +61,7 @@ func _init() -> void:
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	if _shader == null:
 		_shader = load("res://shaders/sprite_canvas.gdshader")
+		_shader_fade = load("res://shaders/sprite_canvas_fade.gdshader")
 	material = ShaderMaterial.new()
 	material.shader = _shader
 	material_override = material
@@ -72,27 +88,34 @@ static func _make_cubemap(tex: Texture2D) -> Cubemap:
 	return cm
 
 
-## A single painted image used as a stand-in (every direction shows the same drawing).
-func set_standin(tex: Texture2D, fps: float = 60.0) -> void:
-	canvas_fps = fps
+## A single painted image used as a stand-in (every direction shows the same drawing), drawn at
+## `px_per_m`: the painted stand-ins at the legacy density, SpriteLibrary's placeholders at the world's.
+func set_standin(tex: Texture2D, fps: float = 60.0, px_per_m: float = LEGACY_PIXELS_PER_METRE) -> void:
+	canvas_fps = fps if fps > 0.0 else 60.0
+	pixel_size = 1.0 / maxf(1.0, px_per_m)
 	cell = tex.get_height()
 	columns = 1
 	rows = 1
-	anims = {&"idle": {"col": 0, "count": 1, "fps": fps, "loop": true, "holds": []}}
+	row_order = DIRECTIONS.duplicate()
+	anims = {&"idle": {"col": 0, "count": 1, "fps": canvas_fps, "loop": true, "holds": []}}
 	_apply_sheet(tex)
 	_set_quad_size(tex.get_width(), tex.get_height())
 	anim = &""  # force play() to set the frame rect even if we were already on idle
 	play(&"idle")
 
 
-## A full sheet: rows are directions, `table` maps anim -> {col, count, fps, loop, holds}.
-func set_sheet(tex: Texture2D, cell_px: int, table: Dictionary, fps: float = 60.0, mirror_w: bool = false) -> void:
-	canvas_fps = fps
+## A full sheet: rows are directions (in `order`, else DIRECTIONS), `table` maps anim -> {col, count, fps,
+## loop, holds}.
+func set_sheet(tex: Texture2D, cell_px: int, table: Dictionary, fps: float = 60.0, mirror_w: bool = false, order: Array = []) -> void:
+	canvas_fps = fps if fps > 0.0 else 60.0
 	cell = cell_px
 	columns = maxi(1, tex.get_width() / cell_px)
 	rows = maxi(1, tex.get_height() / cell_px)
 	anims = table
 	mirror_w_from_e = mirror_w
+	row_order.clear()
+	for d in (order if not order.is_empty() else DIRECTIONS):
+		row_order.append(StringName(d))
 	_apply_sheet(tex)
 	_set_quad_size(cell_px, cell_px)
 	anim = &""  # force play() to set the frame rect even if we were already on idle
@@ -113,12 +136,21 @@ func _set_quad_size(w: int, h: int) -> void:
 
 
 ## Scale the sheet so `height_px` drawn pixels stand `height_m` metres tall (feet stay on the ground line).
-func set_height(height_px: int, height_m: float) -> void:
+## Without a height the sheet stands at its cell's density (fallback_pixel_size); `cell_px` < 0 keeps the cell.
+func set_height(height_px: int, height_m: float, cell_px: int = -1) -> void:
+	if cell_px > 0:
+		cell = cell_px
 	if height_px > 0 and height_m > 0.0:
 		pixel_size = height_m / float(height_px)
 	else:
-		pixel_size = 1.0 / PIXELS_PER_METRE
+		pixel_size = fallback_pixel_size(cell)
 	_set_quad_size(cell, cell)
+
+
+## Metres per pixel of a sheet with no height: the recipe canvas (cell up to 96 px) at the world's 32 px/m,
+## the older 128 px and larger cells at the legacy 64 px/m, so no shipped sheet changes size.
+static func fallback_pixel_size(cell_px: int) -> float:
+	return 1.0 / (PIXELS_PER_METRE if cell_px <= RECIPE_MAX_CELL else LEGACY_PIXELS_PER_METRE)
 
 
 func set_normal_sheet(tex: Texture2D) -> void:
@@ -142,8 +174,35 @@ func set_tint(c: Color) -> void:
 	material.set_shader_parameter("tint", c)
 
 
+## 1 draws the cut-out pass (opaque, shadows; `transparency` still fades it); below 1 the fade pass blends it
+## at (1 - transparency) × opacity, so a ghost at 0.45 reads at 45 % and its transparency tween fades it out.
 func set_opacity(a: float) -> void:
-	material.set_shader_parameter("opacity", a)
+	opacity = clampf(a, 0.0, 1.0)
+	material.set_shader_parameter("opacity", opacity)
+	var want: Shader = _shader if opacity >= OPAQUE_AT else _shader_fade
+	if want != null and material.shader != want:
+		_swap_shader(want)
+
+
+## True while the blended fade pass draws this sprite.
+func is_faded() -> bool:
+	return material.shader == _shader_fade and _shader_fade != null
+
+
+func _swap_shader(want: Shader) -> void:
+	var keep: Dictionary = {}
+	for u in material.shader.get_shader_uniform_list():
+		var v: Variant = material.get_shader_parameter(u["name"])
+		if v != null:
+			keep[u["name"]] = v
+	material.shader = want
+	for k in keep.keys():
+		material.set_shader_parameter(k, keep[k])  # both passes share one body: every value carries over
+
+
+## The per-sprite pattern of crack veins and drift jitter (SpriteLibrary seeds it from the sprite id).
+func set_seed(s: float) -> void:
+	material.set_shader_parameter("seed", s)
 
 
 func set_wobble(px: float) -> void:
@@ -167,7 +226,7 @@ func play(name: StringName, return_to: StringName = &"") -> void:
 
 
 func set_facing(dir: StringName) -> void:
-	if rows < 8 and not CARDINALS.has(dir):
+	if not CARDINALS.has(dir) and (rows < 8 or not row_order.has(dir)):
 		dir = _to_cardinal(dir)
 	if DIRECTIONS.has(dir) and dir != facing:
 		facing = dir
@@ -295,12 +354,14 @@ func _update_rect() -> void:
 	var flip: bool = false
 	if rows >= 4:
 		var f: StringName = facing if rows >= 8 else _to_cardinal(facing)
-		row = DIRECTIONS.find(f)
+		row = row_order.find(f)
+		if row < 0:
+			row = row_order.find(_to_cardinal(f))
 		if mirror_w_from_e and f == &"w":
-			row = DIRECTIONS.find(&"e")
+			row = row_order.find(&"e")
 			flip = true
 		elif mirror_w_from_e and rows >= 8 and (f == &"sw" or f == &"nw"):
-			row = DIRECTIONS.find(&"se" if f == &"sw" else &"ne")
+			row = row_order.find(&"se" if f == &"sw" else &"ne")
 			flip = true
 		if row < 0 or row >= rows:
 			row = 0

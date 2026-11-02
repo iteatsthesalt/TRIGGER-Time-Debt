@@ -321,8 +321,7 @@ static func create_party_member(id: StringName, level: int = -1) -> CombatActor:
 	a.sprite.name = "Sprite"
 	a.add_child(a.sprite)
 	SpriteLibrary.apply(a.sprite, String(k.get("sprite", id)), a.canvas_fps)
-	if id == &"sera":
-		a.sprite.position.y = 4.0 / 64.0
+	a.sprite.position.y = float(k.get("y_offset", 0.0))  # metres the sprite floats (Sera: 0.0625)
 	return a
 
 

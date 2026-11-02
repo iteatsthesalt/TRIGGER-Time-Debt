@@ -181,8 +181,9 @@ func add_zone(encounter_id: StringName, pos: Vector3, radius: float = 6.0, boss:
 
 
 ## Place an NPC with a generated or painted sprite; returns the FieldNPC (walk_to/face/play_anim for scripts).
-## Its Talk runs `script`, else `talk` (a func(by: Node)), else one of the location's ambient lines.
-func add_npc(id: StringName, sprite_id: String, pos: Vector3, facing: String = "s", fps: float = 60.0, script: StringName = &"", prompt: String = "Talk", wander: float = 0.0, talk: Callable = Callable()) -> FieldNPC:
+## Its Talk runs `script`, else `talk` (a func(by: Node)), else one of the location's ambient lines. `fps` 0
+## steps it at its sheet's own canvas rate (the frames json `fps`, else 60).
+func add_npc(id: StringName, sprite_id: String, pos: Vector3, facing: String = "s", fps: float = 0.0, script: StringName = &"", prompt: String = "Talk", wander: float = 0.0, talk: Callable = Callable()) -> FieldNPC:
 	var n: FieldNPC = FieldNPC.make(id, sprite_id, fps)
 	n.position = pos
 	n.wander_radius = wander

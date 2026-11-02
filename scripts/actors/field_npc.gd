@@ -21,7 +21,7 @@ var _rng := RandomNumberGenerator.new()
 var _bubble: Label3D
 
 
-static func make(id: StringName, sprite_id: String, fps: float = 60.0) -> FieldNPC:
+static func make(id: StringName, sprite_id: String, fps: float = 0.0) -> FieldNPC:
 	var n := FieldNPC.new()
 	n.name = String(id)
 	n.npc_id = id

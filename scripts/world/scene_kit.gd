@@ -18,7 +18,7 @@ static var _mat_cache: Dictionary = {}
 
 
 ## A material by material name: the generated texture pair when it exists, else the named placeholder in
-## assets/textures/. Triplanar by default so kits and primitives share one 64 px/m density.
+## assets/textures/. Triplanar by default so kits and primitives share one 32 px/m density.
 static func named(material_name: String, roughness: float = 0.95, tint: Color = Color.WHITE, triplanar: bool = true) -> StandardMaterial3D:
 	var albedo: String = "%s/%s_albedo.png" % [GENERATED_DIR, material_name]
 	var normal: String = "%s/%s_normal.png" % [GENERATED_DIR, material_name]
@@ -54,6 +54,8 @@ static func material(albedo_path: String, normal_path: String = "", roughness: f
 	return m
 
 
+## A box wearing `mat` itself: boxes that share a material share one resource (a flat colour needs no UVs;
+## a textured material should be triplanar, as named() makes it, to keep the 32 px/m density on every face).
 static func box(parent: Node, size: Vector3, pos: Vector3, mat: Material, name: String = "Box", collide: bool = true) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.name = name
@@ -63,12 +65,6 @@ static func box(parent: Node, size: Vector3, pos: Vector3, mat: Material, name: 
 	mi.material_override = mat
 	mi.position = pos
 	parent.add_child(mi)
-	if mat is StandardMaterial3D and not (mat as StandardMaterial3D).uv1_triplanar:
-		(bm as BoxMesh).material = null
-		# scale UVs by the largest face so texels stay 64 px/m
-		var sm := (mat as StandardMaterial3D).duplicate() as StandardMaterial3D
-		sm.uv1_scale = Vector3(maxf(size.x, size.z) / TILE_M, size.y / TILE_M, 1.0)
-		mi.material_override = sm
 	if collide:
 		var sb := StaticBody3D.new()
 		sb.collision_layer = 1

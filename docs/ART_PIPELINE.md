@@ -77,7 +77,7 @@ and queue it again into the same `animation_group_id`, or inpaint it.
 |---|---|---|---|---|
 | `field` | **64**, 8 dirs (cell 64 or 96, §3) | the recipe above: three heads, hero 61 px | locations, biomes **and battle** (battle clips are columns of the field sheet) | `<id>_field.png` |
 | `map` | to be re-specified at the new scale (the breakdown's overworld unit is 16x16 at 1x, so about 32 px here; 4 dirs, legA / stand / legB / stand) | tiny bold silhouette | the overworld (Chapter 3+) | `<id>_map.png` |
-| `action` | to be re-specified (the 256 px realistic sheet `crono_action`, `d1df31ab…`, stays as the only one until then) | close-up | Dual/Triple Tech cut-ins, cinematic beats, duel intros, the Fair descent; each sequence is a **clip** = a column group in the one action sheet | `<id>_action.png` |
+| `action` | to be re-specified (the realistic sheet `crono_action`, `d1df31ab…`, shipped in a **128** px cell with a 120 px figure, one idle column over eight rows; it stays the only one until then) | close-up | Dual/Triple Tech cut-ins, cinematic beats, duel intros, the Fair descent; each sequence is a **clip** = a column group in the one action sheet | `<id>_action.png` |
 | `portrait` | **48x48** pixel portrait in the character's own palette family (replaces the 512 painted bust); six expressions in the breakdown (calm, happy, angry, sad, surprised, determined), the exact list fixed with the first portrait request | menu and dialogue bust | dialogue, menus (`PortraitCache` reads `assets/portraits/<id>/<id>_<expr>.png`, any `<expr>`, falls back to `neutral`) | `<id>_portrait_<expr>.png` |
 
 A **variant** is the same character in another canvas (`u1` … `u8`), a story state (`debt60`, `debt20`,
@@ -216,7 +216,13 @@ in the style kit (QUESTIONS_FOR_NICH "Window frame A or B?").
   Optional per-anim `holds` (seconds per frame) override `fps` frame by frame.
 - Engine side: `SpriteLibrary.apply(sprite, id, fps, tier, variant)` finds the sheet by id under
   `assets/{characters,npcs,enemies,bosses}`, calls `ActorSprite.set_height(height_px, height_m)` and `set_sheet`;
-  `_n` and `_m` sheets are picked up automatically. `ActorSprite.face_vector` gives true eight-way facing on
+  `_n` and `_m` sheets are picked up automatically. Every key above is read: `rows` is the row order (a list
+  that is not distinct directions is warned and the default order used); the top-level `fps` is the sheet's
+  canvas rate, used when the caller passes none (`fps` 0, as `Location.add_npc` does by default; a character's
+  `canvas_fps` from its data wins); an anim without its own `fps` steps at that rate. A sheet with no
+  `height_px`/`height_m` stands at its cell's density: 32 px/m for a cell up to 96, the legacy 64 px/m for the
+  128 px sets. A missing frames json falls back to the 70-column default table, and an anim that runs past the
+  PNG's last column is cut (or dropped), each with a warning. `ActorSprite.face_vector` gives true eight-way facing on
   eight-row sheets; `play(name, return_to)` runs one-shots.
 
 ## 4. After every import

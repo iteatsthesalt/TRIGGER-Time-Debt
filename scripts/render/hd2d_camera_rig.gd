@@ -23,7 +23,6 @@ var _fov_tween: Tween
 var _pitch_target: float = 30.0
 var _explore_pitch: float = 30.0
 var _in_battle: bool = false
-var _yaw: float = 0.0
 
 
 func _ready() -> void:
@@ -83,10 +82,10 @@ func clamp_to_bounds(p: Vector3) -> Vector3:
 	return p
 
 
+## The camera sits south of the focus (+z), `pitch_degrees` above it; the view never yaws.
 func camera_offset() -> Vector3:
 	var pitch := deg_to_rad(pitch_degrees)
-	var off := Vector3(0.0, sin(pitch), cos(pitch)) * distance
-	return off.rotated(Vector3.UP, deg_to_rad(_yaw))
+	return Vector3(0.0, sin(pitch), cos(pitch)) * distance
 
 
 func _apply() -> void:
@@ -100,6 +99,9 @@ func _apply() -> void:
 	camera.look_at(look_at_point, Vector3.UP)
 	var attrs := camera.attributes as CameraAttributesPractical
 	if attrs and truth:
+		# §2.3's "DOF far 12.0": the far blur ramps over 12 m from 6 m behind the focus, so the subject stays
+		# sharp at any rig distance; the near blur starts 2 m in front of it. Godot 4 has one blur amount for
+		# both (set_truth), so the bible's near value (CombatConstants.DOF_NEAR) has no separate setting.
 		attrs.dof_blur_far_distance = distance + CombatConstants.DOF_FAR * 0.5
 		attrs.dof_blur_far_transition = CombatConstants.DOF_FAR
 		attrs.dof_blur_near_distance = maxf(0.1, distance - 2.0)

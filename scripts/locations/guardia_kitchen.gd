@@ -8,6 +8,13 @@ const CP_START := &"prologue_kitchen"
 const CP_BREAKFAST := &"prologue_breakfast_done"
 const CP_GATE := &"prologue_gate_open"
 const CP_CRADLE := &"prologue_cradle_done"
+## The pantry mouth (x 6.5..10.5, z -6.8..-2.8): walking into it wakes the Cradle.
+const CRADLE_TRIGGER_POS := Vector3(8.5, 1.0, -4.8)
+const CRADLE_TRIGGER_SIZE := Vector3(4.0, 3.0, 4.0)
+## The hall's encounters, [encounter, centre, radius]: the Prologue's tutorial pair west and south of the pantry
+## (Story Bible Prologue "Enemies"), the Echo by the pantry once the Cradle is down.
+const HALL_ZONES := [[&"kitchen_shardlings", Vector3(4.5, 0.0, 2.5), 2.4], [&"kitchen_spoons", Vector3(10.0, 0.0, 3.2), 1.8]]
+const ECHO_ZONE := [&"kitchen_echo", Vector3(11.0, 0.0, -3.5), 2.0]
 
 var gate_mesh: Node3D
 var gate_body: StaticBody3D
@@ -134,18 +141,9 @@ func build() -> void:
 	# ---- the exit (usable once the Cradle is down)
 	exit_door = add_door("ExitDoor", Vector3(12.9, 0.8, 0.0), &"guardia_courtyard", &"start", "Courtyard")
 	exit_door.callback = Callable(self, "_use_exit")
-	# ---- the Cradle trigger
-	cradle_trigger = Area3D.new()
-	cradle_trigger.collision_layer = 0
-	cradle_trigger.collision_mask = 2
-	var cs := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(5.0, 3.0, 11.0)
-	cs.shape = box
-	cradle_trigger.add_child(cs)
-	cradle_trigger.position = Vector3(7.0, 1.0, -1.0)
-	cradle_trigger.monitoring = false
-	add_child(cradle_trigger)
+	# ---- the Cradle trigger: the pantry mouth, where it waits ("behind the pantry wall, something large shifts"), so
+	# the hall's tutorial fights lie on the way to it and never behind it (STORY-18)
+	cradle_trigger = SceneKit.trigger(self, CRADLE_TRIGGER_POS, CRADLE_TRIGGER_SIZE, "CradleTrigger")
 	cradle_trigger.body_entered.connect(_on_cradle_trigger)
 
 
@@ -164,14 +162,13 @@ func after_ready() -> void:
 		if cp == CP_CRADLE:
 			_cradle_started = true
 			cradle_trigger.monitoring = false
-			Flags.add_counter(&"__noop", 0)
 		_activate_kitchen_zones()
 		for arg in OS.get_cmdline_user_args():
 			if arg == "--demo=cradle" and cp == CP_GATE:
 				# capture runs: walk straight into the hall so the Cradle wakes
 				await get_tree().create_timer(0.4).timeout
 				place_party(&"gate")
-				party_actors[0].walk_to(get_marker("hall") + Vector3(2.0, 0, 0), 5.0)
+				party_actors[0].walk_to(get_marker("cradle") + Vector3(0.0, 0.0, 1.0), 5.0)
 
 
 # ------------------------------------------------------------------ opening
@@ -199,7 +196,7 @@ func _opening() -> void:
 	Game.checkpoint = CP_BREAKFAST
 	_activate_kitchen_zones()
 	controller.enabled = true
-	Saves.save(0)
+	autosave_at(&"start")
 
 
 ## Story calls --------------------------------------------------------------------------------------
@@ -215,13 +212,13 @@ func stir_ritual() -> void:
 		motes.emitting = true
 	for i in 7:
 		crono.play_anim("interact", "idle")
-		Audio.play_sfx("ui/stir", -6.0, 0.95 + 0.02 * float(i))
+		Audio.play_sfx("footsteps/u0_ceramic", -6.0, 0.95 + 0.02 * float(i))  # the spoon on the pot's glaze
 		await get_tree().create_timer(0.45 if not Story.skip_waits else 0.01).timeout
 	Audio.play_sfx("porcelain/tink")
 	crono.play_anim("interact", "idle")
 	await get_tree().create_timer(0.5 if not Story.skip_waits else 0.01).timeout
 	# the house clock skips a half-second tick
-	Audio.play_sfx("time/clock_skip")
+	Audio.play_sfx("ui/sync_hold_freeze")  # time holds for the skipped tick
 	Engine.time_scale = 0.05
 	await get_tree().create_timer(0.03, true, false, true).timeout
 	Engine.time_scale = 1.0
@@ -238,7 +235,7 @@ func first_chronoslip() -> void:
 		s.sprite.set_tint(Color(0.55, 0.55, 0.58))
 		s.sprite.material.set_shader_parameter("canvas_fps", 24.0)
 		s.sprite.canvas_fps = 24.0
-	Audio.play_sfx("time/chronoslip_u1")
+	Audio.play_sfx("time/chronoslip")
 	Audio.set_rtpc("slip", 1.0)
 	if world:
 		world.set_leak(1, 0.75)
@@ -276,13 +273,13 @@ func sera_collapses() -> void:
 	if world:
 		world.set_leak(7, 0.0)
 		world.set_leak(5, 0.9)
-	Audio.play_sfx("time/frame_snap")
+	Audio.play_sfx("time/universe_switch")  # one frame in another canvas
 	await get_tree().create_timer(0.07, true, false, true).timeout
 	if world:
 		world.set_leak(5, 0.0)
 	if sera is CombatActor:
 		(sera as CombatActor).play_anim("ko", "ko")
-	Audio.play_sfx("porcelain/doll_fall")
+	Audio.play_sfx("porcelain/tink", 0.0, 0.7)  # a porcelain body meeting the floor, low
 	var crono: CombatActor = get_actor(&"crono")
 	if crono:
 		crono.face_toward(get_marker("sera_seat"))
@@ -379,14 +376,14 @@ func open_gate() -> void:
 		Game.set_integrity(Game.crono_integrity - 5.0)
 	if Flags.is_state(&"Prologue_Fall", &"Hold_The_Copy_Together"):
 		Flags.add_counter(&"vaelos_whisper_bonus", 15)
-		Audio.play_sfx("weapons/katana_slash")
+		Audio.play_sfx("weapons/crono_slash")
 	Flags.add_counter(&"debts_paid", 1)
 	shake(0.5)
-	Audio.play_sfx("ui/gate_brass_open")
+	Audio.play_sfx("ui/door")
 	_set_gate_open(true, true)
 	Game.checkpoint = CP_GATE
 	_activate_hall()
-	Saves.save(0)
+	autosave_at(&"gate")
 
 
 func _set_gate_open(open: bool, animate: bool = false) -> void:
@@ -412,14 +409,14 @@ func _activate_kitchen_zones() -> void:
 
 
 func _activate_hall() -> void:
-	if zones.any(func(z: EncounterZone) -> bool: return z.encounter_id == &"kitchen_shardlings"):
+	if zones.any(func(z: EncounterZone) -> bool: return z.encounter_id == HALL_ZONES[0][0]):
 		return
-	_live_zone(&"kitchen_shardlings", Vector3(4.5, 0.0, 2.5), 2.4)
-	_live_zone(&"kitchen_spoons", Vector3(11.0, 0.0, -3.5), 2.4)
+	for row in HALL_ZONES:
+		_live_zone(row[0], row[1], row[2])
 	if Game.checkpoint != CP_CRADLE:
 		cradle_trigger.set_deferred("monitoring", true)
 	else:
-		_live_zone(&"kitchen_echo", Vector3(10.5, 0.0, 2.8), 2.0)
+		_live_zone(ECHO_ZONE[0], ECHO_ZONE[1], ECHO_ZONE[2])
 
 
 func _live_zone(id: StringName, pos: Vector3, radius: float) -> void:
@@ -437,11 +434,12 @@ func _on_cradle_trigger(body: Node3D) -> void:
 	for a in party_actors:
 		a.velocity = Vector3.ZERO
 	Audio.play_sfx("time/fracture_sky")
+	Game.spawn_point = &"cradle_center"  # the sequence's autosave resumes in the hall, not at the counter
 	await get_tree().create_timer(0.3).timeout
 	controller.enabled = true
 	await Story.run(&"prologue_cradle_sequence")
 	if Game.checkpoint == CP_CRADLE:
-		_live_zone(&"kitchen_echo", Vector3(10.5, 0.0, 2.8), 2.0)
+		_live_zone(ECHO_ZONE[0], ECHO_ZONE[1], ECHO_ZONE[2])
 
 
 func _use_exit(_by: Node) -> void:

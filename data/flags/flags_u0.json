@@ -7,7 +7,7 @@
     {"id": "Atrium_Dummy", "where": "Ch1", "states": [
       {"id": "Spared", "affinity": {"light": 10}}, {"id": "Salvaged", "affinity": {"dark": 15}}]},
     {"id": "Amber_Rift_U0_DollMeetsDoll", "where": "Ch1", "amber_rift": true, "rift_state": "set", "states": [{"id": "set", "affinity": {}}]},
-    {"id": "Crono_Confession", "where": "Ch1 hearth", "states": [{"id": "Told", "affinity": {}}, {"id": "Hidden", "affinity": {}}]},
+    {"id": "Crono_Confession", "where": "Ch1 hearth", "states": [{"id": "Told", "affinity": {"light": 10}}, {"id": "Hidden", "affinity": {"dark": 10}}]},
     {"id": "Bekkler_Confessed", "where": "Ch1 Fair", "states": [{"id": "set", "affinity": {}}]},
     {"id": "Bekkler_Hid", "where": "Ch1 Fair", "states": [{"id": "set", "affinity": {"dark": 10}}]},
     {"id": "Glenn_Duals", "where": "Ch1 onward", "mutable": true, "states": [{"id": "Granted", "affinity": {}}, {"id": "Refused", "affinity": {}}]},

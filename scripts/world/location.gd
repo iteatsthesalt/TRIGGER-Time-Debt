@@ -32,6 +32,7 @@ var _in_battle: bool = false
 ## Router then leaves the fade to it instead of fading in over the opening.
 var holds_black: bool = false
 var _party_root: Node3D
+var _battle_from: Variant = null  ## where the leader stood as the battle began: a defeat jumps back there (§16.1)
 
 
 func _ready() -> void:
@@ -126,17 +127,26 @@ func _spawn_party() -> void:
 	_refresh_porcelain()
 
 
-func place_party(spawn: StringName) -> void:
-	var p: Vector3 = get_marker(spawn) if markers.has(spawn) else Vector3.ZERO
-	if get_marker(spawn) == null:
-		p = Vector3.ZERO
+## Stand the party in a column at a marker name (or at a Vector3), a teleport: the followers and the camera snap.
+func place_party(spawn: Variant) -> void:
+	var p: Variant = get_marker(StringName(spawn)) if (spawn is StringName or spawn is String) else spawn
+	var at: Vector3 = p if p is Vector3 else Vector3.ZERO
 	for i in party_actors.size():
-		party_actors[i].global_position = p + Vector3(0, 0.05, 0.9 * float(i))
+		party_actors[i].global_position = at + Vector3(0, 0.05, 0.9 * float(i))
 		party_actors[i].reset_physics_interpolation()  # a teleport, not a slide (physics interpolation is on)
 	if follow:
 		follow.snap_behind()
 	if rig:
 		rig.snap()
+
+
+## A checkpoint in this room, or with `cp` empty an autosave that does not move the story on: Game keeps the
+## marker a Continue resumes at (Router.go stands the party on Game.spawn_point) and slot 0 is written.
+func autosave_at(spawn: StringName, cp: StringName = &"") -> bool:
+	if cp != &"":
+		Game.checkpoint = cp
+	Game.spawn_point = spawn if markers.has(spawn) else Game.spawn_point
+	return Saves.save(0)
 
 
 func get_actor(id: StringName) -> Node:
@@ -318,7 +328,7 @@ func _ink_slow(on: bool) -> void:
 	if world:
 		world.set_leak(1, 0.6 if on else 0.0)
 	if on:
-		Audio.play_sfx("time/ink_puddle_enter")
+		Audio.play_sfx("footsteps/u1_woodblock")  # a U1 step: inside the ink the leader walks at 24 fps
 
 
 ## A door or exit: an interactable that runs a script (or goes straight to a location) when used.
@@ -513,6 +523,7 @@ func start_battle(enemies: Array, center: Vector3, config: Dictionary, zone: Enc
 	if _in_battle:
 		return
 	_in_battle = true
+	_battle_from = party_actors[0].global_position if not party_actors.is_empty() else null
 	controller.enabled = false
 	follow.paused = true
 	BattleAftermath.sync_from_game(party_actors)
@@ -558,11 +569,12 @@ func _on_battle_finished(victory: bool, summary: Dictionary, zone: EncounterZone
 		_on_defeat()
 
 
-## Defeat: no Game Over. Sera jumps the party back to the moment before the encounter (§16.1); the party
-## already stands at the defeat floor and the zone's enemies are reset (BattleAftermath).
+## Defeat: no Game Over. Sera jumps the party back to the moment before the encounter (§16.1): where the leader
+## stood as it began (the spawn marker when none was recorded); the party already stands at the defeat floor and
+## the zone's enemies are reset (BattleAftermath).
 func _on_defeat() -> void:
 	Audio.tape_stop()
-	place_party(Game.spawn_point)
+	place_party(_battle_from if _battle_from is Vector3 else Game.spawn_point)
 
 
 func _on_story_camera(mode: String, focus: Node) -> void:

@@ -159,3 +159,21 @@ static func marker(parent: Node, name: String, pos: Vector3) -> Marker3D:
 	m.position = pos
 	parent.add_child(m)
 	return m
+
+
+## A trigger box on the party layer (mask 2): body_entered fires as a party body walks in. Off unless
+## `monitoring`; the location arms it when its beat is due.
+static func trigger(parent: Node, pos: Vector3, size: Vector3, name: String = "Trigger", monitoring: bool = false) -> Area3D:
+	var a := Area3D.new()
+	a.name = name
+	a.collision_layer = 0
+	a.collision_mask = 2
+	a.monitoring = monitoring
+	var cs := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	cs.shape = box
+	a.add_child(cs)
+	a.position = pos
+	parent.add_child(a)
+	return a

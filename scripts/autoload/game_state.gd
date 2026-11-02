@@ -69,7 +69,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	play_time += delta
+	if Router.current_location != &"" and Router.current_location != &"title":  # the clock runs in play, not on the title
+		play_time += delta
 
 
 func new_game() -> void:

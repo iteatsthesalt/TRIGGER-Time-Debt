@@ -11,6 +11,7 @@ var G: Node
 var F: Node
 var S: Node
 var R: Node
+var SV: Node
 
 
 func _initialize() -> void:
@@ -29,6 +30,7 @@ func _boot() -> void:
 	F = root.get_node("Flags")
 	S = root.get_node("Story")
 	R = root.get_node("Router")
+	SV = root.get_node("Saves")
 	G.call("new_game")
 	G.call("set_chapter", 1)
 	G.set("checkpoint", &"atrium_hub")
@@ -128,6 +130,8 @@ func _run() -> void:
 	print("PROBE dummy done: flag=%s light=%d dark=%d prismatic=%d integrity=%.0f" % [str(F.call("state", &"Atrium_Dummy")), int(F.get("light")), int(F.get("dark")), int(F.get("prismatic")), float(G.get("crono_integrity"))])
 	if not await _wait_until(func() -> bool: return _idle(), 2000, "post-dummy idle"):
 		return _end()
+	# the dummy's result is autosaved without ending the day (GAP2-6), where the fight left the party
+	_expect_save("dummy autosave", &"ch1_hub_free", &"dummy_center")
 	# the Seed's first watering: the sprout rises from the rim of the pot prop, not inside its billboard
 	loc.call("_use_seed", null)
 	if not await _wait_until(func() -> bool: return loc.get_node_or_null("Sprout") != null and _idle(), 3000, "seed watering"):
@@ -152,16 +156,40 @@ func _run() -> void:
 	S.call("run", &"atrium_robo")
 	await _wait_until(func() -> bool: return _idle(), 2000, "robo rest")
 	print("PROBE after rest: checkpoint=%s tower_time=%.1f" % [String(_cp()), float(loc.get("tower_time"))])
+	_expect_save("rest save", &"ch1_night", &"dais")
 	if not await _wait_until(func() -> bool: return loc.get("midnight_done") and _idle(), 6000, "midnight"):
 		return _end()
+	var fair_done: Array[bool] = [false]
+	S.connect("script_finished", func(id: StringName) -> void:
+		if id == &"ch1_fair_call":
+			fair_done[0] = true)
 	loc.call("_use_hearth", null)
 	if not await _wait_until(func() -> bool: return F.call("has", &"Crono_Confession"), 3000, "hearth"):
 		return _end()
-	print("PROBE hearth: %s" % str(F.call("state", &"Crono_Confession")))
-	if not await _wait_until(func() -> bool: return F.call("has", &"Ch1_Fair_Left"), 4000, "fair call"):
+	print("PROBE hearth: %s light=%d dark=%d" % [str(F.call("state", &"Crono_Confession")), int(F.get("light")), int(F.get("dark"))])
+	if not await _wait_until(func() -> bool: return fair_done[0] and _idle(), 4000, "fair call"):
 		return _end()
-	print("PROBE fair call: party=%s location=%s" % [str(G.get("active_party")), String(R.get("current_location"))])
+	_expect_save("hearth autosave", &"ch1_fair_ready", &"hearth")
+	# the Fair commits only when Leene Square can be reached; until then the hub stays as it was (GAP2-1)
+	var built: bool = R.call("has_location", &"leene_square")
+	var left: bool = F.call("has", &"Ch1_Fair_Left")
+	print("PROBE fair call: left=%s leene_square_built=%s party=%s location=%s" % [str(left), str(built), str(G.get("active_party")), String(R.get("current_location"))])
+	if left != built:
+		print("PROBE FAIL the Fair departure (left=%s) disagrees with Leene Square being built (%s)" % [str(left), str(built)])
+		_fail = true
+	if not built and (G.get("active_party") != [&"sera", &"crono"] or R.get("current_location") != &"atrium" or loc.get("party_actors").size() != 2):
+		print("PROBE FAIL the hub did not stay as it was: party=%s field=%d" % [str(G.get("active_party")), loc.get("party_actors").size()])
+		_fail = true
 	_end()
+
+
+## The autosave (slot 0, scratch) carries this checkpoint and resumes at this marker, never the loft (GAP2-4).
+func _expect_save(what: String, cp: StringName, spawn: StringName) -> void:
+	var g: Dictionary = (SV.call("peek", 0) as Dictionary).get("game", {})
+	print("PROBE %s: checkpoint=%s spawn=%s" % [what, String(g.get("checkpoint", "")), String(g.get("spawn_point", ""))])
+	if StringName(String(g.get("checkpoint", ""))) != cp or StringName(String(g.get("spawn_point", ""))) != spawn:
+		print("PROBE FAIL %s should be %s at %s" % [what, cp, spawn])
+		_fail = true
 
 
 func _end() -> void:

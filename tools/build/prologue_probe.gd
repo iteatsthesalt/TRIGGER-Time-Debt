@@ -95,7 +95,8 @@ func _run() -> void:
 	leader.global_position = Vector3(2.0, 0.05, 0.0)
 	kitchen.call("place_party", &"gate")
 	await _wait_frames(5)
-	leader.call("walk_to", Vector3(7.0, 0.0, 0.0), 6.0)
+	# the Cradle waits at the pantry mouth (the hall's tutorial zones lie clear of the path there)
+	leader.call("walk_to", (kitchen.call("get_marker", &"cradle") as Vector3) + Vector3(0.0, 0.0, 1.0), 6.0)
 	var waited: int = 0
 	while _cp() != &"prologue_cradle_done" and waited < 30000:
 		await process_frame

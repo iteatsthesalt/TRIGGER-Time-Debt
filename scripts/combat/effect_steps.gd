@@ -14,13 +14,18 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 	for op in r.get("pre", []):
 		if EffectTable.holds(op.get("if", {}), ctx):
 			_pre(c, op, action, actor)
-	var info: Dictionary = _resolve(c, tech, action, String(r.get("resolve", _default_resolve(tech))))
+	var info: Dictionary = _resolve(c, tech, action, resolve_mode(tech))
 	ctx["info"] = info
 	if bool(r.get("requires", {}).get("once_per_battle", false)):
 		EffectTable.mark_used(c, tech.effect)
 	for op in r.get("after", []):
 		run(c, op, ctx)
 	return info
+
+
+## How the row of `tech` resolves its action: "damage", "support" or "none" (the row's `resolve`, else by its kind).
+static func resolve_mode(tech: TechDef) -> String:
+	return String(EffectTable.row(tech.effect).get("resolve", _default_resolve(tech)))
 
 
 static func _default_resolve(tech: TechDef) -> String:

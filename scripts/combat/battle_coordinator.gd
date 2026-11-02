@@ -758,16 +758,18 @@ func partners_for(t: TechDef, actor: Node) -> Array:
 	return out
 
 
-## Preview the shave and damage of an action per target (the plate math, §4.6).
-func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int) -> Dictionary:
+## Preview the shave and damage of an action per target (§4.6); what it reaches is CastReach's, as in the resolution.
+func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int, partners: Array = []) -> Dictionary:
 	var st := CombatantStats.of(actor)
+	if not CastReach.strikes(tech):
+		return {}
 	var tags: Array = Array(tech.tags) if tech != null else Array(st.weapon_tags)
-	var hits: int = tech.hit_count if tech != null else maxi(1, st.weapon_hits)
+	var hits: int = CastReach.hits(self, tech, actor, boost, partners) if tech != null else maxi(1, st.weapon_hits)
 	var shape: Dictionary = {"shape": TechDef.Shape.SINGLE, "scale": CombatConstants.BOOST_SCALE[boost]}
 	if tech != null:
-		shape = {"shape": tech.shape, "radius": tech.radius, "length": tech.length, "width": tech.width, "inner_radius": tech.inner_radius, "beams": tech.beams, "scale": tech.shape_scale(boost)}
+		shape = {"shape": tech.shape, "radius": tech.radius, "length": tech.length, "width": tech.width, "inner_radius": tech.inner_radius, "beams": CastReach.beams(self, tech, actor, boost, partners), "scale": tech.shape_scale(boost)}
 	var aim_point: Vector3 = position_of(target) if target != null else aim
-	var found: Array = TacticalPositioner.targets_in_shape(shape, position_of(actor), aim_point, _enemy_candidates(), _blockers())
+	var found: Array = CastReach.caught(self, tech, TacticalPositioner.targets_in_shape(shape, position_of(actor), aim_point, _enemy_candidates(), _blockers(), CastReach.extra_origins(self, [actor] + partners)))
 	var bonus_if_status: Dictionary = TechEffects.bonus_if_status(tech)
 	var out: Dictionary = {}
 	for h in found:
@@ -988,11 +990,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 	var casters: Array = action.get("casters", [attacker])
 	var shape: Dictionary = action["shape"]
 	var aim: Vector3 = action["aim"]
-	var extra: Dictionary = {}
-	if casters.size() >= 2:
-		extra["second_origin"] = position_of(casters[1])
-	if casters.size() >= 3:
-		extra["third_origin"] = position_of(casters[2])
+	var extra: Dictionary = CastReach.extra_origins(self, casters)
 	var found: Array
 	if int(shape["shape"]) == TechDef.Shape.SINGLE:
 		var primary: Node = action.get("primary", null)

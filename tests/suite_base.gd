@@ -150,20 +150,18 @@ func _coord(seed_v: int = 7) -> BattleCoordinator:
 	return c
 
 
+## The coordinator fixture's technique library: the eight techniques the core battle tests cast, as data/techs
+## defines them (Data.techs), so a retune of their rows is what those tests exercise (DATA-22).
+const LIB_IDS: Array[StringName] = [
+	&"time_slice", &"astral_slash", &"rewind", &"hold", &"borrowed_future", &"tachyon_needle", &"eclipse_x_strike",
+	&"teppo_ash_cut",
+]
+
+
 func _lib() -> Dictionary:
 	var lib: Dictionary = {}
-	for d in [
-		{"id": "time_slice", "name": "Time Slice", "tier": "single", "actors": ["crono"], "tags": ["ASTRAL", "SWORD", "TIME_DEBT"], "shape": "SINGLE", "hits": 1, "power": 1.6, "uses": "ASTRAL", "costs": {"crono": {"strain_pct": 1}}},
-		{"id": "astral_slash", "name": "Astral Slash", "tier": "single", "actors": ["crono"], "tags": ["ASTRAL", "SWORD", "TIME_DEBT"], "shape": "CONE", "radius": 2.8, "length": 5.5, "aoe_scale": 1.1, "hits": 1, "power": 1.4, "uses": "ASTRAL", "costs": {"crono": {"strain_pct": 2}}},
-		{"id": "rewind", "name": "Rewind", "tier": "single", "actors": ["sera"], "tags": ["TACHYON", "PROBABILITY"], "shape": "SINGLE", "target": "any", "effect": "rewind", "costs": {"sera": {"solidity_pct": 5}}},
-		{"id": "hold", "name": "HOLD", "tier": "single", "actors": ["sera"], "tags": ["TACHYON"], "shape": "SINGLE", "effect": "hold", "costs": {"sera": {"solidity_pct": 5}}},
-		{"id": "borrowed_future", "name": "Borrowed Future", "tier": "single", "actors": ["sera"], "tags": ["TACHYON", "PROBABILITY"], "shape": "PARTY", "target": "party", "effect": "borrowed_future", "costs": {"sera": {"solidity_pct": 10}}},
-		{"id": "tachyon_needle", "name": "Tachyon Needle", "tier": "single", "actors": ["sera"], "tags": ["TACHYON", "PIERCING", "PROBABILITY"], "shape": "LINE_PIERCE", "length": 12.0, "width": 0.8, "hits": 3, "power": 0.9, "uses": "ELEMENTAL", "effect": "tachyon_needle", "costs": {"sera": {"mp": 6}}},
-		{"id": "eclipse_x_strike", "name": "Eclipse X-Strike", "tier": "dual", "actors": ["crono", "krona"], "tags": ["ASTRAL", "RUIN", "CROSS"], "shape": "CROSS", "radius": 1.0, "length": 4.0, "aoe_scale": 1.3, "hits": 2, "power": 1.0, "uses": "BEST", "effect": "eclipse_x_strike", "costs": {"crono": {"strain_pct": 3}, "krona": {"mp": 8}}},
-		{"id": "teppo_ash_cut", "name": "Teppo Ash-Cut", "tier": "single", "actors": ["krona"], "tags": ["RUIN", "ENTROPY", "INK"], "shape": "CONE", "radius": 3.0, "length": 3.0, "hits": 1, "power": 1.2, "uses": "PHYSICAL", "costs": {"krona": {"mp": 5}}},
-	]:
-		var t := TechDef.from_dict(d)
-		lib[t.id] = t
+	for id in LIB_IDS:
+		lib[id] = Data.techs[id]
 	return lib
 
 

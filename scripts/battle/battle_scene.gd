@@ -294,7 +294,7 @@ func _refresh_preview() -> void:
 		hud.set_preview(text)
 		hud.update_plates({}, _party_blind(), t)
 		return
-	var previews: Dictionary = coordinator.preview(actor, current_tech, t, coordinator.position_of(t), boost)
+	var previews: Dictionary = coordinator.preview(actor, current_tech, t, coordinator.position_of(t), boost, partners)
 	hud.set_preview(BattleDeck.preview_text(current_tech, t, previews, boost))
 	hud.update_plates(previews, _party_blind(), t)
 	# Shape outline on the plane.

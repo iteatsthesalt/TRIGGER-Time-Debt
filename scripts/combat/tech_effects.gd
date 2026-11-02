@@ -16,6 +16,13 @@ const HANDLED: Array[StringName] = [
 	&"time_debt_paid", &"crimson_seppuku", &"cobalt_nodachi", &"overclocked_short_circuit",
 	&"mycelia_tether", &"photosynthetic_burst", &"guile_feint", &"omega_annihilation",
 ]
+## The handlers above whose cast strikes the enemies its shape caught (each resolves through _merge_damage); the
+## rest strike nothing, so their plate preview is empty (CastReach.strikes; suite_acceptance pins the two lists).
+const STRIKING: Array[StringName] = [
+	&"astral_field", &"cobalt_nodachi", &"crimson_seppuku", &"eclipse_x_strike", &"guile_feint", &"mercury_pulse",
+	&"mycelia_tether", &"omega_annihilation", &"overclocked_short_circuit", &"photosynthetic_burst",
+	&"porcelain_promise", &"ruin_purge", &"sleight_of_arm", &"sound_ring", &"swap_face", &"tachyon_needle",
+]
 
 const DEFAULT_LV2 := {
 	&"ASTRAL": &"displaced", &"TACHYON": &"probability_lock", &"RUIN": &"corroded", &"FERRO": &"magnetized",
@@ -334,8 +341,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				if f6["kind"] == &"ash_field" and c.position_of(actor).distance_to(f6["center"]) <= tech.length:
 					c.fields.fields.erase(f6)
 		&"overclocked_short_circuit":
-			# Arcs through metal only: non-metal targets are skipped.
-			info = _merge_damage(c, info, action, func(t: Node) -> bool: return c._is_metal(t))
+			info = _merge_damage(c, info, action, CastReach.target_filter(c, tech))  # arcs through metal only
 		&"mycelia_tether":
 			var nodes: Array = actor.get_meta("tether_nodes", [])
 			for u in c.party:

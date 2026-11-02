@@ -24,6 +24,7 @@ func save(slot: int) -> bool:
 		"game": Game.to_save(),
 		"flags": Flags.to_save(),
 		"universe": Universe.current,
+		"story": Story.to_save(),
 	}
 	var f := FileAccess.open(slot_path(slot), FileAccess.WRITE)
 	if f == null:
@@ -42,6 +43,7 @@ func load(slot: int) -> bool:
 	Game.from_save(d.get("game", {}))
 	Flags.from_save(d.get("flags", {}))
 	Universe.set_universe(int(d.get("universe", 0)), true)
+	Story.from_save(d.get("story", {}))
 	loaded.emit(slot)
 	return true
 

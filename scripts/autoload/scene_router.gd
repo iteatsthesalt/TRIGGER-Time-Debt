@@ -4,7 +4,8 @@ extends Node
 signal location_loaded(id: StringName, node: Node)
 signal fade_finished
 
-## Location id -> scene path. Filled from data/universes/locations and extended by code.
+## Location id -> scene path. Filled by _register_defaults() and register(); an entry whose scene is not built
+## yet is tolerated (has_location checks the file), so callers guard with has_location or read go()'s result.
 var locations: Dictionary = {}
 var current_location: StringName = &""
 var current_scene: Node = null
@@ -55,13 +56,16 @@ func has_location(id: StringName) -> bool:
 	return locations.has(id) and ResourceLoader.exists(locations[id])
 
 
-## Go to a location. spawn is the Marker3D name to appear at.
-func go(id: StringName, spawn: StringName = &"start", fade_s: float = 0.5) -> void:
+## Go to a location. spawn is the Marker3D name to appear at. Returns false when nothing happened: a transition
+## is already running, the id is unknown or its scene is not built, or the scene failed to load. A location that
+## lands in another universe is a gate jump and is charged (GateJump).
+func go(id: StringName, spawn: StringName = &"start", fade_s: float = 0.5) -> bool:
 	if transitioning:
-		return
+		push_warning("Router: go(%s) refused, a transition is already running" % id)
+		return false
 	if not has_location(id):
 		push_error("Router: unknown location %s" % id)
-		return
+		return false
 	transitioning = true
 	await fade_out(fade_s)
 	var packed: PackedScene = load(locations[id]) as PackedScene
@@ -69,11 +73,12 @@ func go(id: StringName, spawn: StringName = &"start", fade_s: float = 0.5) -> vo
 		push_error("Router: cannot load %s" % locations[id])
 		transitioning = false
 		await fade_in(fade_s)
-		return
+		return false
 	Game.location = id
 	Game.spawn_point = spawn
 	current_location = id
 	var tree := get_tree()
+	var from_universe: int = Universe.current
 	var next: Node = packed.instantiate()
 	if current_scene != null and is_instance_valid(current_scene):
 		# take the old scene out now so the new one keeps its name (a location can reload itself)
@@ -84,10 +89,13 @@ func go(id: StringName, spawn: StringName = &"start", fade_s: float = 0.5) -> vo
 	current_scene = next
 	if next.has_method("place_party"):
 		next.call("place_party", spawn)
+	if Universe.current != from_universe:
+		GateJump.charge(from_universe, Universe.current, next)
 	location_loaded.emit(id, next)
 	await tree.process_frame
 	await fade_in(fade_s)
 	transitioning = false
+	return true
 
 
 func fade_out(seconds: float) -> void:

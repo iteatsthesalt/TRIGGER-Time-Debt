@@ -7,6 +7,8 @@ signal integrity_changed(value: float)
 signal debt_changed(value: float)
 signal chapter_changed(chapter: int)
 signal settings_changed
+## A fresh run started (New Game): listeners that keep per-run state (Story's script variables) clear it.
+signal new_game_started
 
 const ROSTER_ORDER: Array[StringName] = [&"crono", &"sera", &"krona", &"cassia", &"xyloph", &"vesper", &"glenn", &"static", &"omega", &"vaelos_child"]
 
@@ -85,6 +87,7 @@ func new_game() -> void:
 		sera_permanent_baseline = 5.0
 		sera_debt = 5.0
 	party_changed.emit()
+	new_game_started.emit()
 
 
 func join_level_for(id: StringName) -> int:

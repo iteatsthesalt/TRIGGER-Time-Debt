@@ -119,7 +119,8 @@ func _choose() -> void:
 		Router.go(&"guardia_kitchen", &"start", 1.0)
 	elif text.begins_with("Continue"):
 		_busy = true
-		if Saves.load(0):
+		# a save whose location is not built (or not registered) would leave the title dead: stay usable instead
+		if Saves.load(0) and Router.has_location(Game.location):
 			Router.go(Game.location, Game.spawn_point, 0.8)
 		else:
 			_busy = false

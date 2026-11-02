@@ -288,6 +288,29 @@ class Audio(unittest.TestCase):
             self.assertIsInstance(m.get("problems"), list)
 
 
+class SetupGodot(unittest.TestCase):
+    def test_sourcing_leaves_the_callers_shell_options_alone(self):
+        """check.sh runs without errexit and reads each step's result itself: a sourced setup_godot.sh must not
+        turn errexit on (TOOLS-1). A copy runs against a stub Godot, so nothing is downloaded."""
+        import shutil
+        with _scratch() as d:
+            os.makedirs(os.path.join(d, "tools"))
+            shutil.copy(os.path.join(ROOT, "tools", "setup_godot.sh"), os.path.join(d, "tools", "setup_godot.sh"))
+            stub_dir = os.path.join(d, ".tools", "godot-4.7.2")
+            os.makedirs(stub_dir)
+            stub = os.path.join(stub_dir, "Godot_v4.7.2-stable_linux.x86_64")
+            with open(stub, "w", newline="\n") as f:
+                f.write("#!/usr/bin/env bash\necho 4.7.2.stub\n")
+            os.chmod(stub, 0o755)
+            script = ("set -uo pipefail; source tools/setup_godot.sh > /dev/null; echo \"rc=$?\"; "
+                      "set -o | grep -E '^errexit'; echo nothing | grep -E 'SCRIPT ERROR' | head -1; echo reached")
+            r = subprocess.run(["bash", "-c", script], cwd=d, capture_output=True, text=True,
+                               env=dict(os.environ, GODOT_VERSION="4.7.2"))
+            self.assertIn("rc=0", r.stdout, r.stderr)
+            self.assertRegex(r.stdout, r"errexit\s+off")
+            self.assertIn("reached", r.stdout, "a no-match grep pipeline after the source does not abort the caller")
+
+
 class RenderArgs(unittest.TestCase):
     def _dry(self, *args):
         env = dict(os.environ, RENDER_DRY_RUN="1")

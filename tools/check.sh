@@ -91,6 +91,16 @@ if [ "$QUICK" = 0 ]; then
 fi
 
 if [ "$VISUAL" = 1 ]; then
+  # The error lines of a windowed Godot log, minus the known-harmless ones: lavapipe/llvmpipe chatter, the
+  # ObjectDB leak report at exit (PROGRESS known issues), and the Vulkan *context* failing to start on a machine
+  # without a Vulkan surface (a container under xvfb), after which Godot falls back to OpenGL 3 and says so.
+  log_errors() {
+    awk '
+      /SCRIPT ERROR|ERROR:/ { if (held != "") print held; held = $0; next }
+      { if (held != "") { if ($0 !~ /rendering_context_driver_vulkan\.cpp/) print held; held = "" } }
+      END { if (held != "") print held }
+    ' "$1" | grep -v "lavapipe\|llvmpipe\|resources still in use at exit\|Vulkan instance extension VK_KHR_surface not found"
+  }
   step "smoke boot (600 frames, software Vulkan)"
   mkdir -p /tmp/captures
   # Godot is a native executable: under Git Bash it needs the Windows spelling of /tmp/captures.
@@ -105,8 +115,7 @@ if [ "$VISUAL" = 1 ]; then
       --resolution 1280x720 --script res://tools/capture/smoke.gd -- --frames=600 --out="$CAP_DIR" > /tmp/check_smoke.log 2>&1
   fi
   SMOKE_RC=$?
-  # "resources still in use at exit" is the known-harmless ObjectDB leak report (PROGRESS known issues)
-  if grep -E "SCRIPT ERROR|ERROR:" /tmp/check_smoke.log | grep -v "lavapipe\|llvmpipe\|resources still in use at exit" | head -20; then
+  if log_errors /tmp/check_smoke.log | head -20 | grep .; then
     echo "SMOKE: errors in log"; FAIL=1
   fi
   if [ "$SMOKE_RC" != 0 ]; then echo "SMOKE: FAIL (rc=$SMOKE_RC)"; FAIL=1; else echo "SMOKE: OK"; fi
@@ -122,7 +131,7 @@ if [ "$VISUAL" = 1 ]; then
       --script res://tools/capture/smoke.gd -- --frames="$frames" --every="$frames" --scene="$scene" \
       --prefix="check_${scene}" --out="$CAP_DIR" "$@" > "$log" 2>&1
     rc=$?
-    if grep -E "SCRIPT ERROR|ERROR:" "$log" | grep -v "lavapipe\|llvmpipe\|resources still in use at exit" | head -20; then
+    if log_errors "$log" | head -20 | grep .; then
       echo "CAPTURE $scene: errors in log"; FAIL=1
     fi
     if [ "$rc" != 0 ] || ! grep -q "SMOKE_OK" "$log"; then echo "CAPTURE $scene: FAIL (rc=$rc)"; FAIL=1

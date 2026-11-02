@@ -610,7 +610,7 @@ func _on_sera_phase(phased: bool) -> void:
 	var sera: Node = coordinator.unit_by_id(&"sera")
 	if sera is CombatActor:
 		var s := sera as CombatActor
-		s.sprite.set_opacity(0.18 if phased else 1.0)
+		s.sprite.set_opacity(0.18 if phased else s.body_opacity())  # back to her Debt, not fully solid
 		s.sprite.set_tint(Color(1.0, 0.85, 0.5) if phased else Color.WHITE)
 
 

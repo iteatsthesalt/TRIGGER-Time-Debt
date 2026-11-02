@@ -467,3 +467,62 @@ func test_seras_float_comes_from_her_data() -> void:
 	var crono: CombatActor = CombatActor.create_party_member(&"crono")
 	_track(crono)
 	check_near(crono.sprite.position.y, 0.0, 0.0001, "Crono stands on the ground")
+
+
+# ---------------------------------------------------------------- Sera's Debt opacity (review nit on WORLD-1)
+
+## Opacity really fades now, so un-phasing (BattleScene._on_sera_phase) and a revive (restore_body) hand Sera
+## back her Debt's thinness (CombatActor.body_opacity), never a pop to fully solid.
+func test_un_phasing_and_reviving_return_sera_to_her_debt_opacity() -> void:
+	var debt_op: float = 1.0 - 40.0 * CombatActor.DEBT_OPACITY_PER_POINT
+	var sera: CombatActor = CombatActor.create_party_member(&"sera")
+	_track(sera)
+	root.add_child(sera)
+	sera.solidity.debt = 40.0
+	sera.set_porcelain_visuals()
+	check_near(sera.body_opacity(), debt_op, 0.0001, "40 Debt leaves Sera's body at 0.8")
+	check_near(sera.sprite.opacity, debt_op, 0.0001, "and that is what she shows")
+	sera.die()
+	sera.restore_body()
+	check_near(sera.sprite.opacity, debt_op, 0.0001, "a revive brings her back at her Debt, not fully solid")
+	var crono: CombatActor = CombatActor.create_party_member(&"crono")
+	_track(crono)
+	root.add_child(crono)
+	crono.sprite.set_opacity(0.3)
+	crono.restore_body()
+	check_near(crono.sprite.opacity, 1.0, 0.0001, "every other body is restored fully solid")
+	# The battle scene's phase hook, driven through the coordinator's signal.
+	Game.new_game()
+	Game.recruit(&"sera")
+	Game.set_party([&"crono", &"sera"] as Array[StringName])
+	var loc: Location = (load("res://scenes/test/arena.tscn") as PackedScene).instantiate()
+	root.add_child(loc)
+	_track(loc)
+	loc.place_party(&"start")
+	await get_tree().process_frame
+	var z: EncounterZone = loc.zones[0]
+	z.active = false
+	loc._on_zone_triggered(z, "normal")
+	var c: BattleCoordinator = loc.battle.coordinator
+	c.auto_tick = false
+	var s := c.unit_by_id(&"sera") as CombatActor
+	check(s != null, "Sera fights in the arena battle")
+	if s == null:
+		Game.new_game()
+		return
+	s.solidity.debt = 40.0
+	s.set_porcelain_visuals()
+	c.sera_phase_changed.emit(true)
+	check_near(s.sprite.opacity, 0.18, 0.0001, "phased, she reads at 18 %")
+	c.sera_phase_changed.emit(false)
+	check_near(s.sprite.opacity, debt_op, 0.0001, "un-phased, she is back at her Debt's 0.8, not 1.0")
+	c.force_end(true)
+	Engine.time_scale = 4.0
+	var t: float = 0.0
+	while loc.battle != null and t < 8.0:
+		await get_tree().create_timer(0.05).timeout
+		t += 0.05
+	await get_tree().process_frame
+	Engine.time_scale = 1.0
+	check(loc.battle == null, "the battle still ends")
+	Game.new_game()

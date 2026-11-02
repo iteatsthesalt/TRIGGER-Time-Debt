@@ -219,7 +219,7 @@ func die() -> void:
 
 
 ## Undo die(), become_statue() and on_break() on the body once a battle is over (BattleAftermath) or when a
-## fallen ally is revived mid-battle (die()'s fade is stopped): standing, visible, opaque, untinted, the Break
+## fallen ally is revived mid-battle (die()'s fade is stopped): standing, visible, at body_opacity(), untinted, the Break
 ## hull down and free to walk. HP and shields are the caller's.
 func restore_body() -> void:
 	if _fade != null and _fade.is_valid():
@@ -233,7 +233,7 @@ func restore_body() -> void:
 	_set_hull(false)
 	if sprite:
 		sprite.transparency = 0.0
-		sprite.set_opacity(1.0)
+		sprite.set_opacity(body_opacity())
 		sprite.set_tint(Color.WHITE)
 		sprite.play(&"idle")
 
@@ -281,7 +281,15 @@ func _set_debt_visuals() -> void:
 		sprite.set_porcelain(1, 0.0)
 	else:
 		sprite.set_porcelain(2, clampf(0.2 + debt / 100.0, 0.2, 1.0))
-	sprite.set_opacity(clampf(1.0 - debt * DEBT_OPACITY_PER_POINT, 0.5, 1.0))
+	sprite.set_opacity(body_opacity())
+
+
+## How solid the body stands when nothing else fades it: 1.0, and for Sera 1.0 - Debt * DEBT_OPACITY_PER_POINT
+## (never below 0.5). Un-phasing and a revive return her here, not to fully solid.
+func body_opacity() -> float:
+	if solidity == null:
+		return 1.0
+	return clampf(1.0 - solidity.debt * DEBT_OPACITY_PER_POINT, 0.5, 1.0)
 
 
 # ------------------------------------------------------------------ factories

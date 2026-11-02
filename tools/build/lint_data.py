@@ -5,6 +5,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 tags_src = (ROOT / "scripts/combat/combat_tags.gd").read_text()
 m = re.search(r"const ALL: Array\[StringName\] = \[(.*?)\]\n", tags_src, re.S)
 KNOWN = set(re.findall(r'&"([A-Z_]+)"', m.group(1)))
+# Field kinds the engine knows (BattleFields.KINDS) and the cap upgrades a flag state may earn (CapUpgrades).
+fields_src = (ROOT / "scripts/combat/battle_fields.gd").read_text()
+FIELD_KINDS = set(re.findall(r'&"([a-z_]+)"', re.search(r"const KINDS: Array\[StringName\] = \[(.*?)\]\n", fields_src, re.S).group(1)))
+caps_src = (ROOT / "scripts/combat/cap_upgrades.gd").read_text()
+UPGRADES = set(re.findall(r'^\t"([a-z_]+)": \{', re.search(r"const UPGRADES := \{(.*?)\n\}", caps_src, re.S).group(1), re.M))
 errors = []
 def load(p):
     try:
@@ -22,6 +27,9 @@ for p in sorted((ROOT/"data/techs").rglob("*.json")):
         techs[tid] = t
         for tg in t.get("tags", []):
             if tg not in KNOWN: errors.append(f"tech {tid}: unknown tag {tg}")
+        for fk in ("lv3_field", "lv4_field", "recharge_field"):
+            if fk in t and t[fk] not in FIELD_KINDS: errors.append(f"tech {tid}: unknown {fk} {t[fk]}")
+        if int(t.get("steps", 1)) < 1: errors.append(f"tech {tid}: steps must be >= 1")
 for p in sorted((ROOT/"data/enemies").rglob("*.json")):
     d = load(p)
     if not d: continue
@@ -48,6 +56,8 @@ for p in sorted((ROOT/"data/flags").rglob("*.json")):
     for f in d.get("flags", []):
         if f["id"] in flags: errors.append(f"duplicate flag {f['id']}")
         flags[f["id"]] = f
+        for st in f.get("states", []):
+            if "upgrade" in st and st["upgrade"] not in UPGRADES: errors.append(f"flag {f['id']}:{st.get('id')}: unknown upgrade {st['upgrade']}")
 for p in sorted((ROOT/"data/encounters").rglob("*.json")):
     d = load(p)
     if not d: continue

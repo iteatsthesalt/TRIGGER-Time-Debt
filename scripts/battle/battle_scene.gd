@@ -96,7 +96,7 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 		"advantage": String(cfg.get("advantage", "normal")), "universe": universe, "boss": bool(cfg.get("boss", false)),
 		"techs": Data.techs, "enemy_defs": defs, "bench": roster.bench, "hover_sera": roster.hover,
 		"prometheus": Game.prometheus_core, "parry_frames": Game.parry_frames, "max_bp": Game.max_bp, "max_spend": Game.max_spend,
-		"sera_present": Game.sera_in_story != "absent", "story": bool(cfg.get("story", false)),
+		"story": bool(cfg.get("story", false)),  # party synergy reads who is on the plane (BattleRoster)
 	}
 	hud.register_units(party, enemies, roster.hover)
 	for e in enemies:
@@ -573,6 +573,7 @@ func _on_enemy_action(enemy: Node, action: Dictionary) -> void:
 
 
 func _on_telegraph_started(enemy: Node, action: Dictionary) -> void:
+	_on_telegraph_ended(enemy)  # a new wind-up never orphans an old decal
 	telegraphs[enemy] = BattleFx.telegraph(self, action, coordinator.position_of(enemy), center.y + 0.05)
 	Audio.play_sfx("combat/telegraph_loop")
 

@@ -52,7 +52,7 @@ static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, 
 			ctx["taken_mult"] = float(ctx["taken_mult"]) * (0.8 if tst.null_shield else 1.0)
 		var r: Dictionary = DamagePipeline.compute_hit(ctx)
 		var dmg: int = int(r["damage"])
-		# Shared damage along a Mycelia net (15%) and Marle's Ward are handled by the status hooks.
+		# Marle's Ward and Glass Ward halve the hit. (The Mycelia net's 15% share, §12.5, is not modelled yet.)
 		if tsc != null and tsc.has(&"ward"):
 			dmg = roundi(float(dmg) * 0.5)
 			tsc.remove(&"ward")

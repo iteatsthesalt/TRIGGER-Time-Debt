@@ -1,6 +1,6 @@
 {
   "flags": [
-    {"id": "Central_Eye", "where": "Ch5", "states": [{"id": "Broken", "affinity": {"light": 15}}, {"id": "Polished", "affinity": {"dark": 15}}]},
+    {"id": "Central_Eye", "where": "Ch5", "states": [{"id": "Broken", "affinity": {"light": 15}, "upgrade": "hold_step"}, {"id": "Polished", "affinity": {"dark": 15}}]},
     {"id": "Moon", "where": "Ch5", "states": [{"id": "Sleep", "affinity": {"light": 30}}, {"id": "Shatter", "affinity": {"dark": 25}}]},
     {"id": "Weave_It_Anew", "where": "Ch5", "states": [{"id": "set", "affinity": {"prismatic": 10}}]},
     {"id": "Vesper_Vitreous", "where": "Ch5", "states": [{"id": "Cracked", "affinity": {}}, {"id": "Preserved", "affinity": {}}]},

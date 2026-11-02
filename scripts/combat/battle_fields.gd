@@ -14,8 +14,40 @@ const ELEMENT_FIELD := {
 }
 
 
+## Every field kind the engine knows (residual fields, Canvas Clash terrain, technique fields). A technique's
+## lv3_field / lv4_field / recharge_field must be one of them (TechDef.validation_errors, lint_data.py).
+const KINDS: Array[StringName] = [
+	&"watercolour_puddle", &"ghost_ring", &"ash_field", &"amber_pool", &"spore_mat", &"caustic_floor",
+	&"confetti_pit", &"static_field", &"white_blank", &"mercury_pool", &"golden_patch", &"divinity_field",
+	&"astral_field", &"sound_ring", &"ink_pool", &"vhs_fog", &"cleared", &"paper", &"oil",
+]
+## Fields that are not on the floor: Sera's Quantum Flicker (§10.2, §12.1) does not exempt her from these.
+const AIRBORNE: Array[StringName] = [&"divinity_field", &"astral_field", &"sound_ring"]
+
+
 static func default_field_for(element: StringName) -> StringName:
 	return ELEMENT_FIELD.get(element, &"")
+
+
+## The first field of `kind` that holds `pos`, or an empty Dictionary.
+func first_at(kind: StringName, pos: Vector3) -> Dictionary:
+	for f in fields:
+		if f["kind"] == kind and _inside(f, pos):
+			return f
+	return {}
+
+
+## True when the ground path from `from` to `to` crosses (or ends in) a field of `kind`, sampled every 0.25 m.
+func path_crosses(kind: StringName, from: Vector3, to: Vector3) -> bool:
+	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)
+	var steps: int = maxi(1, ceili(flat.length() / 0.25))
+	for f in fields:
+		if f["kind"] != kind:
+			continue
+		for i in range(steps + 1):
+			if _inside(f, from + flat * (float(i) / float(steps))):
+				return true
+	return false
 
 
 func add(kind: StringName, center: Vector3, radius: float, seconds: float = CombatConstants.RESIDUAL_FIELD_S, owner_team: int = 0) -> Dictionary:

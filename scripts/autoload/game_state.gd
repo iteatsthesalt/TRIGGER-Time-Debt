@@ -48,6 +48,7 @@ var debug_mode: bool = false
 func _ready() -> void:
 	if roster.is_empty():
 		new_game()
+	Flags.flag_set.connect(func(_id: StringName, _s: StringName) -> void: CapUpgrades.apply(self, Flags.flags))  # §15.7
 
 
 func _process(delta: float) -> void:

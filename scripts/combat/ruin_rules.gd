@@ -41,6 +41,16 @@ static func add(u: Node, n: int = 1) -> int:
 	return stacks(u) - before
 
 
+## Thaws `n` stacks (a Divinity Field, §12.5): the ceiling comes back up; HP stays where it is.
+static func thaw(u: Node, n: int = 1) -> void:
+	var td := TimeDebtComponent.of(u)
+	if td != null:
+		td.thaw_ruin(n)
+	var sc := StatusComponent.of(u)
+	if sc != null:
+		sc.remove_stacks(&"ruin", n)
+
+
 ## True when the Prometheus Core may not revive `u` (Ruin 2+, §7.8).
 static func blocks_prometheus(u: Node) -> bool:
 	return stacks(u) >= 2

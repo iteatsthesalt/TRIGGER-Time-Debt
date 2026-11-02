@@ -8,7 +8,8 @@
      "id": "Repainted",
      "affinity": {
       "light": 30
-     }
+     },
+     "upgrade": "parry_dojo"
     },
     {
      "id": "Incinerated",
@@ -92,7 +93,8 @@
    "states": [
     {
      "id": "set",
-     "affinity": {}
+     "affinity": {},
+     "upgrade": "parry_taught"
     }
    ]
   },

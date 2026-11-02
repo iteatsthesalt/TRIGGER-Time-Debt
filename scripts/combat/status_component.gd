@@ -1,5 +1,8 @@
 ## Active statuses on one battler (Combat Laws Bible §12). Durations are seconds of battle time
 ## or turns (the bearer's own actions). The pipeline queries the modifiers; the coordinator ticks.
+## "N turns" counts the bearer's actions after the one that gave it the status: a status added while the
+## bearer's own action is in progress (begin_action .. on_turn_taken: Prism Guard, Rooted, Fragile) is not
+## counted down by that action (DECISIONS "Turn statuses").
 ## StatusRules decides how a status lands (boss rules, Ruin, Stripped); StatusTicks answers `periodic`.
 ## A status whose data carries an "undo" Callable runs it when it is removed (expiry, cleanse, clear_all):
 ## Stripped and NULL's strip give their plates back that way.
@@ -14,6 +17,8 @@ signal periodic(id: StringName, stacks: int)
 var statuses: Dictionary = {}
 ## id -> stack cap for this battle, over MAX_STACKS (Porcelain Silence's Ruin scaling, RuinRules).
 var cap_overrides: Dictionary = {}
+## True from begin_action until the action's on_turn_taken: statuses added meanwhile are "fresh".
+var acting: bool = false
 
 ## Periodic statuses: id -> seconds between ticks.
 const PERIODS := {
@@ -60,12 +65,13 @@ func add(id: StringName, seconds: float = -1.0, turns: int = -1, add_stacks: int
 		var s: Dictionary = statuses[id]
 		s["seconds"] = seconds
 		s["turns"] = turns
+		s["fresh"] = acting
 		s["stacks"] = mini(cap, int(s["stacks"]) + add_stacks)
 		for k in extra.keys():
 			s["data"][k] = extra[k]
 		status_added.emit(id, int(s["stacks"]))
 		return
-	statuses[id] = {"seconds": seconds, "turns": turns, "stacks": mini(cap, maxi(1, add_stacks)), "data": extra.duplicate(), "period_accum": 0.0}
+	statuses[id] = {"seconds": seconds, "turns": turns, "stacks": mini(cap, maxi(1, add_stacks)), "data": extra.duplicate(), "period_accum": 0.0, "fresh": acting}
 	status_added.emit(id, mini(cap, add_stacks))
 
 
@@ -125,10 +131,20 @@ func tick(dt: float) -> void:
 				remove(id)
 
 
-## Called when the bearer finishes an action: turn-counted statuses count down.
+## The bearer's action begins (its decision window opened, or it joins a Dual): what it gives itself from now
+## until on_turn_taken is not counted down by this action.
+func begin_action() -> void:
+	acting = true
+
+
+## Called when the bearer finishes an action: turn-counted statuses count down, except those this action gave.
 func on_turn_taken() -> void:
+	acting = false
 	for id in ids():
 		var s: Dictionary = statuses[id]
+		if bool(s.get("fresh", false)):
+			s["fresh"] = false
+			continue
 		if int(s["turns"]) > 0:
 			s["turns"] = int(s["turns"]) - 1
 			if int(s["turns"]) <= 0:

@@ -50,9 +50,13 @@ for p in sorted((ROOT/"data/characters").rglob("*.json")):
     for t in d.get("techs", []):
         tid = t["id"] if isinstance(t, dict) else t
         if tid not in techs: errors.append(f"character {d.get('id')}: unknown tech {tid}")
+script_local = {}  # data/flags/script_local.json: progress markers dialogue may set and read (not flags)
 for p in sorted((ROOT/"data/flags").rglob("*.json")):
     d = load(p)
     if not d: continue
+    for f in d.get("script_local", []):
+        if f.get("id") in script_local: errors.append(f"duplicate script-local flag {f.get('id')}")
+        script_local[f.get("id")] = list(f.get("states", ["set"]))
     for f in d.get("flags", []):
         if f["id"] in flags: errors.append(f"duplicate flag {f['id']}")
         flags[f["id"]] = f
@@ -71,20 +75,30 @@ for p in sorted((ROOT/"data/encounters").rglob("*.json")):
         for ek in enc.get("enemies", []):
             key = ek if isinstance(ek, str) else ek.get("key")
             if key not in enemies: errors.append(f"encounter {enc['id']}: unknown enemy {key}")
+# Dialogue (DialogueCheck in scripts/world/dialogue_check.gd holds the same rules for Data.load_all): a script id is
+# defined once across files; every jump (goto, then, else, a choice's goto, a battle's on_win / on_lose) names a label
+# of its script; run names a script; battle, learn, recruit and party name an encounter, a tech, characters.
+dialogue_file = {}
 for p in sorted((ROOT/"data/dialogue").rglob("*.json")):
     d = load(p)
     if not d: continue
     for sid, cmds in d.items():
+        if sid in dialogue: errors.append(f"dialogue: script {sid} is defined in {dialogue_file[sid]} and again in {p.name}")
         dialogue[sid] = cmds
+        dialogue_file[sid] = p.name
         labels = {c["label"] for c in cmds if isinstance(c, dict) and "label" in c}
         for c in cmds:
             if not isinstance(c, dict): errors.append(f"{sid}: command is not an object"); continue
-            for key in ("goto","then","else"):
-                if key in c and c[key] and c[key] not in labels: errors.append(f"{sid}: missing label {c[key]}")
-            for o in c.get("choice", []):
-                if "goto" in o and o["goto"] not in labels: errors.append(f"{sid}: missing label {o['goto']}")
+            for node in [c] + [o for o in c.get("choice", []) if isinstance(o, dict)]:
+                for key in ("goto", "then", "else", "on_win", "on_lose"):
+                    if key in node and node[key] and node[key] not in labels: errors.append(f"{sid}: {key} jumps to a missing label {node[key]}")
             if "battle" in c and c["battle"] != "" and c["battle"] not in encounters: errors.append(f"{sid}: unknown encounter {c['battle']}")
             if "learn" in c and c["learn"] not in techs: errors.append(f"{sid}: unknown tech {c['learn']}")
+            for who in ([c["recruit"]] if "recruit" in c else []) + (c["party"] if isinstance(c.get("party"), list) else []):
+                if who not in chars: errors.append(f"{sid}: {who} is not a character")
+for sid, cmds in dialogue.items():
+    for c in cmds:
+        if isinstance(c, dict) and "run" in c and c["run"] not in dialogue: errors.append(f"{sid}: run {c['run']} names no script")
 # Effect ids (data/effects/effects.json, EffectTable): every technique `effect` is a bespoke handler
 # (TechEffects.HANDLED), a row of the table, or listed as flavour or pending; every enemy and boss action `effect`
 # is an EnemyEffects arm, a `summon:<key>` or listed under enemy_pending. An unknown id is an error, as is a row
@@ -234,7 +248,10 @@ for sid in dialogue:
     if re.search(r"_(phase\d+|p\d+|mid)$", sid) and sid not in named_scripts:
         warnings.append(f"dialogue {sid} looks like a boss phase script but no boss phase names it")
 router_src = (ROOT / "scripts/autoload/scene_router.gd").read_text()
-location_ids = set(re.findall(r'locations\[&"([a-z0-9_]+)"\]', router_src))
+_router_m = re.search(r"const DEFAULT_LOCATIONS: Dictionary = \{(.*?)\n\}", router_src, re.S)
+ROUTER_LOCATIONS = dict(re.findall(r'&"([a-z0-9_]+)":\s*"res://([^"]+)"', _router_m.group(1))) if _router_m else {}
+if not ROUTER_LOCATIONS: errors.append("scene_router.gd: no DEFAULT_LOCATIONS registry found (the dialogue `go` check reads it)")
+location_ids = set(ROUTER_LOCATIONS) | set(re.findall(r'locations\[&"([a-z0-9_]+)"\]', router_src))
 for p in sorted((ROOT / "scripts/locations").glob("*.gd")):
     location_ids |= set(re.findall(r'location_id\s*=\s*&"([a-z0-9_]+)"', p.read_text()))
 for k in text.get("ambient", {}):
@@ -265,11 +282,21 @@ music_dir, amb_dir = ROOT / "audio/music", ROOT / "audio/ambience"
 def _has_track(kind, ident):
     d = music_dir if kind == "music" else amb_dir
     return (d / f"{ident}.ogg").exists() or (kind == "music" and any(d.glob(f"{ident}__*.ogg")))
+# A missing music id must at least be a scheduled track: a row of the Reference Bible's track briefs (section 8.5),
+# where `mus_battle_core` stands for its per-universe arrangements mus_battle_core_u<n>. Anything else is a typo or an
+# unplanned track (an error); a scheduled one waits for its file (a warning).
+_rb = (ROOT / "design/REFERENCE_BIBLE.md").read_text(encoding="utf-8") if (ROOT / "design/REFERENCE_BIBLE.md").exists() else ""
+_rb_m = re.search(r"### 8\.5 Track briefs\n(.*?)\n### ", _rb, re.S)
+SCHEDULED_MUSIC = set(re.findall(r"^\| (mus_[a-z0-9_]+)", _rb_m.group(1), re.M)) if _rb_m else set()
+if not SCHEDULED_MUSIC: warnings.append("audio: the Reference Bible 8.5 track table was not found; missing music ids are not checked against it")
+def _scheduled(ident):
+    return not SCHEDULED_MUSIC or ident in SCHEDULED_MUSIC or re.sub(r"_u\d+$", "", ident) in SCHEDULED_MUSIC
 missing_audio = []
 for (kind, ident), srcs in sorted(_audio_refs().items()):
     if _has_track(kind, ident): continue
     shipped = sorted(s for s in srcs if s in AUDIO_SHIPPED or s.startswith("scripts/locations/"))
     if shipped: errors.append(f"audio: {kind} id {ident} has no file under audio/{kind}/ but the Prologue/Chapter 1 plays it ({', '.join(shipped)})")
+    elif kind == "music" and not _scheduled(ident): errors.append(f"audio: music id {ident} has no file and is no Reference Bible 8.5 track ({', '.join(sorted(srcs))})")
     else: missing_audio.append(f"{ident} ({', '.join(sorted(srcs))})")
 if missing_audio:
     warnings.append(f"audio: {len(missing_audio)} music/ambience id(s) referenced by data have no track yet (AudioDirector plays silence for them):")
@@ -287,9 +314,14 @@ for p in sorted((ROOT / "scripts").rglob("*.gd")):
 for p in sorted((ROOT / "data/dialogue").glob("*.json")):
     for ident in re.findall(r'"sfx":\s*"([^"]+)"', p.read_text(encoding="utf-8")):
         sfx_refs.setdefault(ident, set()).add(p.relative_to(ROOT).as_posix())
-missing_sfx = [f"{i} ({', '.join(sorted(srcs))})" for i, srcs in sorted(sfx_refs.items()) if not _has_sfx(i)]
+# a dialogue cue is data the writer controls, so one that resolves to nothing is an error; a script literal waits
+# for its file (a warning)
+for i, srcs in sorted(sfx_refs.items()):
+    if not _has_sfx(i) and any(s2.startswith("data/") for s2 in srcs):
+        errors.append(f"audio: dialogue sfx {i} has no file under audio/sfx/ ({', '.join(sorted(srcs))}; ids are <family>/<name>)")
+missing_sfx = [f"{i} ({', '.join(sorted(srcs))})" for i, srcs in sorted(sfx_refs.items()) if not _has_sfx(i) and not any(s2.startswith("data/") for s2 in srcs)]
 if missing_sfx:
-    warnings.append(f"audio: {len(missing_sfx)} sfx id(s) played by scripts or dialogue have no file under audio/sfx/ (they play silence):")
+    warnings.append(f"audio: {len(missing_sfx)} sfx id(s) played by scripts have no file under audio/sfx/ (they play silence):")
     warnings += [f"    {m}" for m in missing_sfx]
 # Every Dual and Triple needs a learner: a kit entry in one of its actors (data/characters) or a dialogue `learn`
 # command; otherwise the engine can never offer it. A warning, counted, until the chapter that teaches it is written.
@@ -370,18 +402,24 @@ for p in sorted((ROOT/"data/endings").rglob("*.json")):
         for r in list(e.get("flags", [])) + list(e.get("not_flags", [])):
             if flag_ref_error(r): errors.append(f"ending {eid}: {flag_ref_error(r)}")
         if not isinstance(e.get("counters", {}), dict): errors.append(f"ending {eid}: counters must be an object")
+# A dialogue flag is a defined flag in one of its states or a declared script-local marker
+# (data/flags/script_local.json) in one of its states; anything else is a typo that would become a silent new flag.
 script_flags = {}
 def dialogue_flag(sid, ref, state=""):
     name, _, st = str(ref).partition(":")
     st = state or st
-    if name not in flags: script_flags.setdefault(name, set()).add(sid); return
+    if name in script_local:
+        script_flags.setdefault(name, set()).add(sid)
+        if st and st not in script_local[name]: errors.append(f"{sid}: script-local flag {name} has no state {st} (data/flags/script_local.json)")
+        return
+    if name not in flags: errors.append(f"{sid}: flag {name} is neither in data/flags nor a declared script-local flag (data/flags/script_local.json)"); return
     states = [s2.get("id") for s2 in flags[name].get("states", [])]
     if st and st not in states: errors.append(f"{sid}: flag {name} has no state {st}")
 for sid, cmds in dialogue.items():
     for c in cmds:
         if not isinstance(c, dict): continue
         for node in [c] + [o for o in c.get("choice", []) if isinstance(o, dict)]:
-            if "set_flag" in node: dialogue_flag(sid, node["set_flag"], node.get("state", ""))
+            if "set_flag" in node: dialogue_flag(sid, node["set_flag"], node.get("state", "") or ("" if ":" in str(node["set_flag"]) else "set"))
             if isinstance(node.get("set"), dict): dialogue_flag(sid, node["set"].get("flag", ""), node["set"].get("state", "set"))
             for cond in (node.get("if"), node.get("show_if")):
                 if isinstance(cond, dict):
@@ -389,7 +427,38 @@ for sid, cmds in dialogue.items():
                         if isinstance(cond.get(k), str): dialogue_flag(sid, cond[k], cond.get("state", ""))
         if "boss_id" in c and c["boss_id"] and c["boss_id"] not in bosses: errors.append(f"{sid}: unknown boss_id {c['boss_id']}")
 if script_flags:
-    warnings.append(f"flags: {len(script_flags)} script-local flag id(s) set or read by dialogue are not in data/flags (no codex, no affinity): {', '.join(sorted(script_flags))}")
+    print(f"  flags: {len(script_flags)} declared script-local flag(s) in use (data/flags/script_local.json): {', '.join(sorted(script_flags))}")
+# Dialogue verbs Game reads by value: sera_state is a Game.sera_in_story value (DialogueCheck.SERA_STATES and
+# BattleRoster.HOVER_STATES); a `go` names a Router location (scene_router.gd DEFAULT_LOCATIONS), and one whose scene
+# is not built yet is scheduled (warned: the Router refuses it until the scene lands); a `call` should name a method
+# some script defines (Story skips a call the location does not answer, so it is warned).
+_dc_src = (ROOT / "scripts/world/dialogue_check.gd").read_text()
+SERA_OK = set(re.findall(r'"([a-z_]+)"', re.search(r"const SERA_STATES: Array\[String\] = \[(.*?)\]", _dc_src).group(1)))
+SERA_OK |= set(re.findall(r'"([a-z_]+)"', re.search(r"const HOVER_STATES: Array\[String\] = \[(.*?)\]", (ROOT / "scripts/battle/battle_roster.gd").read_text()).group(1)))
+_all_src = "\n".join(p2.read_text(encoding="utf-8") for p2 in sorted((ROOT / "scripts").rglob("*.gd")))
+scheduled_go, unanswered = [], []
+for sid, cmds in dialogue.items():
+    for c in cmds:
+        if not isinstance(c, dict): continue
+        if "sera_state" in c and c["sera_state"] not in SERA_OK: errors.append(f"{sid}: sera_state {c['sera_state']} is none of {', '.join(sorted(SERA_OK))}")
+        if "go" in c:
+            if c["go"] not in ROUTER_LOCATIONS: errors.append(f"{sid}: go {c['go']} is not a Router location (scene_router.gd DEFAULT_LOCATIONS)")
+            elif not (ROOT / ROUTER_LOCATIONS[c["go"]]).exists(): scheduled_go.append(f"{c['go']} ({sid}; res://{ROUTER_LOCATIONS[c['go']]})")
+        if "call" in c and not re.search(rf"^func {re.escape(str(c['call']))}\(", _all_src, re.M): unanswered.append(f"{c['call']} ({sid})")
+if scheduled_go:
+    warnings.append(f"dialogue: {len(scheduled_go)} go target(s) are scheduled Router locations whose scene is not built yet: {', '.join(scheduled_go)}")
+if unanswered:
+    warnings.append(f"dialogue: {len(unanswered)} call(s) name a method no script defines (Story skips them): {', '.join(unanswered)}")
+# Chapter 2's dialogue is generated: the committed file must be exactly what the generator writes.
+_gen = ROOT / "tools/build/write_chapter2_dialogue.py"
+if _gen.exists():
+    import runpy
+    try:
+        _rendered = runpy.run_path(str(_gen), run_name="lint")["render"]()
+        if (ROOT / "data/dialogue/chapter2.json").read_text(encoding="utf-8") != _rendered:
+            errors.append("data/dialogue/chapter2.json differs from tools/build/write_chapter2_dialogue.py's output (edit the generator, then run it)")
+    except Exception as e:
+        errors.append(f"tools/build/write_chapter2_dialogue.py: {e}")
 # Keyed plates: ShieldComponent plays the keyed weights, so a phase or enemy that keys its plates must say the same count.
 def keyed_check(where, shield, keyed):
     total = sum(int(k.get("weight", 1)) for k in keyed)

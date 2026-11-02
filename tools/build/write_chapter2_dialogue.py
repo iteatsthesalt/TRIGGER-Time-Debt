@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """Builds data/dialogue/chapter2.json: every Chapter 2 beat (Story Bible §6 Ch2) in the script format
-of chapter1.json (README: Dialogue and cutscenes). Run from the repository root:
+of chapter1.json (README: Dialogue and cutscenes). It always writes the repository's file, from any directory:
 
     python3 tools/build/write_chapter2_dialogue.py
 
 The scenes (scenes/u1/*) wire these ids to markers and interactables; the boss JSONs name the phase
 scripts. Voices follow Story Bible §10.1.
+
+Conventions the data lint holds this file to (tools/build/lint_data.py): sound cues are `<family>/<name>`
+files under audio/sfx (AudioDirector.play_sfx), music ids are a file under audio/music or a Reference Bible
+§8.5 track, flags are data/flags ids written "Name:State", and a lost fight jumps back to before the battle
+(Combat Laws §16.1, the Prologue's Cradle loop) unless the Story Bible scripts the loss (the duel, 2.1). The
+lint also checks that data/dialogue/chapter2.json is exactly what this file writes.
 """
 import json
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "data/dialogue/chapter2.json"
 
 S = {}
 
@@ -55,7 +64,7 @@ S["ch2_grove_wake"] = [
     nar("Her voice comes from nowhere and everywhere, thinned to a whisper, doubled."),
     {"anim": "crono", "name": "revive"},
     {"wait": 0.6},
-    {"sfx": "sfx_time_ink_footstep"},
+    {"sfx": "footsteps/u1_woodblock"},
     nar("Footprints on the paper. Bare feet, wet with black. They stop six stalks away."),
     {"show": "krona", "at": "krona_duel_start"},
     {"face": "krona", "to": "crono"},
@@ -68,6 +77,8 @@ S["ch2_grove_wake"] = [
     {"end": True},
 ]
 
+# The one fight that goes on after a loss: at the killing stroke Sera's ghost rewinds the blow and Krona stops
+# (Story Bible 2.1), so a lost duel plays ch2_duel_end like a won one, after Sera's rewind costs her Debt.
 S["ch2_duel_sequence"] = [
     {"run": "ch2_grove_wake"},
     {"battle": "", "boss_id": "krona_duel", "boss": True, "at": "krona_duel_start", "center": "grove_center",
@@ -107,7 +118,7 @@ S["ch2_duel_mid"] = [
 S["ch2_duel_end"] = [
     {"music": "stop"},
     nar("The killing stroke comes down. Then it comes up again, the same stroke, backwards, ink climbing back onto the blade."),
-    {"sfx": "sfx_time_rewind"},
+    {"sfx": "time/rewind"},
     {"show": "sera_ghost", "at": "sera_ghost_mark"},
     say("sera", "No. Not him. Not again.", "angry"),
     nar("A girl in a teal jacket, fourteen percent of a girl, phased halfway through a bamboo stalk. Her daggers are clock hands."),
@@ -141,10 +152,10 @@ S["ch2_duel_end"] = [
 S["ch2_pagoda_fracture"] = [
     cap("The Chitin-Pagoda. Nine tiers of red Lavos shell, lacquered, leaning over Kuro-Truce like it is listening."),
     {"camera": "truth", "focus": "pagoda_top"},
-    {"sfx": "sfx_time_fracture_tear"},
+    {"sfx": "time/fracture_sky"},
     nar("The paper sky splits. Something falls through it that was never drawn with a brush: a gear the size of a house, thumbprinted clay, turning at twelve frames a second in a world that moves at twenty-four."),
     {"shake": 1.2},
-    {"sfx": "sfx_impact_clay_crash"},
+    {"sfx": "porcelain/crack_large"},
     nar("It takes the top three tiers with it. The pagoda holds. The gear keeps turning inside it, hitching, the wrong speed for this world."),
     {"wait": 1.0},
     say("sera", "That's not from here either, Papa. That's from the next one.", "surprised"),
@@ -172,7 +183,7 @@ S["ch2_doorway_peel"] = [
         {"text": "Leave it.", "goto": "leave"},
     ], "who": "crono", "prompt": "A doorway. Fresh paper over char. The paste is still wet."},
     {"label": "peel"},
-    {"sfx": "sfx_ui_paper_tear"},
+    {"sfx": "ui/page"},
     nar("Under the paper: char. In the char, small handprints in soot, a row of them at a child's height, and a date scratched beside them. Three sieges ago."),
     say("sera", "...They put the paper on so they wouldn't have to look. Papa, they do it every morning.", "sad"),
     {"counter": "doors_peeled", "add": 1},
@@ -263,11 +274,14 @@ for i in range(4):
             nar("ENS PARRY. When an enemy's stroke lands, press parry inside the window. A perfect parry negates the hit and leaves a sumi ring on the ally."),
         ]
     script += [
+        {"label": "fight"},
         {"battle": f"iron_bridge_shrine_{n}", "at": f"bridge_{n}_fight", "center": f"bridge_{n}_center",
          "music": "mus_battle_core_u1", "on_win": "won", "on_lose": "lost"},
+        {"end": True},
         {"label": "lost"},
+        nar("The stroke lands. Then it hasn't. Somewhere a girl turns the page back, and the ronin kneel again."),
         {"debt": 5},
-        {"goto": "won"},
+        {"goto": "fight"},
         {"label": "won"},
     ]
     if n == 2:
@@ -317,7 +331,7 @@ S["ch2_gourd_choice"] = [
         {"text": "Seal it. Keep one vial.", "goto": "both", "if": {"has_key_item": "bekkler_doll_small"}},
     ], "who": "crono", "prompt": "The oil hums at 220 hertz. Cracked."},
     {"label": "seal"},
-    {"sfx": "sfx_magic_astral_burn"},
+    {"sfx": "magic/astral_contact"},
     nar("He puts the gauntlet in the vein and the oil goes gold, then white, then stone. Behind them, on the bridge, five masks fall off five faces, and the faces are at peace."),
     say("krona", "...Oh.", "surprised"),
     say("krona", "They look like them again.", "sad"),
@@ -346,7 +360,7 @@ S["ch2_karma_house"] = [
         {"text": "Let it burn.", "goto": "burn"},
     ], "who": "crono", "prompt": "A family in the doorway. They have the look of people who have done this before."},
     {"label": "save"},
-    {"sfx": "sfx_magic_astral_burn"},
+    {"sfx": "magic/astral_contact"},
     nar("Astral light eats the fire the way it eats ink. The family bows. The mother repaints the door before the smoke has cleared."),
     {"counter": "house_saved", "add": 1},
     {"if": {"counter_min": "house_saved", "value": 3}, "then": "dojo", "else": "done"},
@@ -427,12 +441,14 @@ S["ch2_daimyo_sequence"] = [
     say("krona", "Father. It's Krona. I'm back from the vein.", "neutral"),
     nar("The Daimyo does not look up. He writes her name on a petition, and the petition stands, and it has her face."),
     say("krona", "...Okay. Okay. Crono. Burn the ink. I'll corrode the rest.", "angry"),
+    {"label": "fight"},
     {"battle": "", "boss_id": "goyama_ashen_daimyo", "boss": True, "at": "daimyo_fight", "center": "daimyo_center",
-     "music": "mus_boss_goyama_daimyo", "on_win": "won", "on_lose": "lost"},
+     "music": "mus_u1_boss_daimyo", "on_win": "won", "on_lose": "lost"},
+    {"end": True},
     {"label": "lost"},
-    {"debt": 5},
     nar("The petitions close over him like a book. Somewhere, a ghost turns the page back."),
-    {"goto": "won"},
+    {"debt": 5},
+    {"goto": "fight"},
     {"label": "won"},
     {"run": "ch2_daimyo_won"},
     {"end": True},
@@ -466,7 +482,7 @@ S["ch2_daimyo_won"] = [
     nar("He comes apart as porcelain. Under the porcelain, red muscle fibre, the same fibre that runs under Crono's chest. The same maker."),
     nar("Something small falls out of him and rolls to Crono's feet. A tooth. It whispers, in a clean young voice that is Crono's own voice at seventeen."),
     say("vaelos", "Papa. Big Brother Copy. I planted one of me in every world. This one grew a Daimyo.", "neutral"),
-    {"key_item": "vaelos_tooth"},
+    {"relic": "vaelos_tooth"},
     nar("THE VAELOS TOOTH. The first proof that Vaelos seeded every timeline."),
     {"choice": [
         {"text": "Let him rest.", "goto": "rest"},
@@ -479,7 +495,7 @@ S["ch2_daimyo_won"] = [
     nar("U1 keeps its ink parry. The masks of Kuro-Truce stay dry."),
     {"goto": "vault"},
     {"label": "rip"},
-    {"sfx": "sfx_combat_fibre_tear"},
+    {"sfx": "status/ruin_tear"},
     nar("She tears the fibre out of him in handfuls. It knots itself around the Defiled Masamune and the blade drinks."),
     say("krona", "He'd have done the same. He did do the same.", "angry"),
     {"set_flag": "Ashinaga:Ripped"},
@@ -505,7 +521,7 @@ S["ch2_vault_nodachi"] = [
         {"text": "Leave it.", "goto": "leave"},
     ], "who": "krona", "prompt": "Her hand is on the hilt. She is waiting for him to decide, and he knows it is not his to decide."},
     {"label": "take"},
-    {"sfx": "sfx_weapons_nodachi_draw_cobalt"},
+    {"sfx": "weapons/krona_nodachi"},
     nar("She draws it. The vault turns indigo, then white. Above them, outside, the paper sky goes red and stays red."),
     say("krona", "Some homes you save by leaving them burning.", "sad"),
     nar("Krona weeps. First time. The oil in her gourd stops bubbling and does not start again."),
@@ -527,7 +543,7 @@ S["ch2_vault_nodachi"] = [
 # ---------------------------------------------------------------- 2.8 The Mammon Furnace
 S["ch2_furnace_sequence"] = [
     {"checkpoint": "ch2_furnace"},
-    {"music": "mus_u1_furnace_approach"},
+    {"music": "mus_sera_theme"},  # Sera in the cage; the Shogun's own track starts with the fight
     cap("The Mammon Furnace. Under Goyama, where the vein runs into something older than the island. Heat with a heartbeat."),
     nar("Above the furnace, hung from the clay gear's teeth, a cage of hard geometry. In it, a girl, flickering through seven kinds of drawing: ink, clay, line, glass, rubber, cel, gold."),
     say("sera", "PAPA. Papa I'm here, I'm right here, don't look at the— don't look at the thing under me.", "hurt"),
@@ -536,12 +552,14 @@ S["ch2_furnace_sequence"] = [
     say("krona", "Burn the ink. I'll rot the clay. The ghost does the rest.", "neutral"),
     say("sera", "I've got the daggers. I can rewind you, Papa. I can speed her up. Just don't die where I can see it.", "hurt"),
     {"sera_state": "hover_support"},
+    {"label": "fight"},
     {"battle": "", "boss_id": "weeping_shogun", "boss": True, "at": "furnace_fight", "center": "furnace_center",
-     "music": "mus_boss_weeping_shogun", "on_win": "won", "on_lose": "lost"},
+     "music": "mus_u1_boss_weeping_shogun", "on_win": "won", "on_lose": "lost"},
+    {"end": True},
     {"label": "lost"},
-    {"debt": 5},
     nar("The Furnace takes them. The cage above it turns the page back, and the girl's hand is a little more transparent for it."),
-    {"goto": "won"},
+    {"debt": 5},
+    {"goto": "fight"},
     {"label": "won"},
     {"run": "ch2_furnace_won"},
     {"end": True},
@@ -577,10 +595,12 @@ S["ch2_furnace_won"] = [
     nar("It tows them up the seam, toward a year that smells of oil and dust. 2300 A.D."),
     {"set": {"flag": "Chapter2_Done", "state": "set"}},
     {"chapter": 3},
-    {"checkpoint": "ch2_done"},
-    {"save": 0},
+    # The interlude's Debt and spoon lessons land before the save, and the save follows the `go`, so it records the
+    # ossuary (Router.go sets Game.location) and a Continue resumes there, not in the Furnace.
     {"run": "ch2_interlude_day1"},
-    {"go": "ossuary_arrival", "spawn": "seam_exit"},
+    {"checkpoint": "ch2_done"},
+    {"go": "ossuary_arrival", "spawn": "seam_exit", "end_after": False},
+    {"save": 0},
     {"end": True},
 ]
 
@@ -588,7 +608,7 @@ S["ch2_furnace_won"] = [
 S["ch2_interlude_day1"] = [
     {"universe": 8},
     {"party": ["sera"]},
-    {"music": "mus_interlude_ash_kitchen"},
+    {"music": "mus_sera_interlude"},
     cap("Interlude. Day 1. The House Without Doors."),
     nar("A kitchen built from ash. Guardia's table, Guardia's pots, Guardia's window, and behind the window, nothing. Not dark. Nothing."),
     nar("Vaelos sits where her father sits. There is a bowl in front of him, and a spoon, and ash where the porridge should be."),
@@ -631,6 +651,13 @@ S["ch2_interlude_day1"] = [
     {"end": True},
 ]
 
-out = Path("data/dialogue/chapter2.json")
-out.write_text(json.dumps(S, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-print(f"wrote {out} with {len(S)} scripts, {sum(len(v) for v in S.values())} commands")
+
+def render() -> str:
+    """The exact text of data/dialogue/chapter2.json (lint_data.py compares the committed file with it)."""
+    return json.dumps(S, indent=1, ensure_ascii=False) + "\n"
+
+
+if __name__ == "__main__":
+    with open(OUT, "w", encoding="utf-8", newline="\n") as f:  # LF on every platform (.gitattributes)
+        f.write(render())
+    print(f"wrote {OUT.relative_to(ROOT).as_posix()} with {len(S)} scripts, {sum(len(v) for v in S.values())} commands")

@@ -2,6 +2,8 @@
 ## Autoload name: Data.
 extends Node
 
+const ROUTER := preload("res://scripts/autoload/scene_router.gd")
+
 var techs: Dictionary = {}        ## StringName -> TechDef
 var enemies: Dictionary = {}      ## key StringName -> EnemyDef
 var enemies_by_id: Dictionary = {} ## E-number -> EnemyDef
@@ -12,6 +14,9 @@ var universes: Dictionary = {}    ## int -> Dictionary
 var items: Dictionary = {}        ## StringName -> Dictionary (data/items: kind, effects; Game.grant routes by kind)
 var encounters: Dictionary = {}
 var dialogue: Dictionary = {}     ## script id -> Array of commands
+var dialogue_files: Dictionary = {} ## script id -> the data/dialogue file that defines it
+var script_flags: Dictionary = {}  ## script-local flag id -> states (data/flags/script_local.json; not flags)
+var dialogue_warnings: PackedStringArray = [] ## DialogueCheck warnings: music with no track, scheduled `go` targets
 var bosses: Dictionary = {}
 var props: Dictionary = {}        ## prop key StringName -> Dictionary (data/props: universe, height_m, solid …)
 var text: Dictionary = {}         ## text layer: kind (bestiary, techs, items, ambient, codex) -> Dictionary
@@ -37,6 +42,9 @@ func load_all() -> void:
 	items.clear()
 	encounters.clear()
 	dialogue.clear()
+	dialogue_files.clear()
+	script_flags.clear()
+	dialogue_warnings.clear()
 	bosses.clear()
 	props.clear()
 	text.clear()
@@ -71,9 +79,11 @@ func load_all() -> void:
 			for tid in d.get("techs", []):
 				if not techs.has(StringName(String(tid.get("id", tid) if tid is Dictionary else tid))):
 					errors.append("character %s lists unknown tech %s" % [d["id"], tid])
-	for d in _json_files("res://data/flags"):
+	var flag_files: Array = _json_files("res://data/flags")
+	for d in flag_files:
 		for entry in d.get("flags", []):
 			flags[StringName(String(entry["id"]))] = entry
+	script_flags = DialogueCheck.script_flags_from(flag_files)
 	for d in _json_files("res://data/endings"):
 		endings.append_array(d.get("endings", []))
 	errors.append_array(EndingRules.validation_errors(endings, flags))
@@ -100,8 +110,7 @@ func load_all() -> void:
 	for path in _list_files("res://data/dialogue", ".json"):
 		var d2: Variant = _load_json(path)
 		if d2 is Dictionary:
-			for key in d2.keys():
-				dialogue[StringName(String(key))] = d2[key]
+			errors.append_array(DialogueCheck.merge(dialogue, dialogue_files, path.get_file(), d2))
 	for path in _list_files("res://data/text", ".json"):
 		var d3: Variant = _load_json(path)
 		if d3 is Dictionary:
@@ -110,6 +119,7 @@ func load_all() -> void:
 	_check_kits()
 	_check_flag_refs()
 	_check_text_layer()
+	_check_dialogue()
 	loaded = true
 	if not errors.is_empty():
 		push_warning("Data: %d validation problems" % errors.size())
@@ -178,6 +188,17 @@ static func boss_flag_refs(d: Variant) -> Array[String]:
 					out.append(req)
 			out.append_array(boss_flag_refs(v))
 	return out
+
+
+## Dialogue commands name things that exist (DialogueCheck; lint_data.py holds the same rules).
+func _check_dialogue() -> void:
+	var refs: Dictionary = {"flags": flags, "script_flags": script_flags, "items": items, "encounters": encounters,
+		"bosses": bosses, "techs": techs, "characters": characters, "locations": ROUTER.DEFAULT_LOCATIONS}
+	var r: Dictionary = DialogueCheck.validate(dialogue, refs)
+	errors.append_array(r["errors"])
+	dialogue_warnings = r["warnings"]
+	if not dialogue_warnings.is_empty():
+		push_warning("Data: %d dialogue warnings (music with no track yet, locations not built; see Data.dialogue_warnings)" % dialogue_warnings.size())
 
 
 ## The text layer (data/text/*.json, written to the contract in docs/JOB_CHATGPT.md). A text key that

@@ -34,17 +34,26 @@ func _fit_fade() -> void:
 	fade.size = r.size
 
 
+## The registry every run starts with, built scenes and scheduled ones alike. A dialogue `go` must name one of
+## these (DialogueCheck and lint_data.py read it: unknown is an error, scheduled but not built a warning).
+const DEFAULT_LOCATIONS: Dictionary = {
+	&"title": "res://scenes/ui/title.tscn",
+	&"guardia_kitchen": "res://scenes/u0/guardia_kitchen.tscn",
+	&"guardia_courtyard": "res://scenes/u0/guardia_courtyard.tscn",
+	&"atrium": "res://scenes/u0/atrium_horologe.tscn",
+	&"leene_square": "res://scenes/u0/leene_square.tscn",
+	&"bamboo_grove": "res://scenes/u1/bamboo_grove.tscn",
+	&"kuro_truce": "res://scenes/u1/kuro_truce.tscn",
+	&"ossuary_arrival": "res://scenes/u2/ossuary_arrival.tscn",
+	&"test_diorama": "res://scenes/test/diorama.tscn",
+	&"test_arena": "res://scenes/test/arena.tscn",
+	&"test_lineup": "res://scenes/test/lineup.tscn",
+}
+
+
 func _register_defaults() -> void:
-	locations[&"title"] = "res://scenes/ui/title.tscn"
-	locations[&"guardia_kitchen"] = "res://scenes/u0/guardia_kitchen.tscn"
-	locations[&"guardia_courtyard"] = "res://scenes/u0/guardia_courtyard.tscn"
-	locations[&"atrium"] = "res://scenes/u0/atrium_horologe.tscn"
-	locations[&"leene_square"] = "res://scenes/u0/leene_square.tscn"
-	locations[&"bamboo_grove"] = "res://scenes/u1/bamboo_grove.tscn"
-	locations[&"kuro_truce"] = "res://scenes/u1/kuro_truce.tscn"
-	locations[&"test_diorama"] = "res://scenes/test/diorama.tscn"
-	locations[&"test_arena"] = "res://scenes/test/arena.tscn"
-	locations[&"test_lineup"] = "res://scenes/test/lineup.tscn"
+	for id in DEFAULT_LOCATIONS.keys():
+		locations[id] = DEFAULT_LOCATIONS[id]
 
 
 func register(id: StringName, path: String) -> void:

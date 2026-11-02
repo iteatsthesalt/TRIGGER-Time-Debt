@@ -51,7 +51,7 @@
    "wait": 0.6
   },
   {
-   "sfx": "sfx_time_ink_footstep"
+   "sfx": "footsteps/u1_woodblock"
   },
   {
    "say": "Footprints on the paper. Bare feet, wet with black. They stop six stalks away.",
@@ -216,7 +216,7 @@
    "who": "narrator"
   },
   {
-   "sfx": "sfx_time_rewind"
+   "sfx": "time/rewind"
   },
   {
    "show": "sera_ghost",
@@ -344,7 +344,7 @@
    "focus": "pagoda_top"
   },
   {
-   "sfx": "sfx_time_fracture_tear"
+   "sfx": "time/fracture_sky"
   },
   {
    "say": "The paper sky splits. Something falls through it that was never drawn with a brush: a gear the size of a house, thumbprinted clay, turning at twelve frames a second in a world that moves at twenty-four.",
@@ -354,7 +354,7 @@
    "shake": 1.2
   },
   {
-   "sfx": "sfx_impact_clay_crash"
+   "sfx": "porcelain/crack_large"
   },
   {
    "say": "It takes the top three tiers with it. The pagoda holds. The gear keeps turning inside it, hitching, the wrong speed for this world.",
@@ -437,7 +437,7 @@
    "label": "peel"
   },
   {
-   "sfx": "sfx_ui_paper_tear"
+   "sfx": "ui/page"
   },
   {
    "say": "Under the paper: char. In the char, small handprints in soot, a row of them at a child's height, and a date scratched beside them. Three sieges ago.",
@@ -690,6 +690,9 @@
    "who": "narrator"
   },
   {
+   "label": "fight"
+  },
+  {
    "battle": "iron_bridge_shrine_1",
    "at": "bridge_1_fight",
    "center": "bridge_1_center",
@@ -698,13 +701,20 @@
    "on_lose": "lost"
   },
   {
+   "end": true
+  },
+  {
    "label": "lost"
+  },
+  {
+   "say": "The stroke lands. Then it hasn't. Somewhere a girl turns the page back, and the ronin kneel again.",
+   "who": "narrator"
   },
   {
    "debt": 5
   },
   {
-   "goto": "won"
+   "goto": "fight"
   },
   {
    "label": "won"
@@ -729,6 +739,9 @@
    "portrait": "neutral"
   },
   {
+   "label": "fight"
+  },
+  {
    "battle": "iron_bridge_shrine_2",
    "at": "bridge_2_fight",
    "center": "bridge_2_center",
@@ -737,13 +750,20 @@
    "on_lose": "lost"
   },
   {
+   "end": true
+  },
+  {
    "label": "lost"
+  },
+  {
+   "say": "The stroke lands. Then it hasn't. Somewhere a girl turns the page back, and the ronin kneel again.",
+   "who": "narrator"
   },
   {
    "debt": 5
   },
   {
-   "goto": "won"
+   "goto": "fight"
   },
   {
    "label": "won"
@@ -788,6 +808,9 @@
    "portrait": "neutral"
   },
   {
+   "label": "fight"
+  },
+  {
    "battle": "iron_bridge_shrine_3",
    "at": "bridge_3_fight",
    "center": "bridge_3_center",
@@ -796,13 +819,20 @@
    "on_lose": "lost"
   },
   {
+   "end": true
+  },
+  {
    "label": "lost"
+  },
+  {
+   "say": "The stroke lands. Then it hasn't. Somewhere a girl turns the page back, and the ronin kneel again.",
+   "who": "narrator"
   },
   {
    "debt": 5
   },
   {
-   "goto": "won"
+   "goto": "fight"
   },
   {
    "label": "won"
@@ -886,6 +916,9 @@
    "portrait": "neutral"
   },
   {
+   "label": "fight"
+  },
+  {
    "battle": "iron_bridge_shrine_4",
    "at": "bridge_4_fight",
    "center": "bridge_4_center",
@@ -894,13 +927,20 @@
    "on_lose": "lost"
   },
   {
+   "end": true
+  },
+  {
    "label": "lost"
+  },
+  {
+   "say": "The stroke lands. Then it hasn't. Somewhere a girl turns the page back, and the ronin kneel again.",
+   "who": "narrator"
   },
   {
    "debt": 5
   },
   {
-   "goto": "won"
+   "goto": "fight"
   },
   {
    "label": "won"
@@ -981,7 +1021,7 @@
    "label": "seal"
   },
   {
-   "sfx": "sfx_magic_astral_burn"
+   "sfx": "magic/astral_contact"
   },
   {
    "say": "He puts the gauntlet in the vein and the oil goes gold, then white, then stone. Behind them, on the bridge, five masks fall off five faces, and the faces are at peace.",
@@ -1076,7 +1116,7 @@
    "label": "save"
   },
   {
-   "sfx": "sfx_magic_astral_burn"
+   "sfx": "magic/astral_contact"
   },
   {
    "say": "Astral light eats the fire the way it eats ink. The family bows. The mother repaints the door before the smoke has cleared.",
@@ -1357,27 +1397,33 @@
    "portrait": "angry"
   },
   {
+   "label": "fight"
+  },
+  {
    "battle": "",
    "boss_id": "goyama_ashen_daimyo",
    "boss": true,
    "at": "daimyo_fight",
    "center": "daimyo_center",
-   "music": "mus_boss_goyama_daimyo",
+   "music": "mus_u1_boss_daimyo",
    "on_win": "won",
    "on_lose": "lost"
   },
   {
-   "label": "lost"
+   "end": true
   },
   {
-   "debt": 5
+   "label": "lost"
   },
   {
    "say": "The petitions close over him like a book. Somewhere, a ghost turns the page back.",
    "who": "narrator"
   },
   {
-   "goto": "won"
+   "debt": 5
+  },
+  {
+   "goto": "fight"
   },
   {
    "label": "won"
@@ -1469,7 +1515,7 @@
    "portrait": "neutral"
   },
   {
-   "key_item": "vaelos_tooth"
+   "relic": "vaelos_tooth"
   },
   {
    "say": "THE VAELOS TOOTH. The first proof that Vaelos seeded every timeline.",
@@ -1515,7 +1561,7 @@
    "label": "rip"
   },
   {
-   "sfx": "sfx_combat_fibre_tear"
+   "sfx": "status/ruin_tear"
   },
   {
    "say": "She tears the fibre out of him in handfuls. It knots itself around the Defiled Masamune and the blade drinks.",
@@ -1597,7 +1643,7 @@
    "label": "take"
   },
   {
-   "sfx": "sfx_weapons_nodachi_draw_cobalt"
+   "sfx": "weapons/krona_nodachi"
   },
   {
    "say": "She draws it. The vault turns indigo, then white. Above them, outside, the paper sky goes red and stays red.",
@@ -1661,7 +1707,7 @@
    "checkpoint": "ch2_furnace"
   },
   {
-   "music": "mus_u1_furnace_approach"
+   "music": "mus_sera_theme"
   },
   {
    "caption": "The Mammon Furnace. Under Goyama, where the vein runs into something older than the island. Heat with a heartbeat."
@@ -1698,27 +1744,33 @@
    "sera_state": "hover_support"
   },
   {
+   "label": "fight"
+  },
+  {
    "battle": "",
    "boss_id": "weeping_shogun",
    "boss": true,
    "at": "furnace_fight",
    "center": "furnace_center",
-   "music": "mus_boss_weeping_shogun",
+   "music": "mus_u1_boss_weeping_shogun",
    "on_win": "won",
    "on_lose": "lost"
   },
   {
-   "label": "lost"
+   "end": true
   },
   {
-   "debt": 5
+   "label": "lost"
   },
   {
    "say": "The Furnace takes them. The cage above it turns the page back, and the girl's hand is a little more transparent for it.",
    "who": "narrator"
   },
   {
-   "goto": "won"
+   "debt": 5
+  },
+  {
+   "goto": "fight"
   },
   {
    "label": "won"
@@ -1859,17 +1911,18 @@
    "chapter": 3
   },
   {
-   "checkpoint": "ch2_done"
-  },
-  {
-   "save": 0
-  },
-  {
    "run": "ch2_interlude_day1"
   },
   {
+   "checkpoint": "ch2_done"
+  },
+  {
    "go": "ossuary_arrival",
-   "spawn": "seam_exit"
+   "spawn": "seam_exit",
+   "end_after": false
+  },
+  {
+   "save": 0
   },
   {
    "end": true
@@ -1885,7 +1938,7 @@
    ]
   },
   {
-   "music": "mus_interlude_ash_kitchen"
+   "music": "mus_sera_interlude"
   },
   {
    "caption": "Interlude. Day 1. The House Without Doors."

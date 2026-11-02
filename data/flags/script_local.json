@@ -1,0 +1,13 @@
+{
+ "_doc": "Script-local flags: progress markers a dialogue or a location sets and reads, with no codex page, no affinity and no ending. They are not flags (Data.flags, the codex and the Possibility Engine never list them); declaring one here lets the dialogue check (DialogueCheck, lint_data.py) tell a marker from a typo. A dialogue flag must be a data/flags flag with one of its states, or one of these with one of its states.",
+ "script_local": [
+  {"id": "Prologue_Courtyard_Done", "states": ["set"], "where": "prologue.json prologue_courtyard; guardia_courtyard.gd skips the courtyard script once it is set"},
+  {"id": "Crono_First_Lie", "states": ["Told", "Covered", "Shown"], "where": "prologue.json prologue_breakfast; each option carries its own affinity (DECISIONS \"Crono's first lie\")"},
+  {"id": "Ch1_Arrived", "states": ["set"], "where": "chapter1.json ch1_arrival; the prologue probe waits for it"},
+  {"id": "Ch1_Father_Looked_Away", "states": ["set"], "where": "chapter1.json ch1_father_tank"},
+  {"id": "Ch1_Fair_Left", "states": ["set"], "where": "atrium_horologe.gd leave_for_fair sets it; chapter1.json ch1_fair_call reads it"},
+  {"id": "Dummy_Wrist", "states": ["Seen", "Hidden"], "where": "chapter1.json ch1_dummy_sequence"},
+  {"id": "Bekkler_Doll_Taken", "states": ["set"], "where": "chapter1.json atrium_workbench (the small Bekkler doll is taken once)"},
+  {"id": "Glenn_Honour_Checked", "states": ["set"], "where": "chapter1.json ch1_glenn_honour"}
+ ]
+}

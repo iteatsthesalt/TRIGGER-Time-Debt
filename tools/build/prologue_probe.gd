@@ -22,6 +22,8 @@ func _initialize() -> void:
 
 
 func _boot() -> void:
+	# the probe plays the real scenes, which autosave: keep it out of the player's slots and settings (Saves)
+	root.get_node("Saves").set("suspended", true)
 	var packed: PackedScene = load("res://scenes/boot/boot.tscn")
 	var node: Node = packed.instantiate()
 	root.add_child(node)
@@ -33,7 +35,6 @@ func _boot() -> void:
 	R = root.get_node("Router")
 	SV = root.get_node("Saves")
 	G.call("new_game")
-	F.call("reset_cycle")
 	S.set("auto_advance_s", 0.05)
 	S.set("auto_choice", 0)
 	S.set("skip_waits", true)
@@ -76,7 +77,8 @@ func _run() -> void:
 	_stage = "opening"
 	await _wait_frames(5)
 	var kitchen: Node = _loc()
-	print("PROBE location=%s" % str(kitchen.name if kitchen else null))
+	# the kitchen holds the screen black for the wake (the Router leaves the fade to it): 1.00 here
+	print("PROBE location=%s opening_black=%.2f" % [str(kitchen.name if kitchen else null), float((R.get("fade") as ColorRect).color.a)])
 	if not await _wait_until(func() -> bool: return _cp() == &"prologue_breakfast_done", 6000, "breakfast"):
 		return _end()
 	print("PROBE breakfast done: party=%s integrity=%.0f flags=%s" % [str(G.get("active_party")), float(G.get("crono_integrity")), str(F.get("flags").keys())])
@@ -129,7 +131,7 @@ func _run() -> void:
 	print("PROBE in atrium: chapter=%d checkpoint=%s" % [int(G.get("chapter")), String(_cp())])
 	if not await _wait_until(func() -> bool: return F.call("has", &"Ch1_Arrived") and not S.call("is_running"), 3000, "ch1 arrival"):
 		return _end()
-	print("PROBE ch1 arrival done; save exists=%s" % str(SV.call("exists", 0)))
+	print("PROBE ch1 arrival done; autosave=%s (scratch slot)" % str(SV.call("status", 0)))
 	_end()
 
 

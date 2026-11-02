@@ -40,6 +40,9 @@ func _ready() -> void:
 	if is_instance_valid(Game):
 		Game.settings_changed.connect(_apply_volumes)
 		_apply_volumes()
+		# porcelain_stress follows Crono's integrity: 0 at 100%, 100 at the flatline (Combat Laws §16.3, §17.3)
+		Game.integrity_changed.connect(_on_integrity)
+		_on_integrity(Game.crono_integrity)
 
 
 func _setup_buses() -> void:
@@ -217,6 +220,10 @@ func set_rtpc(name: String, value: float) -> void:
 				_lowpass.cutoff_hz = lerpf(20000.0, 2500.0, clampf(value / 100.0, 0.0, 1.0))
 		"camera_fov":
 			pass
+
+
+func _on_integrity(value: float) -> void:
+	set_rtpc("porcelain_stress", clampf(100.0 - value, 0.0, 100.0))
 
 
 func get_rtpc(name: String) -> float:

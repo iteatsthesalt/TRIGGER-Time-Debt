@@ -7,6 +7,7 @@ var enemies: Dictionary = {}      ## key StringName -> EnemyDef
 var enemies_by_id: Dictionary = {} ## E-number -> EnemyDef
 var characters: Dictionary = {}   ## StringName -> Dictionary (kit)
 var flags: Dictionary = {}        ## StringName -> Dictionary (flag def)
+var endings: Array = []           ## data/endings/endings.json rows (EndingRules; Story Bible §7.1)
 var universes: Dictionary = {}    ## int -> Dictionary
 var items: Dictionary = {}        ## StringName -> Dictionary (data/items: kind, effects; Game.grant routes by kind)
 var encounters: Dictionary = {}
@@ -31,6 +32,7 @@ func load_all() -> void:
 	enemies_by_id.clear()
 	characters.clear()
 	flags.clear()
+	endings.clear()
 	universes.clear()
 	items.clear()
 	encounters.clear()
@@ -72,6 +74,9 @@ func load_all() -> void:
 	for d in _json_files("res://data/flags"):
 		for entry in d.get("flags", []):
 			flags[StringName(String(entry["id"]))] = entry
+	for d in _json_files("res://data/endings"):
+		endings.append_array(d.get("endings", []))
+	errors.append_array(EndingRules.validation_errors(endings, flags))
 	for d in _json_files("res://data/universes"):
 		for entry in d.get("universes", []):
 			universes[int(entry["id"])] = entry

@@ -28,6 +28,9 @@ var battle: BattleScene
 var prompt_label: Label
 var _ui_layer: CanvasLayer
 var _in_battle: bool = false
+## Set by a location whose opening holds the screen black (the kitchen's wake) before its first await: the
+## Router then leaves the fade to it instead of fading in over the opening.
+var holds_black: bool = false
 var _party_root: Node3D
 
 
@@ -441,6 +444,8 @@ func _refresh_porcelain() -> void:
 ## it, each value on its own signal so a write-back of one never resets the other from a stale Game field.
 func _on_game_integrity(_v: float) -> void:
 	BattleAftermath.sync_from_game(party_actors, true, false)
+	if not _in_battle:
+		AtriumSiege.begin_if_owed(get_tree())  # integrity 0 starts the siege (§16.3)
 
 
 func _on_game_debt(_v: float) -> void:

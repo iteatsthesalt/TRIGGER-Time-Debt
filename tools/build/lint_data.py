@@ -58,6 +58,11 @@ for p in sorted((ROOT/"data/flags").rglob("*.json")):
         flags[f["id"]] = f
         for st in f.get("states", []):
             if "upgrade" in st and st["upgrade"] not in UPGRADES: errors.append(f"flag {f['id']}:{st.get('id')}: unknown upgrade {st['upgrade']}")
+        # an Amber Rift flag pays its +15 through the rift alone when it reaches rift_state (Flags.set_flag)
+        if f.get("amber_rift") and f.get("rift_state") not in [st.get("id") for st in f.get("states", [])]:
+            errors.append(f"flag {f['id']}: amber_rift needs a rift_state that is one of its states")
+        if "rift_source" in f and not (f.get("amber_rift") and isinstance(f["rift_source"], str)): errors.append(f"flag {f['id']}: rift_source needs amber_rift and a string")
+        if "mutable" in f and not isinstance(f["mutable"], bool): errors.append(f"flag {f['id']}: mutable must be true or false")
 for p in sorted((ROOT/"data/encounters").rglob("*.json")):
     d = load(p)
     if not d: continue
@@ -352,6 +357,19 @@ for p in sorted((ROOT/"data/universes").rglob("*.json")):
     for u in (load(p) or {}).get("universes", []):
         for r in u.get("hazard_by_flag", {}):
             if flag_ref_error(r): errors.append(f"universe {u.get('id')}: hazard_by_flag {flag_ref_error(r)}")
+# Endings (Story Bible 7.1, EndingRules): every flag an ending tests is a defined flag and state.
+ENDING_FIELDS = {"id", "name", "plays_in", "notes", "flags", "not_flags", "counters", "rifts",
+                 "light_min", "light_max", "dark_min", "dark_max", "prismatic_min", "prismatic_max"}
+ending_ids = set()
+for p in sorted((ROOT/"data/endings").rglob("*.json")):
+    for e in (load(p) or {}).get("endings", []):
+        eid = e.get("id")
+        if not isinstance(eid, int) or eid in ending_ids: errors.append(f"ending {eid}: id must be a unique number")
+        ending_ids.add(eid)
+        for f in set(e) - ENDING_FIELDS: errors.append(f"ending {eid}: unknown field {f}")
+        for r in list(e.get("flags", [])) + list(e.get("not_flags", [])):
+            if flag_ref_error(r): errors.append(f"ending {eid}: {flag_ref_error(r)}")
+        if not isinstance(e.get("counters", {}), dict): errors.append(f"ending {eid}: counters must be an object")
 script_flags = {}
 def dialogue_flag(sid, ref, state=""):
     name, _, st = str(ref).partition(":")

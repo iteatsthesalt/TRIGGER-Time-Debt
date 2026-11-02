@@ -27,6 +27,8 @@ func _initialize() -> void:
 
 
 func _boot() -> void:
+	# the probe plays the real scenes, which autosave: keep it out of the player's slots and settings (Saves)
+	root.get_node("Saves").set("suspended", true)
 	var packed: PackedScene = load("res://scenes/boot/boot.tscn")
 	var node: Node = packed.instantiate()
 	root.add_child(node)

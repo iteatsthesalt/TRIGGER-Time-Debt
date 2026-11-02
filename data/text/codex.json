@@ -566,5 +566,41 @@
       "Fell": "The pauldron fell away, without breaking. Underneath was skin, or porcelain painted so well that the Codex would not settle the question. Sera tested the warmth instead. I have the serial number, should you still want it. It is beginning to seem a poor answer to what she asked with her hand.",
       "Kept": "Crono kept the old armour on. The pauldron remained part of the silhouette; this page offered no glimpse beneath it. Neither proof of wholeness nor a verdict on the ending. I made him a body people would recognise. Recognition was never supposed to require him to undress for every doubter."
     }
+  },
+  "Native_Duplicate_Given": {
+    "title": "The Copy Handed Over Freely",
+    "pages": {
+      "set": "While Sera stepped out of the world on purpose, a Token Duplicate in her own style was pressed into Crono's hand. Not a replacement; a promise that the hand would still be there when she came back. I used to sell duplicates as consolation. This one was a receipt for a return trip."
+    }
+  },
+  "Crono_Entered_Heart_At_20": {
+    "title": "One Fifth of a Boy at the Door",
+    "pages": {
+      "set": "Crono walked into the Heart's last phase with a fifth of his porcelain left. Low enough that every step rang; high enough to mean the cracks had been carried rather than ignored. The ledger called it a margin. I am told the polite word is courage."
+    }
+  },
+  "Porcelain_Stress_Held_100": {
+    "title": "The Glaze That Was Never Touched",
+    "pages": {
+      "set": "From the third canvas through the fourth, the stress sat at its ceiling and nobody mended anything. No gold, no thread, no kind hands. Admire the consistency, if you must. I built him to hold a smile under pressure, and he held it until the smile was the only thing left holding."
+    }
+  },
+  "Seed_of_Doan_Full": {
+    "title": "The Flower at Full Height",
+    "pages": {
+      "set": "Doan's seed finished growing: a gramophone flower tall enough to lean on and loud enough to hold the Atrium gate. It took visits, water and patience, three things I never kept in stock. The flower kept them for us."
+    }
+  },
+  "Mycelia_Tether_Mastery": {
+    "title": "The Net Learned by Heart",
+    "pages": {
+      "set": "The tether stopped being a trick and became a habit: one shared pool, many bodies, the hurt carried by everyone at once. Masterful, the instructors would say. I would say it was simply everyone agreeing to be a little worse off together, which is the act I never learned to perform."
+    }
+  },
+  "Codex_True_Null": {
+    "title": "The Page with Nothing Left to Hit",
+    "pages": {
+      "set": "Every weakness in this book was erased, one by one, until the pages showed no place a blow could land. TRUE NULL, the margin reads. Applause would echo in a room this empty, so I will hold mine. A thing that cannot be wounded has also been made very hard to mend."
+    }
   }
 }

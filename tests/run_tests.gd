@@ -11,6 +11,8 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	root.get_node("Saves").set("suspended", true)  # tests save and set options: never in the player's files
+	root.get_node("Game").call("reset_settings")  # and run on the default options, not the player's
 	var passed: int = 0
 	var failed: int = 0
 	var suites: Array[String] = []

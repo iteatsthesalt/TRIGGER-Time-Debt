@@ -1,5 +1,6 @@
 ## Persistent game state: the roster, levels, party, inventory, Crono's integrity, Sera's debt,
-## chapter progress and settings. Autoload name: Game.
+## chapter progress and settings. Autoload name: Game. The settings are the player's, not the run's: they live in
+## the settings file (Saves.read_settings / write_settings), never in a save slot.
 extends Node
 
 signal party_changed
@@ -34,6 +35,8 @@ var chapter: int = 0
 var checkpoint: StringName = &"prologue_kitchen"
 var location: StringName = &"guardia_kitchen"
 var spawn_point: StringName = &"start"
+## The spawn of the last save made in the Atrium (AtriumSiege.note_checkpoint): where a siege jumps back to.
+var atrium_spawn: StringName = &""
 var play_time: float = 0.0
 var prometheus_core: bool = false
 var max_bp: int = CombatConstants.MAX_BP
@@ -43,14 +46,20 @@ var hold_upgraded: bool = false
 var sera_in_story: String = "with"  ## with | hover | taken | absent
 var endings_seen: Array[int] = []
 var new_game_plus: bool = false
-var settings: Dictionary = {
+const DEFAULT_SETTINGS: Dictionary = {
 	"reduced_flicker": false, "flow_speed": 1.0, "text_size": 1.0, "screen_shake": true,
 	"dof": true, "truth_lerp": true, "auto_sync_hold": false, "captions": true, "music": 0.8, "sfx": 0.9, "voice": 1.0,
 }
+var settings: Dictionary = DEFAULT_SETTINGS.duplicate()
 var debug_mode: bool = false
+## The range a numeric setting may take: a value outside it (a probe's x4 battle flow) is never adopted.
+const SETTING_RANGES: Dictionary = {
+	"flow_speed": [0.75, 1.25], "text_size": [0.5, 2.0], "music": [0.0, 1.0], "sfx": [0.0, 1.0], "voice": [0.0, 1.0],
+}
 
 
 func _ready() -> void:
+	adopt_settings(Saves.read_settings())
 	if roster.is_empty():
 		new_game()
 	Flags.flag_set.connect(func(_id: StringName, _s: StringName) -> void: CapUpgrades.apply(self, Flags.flags))  # §15.7
@@ -82,18 +91,20 @@ func new_game() -> void:
 	checkpoint = &"prologue_kitchen"
 	location = &"guardia_kitchen"
 	spawn_point = &"start"
+	atrium_spawn = &""
 	prometheus_core = false
 	max_bp = CombatConstants.MAX_BP
 	max_spend = CombatConstants.MAX_SPEND
 	parry_frames = CombatConstants.ENS_PARRY_FRAMES_BASE
 	hold_upgraded = false
 	sera_in_story = "with"
-	Flags.reset_cycle(Flags.bias if new_game_plus else &"")
+	# the one owner of the cycle reset; New Game+ biases +10 toward the finished cycle's dominant affinity (§15.10)
+	Flags.reset_cycle(Flags.dominant_affinity() if new_game_plus else &"")
 	if not new_game_plus:
 		Flags.cycle = 1
-	if new_game_plus:
-		sera_permanent_baseline = 5.0
-		sera_debt = 5.0
+	# Sera remembers the loop (§15.10): 5 permanent Debt on New Game+, none on a fresh file
+	sera_permanent_baseline = 5.0 if new_game_plus else 0.0
+	sera_debt = sera_permanent_baseline
 	party_changed.emit()
 	new_game_started.emit()
 
@@ -297,6 +308,33 @@ func set_chapter(c: int) -> void:
 func set_setting(key: String, value: Variant) -> void:
 	settings[key] = value
 	settings_changed.emit()
+	Saves.write_settings(settings)
+
+
+## Every option back to its default (the test runner starts from these, whatever the player chose).
+func reset_settings() -> void:
+	settings = DEFAULT_SETTINGS.duplicate()
+	settings_changed.emit()
+
+
+## Merge settings read from a file: only the keys the game knows, of their type, numbers inside SETTING_RANGES.
+func adopt_settings(d: Dictionary) -> void:
+	for k in d.keys():
+		if setting_ok(String(k), d[k]):
+			settings[String(k)] = float(d[k]) if settings[String(k)] is float else d[k]
+	settings_changed.emit()
+
+
+func setting_ok(key: String, v: Variant) -> bool:
+	if not settings.has(key):
+		return false
+	var current: Variant = settings[key]
+	if current is float:
+		if not (v is float or v is int):
+			return false
+		var r: Array = SETTING_RANGES.get(key, [-INF, INF])
+		return float(v) >= float(r[0]) and float(v) <= float(r[1])
+	return typeof(v) == typeof(current)
 
 
 func to_save() -> Dictionary:
@@ -323,9 +361,10 @@ func to_save() -> Dictionary:
 		"crono_integrity": crono_integrity, "sera_debt": sera_debt, "sera_permanent_baseline": sera_permanent_baseline,
 		"krona_corruption": krona_corruption, "cassia_synergy": cassia_synergy, "cassia_resentment": cassia_resentment,
 		"chapter": chapter, "checkpoint": String(checkpoint), "location": String(location), "spawn_point": String(spawn_point),
+		"atrium_spawn": String(atrium_spawn),
 		"play_time": play_time, "prometheus_core": prometheus_core, "max_bp": max_bp, "max_spend": max_spend,
 		"parry_frames": parry_frames, "hold_upgraded": hold_upgraded, "sera_in_story": sera_in_story,
-		"endings_seen": endings_seen, "new_game_plus": new_game_plus, "settings": settings,
+		"endings_seen": endings_seen, "new_game_plus": new_game_plus,
 	}
 
 
@@ -361,6 +400,7 @@ func from_save(d: Dictionary) -> void:
 	checkpoint = StringName(String(d.get("checkpoint", "prologue_kitchen")))
 	location = StringName(String(d.get("location", "guardia_kitchen")))
 	spawn_point = StringName(String(d.get("spawn_point", "start")))
+	atrium_spawn = StringName(String(d.get("atrium_spawn", "")))
 	play_time = float(d.get("play_time", 0.0))
 	prometheus_core = bool(d.get("prometheus_core", false))
 	max_bp = int(d.get("max_bp", CombatConstants.MAX_BP))
@@ -372,9 +412,6 @@ func from_save(d: Dictionary) -> void:
 	for e in d.get("endings_seen", []):
 		endings_seen.append(int(e))
 	new_game_plus = bool(d.get("new_game_plus", false))
-	for k in d.get("settings", {}).keys():
-		settings[k] = d["settings"][k]
 	party_changed.emit()
 	integrity_changed.emit(crono_integrity)
 	debt_changed.emit(sera_debt)
-	settings_changed.emit()

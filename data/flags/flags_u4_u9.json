@@ -40,6 +40,12 @@
     {"id": "Gallery_Egg", "where": "Ch9", "states": [{"id": "Spared", "affinity": {"light": 10}}, {"id": "Loomed", "affinity": {}}]},
     {"id": "Navel_String", "where": "Ch9", "states": [{"id": "Cut", "affinity": {}}, {"id": "Kept", "affinity": {}}]},
     {"id": "Spoon_Taught", "where": "Interludes", "states": [{"id": "set", "affinity": {}}]},
-    {"id": "Crono_Armor", "where": "Ch9, Codex", "states": [{"id": "Fell", "affinity": {}}, {"id": "Kept", "affinity": {}}]}
+    {"id": "Crono_Armor", "where": "Ch9, Codex", "states": [{"id": "Fell", "affinity": {}}, {"id": "Kept", "affinity": {}}]},
+    {"id": "Native_Duplicate_Given", "where": "Ch9 Heart", "states": [{"id": "set", "affinity": {}, "text": "A native-style Token Duplicate given to Crono during Sera's voluntary phase-out at the Heart (Ending 4)."}]},
+    {"id": "Crono_Entered_Heart_At_20", "where": "Ch9 Heart", "states": [{"id": "set", "affinity": {}, "text": "Crono entered the Heart's last phase at 20% integrity (Ending 4)."}]},
+    {"id": "Porcelain_Stress_Held_100", "where": "U3-U4", "states": [{"id": "set", "affinity": {}, "text": "Porcelain stress held at 100 from U3 through U4 with no repair of any kind (Ending 5)."}]},
+    {"id": "Seed_of_Doan_Full", "where": "Ch15", "states": [{"id": "set", "affinity": {}, "text": "The Seed of Doan reached full growth (Ending 6; it holds the siege gate)."}]},
+    {"id": "Mycelia_Tether_Mastery", "where": "Any", "states": [{"id": "set", "affinity": {}, "text": "Mycelia Tether mastery, GLOBAL_POOL_01 (Ending 6)."}]},
+    {"id": "Codex_True_Null", "where": "Post-game Codex", "states": [{"id": "set", "affinity": {}, "text": "Every weakness erased in the Possibility Codex: TRUE NULL (Ending 8)."}]}
   ]
 }

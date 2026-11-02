@@ -188,6 +188,7 @@ func _place_cast_for_breakfast() -> void:
 
 func _opening() -> void:
 	controller.enabled = false
+	holds_black = true  # the Router does not fade in over the wake (it lifts at fade_in below)
 	Router.fade.color.a = 1.0
 	await get_tree().process_frame
 	await Story.run(&"prologue_wake")

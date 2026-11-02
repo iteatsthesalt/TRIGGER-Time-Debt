@@ -3,6 +3,9 @@
   {
    "id": "Goyama",
    "where": "Ch2",
+   "amber_rift": true,
+   "rift_state": "Both",
+   "rift_source": "Amber_Rift_U1_Goyama",
    "states": [
     {
      "id": "Repainted",
@@ -19,9 +22,7 @@
     },
     {
      "id": "Both",
-     "affinity": {
-      "prismatic": 15
-     }
+     "affinity": {}
     }
    ]
   },

@@ -81,7 +81,7 @@ func on_action(ctrl: BossController, info: Dictionary) -> void:
 		return
 	ctrl.window_until = 0.0
 	if not Flags.has(&"The_Bowl_Still_Whole"):
-		Flags.set_flag(&"The_Bowl_Still_Whole", &"set", {"prismatic": 15})
+		Flags.set_flag(&"The_Bowl_Still_Whole", &"set")  # its Amber Rift pays the +15, as at breakfast (§9.3)
 		Game.learn_tech(&"crono", &"bekkler_guilt")
 		ctrl.scene.hud.show_message("The bowl, caught whole. Vaelos: —you remember how to catch—")
 		Audio.play_sfx("time/amber_chime")

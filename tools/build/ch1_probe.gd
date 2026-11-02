@@ -18,6 +18,8 @@ func _initialize() -> void:
 
 
 func _boot() -> void:
+	# the probe plays the real scenes, which autosave: keep it out of the player's slots and settings (Saves)
+	root.get_node("Saves").set("suspended", true)
 	var packed: PackedScene = load("res://scenes/boot/boot.tscn")
 	var node: Node = packed.instantiate()
 	root.add_child(node)
@@ -28,7 +30,6 @@ func _boot() -> void:
 	S = root.get_node("Story")
 	R = root.get_node("Router")
 	G.call("new_game")
-	F.call("reset_cycle")
 	G.call("set_chapter", 1)
 	G.set("checkpoint", &"atrium_hub")
 	G.set("location", &"atrium")

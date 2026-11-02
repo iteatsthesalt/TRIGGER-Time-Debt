@@ -92,7 +92,9 @@ func go(id: StringName, spawn: StringName = &"start", fade_s: float = 0.5) -> bo
 		GateJump.charge(from_universe, Universe.current, next)
 	location_loaded.emit(id, next)
 	await tree.process_frame
-	await fade_in(fade_s)
+	# a location holding the screen black for its own opening (Location.holds_black) lifts the fade itself
+	if not (is_instance_valid(next) and "holds_black" in next and next.get("holds_black") == true):
+		await fade_in(fade_s)
 	transitioning = false
 	return true
 

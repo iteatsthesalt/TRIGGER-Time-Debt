@@ -30,6 +30,8 @@ const PERIODS := {
 	&"burn": 1.0,
 	&"regen": 2.0,
 }
+## Mycelia Time Lapse (§11.12): periodic statuses on its targets tick this many times faster ("300%").
+const TIME_LAPSE_RATE := 3.0
 const MAX_STACKS := {
 	&"grief": CombatConstants.GRIEF_MAX_STACKS,
 	&"mercury_slow": CombatConstants.MERCURY_MAX_STACKS,
@@ -117,10 +119,11 @@ func cleanse() -> void:
 func tick(dt: float) -> void:
 	if dt <= 0.0:
 		return
+	var period_dt: float = dt * (TIME_LAPSE_RATE if has(&"time_lapse") else 1.0)  # Mycelia Time Lapse
 	for id in ids():
 		var s: Dictionary = statuses[id]
 		if PERIODS.has(id):
-			s["period_accum"] = float(s["period_accum"]) + dt
+			s["period_accum"] = float(s["period_accum"]) + period_dt
 			var period: float = float(PERIODS[id])
 			while float(s["period_accum"]) >= period:
 				s["period_accum"] = float(s["period_accum"]) - period
@@ -155,7 +158,7 @@ func on_turn_taken() -> void:
 
 func gauge_multiplier() -> float:
 	var m: float = 1.0
-	if has(&"time_stop"):
+	if has(&"time_stop") or has(&"shutdown"):  # Prometheus Overload's shutdown: the next gauge starts below zero
 		return 0.0
 	if has(&"mercury_slow") or has(&"ash_inhale"):  # Ash Inhale is one SLOW stack (§12.2)
 		m *= CombatConstants.MERCURY_SLOW
@@ -261,7 +264,7 @@ func is_untargetable() -> bool:
 
 func hitch_seconds() -> float:
 	var h: float = 0.0
-	if has(&"magnetized") or has(&"knock_static"):
+	if has(&"magnetized") or has(&"knock_static") or has(&"hitched"):  # hitched: Gramophone Resonance's rattle
 		h += 0.5
 	if has(&"mercury_slow") and stacks(&"mercury_slow") >= 2:
 		h += 0.5

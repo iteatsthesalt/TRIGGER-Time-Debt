@@ -20,9 +20,10 @@ const KINDS: Array[StringName] = [
 	&"watercolour_puddle", &"ghost_ring", &"ash_field", &"amber_pool", &"spore_mat", &"caustic_floor",
 	&"confetti_pit", &"static_field", &"white_blank", &"mercury_pool", &"golden_patch", &"divinity_field",
 	&"astral_field", &"sound_ring", &"ink_pool", &"vhs_fog", &"cleared", &"paper", &"oil",
+	&"canopy", &"time_mine", &"gold_fold",
 ]
 ## Fields that are not on the floor: Sera's Quantum Flicker (§10.2, §12.1) does not exempt her from these.
-const AIRBORNE: Array[StringName] = [&"divinity_field", &"astral_field", &"sound_ring"]
+const AIRBORNE: Array[StringName] = [&"divinity_field", &"astral_field", &"sound_ring", &"canopy"]
 
 
 static func default_field_for(element: StringName) -> StringName:

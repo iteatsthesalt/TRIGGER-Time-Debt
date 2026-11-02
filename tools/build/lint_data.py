@@ -80,6 +80,79 @@ for p in sorted((ROOT/"data/dialogue").rglob("*.json")):
                 if "goto" in o and o["goto"] not in labels: errors.append(f"{sid}: missing label {o['goto']}")
             if "battle" in c and c["battle"] != "" and c["battle"] not in encounters: errors.append(f"{sid}: unknown encounter {c['battle']}")
             if "learn" in c and c["learn"] not in techs: errors.append(f"{sid}: unknown tech {c['learn']}")
+# Effect ids (data/effects/effects.json, EffectTable): every technique `effect` is a bespoke handler
+# (TechEffects.HANDLED), a row of the table, or listed as flavour or pending; every enemy and boss action `effect`
+# is an EnemyEffects arm, a `summon:<key>` or listed under enemy_pending. An unknown id is an error, as is a row
+# that uses an op, condition, requirement or field kind the engine does not know.
+def _gd_names(path, const):
+    src = (ROOT / path).read_text()
+    m = re.search(rf"const {const}: Array\[(?:StringName|String)\] = \[(.*?)\]\n", src, re.S)
+    return set(re.findall(r'&?"([a-z0-9_]+)"', m.group(1))) if m else set()
+TECH_HANDLED = _gd_names("scripts/combat/tech_effects.gd", "HANDLED")
+ENEMY_HANDLED = _gd_names("scripts/combat/enemy_effects.gd", "HANDLED")
+FX_OPS = _gd_names("scripts/combat/effect_table.gd", "OPS")
+FX_PRE = _gd_names("scripts/combat/effect_table.gd", "PRE_OPS")
+FX_CONDS = _gd_names("scripts/combat/effect_table.gd", "CONDITIONS")
+FX_REQS = _gd_names("scripts/combat/effect_table.gd", "REQUIRES")
+fx = load(ROOT / "data/effects/effects.json") or {}
+fx_rows, fx_flavour, fx_pending = fx.get("techs", {}), fx.get("flavour", {}), fx.get("pending", {})
+def _cond_check(where, cond):
+    for k, v in cond.items():
+        if k not in FX_CONDS: errors.append(f"effects: {where} uses unknown condition {k}")
+        elif k == "any":
+            for sub in v: _cond_check(where, sub)
+for eid, r in fx_rows.items():
+    if eid in TECH_HANDLED: errors.append(f"effects: {eid} has a bespoke handler and a row")
+    if eid in fx_flavour or eid in fx_pending: errors.append(f"effects: {eid} has a row and is also listed as flavour/pending")
+    for k in r.get("requires", {}):
+        if k not in FX_REQS: errors.append(f"effects: {eid} requires unknown {k}")
+    for op in r.get("pre", []):
+        if op.get("op") not in FX_PRE: errors.append(f"effects: {eid} has unknown pre op {op.get('op')}")
+        _cond_check(eid, op.get("if", {}))
+    for op in r.get("after", []):
+        if op.get("op") not in FX_OPS: errors.append(f"effects: {eid} has unknown op {op.get('op')}")
+        if "kind" in op and op["kind"] not in FIELD_KINDS: errors.append(f"effects: {eid} field op has unknown kind {op['kind']}")
+        _cond_check(eid, op.get("if", {}))
+    for m in r.get("mult", []) + r.get("shave", []): _cond_check(eid, m.get("if", {}))
+    if r.get("resolve", "damage") not in ("damage", "support", "none"): errors.append(f"effects: {eid} resolve must be damage, support or none")
+for tid, t in techs.items():
+    eff = t.get("effect", "")
+    if eff and eff not in TECH_HANDLED and eff not in fx_rows and eff not in fx_flavour and eff not in fx_pending:
+        errors.append(f"tech {tid}: effect {eff} has no handler (TechEffects.HANDLED), no row in data/effects/effects.json and is not listed as flavour or pending")
+def _enemy_effect_ok(eff):
+    return not eff or eff.startswith("summon:") or eff in ENEMY_HANDLED or eff in fx.get("enemy_pending", {})
+for k, e in enemies.items():
+    for a in e.get("actions", []):
+        if not _enemy_effect_ok(a.get("effect", "")): errors.append(f"enemy {k} action {a.get('id')}: effect {a['effect']} has no EnemyEffects arm and is not listed in enemy_pending")
+_boss_files = {p.stem: load(p) for p in sorted((ROOT/"data/bosses").rglob("*.json"))}
+for bid, b in _boss_files.items():
+    for ph in (b or {}).get("phases", []):
+        for a in ph.get("actions", []):
+            if not _enemy_effect_ok(a.get("effect", "")): errors.append(f"boss {bid} action {a.get('id')}: effect {a['effect']} has no EnemyEffects arm and is not listed in enemy_pending")
+# Status ids the data names must have a reader in scripts/ (a has/stacks/data query, or StatusComponent's PERIODS /
+# MAX_STACKS tables), or be listed under status_pending: an unread status lands and does nothing.
+_status_src = "\n".join(p.read_text() for p in sorted((ROOT / "scripts").rglob("*.gd")))
+STATUS_READ = set(re.findall(r'(?:\bhas|\bstacks|\bdata)\(&"([a-z_0-9]+)"', _status_src))
+_sc_src = (ROOT / "scripts/combat/status_component.gd").read_text()
+for _table in ("PERIODS", "MAX_STACKS"):
+    _m = re.search(rf"const {_table} := \{{(.*?)\n\}}", _sc_src, re.S)
+    if _m: STATUS_READ |= set(re.findall(r'&"([a-z_0-9]+)"', _m.group(1)))
+def _status_ok(sid):
+    return sid in STATUS_READ or sid in fx.get("status_pending", {})
+for k, e in enemies.items():
+    for a in e.get("actions", []):
+        if a.get("status") and not _status_ok(a["status"]): errors.append(f"enemy {k} action {a.get('id')}: status {a['status']} has no reader and is not listed in status_pending")
+for bid, b in _boss_files.items():
+    for ph in (b or {}).get("phases", []):
+        for a in ph.get("actions", []):
+            if a.get("status") and not _status_ok(a["status"]): errors.append(f"boss {bid} action {a.get('id')}: status {a['status']} has no reader and is not listed in status_pending")
+for tid, t in techs.items():
+    if t.get("lv2_debuff") and not _status_ok(t["lv2_debuff"]): errors.append(f"tech {tid}: lv2_debuff {t['lv2_debuff']} has no reader")
+for eid, r in fx_rows.items():
+    for op in r.get("after", []):
+        if op.get("op") == "status" and not _status_ok(op.get("id", "")): errors.append(f"effects: {eid} applies status {op.get('id')}, which has no reader")
+if fx_pending or fx.get("enemy_pending"):
+    print(f"  effects: {len(fx_pending)} technique, {len(fx.get('enemy_pending', {}))} enemy effect and {len(fx.get('status_pending', {}))} status id(s) pending (data/effects/effects.json)")
 # The text layer (data/text/*.json, contract in docs/JOB_CHATGPT.md): a key that names nothing in the game is an
 # error; a game id without prose is a gap (warned, counted), so content can land before its text does.
 bosses = {}

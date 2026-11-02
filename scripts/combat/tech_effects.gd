@@ -1,5 +1,8 @@
 ## Special technique behaviours that bend the rules (Combat Laws Bible §11): Rewind, HOLD,
 ## Borrowed Future, Fall Break, taunts, the gourd, field makers. Standard damage techs never come here.
+## HANDLED are the bespoke handlers below; every other effect id is a row of data/effects/effects.json that
+## EffectSteps runs, or is listed there as flavour or pending (EffectTable.validation_errors, lint_data.py).
+## Enemy action effects are EnemyEffects.
 class_name TechEffects
 extends RefCounted
 
@@ -21,7 +24,7 @@ const DEFAULT_LV2 := {
 
 
 static func handles(effect: StringName) -> bool:
-	return HANDLED.has(effect)
+	return HANDLED.has(effect) or EffectTable.has_row(effect)
 
 
 static func default_lv2(element: StringName) -> StringName:
@@ -38,6 +41,8 @@ static func bonus_if_status(tech: TechDef) -> Dictionary:
 
 
 static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Dictionary:
+	if not HANDLED.has(tech.effect):
+		return EffectSteps.apply(c, tech, action)  # a row of the effect table
 	var actor: Node = action["attacker"]
 	var target: Node = action.get("primary", null)
 	var boost: int = int(action.get("boost", 0))
@@ -175,6 +180,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 						sh2.reveal_all()
 					var sc5 := StatusComponent.of(e)
 					if sc5 != null:
+						sc5.remove(&"cloaked")  # the Lucca Lens lights a cloaked body up (§13.5 Porcelain Raptor)
 						sc5.add(&"mercury_slow", 4.0)
 						sc5.add(&"magnetized", -1.0, 2)
 			info = _merge_damage(c, info, action)
@@ -424,42 +430,3 @@ static func _steal_from(c: BattleCoordinator, glenn: Node, target: Node, boost: 
 	glenn.set_meta("stole_this_battle", true)
 	return taken
 
-
-## Enemy actions with a named effect.
-static func apply_enemy_effect(c: BattleCoordinator, enemy: Node, action: Dictionary, hit_list: Array) -> void:
-	var eff: String = String(action.get("effect", ""))
-	if eff.begins_with("summon:"):
-		c.request_summon(StringName(eff.trim_prefix("summon:")), int(action.get("count", 2)), enemy)
-		return
-	match eff:
-		"bell_slow":
-			for u in c.party:
-				StatusRules.apply(c, u, &"slow", 6.0)
-		"repaint":
-			if not enemy.get_meta("repainted", false):
-				enemy.set_meta("repainted", true)
-				var sh := ShieldComponent.of(enemy)
-				if sh != null and not sh.is_broken:
-					sh.current_shield = mini(sh.max_total(), sh.current_shield + 1)
-					sh.shield_changed.emit(sh.current_shield, sh.max_total())
-		"heal_ally_plates":
-			for e in c.living_enemies():
-				if e != enemy:
-					var sh2 := ShieldComponent.of(e)
-					if sh2 != null and not sh2.is_broken:
-						sh2.current_shield = mini(sh2.max_total(), sh2.current_shield + int(action.get("plates", 2)))
-						sh2.shield_changed.emit(sh2.current_shield, sh2.max_total())
-					break
-		"oil_blight":
-			c.set_oil_blight(true)
-		"time_stop":
-			for h in hit_list:
-				StatusRules.apply(c, h["node"], &"time_stop", 3.0)
-		"grief":
-			for h in hit_list:
-				StatusRules.apply(c, h["node"], &"grief")
-		"fog":
-			var f: Dictionary = c.fields.add(&"vhs_fog", action.get("aim", c.arena_center), 4.0, 20.0, 1)
-			c.field_added.emit(f)
-			for h in hit_list:
-				StatusRules.apply(c, h["node"], &"blind", 10.0)

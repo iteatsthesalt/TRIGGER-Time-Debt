@@ -38,7 +38,7 @@ static func stands_in(c: BattleCoordinator, u: Node, kind: StringName) -> bool:
 
 static func tick(c: BattleCoordinator, dt: float) -> void:
 	c.fields.tick(dt)
-	for f in c.fields.fields:
+	for f in c.fields.fields.duplicate():  # a time mine leaves the list when it blows
 		f["accum"] = float(f["accum"]) + dt
 		match f["kind"]:
 			&"golden_patch":
@@ -57,7 +57,9 @@ static func tick(c: BattleCoordinator, dt: float) -> void:
 			&"ash_field":
 				if float(f["accum"]) >= 2.0:
 					f["accum"] = 0.0
-					for e in _living(c, c.enemies):
+					if int(f.get("owner_team", 0)) == 1:
+						EffectFields.ash_on_party(c, f)  # an enemy's Ash (the Daimyo's oil flood) slows the party
+					for e in (_living(c, c.enemies) if int(f.get("owner_team", 0)) == 0 else []):
 						if reaches(c, f, e):
 							var sh := ShieldComponent.of(e)
 							if sh != null and sh.temp_plates > 0:
@@ -78,6 +80,8 @@ static func tick(c: BattleCoordinator, dt: float) -> void:
 							var sc2 := StatusComponent.of(e)
 							if sc2 != null:
 								sc2.add(&"mercury_slow", 1.5)
+			_:
+				EffectFields.tick(c, f, dt)  # canopies, mines, gold folds, enemy oil, healing floors
 
 
 ## +1 temporary plate every 5 s to whoever owns it (capped at 20% of max HP), Ruin thawed 1% per 8 s (§12.5).
@@ -129,14 +133,16 @@ static func gauge_multiplier(c: BattleCoordinator, u: Node) -> float:
 
 
 ## The tags a party strike from `attacker` carries into `target`: a white blank a NULL Boost left erases them
-## all (neutral damage, no shave, no debuff, §7.4); a caustic floor the hit passes over adds [VITREOUS]. The
-## preview and the resolution both read this, so the plate shows what the hit does (§18.7 #23).
+## all (neutral damage, no shave, no debuff, §7.4); a caustic floor the hit passes over, or Vesper's Rose Window
+## on the attacker (§11.7), adds [VITREOUS]. The preview and the resolution both read this, so the plate shows
+## what the hit does (§18.7 #23).
 static func hit_tags(c: BattleCoordinator, attacker: Node, target: Node, tags: Array) -> Array:
 	var to: Vector3 = c.position_of(target)
 	for f in c.fields.fields:
 		if f["kind"] == &"white_blank" and bool(f.get("strips_tags", false)) and c.fields._inside(f, to):
 			return []
-	if not tags.has(CombatTags.VITREOUS) and c.fields.path_crosses(&"caustic_floor", c.position_of(attacker), to):
+	var a_sc := StatusComponent.of(attacker)
+	if not tags.has(CombatTags.VITREOUS) and ((a_sc != null and a_sc.has(&"rose_window")) or c.fields.path_crosses(&"caustic_floor", c.position_of(attacker), to)):
 		var out: Array = tags.duplicate()
 		out.append(CombatTags.VITREOUS)
 		return out

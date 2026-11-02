@@ -759,7 +759,7 @@ var knows_tech: Callable = Callable()
 func _actor_knows(actor: Node, t: TechDef) -> bool:
 	if cooldowns.left(actor, t.id) > 0 and not (t.recharge_field != &"" and FieldEffects.stands_in(self, actor, t.recharge_field)):
 		return false
-	if t.tier == TechDef.Tier.ULTIMATE and bank.ultimates_blocked:
+	if (t.tier == TechDef.Tier.ULTIMATE and bank.ultimates_blocked) or not EffectTable.requirements_met(self, actor, t):
 		return false
 	if knows_tech.is_valid():
 		return bool(knows_tech.call(actor, t))
@@ -809,7 +809,7 @@ func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int)
 		var t_tags: Array = FieldEffects.hit_tags(self, actor, e, tags)  # caustic floor, white blank (§7.4)
 		var p: Dictionary = {"shave": 0, "breaks": false, "already_broken": false, "after": 0}
 		if sh != null:
-			p = sh.preview_action(t_tags, hits * int(h["hits"]), ShaveBonus.against(self, actor, tech, boost, e, t_tags, bonus_if_status), st.actor_id, ShaveBonus.penalty(actor, t_tags))
+			p = sh.preview_action(t_tags, hits * int(h["hits"]), ShaveBonus.against(self, actor, tech, boost, e, t_tags, bonus_if_status), st.actor_id, ShaveBonus.penalty(actor, t_tags, tech))
 		p["hits"] = hits * int(h["hits"])
 		p["sealed"] = undamageable.has(e)  # a sealed body takes no HP damage; the plates still shave
 		p["damage"] = 0 if p["sealed"] else _estimate_damage(actor, tech, e, boost, hits * int(h["hits"]), int(h["rank"]), t_tags)
@@ -826,7 +826,7 @@ func _estimate_damage(actor: Node, tech: TechDef, target: Node, boost: int, hits
 	var broken: bool = sh != null and sh.is_broken
 	var pair: Dictionary = DamagePipeline.pick_stats(uses, a, t, (CombatConstants.BREAK_DEF_MULT if broken else 1.0))
 	var ctx := {
-		"atk": pair["atk"], "def": pair["def"], "base": base, "synergy": tech.synergy_base() if tech != null else 1.0,
+		"atk": pair["atk"], "def": pair["def"], "base": base * EffectTable.damage_mult(self, tech, boost, target), "synergy": tech.synergy_base() if tech != null else 1.0,
 		"party_synergy": party_synergy(), "home_canvas": _home_canvas(actor), "boost_level": boost,
 		"weakness": sh != null and sh.hits_weakness(tags), "broken": broken, "falloff_rank": rank,
 		"resist": DamagePipeline.resist_factor(tags, sh, t), "variance": 1.0,
@@ -985,7 +985,7 @@ func _execute_enemy_action(e: Node, action: Dictionary) -> void:
 		var dealt: int = EnemyStrike.resolve(self, e, t, action, int(h["hits"]), int(h["rank"]))
 		info["damage"][t] = dealt
 	if String(action.get("effect", "")) != "":
-		TechEffects.apply_enemy_effect(self, e, action, hit_list)
+		EnemyEffects.apply(self, e, action, hit_list)
 	action_executed.emit(info)
 	_last_action_info = info
 	if state == State.EXECUTING:
@@ -1056,7 +1056,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 		var tst := CombatantStats.of(t)
 		var sh := ShieldComponent.of(t)
 		var t_tags: Array = FieldEffects.hit_tags(self, attacker, t, tags)  # caustic floor, white blank (§7.4)
-		var penalty: int = ShaveBonus.penalty(attacker, t_tags)
+		var penalty: int = ShaveBonus.penalty(attacker, t_tags, tech)
 		var total: int = 0
 		var shaved: int = 0
 		var bonus_left: int = ShaveBonus.against(self, attacker, tech, boost, t, t_tags, bonus_if_status)

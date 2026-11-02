@@ -16,6 +16,7 @@ var bosses: Dictionary = {}
 var props: Dictionary = {}        ## prop key StringName -> Dictionary (data/props: universe, height_m, solid …)
 var text: Dictionary = {}         ## text layer: kind (bestiary, techs, items, ambient, codex) -> Dictionary
 var text_gaps: PackedStringArray = [] ## game ids that have no text yet (a warning, not an error)
+var effects: Dictionary = {}      ## data/effects/effects.json: technique effect rows, flavour, pending (EffectTable)
 var errors: PackedStringArray = []
 var loaded: bool = false
 
@@ -50,6 +51,9 @@ func load_all() -> void:
 				errors.append("duplicate tech id %s" % t.id)
 			techs[t.id] = t
 	_check_tech_signatures()
+	var fx: Variant = _load_json("res://data/effects/effects.json")
+	effects = fx if fx is Dictionary else {}
+	errors.append_array(EffectTable.validation_errors(techs, effects))
 	for d in _json_files("res://data/enemies"):
 		var list2: Array = d.get("enemies", [d]) if d is Dictionary else []
 		for entry in list2:
@@ -101,6 +105,7 @@ func load_all() -> void:
 		var d3: Variant = _load_json(path)
 		if d3 is Dictionary:
 			text[StringName(path.get_file().get_basename())] = d3
+	errors.append_array(EffectTable.enemy_errors(enemies, bosses))
 	_check_text_layer()
 	loaded = true
 	if not errors.is_empty():

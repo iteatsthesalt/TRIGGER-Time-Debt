@@ -46,7 +46,8 @@ static func context(c: BattleCoordinator, action: Dictionary, attacker: Node, be
 	var def_mult: float = (CombatConstants.BREAK_DEF_MULT if was_broken else 1.0) * (tsc.def_multiplier(c._is_metal(t)) if tsc != null else 1.0)
 	var pair: Dictionary = DamagePipeline.pick_stats(int(action.get("uses", TechDef.Uses.BEST)), best, tst, def_mult)
 	var ctx := {
-		"atk": pair["atk"], "def": pair["def"], "base": float(action.get("base", 1.0)),
+		"atk": pair["atk"], "def": pair["def"],
+		"base": float(action.get("base", 1.0)) * EffectTable.damage_mult(c, action.get("tech", null), int(action.get("boost", 0)), t),
 		"synergy": float(action.get("synergy", 1.0)),
 		"party_synergy": c.party_synergy(), "home_canvas": c._home_canvas(attacker),
 		"boost_level": int(action.get("boost", 0)), "in_field": c._in_divinity_or_tether(attacker),
@@ -62,6 +63,7 @@ static func context(c: BattleCoordinator, action: Dictionary, attacker: Node, be
 	if tsc != null and tsc.has(&"nulled") and tags.has(CombatTags.ASTRAL) and c._crono_galaxy(attacker):
 		ctx["base"] = float(ctx["base"]) * 1.5
 	null_rule(ctx, tags, tsc)
+	EffectTable.adjust_hit(ctx, tsc)  # The Last Joke's crack, the Gold Leaf washi pocket
 	return ctx
 
 

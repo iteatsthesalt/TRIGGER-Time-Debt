@@ -17,6 +17,10 @@ static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, 
 	var telegraphed: bool = float(action.get("wind_up_s", 0.0)) > 0.0
 	var locked: bool = bool(action.get("probability_lock", false))
 	var keep: float = 1.0 - CombatConstants.REFRACTED_SPLIT if bool(action.get("refracted", false)) else 1.0
+	var redirect: StringName = EnemyEffects.redirect(e)  # Ruin Elastic's decoy, Masque Feint's undermask
+	if redirect == &"decoyed":
+		c.strike_resolved.emit(e, t, {"damage": 0, "decoy": true, "tags": tags})
+		return 0
 	for i in hits:
 		if not tst.is_alive():
 			break
@@ -48,10 +52,14 @@ static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, 
 			"vulnerable": tst.is_vulnerable_to(tags), "resist": (CombatConstants.RESIST_MULT if tst.is_resistant_to(tags) else 1.0),
 			"taken_mult": (tsc.damage_taken_multiplier() if tsc != null else 1.0) * keep,
 		}
-		if tst.null_shield or tst.true_null:
-			ctx["taken_mult"] = float(ctx["taken_mult"]) * (0.8 if tst.null_shield else 1.0)
+		var shielded: bool = tst.null_shield or (tsc != null and tsc.has(&"null_shield"))  # Omega Triple: for the fight
+		if shielded or tst.true_null:
+			ctx["taken_mult"] = float(ctx["taken_mult"]) * (0.8 if shielded else 1.0)
 		var r: Dictionary = DamagePipeline.compute_hit(ctx)
 		var dmg: int = int(r["damage"])
+		if redirect == &"mirrored":
+			c.strike_resolved.emit(e, e, {"damage": est.apply_damage(dmg, true), "reflected": true, "tags": tags})
+			continue
 		# Marle's Ward and Glass Ward halve the hit. (The Mycelia net's 15% share, §12.5, is not modelled yet.)
 		if tsc != null and tsc.has(&"ward"):
 			dmg = roundi(float(dmg) * 0.5)

@@ -26,6 +26,7 @@ static func against(c: BattleCoordinator, actor: Node, tech: TechDef, boost: int
 		b += int(c.ens_rings[actor].get("shave", 1))
 	if target == null:
 		return b
+	b += EffectTable.shave_bonus(c, tech, boost, target)  # the effect table's bonuses (Lily Lancets, Spore Rail, ...)
 	var tsc := StatusComponent.of(target)
 	for sid in bonus_if_status.keys():
 		if tsc != null and tsc.has(sid):
@@ -36,8 +37,11 @@ static func against(c: BattleCoordinator, actor: Node, tech: TechDef, boost: int
 
 
 ## Shave the actor's hits lose on every matching strike (§12.2): ranged [BOW][GUN] hits under BLIND lose 1,
-## Crono's ASTRAL hits under Sticky Ash lose 1. Read by the preview and the resolution alike.
-static func penalty(actor: Node, tags: Array) -> int:
+## Crono's ASTRAL hits under Sticky Ash lose 1. Read by the preview and the resolution alike. A technique whose
+## row says it shaves nothing (Mycelia Time Lapse) loses every shave and keeps its weakness damage.
+static func penalty(actor: Node, tags: Array, tech: TechDef = null) -> int:
+	if EffectTable.shaves_nothing(tech):
+		return 999
 	var sc := StatusComponent.of(actor)
 	if sc == null:
 		return 0

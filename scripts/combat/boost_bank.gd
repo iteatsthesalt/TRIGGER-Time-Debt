@@ -13,6 +13,8 @@ var gain_locked: bool = false
 var ultimates_blocked: bool = false
 ## Carnival of Souls may exceed the cap by one until the next ally turn ends.
 var overflow_allowance: int = 0
+## Turn ends the allowance survives (the casters' own, then the next ally's): Carnival of Souls sets it.
+var overflow_turns: int = 0
 ## The revive core owes this many BP (it fires with an empty pool).
 var owed: int = 0
 
@@ -22,6 +24,7 @@ func begin_battle() -> void:
 	gain_locked = false
 	ultimates_blocked = false
 	overflow_allowance = 0
+	overflow_turns = 0
 	owed = 0
 	changed.emit(bp, max_bp)
 
@@ -80,6 +83,10 @@ func charge_or_owe(n: int) -> void:
 
 
 func clamp_overflow() -> void:
+	if overflow_turns > 1:
+		overflow_turns -= 1
+		return
+	overflow_turns = 0
 	overflow_allowance = 0
 	if bp > max_bp:
 		bp = max_bp

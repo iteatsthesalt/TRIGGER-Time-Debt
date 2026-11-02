@@ -66,6 +66,76 @@ def wrap_blend(a, border=12):
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
+IMPORT_TEMPLATE = """[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://{uid}"
+path="res://.godot/imported/{name}-{md5}.ctex"
+metadata={{
+"vram_texture": false
+}}
+
+[deps]
+
+source_file="res://{rel}"
+dest_files=["res://.godot/imported/{name}-{md5}.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
+compress/hdr_compression=1
+compress/normal_map={normal}
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/channel_remap/red=0
+process/channel_remap/green=1
+process/channel_remap/blue=2
+process/channel_remap/alpha=3
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0
+"""
+
+
+def write_import(png_path, normal=False):
+    """The Godot .import sidecar of a world texture (the breakdown's section 12 texture row): lossless,
+    never VRAM-compressed even after its first 3D use (detect_3d/compress_to=0), mipmaps on because
+    SceneKit samples world textures with a mipmapped anisotropic filter. Keeps an existing uid."""
+    import hashlib
+    rel = os.path.relpath(png_path, ROOT).replace(os.sep, "/")
+    imp = png_path + ".import"
+    uid = None
+    if os.path.exists(imp):
+        with open(imp) as f:
+            for line in f:
+                if line.startswith("uid="):
+                    uid = line.strip().split("uid://")[1].rstrip('"')
+    if uid is None:
+        h = hashlib.sha1(rel.encode()).hexdigest()
+        alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
+        n = int(h[:16], 16)
+        uid = ""
+        for _ in range(13):
+            uid += alphabet[n % 36]
+            n //= 36
+    md5 = hashlib.md5(("res://" + rel).encode()).hexdigest()
+    with open(imp, "w") as f:
+        f.write(IMPORT_TEMPLATE.format(uid=uid, name=os.path.basename(png_path), md5=md5, rel=rel,
+                                       normal=1 if normal else 0))
+
+
 def import_texture(src, name, universe="u0", colours=15, border=12, strength=1.6, tool="", model="", seed="", prompt="", note=""):
     img = fetch_job(src) if UUID.match(src) else Image.open(src).convert("RGB")
     tile = to_material_palette(img, colours)
@@ -76,9 +146,13 @@ def import_texture(src, name, universe="u0", colours=15, border=12, strength=1.6
         for y in range(reps):
             sheet.paste(tile, (x * tile.width, y * tile.height))
     os.makedirs(OUT, exist_ok=True)
-    sheet.save(os.path.join(OUT, f"{name}_albedo.png"), optimize=True)
+    albedo_path = os.path.join(OUT, f"{name}_albedo.png")
+    normal_path = os.path.join(OUT, f"{name}_normal.png")
+    sheet.save(albedo_path, optimize=True)
     lum = np.asarray(sheet.convert("L")).astype(float) / 255.0
-    pixel.normal_from_height(pixel.to_img(lum), strength).save(os.path.join(OUT, f"{name}_normal.png"), optimize=True)
+    pixel.normal_from_height(pixel.to_img(lum), strength).save(normal_path, optimize=True)
+    write_import(albedo_path)
+    write_import(normal_path, normal=True)
     new = not os.path.exists(MANIFEST)
     os.makedirs(os.path.dirname(MANIFEST), exist_ok=True)
     with open(MANIFEST, "a", newline="") as f:

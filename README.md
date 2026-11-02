@@ -171,7 +171,7 @@ falls back to field/base, and `ActorSprite.set_tier(&"action")` / `set_variant(&
 **A prop.** Props are PixelLab *objects* (Nich's Batch 4d / Batch 6), placed as lit billboards with a height in
 metres. Declare it first in `data/props/props.json` (`key` = `prp_u<n>_<name>`, `universe`, `height_m` judged
 from Reference Bible §1.2 / §5.7 / §11.7, `solid`, optional `y_offset`, `anims` {name: {match, fps, loop,
-holds}}, `emission`, `footprint`, `pending`, `request`, `notes`; unknown fields are errors), then import it:
+holds}}, `emission`, `footprint` (`[w, d]` one collision box, `"posts"` two uprights at the drawn ends with the opening clear, or a list of `[w, d, x_offset]` boxes), `pending`, `request`, `notes`; unknown fields are errors), then import it:
 `python3 tools/art/import_pixellab.py <object_id|url> prp_u0_hearth --request TRI-57` (a `prp_` key or an
 `/objects/` URL takes the object route; `--kind object` forces it). That writes
 `assets/props/u<n>/<key>/<key>.png` (one row per rotation, columns = idle then each clip; a single clip becomes

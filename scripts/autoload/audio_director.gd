@@ -181,6 +181,26 @@ func _find_sfx(id: String) -> AudioStream:
 	return _load(variants[randi() % variants.size()])
 
 
+## A music sting (victory, defeat, overcap): audio/music/mus_stings_<id>.ogg, played once on the Music
+## bus beside the current track rather than through play_music, so the field music can follow it.
+func play_sting(id: String, volume_db: float = 0.0) -> void:
+	var stream: AudioStream = find_sting(id)
+	if stream == null:
+		push_warning("Audio: no sting %s under %s" % [id, MUSIC_DIR])
+		return
+	var p := AudioStreamPlayer.new()
+	p.bus = &"Music"
+	p.stream = stream
+	p.volume_db = volume_db
+	p.finished.connect(p.queue_free)
+	add_child(p)
+	p.play()
+
+
+func find_sting(id: String) -> AudioStream:
+	return _load("%s/mus_stings_%s.ogg" % [MUSIC_DIR, id])
+
+
 func play_voice(speaker: String, line_id: String) -> void:
 	var stream: AudioStream = _load("%s/%s/%s.ogg" % [VO_DIR, speaker, line_id])
 	if stream == null:

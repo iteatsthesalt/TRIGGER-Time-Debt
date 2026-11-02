@@ -385,6 +385,11 @@ func advance(delta: float) -> void:
 	var next: Node = _pick_party_at_gate()
 	if next != null:
 		_open_window(next, true)
+	else:
+		# A parked ally nobody can relieve gets the floor back without new BP (§3.4, SyncHoldRules).
+		var stranded: Node = SyncHoldRules.stranded(self)
+		if stranded != null:
+			_open_window(stranded, false)
 	if not any_parked and not ready_pool.is_empty():
 		ready_pool_changed.emit(ready_pool)
 
@@ -801,14 +806,14 @@ func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int)
 		shape = {"shape": tech.shape, "radius": tech.radius, "length": tech.length, "width": tech.width, "inner_radius": tech.inner_radius, "beams": tech.beams, "scale": tech.shape_scale(boost)}
 	var aim_point: Vector3 = position_of(target) if target != null else aim
 	var found: Array = TacticalPositioner.targets_in_shape(shape, position_of(actor), aim_point, _enemy_candidates(), _blockers())
-	var bonus: int = _flat_bonus(actor, tech, boost)
+	var bonus_if_status: Dictionary = TechEffects.bonus_if_status(tech)
 	var out: Dictionary = {}
 	for h in found:
 		var e: Node = h["node"]
 		var sh := ShieldComponent.of(e)
 		var p: Dictionary = {"shave": 0, "breaks": false, "already_broken": false, "after": 0}
 		if sh != null:
-			p = sh.preview_action(tags, hits * int(h["hits"]), bonus, st.actor_id)
+			p = sh.preview_action(tags, hits * int(h["hits"]), ShaveBonus.against(self, actor, tech, boost, e, tags, bonus_if_status), st.actor_id)
 		p["hits"] = hits * int(h["hits"])
 		p["damage"] = _estimate_damage(actor, tech, e, boost, hits * int(h["hits"]), int(h["rank"]), tags)
 		out[e] = p
@@ -839,7 +844,7 @@ func party_synergy() -> float:
 	if sera == null:
 		sera = hover_sera
 	if sera == null:
-		return CombatConstants.PARTY_SYNERGY_SERA if sera_present_in_story and false else CombatConstants.PARTY_SYNERGY_ABSENT
+		return CombatConstants.PARTY_SYNERGY_ABSENT  # 1.00: she is neither active nor hovering (§6.2)
 	var sol := SolidityComponent.of(sera)
 	if sol != null and sol.is_phased():
 		return CombatConstants.PARTY_SYNERGY_PHASED
@@ -1111,7 +1116,6 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 	else:
 		found = TacticalPositioner.targets_in_shape(shape, position_of(attacker), aim, _enemy_candidates(), _blockers(), extra)
 	var info := {"kind": action["kind"], "attacker": attacker, "casters": casters, "tech": tech, "boost": boost, "targets": [], "damage": {}, "shave": {}, "breaks": [], "tags": tags}
-	var bonus: int = _flat_bonus(attacker, tech, boost)
 	var a_stats := CombatantStats.of(attacker)
 	# Use the best relevant attack stat among the actors (§8.7).
 	var best_caster: CombatantStats = a_stats
@@ -1119,10 +1123,6 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 		var cs := CombatantStats.of(c)
 		if cs != null and maxf(cs.p_atk, cs.e_atk) > maxf(best_caster.p_atk, best_caster.e_atk):
 			best_caster = cs
-	var ens: bool = ens_rings.has(attacker)
-	if ens:
-		bonus += int(ens_rings[attacker].get("shave", 1))
-		ens_rings.erase(attacker)
 	var perfect: bool = bool(_perfect_frame_pending.get(attacker, false))
 	_perfect_frame_pending.erase(attacker)
 	var hits_per: int = int(action.get("hits", 1))
@@ -1145,14 +1145,8 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 		var tsc := StatusComponent.of(t)
 		var total: int = 0
 		var shaved: int = 0
-		var bonus_left: int = bonus
-		for sid in bonus_if_status.keys():
-			if tsc != null and tsc.has(sid):
-				bonus_left += int(bonus_if_status[sid])
+		var bonus_left: int = ShaveBonus.against(self, attacker, tech, boost, t, tags, bonus_if_status)
 		var n_hits: int = hits_per * maxi(1, int(h["hits"]))
-		var in_puddle: bool = tags.has(CombatTags.ASTRAL) and fields.has_kind_at(&"watercolour_puddle", position_of(t))
-		if in_puddle:
-			bonus_left += 1
 		for i in n_hits:
 			if not tst.is_alive():
 				break
@@ -1166,18 +1160,20 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 				if res["caused_break"]:
 					info["breaks"].append(t)
 					last_break_signature = sh.break_signature
+			# §6.4 / §5.4: damage is applied before the shave, so the strike that lands the Break is
+			# resolved against the unbroken target (full DEF, no crit); the strikes after it see it Broken.
 			var broken_now: bool = sh != null and sh.is_broken
-			if sh != null and sh.shield_only and not broken_now:
+			if sh != null and sh.shield_only and not was_broken:
 				strike_resolved.emit(attacker, t, {"damage": 0, "shield_only": true, "shave": res["shaved"], "tags": tags})
 				continue
 			var pair: Dictionary = DamagePipeline.pick_stats(int(action.get("uses", TechDef.Uses.BEST)), best_caster, tst,
-				(CombatConstants.BREAK_DEF_MULT if (was_broken or broken_now) else 1.0) * (tsc.def_multiplier(_is_metal(t)) if tsc != null else 1.0))
+				(CombatConstants.BREAK_DEF_MULT if was_broken else 1.0) * (tsc.def_multiplier(_is_metal(t)) if tsc != null else 1.0))
 			var ctx := {
 				"atk": pair["atk"], "def": pair["def"], "base": float(action.get("base", 1.0)),
 				"synergy": float(action.get("synergy", 1.0)) * _crit_or_guaranteed(action),
 				"party_synergy": party_synergy(), "home_canvas": _home_canvas(attacker),
 				"boost_level": boost, "in_field": _in_divinity_or_tether(attacker),
-				"weakness": bool(res["hit_weakness"]), "broken": was_broken or broken_now,
+				"weakness": bool(res["hit_weakness"]), "broken": was_broken,
 				"crit": bool(action.get("guaranteed_crit", false)) or _oil_drinker_crit(attacker, t),
 				"perfect": perfect, "falloff_rank": int(h["rank"]), "variance": _variance(),
 				"resist": DamagePipeline.resist_factor(tags, sh, tst), "ledge": 0.0,
@@ -1214,6 +1210,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 		info["shave"][t] = shaved
 		if boost >= 2 and tst.is_alive():
 			_apply_lv2_debuff(tech, tags, t)
+	ens_rings.erase(attacker)
 	if boost >= 4:
 		_leave_residual(tech, tags, action, found)
 	_canvas_clash(tags, aim, shape, attacker)
@@ -1269,15 +1266,6 @@ func _resolve_support(action: Dictionary) -> Dictionary:
 	action_executed.emit(info)
 	_last_action_info = info
 	return info
-
-
-func _flat_bonus(_actor: Node, tech: TechDef, boost: int) -> int:
-	var b: int = 0
-	if boost >= 3:
-		b += CombatConstants.BOOST_LV3_SHAVE_BONUS
-	if tech != null:
-		b += tech.flat_shave_bonus
-	return b
 
 
 func _pair_synergy(casters: Array) -> float:

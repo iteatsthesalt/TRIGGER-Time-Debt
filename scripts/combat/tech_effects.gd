@@ -28,6 +28,15 @@ static func default_lv2(element: StringName) -> StringName:
 	return DEFAULT_LV2.get(element, &"")
 
 
+## The extra shave a technique gets against a status its target carries (status -> bonus). The
+## resolution reads it when the action is built and the preview reads it while aiming, so the plate
+## shows the same shave the hit then does (§18.7 #23).
+static func bonus_if_status(tech: TechDef) -> Dictionary:
+	if tech != null and tech.effect == &"tachyon_needle":
+		return {&"magnetized": 1}
+	return {}
+
+
 static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Dictionary:
 	var actor: Node = action["attacker"]
 	var target: Node = action.get("primary", null)
@@ -128,7 +137,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 		&"tachyon_needle":
 			actor.set_meta("used_tachyon_this_turn", true)
 			action["gauge_push_per_hit"] = 13.0 if boost >= 3 else 8.0
-			action["bonus_if_status"] = {&"magnetized": 1}
+			action["bonus_if_status"] = bonus_if_status(tech)
 			info = _merge_damage(c, info, action)
 		&"ward":
 			if target == null:

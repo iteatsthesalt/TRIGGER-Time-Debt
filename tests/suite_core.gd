@@ -26,6 +26,7 @@ func run() -> void:
 		test_shard_doll_split_holds_breaks_for_the_director,
 		test_damage_state_multipliers,
 		test_damage_broken_def_and_crit,
+		test_breaking_strike_uses_pre_break_defence,
 		test_falloff_and_perfect_frame,
 		test_astral_displacement,
 		test_positioner_counts_every_battler,
@@ -39,6 +40,9 @@ func run() -> void:
 		test_sera_overflow_to_crono,
 		test_status_durations_and_turns,
 		test_coordinator_sync_hold_freezes_time,
+		test_coordinator_sync_hold_without_partner_is_reprompted,
+		test_coordinator_preview_equals_resolution,
+		test_battle_roster_bench_and_hover,
 		test_coordinator_gate_grants_bp_and_attack_breaks,
 		test_coordinator_tech_costs_and_strain,
 		test_coordinator_rewind_restores_turn_start,
@@ -64,6 +68,9 @@ func run() -> void:
 		test_coordinator_add_enemy_and_undamageable,
 		test_sprite_library_tiers_and_variants,
 		test_props_data_sheets_and_fallback,
+		test_prop_footprints_posts_and_boxes,
+		test_audio_stings_resolve,
+		test_camera_rig_restores_scene_pitch,
 	]
 	for t in tests:
 		_current = t.get_method()
@@ -431,6 +438,48 @@ func test_damage_broken_def_and_crit() -> void:
 	check_near(float(r2["damage"]), 80.0 * 1.5, 0.5, "no separate Break multiplier: only ×1.5")
 
 
+## §6.4 / §5.4: damage is applied before the shave, so the strike that lands the Break is resolved
+## against the unbroken target (full DEF, no crit) and the strikes after it see it Broken.
+func test_breaking_strike_uses_pre_break_defence() -> void:
+	var c := _coord()
+	var crono := _party_member(&"crono", 12, Vector3(-3, 0, 0))
+	var e := _enemy(&"mite", 12, Vector3(1, 0, 0), 1, ["SWORD", "FIRE"], {"hp": 100000})
+	_start(c, [crono], [e])
+	_advance_until_window(c)
+	var a := CombatantStats.of(crono)
+	var t := CombatantStats.of(e)
+	var ctx := {"atk": a.p_atk, "def": t.p_def, "base": 1.0, "party_synergy": c.party_synergy(), "home_canvas": c._home_canvas(crono), "weakness": true, "variance": 1.0}
+	var first: int = int(DamagePipeline.compute_hit(ctx)["damage"])
+	ctx["def"] = t.p_def * CombatConstants.BREAK_DEF_MULT
+	ctx["broken"] = true
+	var second: int = int(DamagePipeline.compute_hit(ctx)["damage"])
+	var hits: Array = []
+	c.strike_resolved.connect(func(_a: Node, _t: Node, info: Dictionary) -> void: hits.append(info))
+	c.cmd_attack(crono, e, 0)
+	check_eq(hits.size(), 2, "two sword strikes resolved")
+	if hits.size() == 2:
+		check(bool(hits[0]["break"]) and not bool(hits[0]["crit"]), "the first strike Breaks and is not a critical")
+		check_eq(int(hits[0]["damage"]), first, "it is resolved against the unbroken DEF")
+		check(bool(hits[1]["crit"]), "the next strike sees a Broken target")
+		check_eq(int(hits[1]["damage"]), second, "DEF halved and ×1.5")
+		check(second > first, "so the reward follows the Break, it does not precede it")
+	# Worked example 2 at the coordinator: Astral Slash Lv3 Breaks a 2-plate ASTRAL-weak target in one
+	# strike and deals the bible's unbroken number (plus displacement), not ×1.5 of it.
+	var c2 := _coord()
+	var crono2 := _party_member(&"crono", 12, Vector3(-3, 0, 0))
+	var mite := _enemy(&"mite", 12, Vector3(1, 0, 0), 2, ["ASTRAL", "FERRO"], {"hp": 100000})
+	_start(c2, [crono2], [mite])
+	_advance_until_window(c2)
+	c2.bank.bp = 5
+	var a2 := CombatantStats.of(crono2)
+	var t2 := CombatantStats.of(mite)
+	var ex2 := {"atk": (a2.p_atk + a2.e_atk) * 0.5, "def": (t2.p_def + t2.e_def) * 0.5, "base": 1.4, "party_synergy": c2.party_synergy(), "home_canvas": c2._home_canvas(crono2), "boost_level": 3, "weakness": true, "astral": true, "target_hp": t2.hp, "variance": 1.0}
+	var want: int = int(DamagePipeline.compute_hit(ex2)["damage"])
+	var r: Dictionary = c2.cmd_tech(crono2, &"astral_slash", mite, Vector3.ZERO, 3)
+	check(ShieldComponent.of(mite).is_broken, "1 match + Lv3 bonus Breaks")
+	check_eq(int(r["info"]["damage"][mite]), want, "the breaking strike deals the unbroken number (worked example 2)")
+
+
 func test_falloff_and_perfect_frame() -> void:
 	check_near(DamagePipeline.falloff(0, 0), 1.0, 0.0001, "nearest 1.0")
 	check_near(DamagePipeline.falloff(1, 0), 0.75, 0.0001, "second 0.75")
@@ -670,6 +719,125 @@ func test_coordinator_sync_hold_freezes_time() -> void:
 	check(c.battle_time > bt, "time resumes with a parked ally")
 	check(c.ready_pool.has(crono), "he is in the Ready Pool")
 	check(c.request_command(crono) or c.state == BattleCoordinator.State.COMMAND_WAIT, "he can be woken")
+
+
+## §3.4 presumes a later window: a lone ally (the Prologue party), every ally parked, or a partner KO'd
+## while one ally waits must not leave the timeline running with nobody able to act (SyncHoldRules).
+func test_coordinator_sync_hold_without_partner_is_reprompted() -> void:
+	var c := _coord()
+	var crono := _party_member(&"crono", 5, Vector3(-3, 0, 0))
+	var e := _enemy(&"mote", 1, Vector3(3, 0, 0), 3, ["WIND"], {"hp": 100000})
+	_start(c, [crono], [e])
+	_advance_until_window(c)
+	check(not SyncHoldRules.can_hold(c, crono), "the deck does not offer Sync Hold to a lone ally")
+	c.cmd_sync_hold(crono)
+	var bp: int = c.bank.bp
+	var a: Node = _advance_until_window(c, 5.0)
+	check(a == crono and c.state == BattleCoordinator.State.COMMAND_WAIT, "a parked ally nobody can relieve is re-prompted")
+	check_eq(c.bank.bp, bp, "with no second gate BP")
+	check(c.ready_pool.has(crono), "still parked at 99 until he acts")
+	# With a living partner the hold is offered; if that partner falls while he waits, he is woken.
+	var c2 := _coord()
+	var crono2 := _party_member(&"crono", 5, Vector3(-3, 0, 0))
+	var sera := _party_member(&"sera", 5, Vector3(-3, 0, 1))
+	var e2 := _enemy(&"mote", 1, Vector3(3, 0, 0), 3, ["WIND"], {"hp": 100000})
+	_start(c2, [crono2, sera], [e2])
+	var first: Node = _advance_until_window(c2)
+	check(SyncHoldRules.can_hold(c2, first), "offered while a partner can still arrive")
+	c2.cmd_sync_hold(first)
+	var other: Node = sera if first == crono2 else crono2
+	CombatantStats.of(other).apply_damage(100000, true)
+	var again: Node = _advance_until_window(c2, 5.0)
+	check(again == first, "the partner's KO re-prompts the parked ally")
+	# Both parked: the first in the pool gets the floor back.
+	var c3 := _coord()
+	var crono3 := _party_member(&"crono", 5, Vector3(-3, 0, 0))
+	var sera3 := _party_member(&"sera", 5, Vector3(-3, 0, 1))
+	var e3 := _enemy(&"mote", 1, Vector3(3, 0, 0), 3, ["WIND"], {"hp": 100000})
+	_start(c3, [crono3, sera3], [e3])
+	var one: Node = _advance_until_window(c3)
+	c3.cmd_sync_hold(one)
+	var two: Node = _advance_until_window(c3)
+	check(two != one, "the partner arrives with the first parked")
+	check(not SyncHoldRules.can_hold(c3, two), "the last unparked ally may not park too")
+	c3.cmd_sync_hold(two)
+	var woke: Node = _advance_until_window(c3, 5.0)
+	check(woke == one, "with every ally parked the first parked is re-prompted")
+
+
+## §18.7 #23: the Shield Plate preview equals the shave the hit then does, including an armed Ens ring,
+## a technique's bonus against a status and the watercolour puddle (ShaveBonus is read by both).
+func test_coordinator_preview_equals_resolution() -> void:
+	var c := _coord()
+	var crono := _party_member(&"crono", 5, Vector3(-3, 0, 0))
+	var e := _enemy(&"x", 5, Vector3(3, 0, 0), 6, ["SWORD"], {"hp": 100000})
+	_start(c, [crono], [e])
+	_advance_until_window(c)
+	c.ens_rings[crono] = {"left": 5.0, "shave": 1}
+	var p: Dictionary = c.preview(crono, null, e, c.position_of(e), 0)
+	check_eq(int(p[e]["shave"]), 3, "the preview counts the Ens ring: 2 sword strikes + 1")
+	var r: Dictionary = c.cmd_attack(crono, e, 0)
+	check_eq(int(r["info"]["shave"][e]), int(p[e]["shave"]), "the hit shaves exactly what the plate said")
+	check(not c.ens_rings.has(crono), "the ring is spent by the action")
+	# Tachyon Needle vs a MAGNETIZED target: +1 in the plate and in the hit.
+	var c2 := _coord()
+	var sera := _party_member(&"sera", 10, Vector3(-3, 0, 0))
+	var m := _enemy(&"m", 10, Vector3(3, 0, 0), 8, ["PIERCING"], {"hp": 100000})
+	_start(c2, [sera], [m])
+	_advance_until_window(c2)
+	StatusComponent.of(m).add(&"magnetized", 10.0)
+	var needle: TechDef = c2.tech_library[&"tachyon_needle"]
+	var p2: Dictionary = c2.preview(sera, needle, m, c2.position_of(m), 0)
+	check_eq(int(p2[m]["shave"]), 4, "3 piercing strikes + 1 against MAGNETIZED")
+	var r2: Dictionary = c2.cmd_tech(sera, &"tachyon_needle", m, c2.position_of(m), 0)
+	check_eq(int(r2["info"]["shave"][m]), int(p2[m]["shave"]), "the needle shaves what the plate said")
+
+
+## The bench and Hover Support come from the roster (§3.1, §3.6, §4.2): BattleRoster.plan is the rule,
+## fed a fake roster here; the coordinator's Swap, swap-KO'd and hover paths run on what it returns.
+func test_battle_roster_bench_and_hover() -> void:
+	var p: Dictionary = BattleRoster.plan([&"crono", &"sera", &"krona"], [&"crono"], "with")
+	check(p["bench"].has(&"sera") and p["bench"].has(&"krona") and not p["hover"], "with: everyone recruited and not active is on the bench")
+	var p2: Dictionary = BattleRoster.plan([&"crono", &"sera", &"krona"], [&"crono"], "hover_support")
+	check(bool(p2["hover"]) and not p2["bench"].has(&"sera") and p2["bench"].has(&"krona"), "hover_support: Sera hovers, Krona waits")
+	var p3: Dictionary = BattleRoster.plan([&"crono", &"sera"], [&"crono"], "absent")
+	check(p3["bench"].is_empty() and not p3["hover"], "absent: she is nowhere")
+	var p4: Dictionary = BattleRoster.plan([&"crono", &"sera"], [&"sera", &"crono"], "hover")
+	check(p4["bench"].is_empty() and not p4["hover"], "an active Sera never hovers")
+	check_eq(Game.bench_ids().size(), BattleRoster.plan(Game.recruited, Game.active_party, Game.sera_in_story)["bench"].size(), "Game.bench_ids agrees with the plan")
+	# Swap from the bench, with Sera hovering.
+	var c := _coord()
+	var crono := _party_member(&"crono", 10, Vector3(-2, 0, 0))
+	var krona := _party_member(&"krona", 10, Vector3(-9, 0, 0))
+	var sera := _party_member(&"sera", 10, Vector3(-9, 0, 2))
+	var e := _enemy(&"x", 10, Vector3(3, 0, 0), 30, ["FIRE"], {"hp": 100000})
+	_start(c, [crono], [e], {"bench": [krona], "hover_sera": sera})
+	check_near(c.party_synergy(), 1.10, 0.001, "1.10 with Sera hovering (§6.2)")
+	var a: Node = _advance_until_actor(c, &"crono")
+	check(a == crono, "Crono's window")
+	var bp: int = c.bank.bp
+	var r: Dictionary = c.cmd_swap(crono, krona)
+	check(bool(r["ok"]) and c.party.has(krona) and not c.party.has(crono) and c.bench.has(crono), "Swap: the bench member takes his spot")
+	check_near(c.get_gauge(krona), CombatConstants.SWAP_GAUGE, 0.001, "and arrives with gauge 50")
+	check_eq(c.bank.bp, bp + 1, "the first Swap pays +1 BP")
+	var hover_turns: int = 0
+	for i in 3:
+		var w: Node = _advance_until_window(c)
+		if w == sera:
+			hover_turns += 1
+		c.cmd_guard(w)
+	check(hover_turns > 0, "hover Sera reaches the gate from the Turn Bar")
+	# Swap a KO'd ally out from within 3 m.
+	var c2 := _coord()
+	var crono2 := _party_member(&"crono", 10, Vector3(-2, 0, 0))
+	var sera2 := _party_member(&"sera", 10, Vector3(-3, 0, 0))
+	var krona2 := _party_member(&"krona", 10, Vector3(-9, 0, 0))
+	var e2 := _enemy(&"x", 10, Vector3(3, 0, 0), 30, ["FIRE"], {"hp": 100000})
+	_start(c2, [crono2, sera2], [e2], {"bench": [krona2]})
+	CombatantStats.of(sera2).apply_damage(100000, true)
+	var a2: Node = _advance_until_actor(c2, &"crono")
+	var r2: Dictionary = c2.cmd_swap_koed(a2, sera2, krona2)
+	check(bool(r2["ok"]) and c2.party.has(krona2) and c2.bench.has(sera2), "a KO'd ally is swapped out by an ally within 3 m")
 
 
 func test_coordinator_gate_grants_bp_and_attack_breaks() -> void:
@@ -1260,3 +1428,62 @@ func test_props_data_sheets_and_fallback() -> void:
 	root.add_child(unknown)
 	_track(unknown)
 	check(unknown.placeholder and unknown.body != null and absf(unknown.footprint.y - 1.0) < 0.001, "an unknown key falls back to a 1 m labelled box with collision")
+
+
+## A prop's collision follows its data footprint: "posts" frames a walkable opening, a list of boxes
+## draws a gate as posts plus grille, and both forms validate (Data and lint).
+func test_prop_footprints_posts_and_boxes() -> void:
+	var arch: PropBillboard = PropBillboard.make(&"prp_u0_brass_gate_arch")
+	root.add_child(arch)
+	_track(arch)
+	check(arch.body != null and arch.body.get_child_count() == 2, "the gate arch's collision is its two posts")
+	if arch.body != null and arch.body.get_child_count() == 2:
+		var l: CollisionShape3D = arch.body.get_child(0)
+		var r: CollisionShape3D = arch.body.get_child(1)
+		var w: float = (l.shape as BoxShape3D).size.x
+		check(w < arch.footprint.x * 0.3 and absf(l.position.x) > 1.0, "posts are narrow and stand at the drawn ends (%s wide at x %.2f)" % [str(w), l.position.x])
+		check((r.position.x - w * 0.5) - (l.position.x + w * 0.5) > 1.5, "the opening between them is wider than a party member")
+	var gate: PropBillboard = PropBillboard.make(&"prp_u0_portcullis")
+	root.add_child(gate)
+	_track(gate)
+	check(gate.body != null and gate.body.get_child_count() == 3, "the portcullis is two posts and the grille")
+	var hearth: PropBillboard = PropBillboard.make(&"prp_u0_hearth")
+	root.add_child(hearth)
+	_track(hearth)
+	check(hearth.body != null and hearth.body.get_child_count() == 1 and absf((hearth.body.get_child(0).shape as BoxShape3D).size.x - hearth.footprint.x) < 0.001, "a plain prop keeps its one measured box")
+	check(Data._footprint_ok([1.0, 0.5]) and Data._footprint_ok("posts") and Data._footprint_ok([[0.5, 0.8, -1.0], [0.5, 0.8]]), "the three footprint forms validate")
+	check(not Data._footprint_ok("box") and not Data._footprint_ok([1.0]) and not Data._footprint_ok([[1.0]]) and not Data._footprint_ok([]), "and malformed ones do not")
+
+
+## The victory and defeat stings live under audio/music (mus_stings_<id>.ogg) and resolve there.
+func test_audio_stings_resolve() -> void:
+	for id in ["victory", "defeat", "overcap"]:
+		check(Audio.find_sting(id) != null, "sting %s resolves under audio/music" % id)
+	check(Audio.find_sting("nothing") == null, "an unknown sting is null, not a crash")
+	check(Audio._find_sfx("music/stings/victory") == null, "the old sfx path never resolved; the scene uses play_sting")
+
+
+## After a battle the rig returns to the scene's exported pitch (the Atrium's 34°), not a literal 30°;
+## the rig's and Location's defaults are the same 30°.
+func test_camera_rig_restores_scene_pitch() -> void:
+	check_near(HD2DCameraRig.new().pitch_degrees, 30.0, 0.001, "rig default 30°")
+	var loc := Location.new()
+	check_near(loc.camera_pitch, 30.0, 0.001, "Location default 30°")
+	loc.free()
+	var rig := HD2DCameraRig.new()
+	rig.auto_follow = false
+	rig.pitch_degrees = 34.0
+	root.add_child(rig)
+	_track(rig)
+	rig.enter_battle(Vector3.ZERO)
+	for i in 300:
+		rig.step(1.0 / 60.0)
+	check_near(rig.pitch_degrees, CombatConstants.TACTICAL_PITCH_DEG, 0.5, "35° in battle")
+	rig.exit_battle()
+	for i in 300:
+		rig.step(1.0 / 60.0)
+	check_near(rig.pitch_degrees, 34.0, 0.5, "back to the scene's own pitch after the battle")
+	rig.set_explore_pitch(22.0)
+	for i in 300:
+		rig.step(1.0 / 60.0)
+	check_near(rig.pitch_degrees, 22.0, 0.5, "set_explore_pitch retargets it")

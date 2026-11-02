@@ -221,3 +221,36 @@ Settled while applying the verified docs audit (the full list is `docs/reports/W
   deduplicated. `lint_data.py` now warns about music and ambience ids with no file (21 today), ambient-chatter
   location keys that match no Router id (5 today), and Duals with no learner (3 today); the importer refuses
   TEST/REJECTED items unless forced.
+
+## Combat and engine fixes from the audit (2026-11-02)
+- **The breaking strike lands at pre-Break defence; the reward starts on the next strike.** Combat Laws 6.4
+  applies damage before the shave ("BREAK now (later hits see a Broken target)"), 5.4 says the remaining hits
+  land on a Broken target, and worked example 2 (6.5) is ~676 at full DEF with no crit; the code resolved the
+  breaking strike with DEF halved and a crit. Fixed in `_resolve_action` (`was_broken` decides the multiplier),
+  pinned by `test_breaking_strike_uses_pre_break_defence`. The Cradle and Shard Doll were tuned with the old
+  ~1.8x breaking hit, so their Break hits are a little softer now; both probes still clear them.
+- **Sync Hold cannot strand a party.** `SyncHoldRules` (scripts/combat/sync_hold_rules.gd): the deck only
+  offers Sync Hold when another living, unparked ally can still reach the gate (hover Sera counts, KO'd and bench
+  do not), the coordinator re-prompts a parked ally nobody can relieve (no second +1 BP, hold timing unchanged),
+  and `confirm` during a tick wakes the first parked ally. The prototype's C1 fix, finally ported. Touches 3.4.
+- **The plate preview and the resolution share one shave helper** (`ShaveBonus`: flat Lv3 bonus, armed Ens
+  ring, status bonus, watercolour puddle), so what the HUD promises is what the hit shaves. Touches 4.6 and 5.3.
+- **The bench and hover Sera are built from the roster** (`BattleRoster`): everyone recruited and not active sits
+  on the bench; Sera hovers when `Game.sera_in_story` is `hover`/`hover_support`, sits while `with`, is absent
+  while `taken`/`absent`; Swap and Swap-KO'd (3 m) are deck entries; a Swap lasts the battle, the field party is
+  the one you walked in with; reserves' level, xp and hp ratio are written back. Hover Sera gives the 1.10
+  synergy, else 1.00 (6.2). Note: after `leave_for_fair()` Sera is still `with`, so a Leene Square fight would
+  offer her on the bench until the Fair script sets `sera_state`.
+- **Victory and defeat stings play** through `Audio.play_sting` (`audio/music/mus_stings_*.ogg`); they were
+  requested through a sfx path that never existed.
+- **Prop collision can be posts or several boxes.** `footprint` in `data/props/props.json` is `[w, d]` (one
+  box), `"posts"` (two uprights at the drawn ends, the opening clear) or a list of `[w, d, x_offset]`; the gate
+  arches and the torii are posts, the portcullis is two posts plus the grille. Arches are solid again.
+- **The camera remembers each scene's explore pitch** (`HD2DCameraRig._explore_pitch`); `exit_battle` had a
+  literal 30 that snapped the kitchen (32) and Atrium (34) after their first fight. The rig and `Location` default
+  to 30; the bibles' 15 is superseded (Reference 2.3, ART_PIPELINE) and recorded here rather than rewritten.
+- **Engine settings from the breakdown's section 12:** physics interpolation (the rig follows the interpolated
+  transform and teleports call `reset_physics_interpolation`), debanding, bicubic glow upscale, 4096 directional
+  shadow map, 2D transform snap; world textures (placeholders and generated) import with mipmaps and without
+  Detect-3D compression, and `import_texture.py` writes that sidecar. Not done: rounding each sprite's drawn
+  position to its pixel size (the right place is a render-side snap in `ActorSprite`).

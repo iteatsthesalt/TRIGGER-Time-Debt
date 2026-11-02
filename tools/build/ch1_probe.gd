@@ -127,6 +127,18 @@ func _run() -> void:
 	print("PROBE dummy done: flag=%s light=%d dark=%d prismatic=%d integrity=%.0f" % [str(F.call("state", &"Atrium_Dummy")), int(F.get("light")), int(F.get("dark")), int(F.get("prismatic")), float(G.get("crono_integrity"))])
 	if not await _wait_until(func() -> bool: return _idle(), 2000, "post-dummy idle"):
 		return _end()
+	# the Seed's first watering: the sprout rises from the rim of the pot prop, not inside its billboard
+	loc.call("_use_seed", null)
+	if not await _wait_until(func() -> bool: return loc.get_node_or_null("Sprout") != null and _idle(), 3000, "seed watering"):
+		return _end()
+	var sprout: Node3D = loc.get_node("Sprout")
+	var pot: Node3D = loc.call("get_prop", &"prp_u0_seed_of_doan_pot")
+	var rim_y: float = (pot.global_position.y + float(pot.get("footprint").y)) if pot != null else 1.1
+	var sprout_base: float = sprout.global_position.y - 0.25
+	if sprout_base < rim_y - 0.01:
+		print("PROBE FAIL sprout base %.2f m sits below the pot rim %.2f m" % [sprout_base, rim_y])
+		_fail = true
+	print("PROBE seed watered: sprout base %.2f m, pot rim %.2f m, waters=%d" % [sprout_base, rim_y, int(F.call("counter", &"seed_waters"))])
 	# Glenn
 	var glenn: Node = loc.get("glenn_npc")
 	if glenn:

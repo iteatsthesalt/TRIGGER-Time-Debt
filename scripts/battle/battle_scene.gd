@@ -31,6 +31,7 @@ var config: Dictionary = {}
 var _ended: bool = false
 var _flash: ColorRect
 var boss: BossController
+var roster := BattleRoster.new()
 var input_blocked: bool = false
 static var _plane_shader: Shader
 static var _aoe_shader: Shader
@@ -89,15 +90,14 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 	if music != "":
 		Audio.play_music(StringName(music), 0.6)
 	Audio.play_sfx("time/gate_open_u%d" % universe)
-	var bench: Array = []
-	var hover: Node = null
+	roster.build(self, party, center)
 	var start_cfg := {
 		"advantage": String(cfg.get("advantage", "normal")), "universe": universe, "boss": bool(cfg.get("boss", false)),
-		"techs": Data.techs, "enemy_defs": defs, "bench": bench, "hover_sera": hover,
+		"techs": Data.techs, "enemy_defs": defs, "bench": roster.bench, "hover_sera": roster.hover,
 		"prometheus": Game.prometheus_core, "parry_frames": Game.parry_frames, "max_bp": Game.max_bp, "max_spend": Game.max_spend,
 		"sera_present": Game.sera_in_story != "absent",
 	}
-	hud.register_units(party, enemies, hover)
+	hud.register_units(party, enemies, roster.hover)
 	for e in enemies:
 		e.face_toward(center + Vector3(0, 0, 4))
 	coordinator.flow_speed = float(Game.settings.get("flow_speed", 1.0))
@@ -177,6 +177,7 @@ func _place_party() -> void:
 		var anchor: Vector3 = center + Vector3(cos(angle), 0.0, sin(angle)) * 4.5
 		anchor.y = party[i].global_position.y
 		party[i].global_position = anchor
+		party[i].reset_physics_interpolation()
 		party[i].frozen = false
 		party[i].velocity = Vector3.ZERO
 		party[i].sprite.update_from_velocity(Vector3.ZERO)
@@ -201,12 +202,16 @@ func _on_command_requested(a: Node) -> void:
 
 func _open_main_deck() -> void:
 	mode = Mode.DECK
+	if actor == roster.hover:
+		hud.open_deck(actor.stats.display_name, roster.hover_deck(coordinator, actor))
+		return
 	var items: Array = [{"label": "Attack", "cmd": "attack"}]
 	var techs: Array[TechDef] = coordinator.available_techs(actor)
 	items.append({"label": "Tech", "cmd": "techs", "enabled": not techs.is_empty()})
 	items.append({"label": "Guard", "cmd": "guard"})
-	items.append({"label": "Sync Hold", "cmd": "sync"})
+	items.append({"label": "Sync Hold", "cmd": "sync", "enabled": SyncHoldRules.can_hold(coordinator, actor)})
 	items.append({"label": "Item", "cmd": "items", "enabled": not Game.inventory.is_empty()})
+	items.append({"label": "Swap", "cmd": "swap", "enabled": roster.can_swap(coordinator)})
 	var spareable: bool = false
 	for e in coordinator.living_enemies():
 		if coordinator.can_spare(e):
@@ -251,6 +256,15 @@ func _on_deck_command(cmd: String, payload: Dictionary) -> void:
 			_after_command()
 		"items":
 			_open_item_deck()
+		"swap":
+			mode = Mode.SWAP
+			hud.open_deck("Swap", roster.deck_items(coordinator, actor))
+		"swap_in":
+			hud.close_deck()
+			if roster.perform(self, actor, payload):
+				_after_command()
+			else:
+				_open_main_deck()
 		"item":
 			current_tech = null
 			set_meta("item", payload["item"])
@@ -453,10 +467,17 @@ func _on_summon_requested(key: StringName, count: int, near: Node) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _ended or coordinator == null or coordinator.state != BattleCoordinator.State.COMMAND_WAIT or auto or input_blocked or Story.is_running():
+	if _ended or coordinator == null or auto or input_blocked or Story.is_running():
+		return
+	if coordinator.state == BattleCoordinator.State.TICK:
+		# A parked ally may leave the Ready Pool at any time (§3.4): confirm wakes the first one.
+		if not coordinator.ready_pool.is_empty() and event.is_action_pressed("confirm") and coordinator.request_command(coordinator.ready_pool[0]):
+			get_viewport().set_input_as_handled()
+		return
+	if coordinator.state != BattleCoordinator.State.COMMAND_WAIT:
 		return
 	match mode:
-		Mode.DECK, Mode.TECHS, Mode.ITEMS:
+		Mode.DECK, Mode.TECHS, Mode.ITEMS, Mode.SWAP:
 			if event.is_action_pressed("move_up"):
 				hud.deck_move(-1)
 			elif event.is_action_pressed("move_down"):
@@ -514,82 +535,7 @@ func _process(delta: float) -> void:
 	if auto and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and actor != null and not input_blocked and not coordinator.paused:
 		auto_timer -= delta
 		if auto_timer <= 0.0:
-			_auto_act()
-
-
-func _auto_act() -> void:
-	var living: Array = coordinator.living_enemies()
-	if living.is_empty():
-		return
-	if boss != null and boss.is_sealed() and actor.time_debt != null:
-		_on_deck_command("pay_debt", {})
-		return
-	auto_timer = 0.15
-	var targetable: Array = living.filter(func(e: Node) -> bool: return not coordinator._untargetable(e))
-	if targetable.is_empty():
-		coordinator.cmd_guard(actor)
-		return
-	# heal when someone is low and a healing item is on hand
-	var low: Node = null
-	for u in coordinator.party:
-		var st := CombatantStats.of(u)
-		if st != null and st.is_alive() and st.hp_ratio() < 0.35:
-			low = u
-	if low != null and int(Game.inventory.get(&"tonic", 0)) > 0 and randf() < 0.7:
-		if Game.take_item(&"tonic"):
-			coordinator.cmd_item(actor, Data.items[&"tonic"], low)
-			return
-	# focus fire: unbroken targets first, lowest plates first
-	targetable.sort_custom(func(a: Node, b: Node) -> bool:
-		var sa := ShieldComponent.of(a)
-		var sb := ShieldComponent.of(b)
-		var ka: int = (1000 if sa != null and sa.is_broken else 0) + (sa.current_shield if sa != null else 0)
-		var kb: int = (1000 if sb != null and sb.is_broken else 0) + (sb.current_shield if sb != null else 0)
-		return ka < kb)
-	var t: Node = targetable[0] if randf() < 0.8 else targetable[randi() % targetable.size()]
-	var techs: Array[TechDef] = coordinator.available_techs(actor).filter(func(x: TechDef) -> bool: return x.is_attack and x.target in ["enemy", "point"] and x.effect == &"")
-	var b: int = mini(coordinator.bank.bp, randi() % 3)
-	if not techs.is_empty() and randf() < 0.6:
-		var tech: TechDef = _auto_pick_tech(techs, targetable)
-		var r: Dictionary = coordinator.cmd_tech(actor, tech.id, t, coordinator.position_of(t), b, coordinator.partners_for(tech, actor))
-		if bool(r.get("ok", false)):
-			actor.sprite.play(&"attack", &"ready")
-			return
-	actor.sprite.play(&"attack", &"ready")
-	var r2: Dictionary = coordinator.cmd_attack(actor, t, b)
-	if not bool(r2.get("ok", true)):
-		coordinator.cmd_guard(actor)
-
-
-## Shapes that can catch more than one enemy in a single cast.
-const AUTO_MULTI_SHAPES: Array[int] = [
-	TechDef.Shape.LINE_PIERCE, TechDef.Shape.CONE, TechDef.Shape.CIRCLE, TechDef.Shape.CROSS,
-	TechDef.Shape.DELTA, TechDef.Shape.SPLIT_CONE,
-]
-
-
-## Which of the actor's attack techs the autobattle casts this turn. `techs` are the castable attacks,
-## `targetable` the enemies that can be hit right now (the 999 Shard Doll's split puts three up at once).
-## With several enemies up it takes the multi-target tech whose tags hit the most weaknesses, so a split
-## of dolls sharing a weakness is lined up rather than chipped one at a time; two casts in five stay
-## random so fights keep some variety.
-func _auto_pick_tech(techs: Array[TechDef], targetable: Array) -> TechDef:
-	if targetable.size() < 2 or randf() < 0.4:
-		return techs[randi() % techs.size()]
-	var best: TechDef = null
-	var best_hits: int = 1
-	for tech in techs:
-		if not AUTO_MULTI_SHAPES.has(tech.shape):
-			continue
-		var hits: int = 0
-		for e in targetable:
-			var sh := ShieldComponent.of(e)
-			if sh != null and sh.hits_weakness(tech.tags):
-				hits += 1
-		if hits > best_hits:
-			best_hits = hits
-			best = tech
-	return best if best != null else techs[randi() % techs.size()]
+			AutoBattler.act(self)
 
 
 # ------------------------------------------------------------------ presentation
@@ -857,7 +803,7 @@ func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
 		e.queue_free()
 	telegraphs.clear()
 	if victory:
-		Audio.play_sfx("music/stings/victory")
+		Audio.play_sting("victory")
 		for p in party:
 			if p.stats.is_alive():
 				p.sprite.play(&"victory", &"idle")
@@ -871,7 +817,7 @@ func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
 		hud.show_message("  ".join(PackedStringArray(parts)))
 	else:
 		hud.show_message("The Debt advances: Crono −%s integrity." % str(summary.get("integrity_lost", 5)))
-		Audio.play_sfx("music/stings/defeat")
+		Audio.play_sting("defeat")
 	var tw := create_tween()
 	tw.tween_interval(1.4 if victory else 1.0)
 	tw.tween_property(plane_mat, "shader_parameter/reveal", 0.0, 0.6)
@@ -883,4 +829,5 @@ func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
 			p.sprite.set_opacity(1.0)
 			if p.stats.is_alive():
 				p.sprite.play(&"idle")
+		roster.finish()
 		finished.emit(victory, summary))

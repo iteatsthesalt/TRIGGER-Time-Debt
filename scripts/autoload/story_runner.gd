@@ -150,6 +150,7 @@ func _exec(cmd: Dictionary) -> String:
 		var p: Variant = _marker(String(cmd.get("to", "")))
 		if a4 != null and p != null and a4 is Node3D:
 			(a4 as Node3D).global_position = p
+			(a4 as Node3D).reset_physics_interpolation()
 	if cmd.has("camera"):
 		camera_requested.emit(String(cmd["camera"]), _actor(String(cmd.get("focus", ""))))
 	if cmd.has("universe"):
@@ -321,6 +322,7 @@ func _move_actor(id: String, cmd: Dictionary) -> void:
 			a.call("walk_to", p, float(cmd.get("speed", 2.5)))
 	elif a is Node3D:
 		(a as Node3D).global_position = p
+		(a as Node3D).reset_physics_interpolation()
 
 
 func history() -> Array[Dictionary]:

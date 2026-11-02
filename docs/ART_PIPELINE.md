@@ -266,6 +266,8 @@ capture, record, and reply in the `[BUILD]` thread.
 
 ## 6. Objects / props (the second real route, 2026-11-02)
 
+`footprint` in `data/props/props.json` shapes the collision: `[w, d]` is one centred box, `"posts"` two uprights at the drawn ends (an arch or a gate the party walks through), a list of `[w, d, x_offset]` several boxes (the portcullis: two posts and the grille).
+
 Props are PixelLab **objects** (`create_1_direction_object`, `create_8_direction_object`,
 `create_object_pro_flash`; `view="low top-down"`, transparent, the canvas's palette), named
 `TRIGGER <Name> field v<N>`, tracked as Linear issues and mirrored into `data/art/incoming.json` with

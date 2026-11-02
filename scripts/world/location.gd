@@ -118,6 +118,7 @@ func place_party(spawn: StringName) -> void:
 		p = Vector3.ZERO
 	for i in party_actors.size():
 		party_actors[i].global_position = p + Vector3(0, 0.05, 0.9 * float(i))
+		party_actors[i].reset_physics_interpolation()  # a teleport, not a slide (physics interpolation is on)
 	if follow:
 		follow.snap_behind()
 	if rig:
@@ -242,6 +243,7 @@ func rebuild_party(ids: Array[StringName], at: StringName = &"") -> void:
 	var origin: Vector3 = p if p != null else here
 	for i in party_actors.size():
 		party_actors[i].global_position = origin + Vector3(0, 0.05, 1.1 * float(i))
+		party_actors[i].reset_physics_interpolation()
 		party_actors[i].face(String(facing))
 	rig.target = party_actors[0]
 	controller.attach(party_actors[0])

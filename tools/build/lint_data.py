@@ -185,6 +185,13 @@ if unlearnable:
 # assets/props/u<n>/<key>/; a prop marked pending may have none yet. Every object recorded in
 # data/art/pixellab_assets.json must have a props entry (the importer reads its height from there).
 PROP_FIELDS = {"key", "universe", "height_m", "solid", "y_offset", "anims", "emission", "footprint", "pending", "request", "notes"}
+def footprint_ok(fp):
+    """[width, depth], "posts", or a list of [width, depth(, x_offset)] boxes (PropBillboard.boxes)."""
+    num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
+    if isinstance(fp, str): return fp == "posts"
+    if not isinstance(fp, list) or not fp: return False
+    if not isinstance(fp[0], list): return len(fp) == 2 and all(num(v) for v in fp)
+    return all(isinstance(b, list) and 2 <= len(b) <= 3 and all(num(v) for v in b) for b in fp)
 PROP_ANIM_FIELDS = {"match", "fps", "loop", "holds"}
 props = {}
 for p in sorted((ROOT/"data/props").rglob("*.json")) if (ROOT/"data/props").exists() else []:
@@ -205,7 +212,7 @@ for p in sorted((ROOT/"data/props").rglob("*.json")) if (ROOT/"data/props").exis
             if name in e and not isinstance(e[name], bool): errors.append(f"prop {k}: {name} must be true or false")
         for name in ("y_offset", "emission"):
             if name in e and (isinstance(e[name], bool) or not isinstance(e[name], (int, float))): errors.append(f"prop {k}: {name} must be a number")
-        if "footprint" in e and not (isinstance(e["footprint"], list) and len(e["footprint"]) == 2): errors.append(f"prop {k}: footprint must be [width, depth]")
+        if "footprint" in e and not footprint_ok(e["footprint"]): errors.append(f"prop {k}: footprint must be [width, depth], \"posts\" or a list of [width, depth, x_offset] boxes")
         anims = e.get("anims", {})
         if not isinstance(anims, dict): errors.append(f"prop {k}: anims must be an object")
         else:

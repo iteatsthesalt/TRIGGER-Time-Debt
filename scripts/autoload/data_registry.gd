@@ -213,8 +213,8 @@ func _add_prop(entry: Variant) -> void:
 	for name in ["y_offset", "emission"]:
 		if e.has(name) and not (e[name] is float or e[name] is int):
 			errors.append("prop %s: %s must be a number" % [key, name])
-	if e.has("footprint") and not (e["footprint"] is Array and (e["footprint"] as Array).size() == 2):
-		errors.append("prop %s: footprint must be [width, depth]" % key)
+	if e.has("footprint") and not _footprint_ok(e["footprint"]):
+		errors.append("prop %s: footprint must be [width, depth], \"posts\" or a list of [width, depth, x_offset] boxes" % key)
 	var anims: Variant = e.get("anims", {})
 	if not (anims is Dictionary):
 		errors.append("prop %s: anims must be an object" % key)
@@ -228,6 +228,24 @@ func _add_prop(entry: Variant) -> void:
 				if not PROP_ANIM_FIELDS.has(String(f)):
 					errors.append("prop %s: anim %s has unknown field %s" % [key, a, f])
 	props[key] = e
+
+
+## A prop footprint (PropBillboard.boxes): [width, depth], "posts", or a list of [width, depth(, x)].
+static func _footprint_ok(fp: Variant) -> bool:
+	if fp is String:
+		return String(fp) == "posts"
+	if not (fp is Array) or (fp as Array).is_empty():
+		return false
+	var a: Array = fp
+	if not (a[0] is Array):
+		return a.size() == 2 and (a[0] is float or a[0] is int) and (a[1] is float or a[1] is int)
+	for b in a:
+		if not (b is Array) or (b as Array).size() < 2 or (b as Array).size() > 3:
+			return false
+		for v in b:
+			if not (v is float or v is int):
+				return false
+	return true
 
 
 func prop(key: StringName) -> Dictionary:

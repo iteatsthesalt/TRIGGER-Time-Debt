@@ -434,16 +434,16 @@ func _use_seed(_by: Node) -> void:
 		Story.run(&"atrium_seed")
 
 
-## Scripted: the first watering. The orb becomes a sprout with a tiny gramophone horn.
+## Scripted: the first watering. A sprout with a tiny gramophone horn rises from the rim of the Seed's
+## pot (Nich's prop; the sprout-stage prop of TRI-77 replaces this cylinder when it arrives).
 func water_seed() -> void:
 	Flags.add_counter(&"seed_waters", 1)
-	var orb: Node = get_node_or_null("SeedOrb")
-	if orb:
-		orb.queue_free()
+	var pot: PropBillboard = get_prop(&"prp_u0_seed_of_doan_pot")
+	var rim: Vector3 = pot.global_position + Vector3(0.0, pot.footprint.y, 0.0) if pot != null else Vector3(5.5, 1.1, 5.5)
 	var green := SceneKit.flat_color(Color(0.45, 0.6, 0.3), Color.BLACK, 0.0, 0.9)
-	SceneKit.cylinder(self, 0.04, 0.5, Vector3(5.5, 0.95, 5.5), green, "Sprout", false)
+	SceneKit.cylinder(self, 0.04, 0.5, rim + Vector3(0.0, 0.25, 0.0), green, "Sprout", false)
 	var brass := SceneKit.flat_color(Color(0.74, 0.56, 0.28), Color.BLACK, 0.0, 0.35, 0.85)
-	var horn := SceneKit.cylinder(self, 0.12, 0.2, Vector3(5.5, 1.25, 5.4), brass, "SproutHorn", false)
+	var horn := SceneKit.cylinder(self, 0.12, 0.2, rim + Vector3(0.0, 0.55, -0.1), brass, "SproutHorn", false)
 	horn.rotation.x = -0.6
 	if ink_path:
 		ink_path.active = false
@@ -571,7 +571,7 @@ func _build_gate(u: int, pos: Vector3, angle: float, _frame_mat: Material) -> vo
 	holder.position = pos
 	holder.rotation.y = -angle + PI * 0.5
 	add_child(holder)
-	add_prop(&"prp_u0_brass_gate_arch", pos, &"s", false)
+	add_prop(&"prp_u0_brass_gate_arch", pos)  # solid posts only (props.json footprint): the opening is walked through
 	var unlocked: bool = Flags.has(StringName("Gate_U%d_Open" % u))
 	var col: Color = GATE_COLOURS.get(u, Color.WHITE)
 	var fill := SceneKit.flat_color(col * (0.9 if unlocked else 0.12), col, 2.0 if unlocked else 0.15, 0.3)

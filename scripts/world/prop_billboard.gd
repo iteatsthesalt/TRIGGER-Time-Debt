@@ -8,12 +8,20 @@ extends Node3D
 
 const PLACEHOLDER_COLOUR := Color(0.52, 0.46, 0.58)
 
+## The share of the drawn width each post of a "posts" footprint takes (an arch's uprights).
+const POST_SHARE := 0.2
+
 var key: StringName = &""
 var def: Dictionary = {}
 var sprite: ActorSprite
 var body: StaticBody3D
-## Width, height and depth of the prop in metres (the collision box when it is solid).
+## Width, height and depth of the prop in metres: the measured box (drawn width, declared height).
 var footprint: Vector3 = Vector3(0.6, 1.0, 0.4)
+## The collision boxes when the prop is solid, as [size, centre offset] pairs: one box the size of
+## `footprint` by default; data/props `footprint` may replace it with `[width, depth]` (one centred
+## box), `"posts"` (two uprights at the drawn ends, so an arch or gate frames a walkable opening) or a
+## list of `[width, depth, x_offset]` boxes (a portcullis: two posts and the grille between them).
+var boxes: Array[Array] = []
 var y_offset: float = 0.0
 var placeholder: bool = false
 
@@ -35,12 +43,31 @@ static func make(prop_key: StringName, facing: StringName = &"s", solid: bool = 
 		p._build_placeholder(height_m)
 	else:
 		p._build_sprite(r, facing, height_m, universe)
-	var fp: Array = p.def.get("footprint", [])
-	if fp.size() >= 2:
-		p.footprint = Vector3(float(fp[0]), height_m, float(fp[1]))
+	p.boxes = p._boxes_from(p.def.get("footprint", null))
 	if solid and bool(p.def.get("solid", true)):
 		p._add_collision()
 	return p
+
+
+## The collision boxes a data `footprint` describes (see `boxes`); null or an empty list means the
+## measured box.
+func _boxes_from(fp: Variant) -> Array[Array]:
+	var out: Array[Array] = []
+	if fp is String and String(fp) == "posts":
+		var post_w: float = maxf(0.3, footprint.x * POST_SHARE)
+		var dx: float = (footprint.x - post_w) * 0.5
+		out.append([Vector3(post_w, footprint.y, footprint.z), Vector3(-dx, 0.0, 0.0)])
+		out.append([Vector3(post_w, footprint.y, footprint.z), Vector3(dx, 0.0, 0.0)])
+	elif fp is Array and (fp as Array).size() >= 2 and not ((fp as Array)[0] is Array):
+		footprint = Vector3(float(fp[0]), footprint.y, float(fp[1]))
+		out.append([footprint, Vector3.ZERO])
+	elif fp is Array:
+		for b in fp:
+			if b is Array and (b as Array).size() >= 2:
+				out.append([Vector3(float(b[0]), footprint.y, float(b[1])), Vector3(float(b[2]) if (b as Array).size() >= 3 else 0.0, 0.0, 0.0)])
+	if out.is_empty():
+		out.append([footprint, Vector3.ZERO])
+	return out
 
 
 func _build_sprite(r: Dictionary, facing: StringName, height_m: float, universe: int) -> void:
@@ -84,12 +111,13 @@ func _add_collision() -> void:
 	body.name = "Body"
 	body.collision_layer = 1
 	body.collision_mask = 0
-	var cs := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = footprint
-	cs.shape = shape
-	cs.position = Vector3(0.0, footprint.y * 0.5, 0.0)
-	body.add_child(cs)
+	for b in boxes:
+		var cs := CollisionShape3D.new()
+		var shape := BoxShape3D.new()
+		shape.size = b[0]
+		cs.shape = shape
+		cs.position = (b[1] as Vector3) + Vector3(0.0, (b[0] as Vector3).y * 0.5, 0.0)
+		body.add_child(cs)
 	add_child(body)
 
 

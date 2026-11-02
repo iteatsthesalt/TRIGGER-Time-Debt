@@ -30,8 +30,8 @@ func _ready() -> void:
 	world.name = "World"
 	add_child(world)
 	HD2DWorld.add_three_point_lights(self)
-	var stone := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.9, 0.9, 0.9), true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.95, 0.95, 0.95), true)
+	var stone := SceneKit.named("castle_flagstone", 0.95, Color(0.9, 0.9, 0.9))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.95, 0.95, 0.95))
 	SceneKit.floor_plane(self, Vector2(30, 30), Vector3.ZERO, stone)
 	SceneKit.box(self, Vector3(30, 5, 0.6), Vector3(0, 2.5, -4.0 - float(ids.size()) * 1.4), wall, "BackWall")
 	var centre := Node3D.new()

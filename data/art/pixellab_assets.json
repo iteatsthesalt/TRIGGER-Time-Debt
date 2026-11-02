@@ -1485,5 +1485,28 @@
    "idle": 1
   },
   "history": []
+ },
+ "crono_px64_field": {
+  "pixellab_id": "ca2300bc-7592-4606-8973-32b9bc00056b",
+  "pixellab_name": "TRIGGER Crono px64 field v1",
+  "id": "crono",
+  "tier": "field",
+  "variant": "px64",
+  "kind": "character",
+  "group": "characters",
+  "request": "",
+  "path": "assets/characters/crono",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.78,
+  "height_px": 61,
+  "cell": 96,
+  "anims": {
+   "idle": 4,
+   "walk": 6
+  },
+  "missing": [],
+  "history": []
  }
 }

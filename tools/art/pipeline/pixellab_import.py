@@ -279,8 +279,9 @@ def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps
                 chosen[game_name] = (n, rate, loop)
                 break
 
-    # Cell: the smallest multiple of 32 that holds every frame around the pivot.
-    need = 128
+    # Cell: the smallest multiple of 32 that holds every frame around the pivot (64 for the 64 px recipe, 128 for
+    # the older 128 px sets; never smaller than the source canvas).
+    need = max(64, south.width)
     for name, (pl_name, _, _) in chosen.items():
         for d, frames in animations[pl_name].items():
             for fr in frames:

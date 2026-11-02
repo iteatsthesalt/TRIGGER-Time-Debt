@@ -61,7 +61,8 @@ def parse_name(name):
     variant = (m.group("variant") or "").lower()
     # the last word before the tier may be part of the character's name (e.g. "Pierrot Glenn field v1");
     # a variant is a canvas (u0..u8) or a known state suffix.
-    if variant and not re.fullmatch(r"u[0-8]|debt\d+|broken|salvaged|rewound|mask_off|oil|sealed|cobalt|gold|ghost", variant):
+    if variant and not re.fullmatch(r"u[0-8]|px\d+|debt\d+|broken|salvaged|rewound|mask_off|oil|sealed|cobalt|gold|ghost", variant):
+        print(f"note: '{variant}' in the name is not a known variant (canvas u0-u8, px<size>, or a state); importing as the base sheet. Pass --variant to force it.")
         variant = ""
     return m.group("tier").lower(), variant
 

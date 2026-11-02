@@ -10,8 +10,9 @@
     {"id": "oil_drinker", "unlock": {"on_join": true}},
     {"id": "ruin_purge", "unlock": {"flag": "Daimyo_Phase1"}},
     {"id": "crimson_seppuku", "unlock": {"level": 18}},
-    {"id": "cobalt_nodachi", "unlock": {"flag": "Cobalt_Nodachi_Taken"}},
-    {"id": "eclipse_x_strike", "unlock": {"on_join": true}}
+    {"id": "cobalt_nodachi", "unlock": {"flag": "Masamune_Reforged"}},
+    {"id": "eclipse_x_strike", "unlock": {"on_join": true}},
+    {"id": "overclocked_short_circuit", "unlock": {"chapter": 3}}
   ],
   "passives": ["oil_drinker", "ash_feeder"]
 }

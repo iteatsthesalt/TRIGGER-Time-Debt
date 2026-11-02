@@ -49,6 +49,14 @@ import pixellab_objects as po  # noqa: E402
 RECORD = os.path.join(ROOT, "data", "art", "pixellab_assets.json")
 UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 TIERS = ("map", "field", "action", "portrait")
+# The asset team's rule (CLAUDE.md, docs/BOT_REVIEW.md): a PixelLab item whose name starts with TEST or REJECTED
+# is never imported. The importer refuses them unless --force says the operator means it.
+NEVER_IMPORT_RE = re.compile(r"^\s*(TEST|REJECTED)\b", re.I)
+
+
+def is_never_import(name):
+    """True for a PixelLab name prefixed TEST or REJECTED (any case), the items that never ship."""
+    return bool(NEVER_IMPORT_RE.match(name or ""))
 # "TRIGGER <Name> [<variant>] <tier> v<n>"  — the name is free text before the optional variant and tier.
 NAME_RE = re.compile(r"^\s*TRIGGER\s+(?P<name>.+?)(?:\s+(?P<variant>[a-z][a-z0-9]*))?\s+(?P<tier>map|field|action|portrait)\s+v(?P<ver>\d+)\s*$", re.I)
 
@@ -105,12 +113,23 @@ def extract_id(text):
     return m.group(0)
 
 
+README = [
+    "Every PixelLab asset imported into the game: record key -> PixelLab id, kind, import date and the settings",
+    "the sheet was built with. Written by tools/art/import_pixellab.py; rebuild any entry with",
+    "python3 tools/art/import_pixellab.py <pixellab_id> <key>. Nich's picks in the Character Creator are",
+    "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted.",
+    "kind character: key <id>[_<variant>]_<tier> (tier map/field/action/portrait, variant a canvas u0-u8 or a",
+    "state such as debt20, px64), path assets/<group>/<id>/, cell, height_px = height_m, anims {name: frames},",
+    "missing = directions filled by mirroring or rotation, history = earlier PixelLab ids for the same key.",
+    "kind object (a prop, docs/ART_PIPELINE.md section 6): key = the prp_u<n>_ key from data/props/props.json,",
+    "tier/variant empty, universe, request = the Linear issue (TRI-nn) or ASSET_REQUESTS entry it fulfils, path",
+    "assets/props/u<n>/<key>/, width_px, rows = the direction rows drawn, rotations = the PixelLab rotations",
+    "delivered, anims {name: frames} (a single clip is the looping idle; the drawn rotation is the still column).",
+    "Items whose PixelLab name starts with TEST or REJECTED are never imported (the importer refuses them)."]
+
+
 def record(key, entry):
-    data = load_json(RECORD) if os.path.exists(RECORD) else {"_readme": [
-        "Every PixelLab asset imported into the game: asset key -> PixelLab id, kind, import date and the settings",
-        "the sheet was built with. Written by tools/art/import_pixellab.py; rebuild any entry with",
-        "python3 tools/art/import_pixellab.py <pixellab_id> <key>. Nich's picks in the Character Creator are",
-        "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted."]}
+    data = load_json(RECORD) if os.path.exists(RECORD) else {"_readme": README}
     old = data.get(key, {})
     history = old.get("history", [])
     if old.get("pixellab_id") and old.get("pixellab_id") != entry["pixellab_id"]:
@@ -193,8 +212,12 @@ def main():
     ap.add_argument("--no-mirror", action="store_true")
     ap.add_argument("--listing", default="", help="a saved get_character listing (zip locked while jobs run)")
     ap.add_argument("--skip-download", action="store_true", help="rebuild from the cached raw frames")
+    ap.add_argument("--force", action="store_true",
+                    help="import an item whose PixelLab name starts with TEST or REJECTED (refused otherwise)")
     args = ap.parse_args()
 
+    if is_never_import(args.name) and not args.force:
+        raise SystemExit(f"refused: '{args.name}' is a TEST/REJECTED item and never ships (pass --force if you mean it)")
     pid = extract_id(args.source)
     if is_object(args):
         import_object(pid, args)

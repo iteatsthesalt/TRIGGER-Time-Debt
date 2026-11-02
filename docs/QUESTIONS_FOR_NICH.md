@@ -58,3 +58,12 @@ Things I'd like your view on when you have a moment. None of them block the buil
   account are at 128 or 256 px and are not imported (DECISIONS, "Direction"). Do you want the team told
   to stop at that size and re-spec from the 64 px anchor once it is approved? I can post the note in
   #all-trigger, or you can.
+
+## Repository (2026-11-02)
+- **Tag the Trigger repository.** `prototype/` is deleted from this repository; the bibles now point at
+  iteatsthesalt/Trigger @ aea60a2. Please add a tag there (`prototype-snapshot-2026-10-29`) so the reference
+  survives branch cleanup, and say whether that private repository should stay private (ChatGPT and Cursor
+  cannot read it) or be made public.
+- **The four draft PRs on Trigger (T-2 to T-5).** The main game has superseded GameState and the dialogue system;
+  the three-part boss framework and the balance-sheet test are worth porting when a boss needs parts. Close or
+  keep?

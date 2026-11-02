@@ -1,9 +1,17 @@
 {
  "_readme": [
-  "Every PixelLab asset imported into the game: asset key -> PixelLab id, kind, import date and the settings",
+  "Every PixelLab asset imported into the game: record key -> PixelLab id, kind, import date and the settings",
   "the sheet was built with. Written by tools/art/import_pixellab.py; rebuild any entry with",
   "python3 tools/art/import_pixellab.py <pixellab_id> <key>. Nich's picks in the Character Creator are",
-  "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted."
+  "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted.",
+  "kind character: key <id>[_<variant>]_<tier> (tier map/field/action/portrait, variant a canvas u0-u8 or a",
+  "state such as debt20, px64), path assets/<group>/<id>/, cell, height_px = height_m, anims {name: frames},",
+  "missing = directions filled by mirroring or rotation, history = earlier PixelLab ids for the same key.",
+  "kind object (a prop, docs/ART_PIPELINE.md section 6): key = the prp_u<n>_ key from data/props/props.json,",
+  "tier/variant empty, universe, request = the Linear issue (TRI-nn) or ASSET_REQUESTS entry it fulfils, path",
+  "assets/props/u<n>/<key>/, width_px, rows = the direction rows drawn, rotations = the PixelLab rotations",
+  "delivered, anims {name: frames} (a single clip is the looping idle; the drawn rotation is the still column).",
+  "Items whose PixelLab name starts with TEST or REJECTED are never imported (the importer refuses them)."
  ],
  "crono_field": {
   "pixellab_id": "8d699d00-eb9f-4da7-a408-a1f70039fa1c",

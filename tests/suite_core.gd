@@ -1038,6 +1038,7 @@ func test_text_layer_loads_and_covers() -> void:
 			numbered += 1
 	check_eq(numbered, 0, "tech descriptions carry no numbers (the brief's rule)")
 	check_eq(Data.ambient_lines(&"guardia_kitchen").size(), 12, "twelve ambient lines for the kitchen")
+	check_eq(Data.ambient_lines(&"atrium").size(), 12, "the Atrium's lines are keyed by its Router id (atrium), not the scene name")
 	check(Data.ambient_lines(&"nowhere_at_all").is_empty(), "no lines for an unknown location")
 	check(not Data.codex_page(&"Prologue_Fall", &"Teach_Her_To_Land").is_empty(), "a codex page per flag state")
 	check(Data.codex_page(&"Prologue_Fall", &"Not_A_State").is_empty(), "no page for an unknown state")

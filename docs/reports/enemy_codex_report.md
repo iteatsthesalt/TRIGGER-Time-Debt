@@ -1,5 +1,7 @@
 # Enemy codex, bosses and encounters — data-entry report
 
+Written 2026-10-29 (commit d919973); the validation numbers below are from that date. Every file it names is tracked.
+
 ## Files written (only data/enemies, data/bosses, data/encounters touched; u0 untouched; no git run)
 
 Enemies (71 new entries, 82 total with U0):
@@ -23,7 +25,6 @@ Encounters: data/encounters/u1.json … u8.json — 8/8/8/8/8/8/8/6 groups (62 n
 - Extra headless check: Data autoload reports enemies=82 bosses=31 encounters=71 errors=0; every boss JSON loads with python json.load.
 - tests/run_tests.gd → 302 passed, 0 failed.
 - A script cross-checked every codex row (level, shield, tags, weak, resist/nullify/immune/absorb, lean) against my JSON by E-number: all match except the deliberate E58 case below. All sprite ids exist in REFERENCE_BIBLE §11.4/11.5/11.1; all boss flag names/states exist in data/flags; all add/summon keys resolve.
-- Note: commit 8c42265 (not mine) already contains the enemies, encounters and 13 of the boss files; `git diff` shows the committed copies are identical to my working files. The other 18 boss files are untracked and need committing.
 
 ## Schema notes
 - Enemies use exactly the u0 keys, plus two loader-known keys where they encode a rule precisely: `break_effect: "spawn_ash_field"` (Gourd-Bloated Heimin) and `spd_mult: 0.85` (Press Golem heavy drift). Nothing in the coordinator consumes either yet.

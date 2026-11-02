@@ -8,7 +8,9 @@
 The hourly check from CLAUDE.md: `git pull --rebase`, run this, wire the new assets in, screenshot them.
 Each item goes through tools/art/import_pixellab.py (objects to the prop route, characters to the character
 route); successes are stamped `"imported": "<date>"` in incoming.json, failures are listed and left alone.
-Items without a PixelLab id (hand-made files under assets/incoming/) are reported, not imported.
+Items without a PixelLab id (hand-made files under assets/incoming/) are reported, not imported. Items whose
+PixelLab name starts with TEST or REJECTED are skipped and listed (the asset team's rule: they never ship);
+--force imports them anyway, and also re-imports items already recorded.
 """
 import argparse
 import datetime
@@ -22,6 +24,8 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 INCOMING = os.path.join(ROOT, "data", "art", "incoming.json")
 RECORD = os.path.join(ROOT, "data", "art", "pixellab_assets.json")
 IMPORTER = os.path.join(HERE, "import_pixellab.py")
+sys.path.insert(0, HERE)
+from import_pixellab import is_never_import  # noqa: E402
 
 
 def load(path, default):
@@ -69,9 +73,15 @@ def main():
         rk = record_key(item)
         if rk in recorded and recorded[rk].get("pixellab_id") == pid and not args.force:
             continue
+        name = item.get("pixellab_name", "")
+        if is_never_import(name) and not args.force:
+            skipped.append(f"{key}: '{name}' is a TEST/REJECTED item and never ships (--force overrides)")
+            continue
         kind = "object" if item.get("kind") == "object" else "character"
-        cmd = [sys.executable, IMPORTER, pid, key, "--kind", kind, "--name", item.get("pixellab_name", ""),
+        cmd = [sys.executable, IMPORTER, pid, key, "--kind", kind, "--name", name,
                "--request", str(item.get("request", ""))]
+        if args.force:
+            cmd.append("--force")
         if kind == "character":
             if item.get("tier"):
                 cmd += ["--tier", item["tier"]]

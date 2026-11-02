@@ -50,6 +50,8 @@ The 12 plates (FINAL and V2 hold the same 12 images) are in `images/plates/`.
 | 27 | U1's bosses | "Ashen Daimyo" vs "Shogun Ashinaga"; the Furnace's boss unnamed | Lord Ashinaga is the Ashen Daimyo of Goyama Castle. The Weeping Shogun, an ink-and-clockwork Amalgam Spawn, guards the Mammon Furnace |
 | 28 | U4's glass boss | V2: Arch-Curator Glass Variant / Glass Matriarch. FINAL: the Arch-Curator Echo | The Arch-Curator Echo is the U4 mid-boss. The Glass Matriarch, Schala's Reflection, is an optional fight in the Dreaming Moon's chamber |
 | 29 | Ending 5 | Porcelain stress at 100, no confession, Grief embraced | The same, plus at least one Atrium Siege lived through, since the despair route is the one where Crono's integrity hits 0% |
+| 30 | Static's sex | Chrono Apocrypha: a 14-year-old girl with the Pupa larva wired to her spine. FINAL and the catalog image: a boy | He, per the FINAL bible and the catalog image (the age is row 12); the Story Bible, the Reference briefs and the text layer all say "he" |
+| 31 | The Seed of Doan's origin | Chrono Apocrypha's U2 zone table: found frozen in amber on an Arris Dome side path in Chapter 3, opening a "Possibility Branch 2B" that no source defines. FINAL: the pot in the Atrium from Chapter 1 | The Chapter 1 Atrium pot (flag Seed_of_Doan); the Arris Dome condensation is its first watering (Story 11.I). Story 3.5's "side path holds the Seed frozen in amber" and Reference 5.7.7's "Possibility Branch 2B" caption are read that way; 2B is not a branch of this game |
 
 ## Where each bible records its own choices
 

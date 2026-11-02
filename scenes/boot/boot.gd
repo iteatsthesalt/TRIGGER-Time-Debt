@@ -1,9 +1,14 @@
-## Boot: decide where to go. Autoloads are already up. Tests and captures may pass:
+## Boot: decide where to go. Autoloads are already up. Tests and captures may pass (the complete list):
 ##   --scene=<id> / --location=<id>   start in a location instead of the title
+##   --spawn=<marker>                  the marker to stand on (default "start")
 ##   --checkpoint=<id>                 set Game.checkpoint first (a scene's state machine reads it)
 ##   --party=a,b,c                     set the active party
-##   --chapter=<n>  --integrity=<n>    set chapter / Crono's integrity
+##   --chapter=<n>  --integrity=<n>    set chapter (Game.set_chapter unlocks chapter-gated kit entries) / Crono's integrity
+##   --level=<n>                       set every roster member's level
 ##   --flag=Name:State                 set a flag (repeatable)
+##   --say=<text>                      show one narrator line once the scene is up (capture/debug)
+## Battle arguments are read elsewhere: --autobattle by BattleScene (scripts/battle/battle_scene.gd) and the test
+## arena, --boss=<id> and --boss_hp=<n> by the test arena (scenes/test/arena.gd).
 extends Node
 
 func _ready() -> void:

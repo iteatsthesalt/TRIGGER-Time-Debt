@@ -1,6 +1,7 @@
 # Godot
 .godot/
 *.tmp
+# .import sidecars are deliberately tracked (every machine imports the same way); do not copy the Trigger repo's `*.import` rule
 # Local tool downloads (tools/setup_godot.sh puts Godot here)
 .tools/
 # Build outputs
@@ -17,5 +18,6 @@ Thumbs.db
 /captures/
 *.avi
 *.mp4
+# PixelLab raw downloads: the unpacked frames and metadata.json are the rebuild source; the archives duplicate them
 /source_art/raw/
-.godot/
+source_art/**/*.zip

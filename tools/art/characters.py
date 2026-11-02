@@ -1,6 +1,7 @@
 """Character specs for tools/art/spritegen.py (Reference Bible §4, §5.2, §5.4).
 
-Palettes are hex strings; proportions are in cell pixels (128 px cell = 2 m, so 114 px ≈ 1.78 m).
+Palettes are hex strings; proportions are in cell pixels (128 px cell = 2 m, so 114 px ≈ 1.78 m: the placeholder
+generator's density; PixelLab imports are scaled by height_m instead, see docs/DECISIONS.md "Scale" and "Direction").
 Humanoid rigs only: the non-humanoid playables (Cassia-09, Xyloph, Vesper, Pierrot-Glenn, Static,
 Omega-Spekkio) get their own rigs in later passes and currently use their painted stand-ins.
 """

@@ -1,3 +1,15 @@
+# Prototype combat audit (historical)
+
+Copied verbatim from `docs/AUDIT.md` of the combat prototype, the private repository
+https://github.com/iteatsthesalt/Trigger at commit `aea60a2` (2026-10-26). A byte-identical snapshot of that
+commit lived under `prototype/` in this repository until 2026-11-02, when it was removed: its systems were
+re-implemented under the Combat Laws Bible in `scripts/combat` (see COMBAT_LAWS_BIBLE.md 18.6 for how its
+rules were replaced and REFERENCE_BIBLE.md 10.3 for the history). The audit below is kept because it lists the
+bugs the prototype found in the source architecture documents; its file paths and test counts refer to that
+repository, not to this one.
+
+---
+
 # Trigger — Combat Architecture Audit
 
 Audited: *Hybrid Chrono Octopath Combat Architecture* (v1, project upload) and its v2 found inside Foundational Source 02 (adds HUD, shield plates, AoE shader, sandbox bootstrap).

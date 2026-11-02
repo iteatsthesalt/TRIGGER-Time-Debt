@@ -43,7 +43,7 @@ def crono_wheel(prompt, nod, look_away, name):
 S["ch2_grove_wake"] = [
     {"universe": 1},
     {"checkpoint": "ch2_grove"},
-    {"music": "mus_u1_morning"},
+    {"music": "mus_u1_ashen_morning"},
     cap("Kuro-Truce Bamboo Grove. Rice paper for sky. Every stalk a single brush stroke, and the wind moves them on twos."),
     {"fade": "in", "wait": 1.0},
     nar("Crono comes to with his cheek on paper. The ink has not dried under him: a man-shaped smear where he fell through the seam."),
@@ -71,7 +71,7 @@ S["ch2_grove_wake"] = [
 S["ch2_duel_sequence"] = [
     {"run": "ch2_grove_wake"},
     {"battle": "", "boss_id": "krona_duel", "boss": True, "at": "krona_duel_start", "center": "grove_center",
-     "music": "mus_boss_krona_duel", "on_win": "won", "on_lose": "lost"},
+     "music": "mus_u1_krona_duel", "on_win": "won", "on_lose": "lost"},
     {"label": "lost"},
     {"debt": 5},
     nar("The ink takes him. Somewhere a girl rewinds a blow she did not see, and the paper is blank again."),
@@ -157,7 +157,7 @@ S["ch2_pagoda_fracture"] = [
 # ---------------------------------------------------------------- 2.3 Kuro-Truce streets
 S["ch2_streets_arrival"] = [
     {"checkpoint": "ch2_streets"},
-    {"music": "mus_u1_morning"},
+    {"music": "mus_u1_ashen_morning"},
     cap("Kuro-Truce. The Ashen Morning. Every gate is being painted bone white, and the painters hum."),
     nar("Townsfolk with paper masks and wet brushes. Fresh paper over every door. Under the paper, if you look, something darker that the paper is for."),
     say("sera", "Smells like wet ash under paint.", "neutral"),
@@ -264,7 +264,7 @@ for i in range(4):
         ]
     script += [
         {"battle": f"iron_bridge_shrine_{n}", "at": f"bridge_{n}_fight", "center": f"bridge_{n}_center",
-         "music": "mus_u1_battle_core", "on_win": "won", "on_lose": "lost"},
+         "music": "mus_battle_core_u1", "on_win": "won", "on_lose": "lost"},
         {"label": "lost"},
         {"debt": 5},
         {"goto": "won"},
@@ -511,7 +511,6 @@ S["ch2_vault_nodachi"] = [
     nar("Krona weeps. First time. The oil in her gourd stops bubbling and does not start again."),
     {"set_flag": "Cobalt_Nodachi:Taken"},
     {"key_item": "cobalt_nodachi"},
-    {"learn": "cobalt_nodachi", "who": "krona"},
     nar("THE COBALT NODACHI. Its trail stains the sky; Crono's Smear Dash can now find hidden Chronoslips in every world. HOMELAND DYE: a portal back to U1 from anywhere."),
     {"goto": "done"},
     {"label": "leave"},

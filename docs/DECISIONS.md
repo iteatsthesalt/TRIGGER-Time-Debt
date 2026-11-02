@@ -192,3 +192,32 @@ replacements exist, one character at a time, starting with the hero anchor (styl
 rotated to eight directions as "TRIGGER Anchor Crono 64 v1"). Every open ASSET_REQUESTS entry is to be
 re-specified at this scale before it is sent. Touches Reference Bible 1.2, 1.4, 2.3 and 3; ART_PIPELINE
 1 and 1b; the breakdown sections 3, 5, 6 and 12.
+
+## Audit fixes of 2026-11-02: what the bibles now say where they disagreed
+Settled while applying the verified docs audit (the full list is `docs/reports/WORKSPACE_AUDIT_2026-11-02.md`):
+- **The R-66Y fight's fourth phase is keyed to the Paradox road** (`Amber_Rift_U2=set` in
+  `data/bosses/r66y.json`), as the Story Bible says in four places; Combat Laws 14.5 said "over 45,000 HP".
+  Touches Combat Laws 14.5, Story Bible 3.4 and 9.3.
+- **The Salvage gives Empress Cannon (Krona + Cassia-09), not Omega Annihilation**, in the boss data's branch
+  text and Combat Laws 14.5, as AUDIT.md row 25 already settled; Omega Annihilation stays the Sera + Static Dual.
+- **The Cobalt Nodachi is forged in Chapter 3.** Reference Appendix B #13 settled it (vault pigment in U1,
+  Geno-Foundry forge in U2), so Story 2.7 is "The cobalt pigment" (Taken = pigment + Crimson Night), the kit and
+  tech unlock on the `Masamune_Reforged` flag, and the Chapter 2 generator no longer hands the weapon out
+  (`game_state._learn_defaults` honours only chapter and on_join unlocks, so that dialogue `learn` was the real
+  grant). The Chapter 3 forge script must `learn` it. Touches Story 2.7 and 9.3, Combat 11.4/11.14/14.3.
+- **Overclocked Short-Circuit is Crono + Krona** (Combat Laws, `data/techs/duals.json`, the Weaver's data) and
+  now has learners: both kits unlock it in Chapter 3. The Story Bible's two lines that called it Cassia-09's
+  recruitment Dual are reworded.
+- **Flag ids are spelled as the data spells them:** `R66Y_Rewound` / `R66Y_Salvaged` (the boss name keeps its
+  hyphen, the flag does not). Sera's weapon is "Twin Pendulum Blades" in every document; Cassia-09's gramophone
+  horn grows from her shoulder (plate-04 and the painting).
+- **The embedded prototype is gone.** `prototype/` was a byte-identical snapshot of the private repository
+  iteatsthesalt/Trigger at commit aea60a2 that Godot skipped only because of its nested project.godot; its
+  systems were re-implemented in `scripts/combat`. Kept: its combat audit as `docs/reports/prototype_combat_audit.md`
+  and `tools/blender/build_truce_pier.py` (credited). Reference 10.3 and Combat Laws 18.6 are history notes
+  pointing at the Trigger repository. Tag aea60a2 there (QUESTIONS_FOR_NICH).
+- **Hygiene:** `design/` is `.gdignore`d (72 import sidecars dropped), raw PixelLab zips are no longer tracked
+  (`source_art/**/*.zip` ignored; the unpacked frames stay), Python tools are executable, `.gitignore` is
+  deduplicated. `lint_data.py` now warns about music and ambience ids with no file (21 today), ambient-chatter
+  location keys that match no Router id (5 today), and Duals with no learner (3 today); the importer refuses
+  TEST/REJECTED items unless forced.

@@ -7,7 +7,7 @@
    "checkpoint": "ch2_grove"
   },
   {
-   "music": "mus_u1_morning"
+   "music": "mus_u1_ashen_morning"
   },
   {
    "caption": "Kuro-Truce Bamboo Grove. Rice paper for sky. Every stalk a single brush stroke, and the wind moves them on twos."
@@ -107,7 +107,7 @@
    "boss": true,
    "at": "krona_duel_start",
    "center": "grove_center",
-   "music": "mus_boss_krona_duel",
+   "music": "mus_u1_krona_duel",
    "on_win": "won",
    "on_lose": "lost"
   },
@@ -391,7 +391,7 @@
    "checkpoint": "ch2_streets"
   },
   {
-   "music": "mus_u1_morning"
+   "music": "mus_u1_ashen_morning"
   },
   {
    "caption": "Kuro-Truce. The Ashen Morning. Every gate is being painted bone white, and the painters hum."
@@ -693,7 +693,7 @@
    "battle": "iron_bridge_shrine_1",
    "at": "bridge_1_fight",
    "center": "bridge_1_center",
-   "music": "mus_u1_battle_core",
+   "music": "mus_battle_core_u1",
    "on_win": "won",
    "on_lose": "lost"
   },
@@ -732,7 +732,7 @@
    "battle": "iron_bridge_shrine_2",
    "at": "bridge_2_fight",
    "center": "bridge_2_center",
-   "music": "mus_u1_battle_core",
+   "music": "mus_battle_core_u1",
    "on_win": "won",
    "on_lose": "lost"
   },
@@ -791,7 +791,7 @@
    "battle": "iron_bridge_shrine_3",
    "at": "bridge_3_fight",
    "center": "bridge_3_center",
-   "music": "mus_u1_battle_core",
+   "music": "mus_battle_core_u1",
    "on_win": "won",
    "on_lose": "lost"
   },
@@ -889,7 +889,7 @@
    "battle": "iron_bridge_shrine_4",
    "at": "bridge_4_fight",
    "center": "bridge_4_center",
-   "music": "mus_u1_battle_core",
+   "music": "mus_battle_core_u1",
    "on_win": "won",
    "on_lose": "lost"
   },
@@ -1617,10 +1617,6 @@
   },
   {
    "key_item": "cobalt_nodachi"
-  },
-  {
-   "learn": "cobalt_nodachi",
-   "who": "krona"
   },
   {
    "say": "THE COBALT NODACHI. Its trail stains the sky; Crono's Smear Dash can now find hidden Chronoslips in every world. HOMELAND DYE: a portal back to U1 from anywhere.",

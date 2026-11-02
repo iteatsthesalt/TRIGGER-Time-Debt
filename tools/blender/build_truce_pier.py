@@ -1,3 +1,6 @@
+# From the combat prototype, https://github.com/iteatsthesalt/Trigger @ aea60a2 (tools/blender/build_truce_pier.py).
+# Kept as the worked example of a deterministic Blender kit script that Reference Bible 1.6 cites; the Truce pier
+# itself is not a set piece of this game.
 """Generate the Truce pier set piece and export it as glTF.
 
 Run:

@@ -120,6 +120,66 @@ if text:
     gaps += [f"codex:{k}" for k in flags if k not in cx]
     for k, lines in text.get("ambient", {}).items():
         if not isinstance(lines, list) or not lines: errors.append(f"text/ambient: {k} has no lines")
+# Ambient keys are location ids: Location reads Data.ambient_lines(location_id), so a key must be a Router id
+# (scripts/autoload/scene_router.gd) or a Location.location_id. A key for a location that is not built yet is a
+# warning (the lines wait for the scene); the lead checks it against the planned scene list.
+warnings = []
+router_src = (ROOT / "scripts/autoload/scene_router.gd").read_text()
+location_ids = set(re.findall(r'locations\[&"([a-z0-9_]+)"\]', router_src))
+for p in sorted((ROOT / "scripts/locations").glob("*.gd")):
+    location_ids |= set(re.findall(r'location_id\s*=\s*&"([a-z0-9_]+)"', p.read_text()))
+for k in text.get("ambient", {}):
+    if k not in location_ids:
+        warnings.append(f"text/ambient: {k} matches no Router or Location id (unreachable until a scene registers it)")
+# Music and ambience ids: Audio.play_music loads res://audio/music/<id>.ogg or <id>__<stem>.ogg and play_ambience
+# res://audio/ambience/<id>.ogg, and both drop a missing file silently. Every id named by data/ (dialogue cues,
+# encounters, bosses, universes) or by a location script is checked; a missing track is a warning, counted, unless
+# the Prologue or Chapter 1 (prologue.json, chapter1.json, the built location scripts) asks for it: then an error.
+AUDIO_SHIPPED = {"data/dialogue/prologue.json", "data/dialogue/chapter1.json"}
+def _audio_refs():
+    refs = {}  # (kind, id) -> set of files
+    def add(kind, ident, src):
+        refs.setdefault((kind, ident), set()).add(src)
+    for p in sorted((ROOT / "data").rglob("*.json")):
+        rel = p.relative_to(ROOT).as_posix()
+        raw = p.read_text(encoding="utf-8")
+        for ident in re.findall(r'"(mus_[a-z0-9_]+)"', raw): add("music", ident, rel)
+        for ident in re.findall(r'"(amb_[a-z0-9_]+)"', raw): add("ambience", ident, rel)
+    for p in sorted((ROOT / "scripts/locations").glob("*.gd")):
+        rel = p.relative_to(ROOT).as_posix()
+        raw = p.read_text(encoding="utf-8")
+        for ident in re.findall(r'field_music\s*=\s*&"(mus_[a-z0-9_]+)"', raw): add("music", ident, rel)
+        for ident in re.findall(r'ambience\s*=\s*&"(amb_[a-z0-9_]+)"', raw): add("ambience", ident, rel)
+        for ident in re.findall(r'play_music\(&"(mus_[a-z0-9_]+)"', raw): add("music", ident, rel)
+    return refs
+music_dir, amb_dir = ROOT / "audio/music", ROOT / "audio/ambience"
+def _has_track(kind, ident):
+    d = music_dir if kind == "music" else amb_dir
+    return (d / f"{ident}.ogg").exists() or (kind == "music" and any(d.glob(f"{ident}__*.ogg")))
+missing_audio = []
+for (kind, ident), srcs in sorted(_audio_refs().items()):
+    if _has_track(kind, ident): continue
+    shipped = sorted(s for s in srcs if s in AUDIO_SHIPPED or s.startswith("scripts/locations/"))
+    if shipped: errors.append(f"audio: {kind} id {ident} has no file under audio/{kind}/ but the Prologue/Chapter 1 plays it ({', '.join(shipped)})")
+    else: missing_audio.append(f"{ident} ({', '.join(sorted(srcs))})")
+if missing_audio:
+    warnings.append(f"audio: {len(missing_audio)} music/ambience id(s) referenced by data have no track yet (AudioDirector plays silence for them):")
+    warnings += [f"    {m}" for m in missing_audio]
+# Every Dual and Triple needs a learner: a kit entry in one of its actors (data/characters) or a dialogue `learn`
+# command; otherwise the engine can never offer it. A warning, counted, until the chapter that teaches it is written.
+learned = set()
+for cmds in dialogue.values():
+    for c in cmds:
+        if isinstance(c, dict) and "learn" in c: learned.add(c["learn"])
+kit_techs = {cid: {(t["id"] if isinstance(t, dict) else t) for t in d.get("techs", [])} for cid, d in chars.items()}
+unlearnable = []
+for tid, t in techs.items():
+    if t.get("tier") not in ("dual", "triple"): continue
+    if tid in learned or any(tid in kit_techs.get(a, set()) for a in t.get("actors", [])): continue
+    unlearnable.append(f"{tid} ({' + '.join(t.get('actors', []))}, unlock {t.get('unlock')})")
+if unlearnable:
+    warnings.append(f"techs: {len(unlearnable)} Dual/Triple id(s) appear in no actor's kit and no dialogue learn command:")
+    warnings += [f"    {u}" for u in unlearnable]
 # Props (data/props, docs/ART_PIPELINE.md section 6): a billboard with a height in metres. Fields are a closed
 # set, the key names its universe, and every delivered prop has its sheet, frames json and normal sheet under
 # assets/props/u<n>/<key>/; a prop marked pending may have none yet. Every object recorded in
@@ -166,5 +226,6 @@ print(f"data lint: {len(techs)} techs, {len(enemies)} enemies, {len(bosses)} bos
       f"{len(encounters)} encounters, {len(dialogue)} scripts, {len(items)} items, {len(props)} props, text layer: {len(text)} files, {len(gaps)} ids without text")
 for g in gaps[:20]: print("  WARN: no text for", g)
 if len(gaps) > 20: print(f"  WARN: ... and {len(gaps) - 20} more")
+for w in warnings: print("  WARN:", w)
 for e in errors: print("  ERROR:", e)
 sys.exit(1 if errors else 0)

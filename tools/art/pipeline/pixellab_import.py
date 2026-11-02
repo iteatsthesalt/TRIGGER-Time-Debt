@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
-"""PixelLab → game sheet pipeline (Reference Bible §1.1, §1.4 CHR-F/CHR-B, §1.11, §1.12).
+"""PixelLab → game sheet pipeline for characters (Reference Bible §1.1, §1.4 CHR-F/CHR-B, §1.11, §1.12).
 
-The generation itself happens through the PixelLab MCP tools (create_character / animate_character);
-this module takes a finished PixelLab character id and writes the game's contract:
+Entry point: tools/art/import_pixellab.py (one command per asset; it resolves the target folder, tier and
+variant from the game data and the PixelLab name, records the import in data/art/pixellab_assets.json and
+routes props to pipeline/pixellab_objects.py). This module is its library; its own CLI below is kept for
+rebuilding a sheet by hand. The generation itself happens through the PixelLab MCP tools (create_character /
+animate_character); given a finished PixelLab character id this writes the game's contract, where the stem is
+`<key>[_<variant>]_<tier>` (e.g. `crono_field`, `crono_action`, `sera_u1_field`; docs/ART_PIPELINE.md §2):
 
-    assets/<group>/<id>/<id>_field.png      8 direction rows (s, w, e, n, sw, se, nw, ne) × animation columns
-    assets/<group>/<id>/<id>_frames.json    cell, per-anim {col, count, fps, loop, holds}, height_px, height_m
-    assets/<group>/<id>/<id>_field.png.import   lossless, no mipmaps, fix alpha border
-    source_art/<group>/<id>/pixellab/       the raw download (zip, unpacked frames, metadata) so a sheet can be rebuilt
+    assets/<group>/<key>/<stem>.png             8 direction rows (s, w, e, n, sw, se, nw, ne) × animation columns
+    assets/<group>/<key>/<stem>_frames.json     cell, per-anim {col, count, fps, loop, holds}, height_px, height_m
+    assets/<group>/<key>/<stem>_n.png           the generated normal sheet
+    assets/<group>/<key>/<stem>.png.import      lossless, no mipmaps, fix alpha border
+    source_art/<group>/<key>/pixellab<suffix>/  the raw download (unpacked frames, metadata.json, contact.png) so a
+                                                sheet can be rebuilt with --skip-download; the archive is not tracked
 
-Usage:
+Usage (library use goes through import_pixellab.py):
     python3 tools/art/pipeline/pixellab_import.py <character_id> <game_id> [--group characters]
         [--canvas u0] [--height-m 1.78] [--fps 60] [--map walk=walking,run=running-6-frames,...]
 

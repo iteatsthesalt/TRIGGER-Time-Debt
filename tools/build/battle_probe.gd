@@ -1,7 +1,9 @@
 ## Headless battle probe: boots the game into a location (default test_arena) with the given user args,
 ## then prints battle state every --every=N frames and the summary when the battle ends. Exits after
 ## --frames=N or when the boss battle finishes.
-##   godot --headless --path . --script res://tools/build/battle_probe.gd -- --scene=test_arena --autobattle --boss=atrium_cradle --party=crono,sera,marle
+##   godot --headless --path . --script res://tools/build/battle_probe.gd -- --scene=test_arena --autobattle --boss=atrium_cradle --party=crono,sera,marle --level=4
+## Pass --chapter=<n> for any boss after the Prologue: kit entries unlock by chapter (Game.set_chapter), so without
+## it a Chapter 1+ boss is fought with the Prologue kit and the difficulty reads wrong.
 extends SceneTree
 
 var frames_total: int = 6000

@@ -1,7 +1,7 @@
 ## Statuses, shields and the enemy brain (Combat Laws Bible §5.7, §6.3, §7.3, §7.5, §9.3, §12; acceptance §18.7
 ## #18, #20, #21, #22, #23): Ruin's ceiling and cap, the four Lv2 debuffs and their readers, the periodic ticks,
 ## party accuracy and the shave penalties, the three special shield rules, Jammed enemies, NULL's strip expiring,
-## the cleanse keep-list, the boss status rules and Glenn's steals.
+## the cleanse keep-list, the boss status rules and Glenn's steals; Silence and Knock-Static on enemies.
 extends "res://tests/suite_base.gd"
 
 const ARENA := "res://scenes/test/arena.tscn"
@@ -46,6 +46,12 @@ func _run(c: BattleCoordinator, seconds: float, step: float = 1.0 / 30.0) -> voi
 			continue
 		c.advance(step)
 		t += step
+
+
+func _tough_party(u: Node) -> void:
+	var st := CombatantStats.of(u)
+	st.base_max_hp = 99999
+	st.hp = 99999
 
 
 func _shield(e: Node, cfg: Dictionary) -> ShieldComponent:
@@ -153,6 +159,68 @@ func test_a_jammed_enemy_whose_actions_all_wind_up_attacks_plainly() -> void:
 	c.gauges[e] = 100.0
 	c._begin_enemy_turn(e)
 	check(not c.wind_ups.has(e), "the coordinator starts no telegraph for a Jammed body")
+
+
+func test_a_silenced_enemy_makes_a_plain_attack() -> void:
+	var c := _coord()
+	var crono := _party_member(&"crono", 10, Vector3(-3, 0, 0))
+	var e := _enemy(&"choir", 10, Vector3(3, 0, 0), 4, ["ICE"], {"hp": 50000, "weapon_tags": ["PIERCING"]})
+	var def := _def("choir", [
+		{"id": "spell_nova", "tags": ["LIGHT"], "shape": "CIRCLE", "radius": 2.0, "power": 0.01, "wind_up_s": 1.5, "target": "weakest"},
+		{"id": "hex", "tags": ["DARK"], "shape": "SINGLE", "power": 0.01, "target": "weakest"},
+	])
+	_start(c, [crono], [e], {"enemy_defs": {&"choir": def}})
+	_tough_party(crono)
+	c.fields.add(&"divinity_field", c.arena_center, 40.0, -1.0, 0)  # the party's field
+	ShieldComponent.of(e).force_break(crono)
+	check(StatusComponent.of(e).has(&"silence"), "a foe that Breaks in the party's Divinity Field is silenced 15 s (§12.5)")
+	var chosen: Array[String] = []
+	c.enemy_action_started.connect(func(_u: Node, a: Dictionary) -> void: chosen.append(String(a["id"])))
+	var t: float = 0.0
+	while ShieldComponent.of(e).is_broken and t < 12.0:
+		_run(c, 0.5)
+		t += 0.5
+	check(not ShieldComponent.of(e).is_broken and StatusComponent.of(e).has(&"silence"), "it recovers from the Break still silenced")
+	for i in 3:
+		c.gauges[e] = CombatConstants.GAUGE_MAX - 0.1  # its next turns, inside the 15 s
+		_run(c, 0.5)
+	check(chosen.size() >= 3 and StatusComponent.of(e).has(&"silence"), "it acts three times while silenced (%d)" % chosen.size())
+	check_eq(chosen.filter(func(id: String) -> bool: return id != "attack").size(), 0, "Silenced, its techniques are sealed: every action a plain Attack (§12)")
+	check(Array(EnemyBrain.choose(c, e, def, c.rng)["tags"]).has(&"PIERCING"), "with its weapon tags")
+	StatusComponent.of(e).remove(&"silence")
+	var named: bool = false
+	for i in 8:
+		named = named or String(EnemyBrain.choose(c, e, def, c.rng)["id"]) != "attack"
+	check(named, "the silence over, its techniques come back")
+
+
+## Knock-Static hitches every action of its 2 turns (§12.2), so it is read when the action is chosen; Magnetized and
+## Gramophone's hitched hitch the next action only ('next action' is turns 2: DECISIONS "Readings chosen").
+func test_knock_static_hitches_two_actions_a_boss_one() -> void:
+	var c := _coord()
+	var crono := _party_member(&"crono", 10, Vector3(-3, 0, 0))
+	var grunt := _enemy(&"grunt", 10, Vector3(3, 0, 0), 4, ["ICE"], {"hp": 50000})
+	var boss := _enemy(&"big", 10, Vector3(3, 0, 3), 4, ["ICE"], {"hp": 50000, "kind": "boss"})
+	var metal := _enemy(&"bell", 10, Vector3(3, 0, -3), 4, ["ICE"], {"hp": 50000})
+	_start(c, [crono], [grunt, boss, metal])
+	_tough_party(crono)
+	var hitches := func(e: Node, turns: int) -> Array:
+		var out: Array = []
+		for i in turns:
+			c.gauges[e] = CombatConstants.GAUGE_MAX
+			c._begin_enemy_turn(e)  # the brain chooses, the turn counts its statuses down, the wind-up starts
+			out.append(float(c.wind_ups[e]["total"]) if c.wind_ups.has(e) else 0.0)
+			if c.wind_ups.has(e):
+				c._execute_enemy_action(e, c.wind_ups[e]["action"])
+				c.wind_ups.erase(e)
+		return out
+	StatusRules.apply(c, grunt, &"knock_static", -1.0, 2)
+	check_eq(str(hitches.call(grunt, 3)), str([0.5, 0.5, 0.0]), "a 2-turn Knock-Static hitches the enemy's next two actions 0.5 s")
+	StatusRules.apply(c, boss, &"knock_static", -1.0, 2)
+	check_eq(str(hitches.call(boss, 2)), str([0.5, 0.0]), "a boss takes half: one hitched action, not none (§12.1)")
+	for id in [&"magnetized", &"hitched"]:
+		StatusComponent.of(metal).add(id, -1.0, 2)
+		check_eq(str(hitches.call(metal, 2)), str([0.5, 0.0]), "%s at 2 turns hitches its next action only" % id)
 
 
 func test_hp_windows_hold_when_the_cadence_rules_everything_out() -> void:

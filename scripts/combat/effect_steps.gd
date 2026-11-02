@@ -124,14 +124,19 @@ static func run(c: BattleCoordinator, op: Dictionary, ctx: Dictionary) -> void:
 					purge_buff(StatusComponent.of(u))
 		"steal":
 			# Glenn's steal (§7.5: the counter first, then the laugh) sized by the op: `by_boost` per Boost level,
-			# else `n` (1). The size picks the lowest steal level that takes that many.
+			# else `n` (1). The size picks the lowest steal level that takes that many, and it is the whole action's:
+			# one steal per Glenn action (§7.5, #22), taken from the units of `on` in order until it is filled (Guilt
+			# Halo's Breaks); only the Ash Ringmaster's Break gives more (its whole counter).
 			var table: Array = op.get("by_boost", [])
 			var want: int = int(table[clampi(int(ctx["boost"]), 0, table.size() - 1)]) if not table.is_empty() else int(op.get("n", 1))
 			var level: int = 0
 			while level < CombatConstants.GLENN_STEAL.size() - 1 and CombatConstants.GLENN_STEAL[level] < want:
 				level += 1
+			var left: int = CombatConstants.GLENN_STEAL[level]
 			for u in each:
-				TechEffects._steal_from(c, _caster(c, ctx, &"glenn"), u, level)
+				if left <= 0:
+					break
+				left -= TechEffects._steal_from(c, _caster(c, ctx, &"glenn"), u, level, left)
 		"bp":
 			var n2: int = int(op.get("n", 0))
 			if n2 < 0:

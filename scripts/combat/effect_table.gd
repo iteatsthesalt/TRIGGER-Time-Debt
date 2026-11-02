@@ -201,16 +201,25 @@ static func shaves_nothing(tech: TechDef) -> bool:
 
 
 ## A received hit's context after the statuses rows leave on a target: The Last Joke's crack (the next hits
-## ignore DEF, one stack per hit) and the Gold Leaf washi pocket (every party hit is true damage).
-static func adjust_hit(ctx: Dictionary, tsc: StatusComponent) -> void:
+## ignore DEF, one stack per hit) and the Gold Leaf washi pocket (every party hit is true damage). `spend`: the hit
+## lands and spends its stack (PartyHit.terms reads without it); `ahead`: hits before this one not yet landed (the
+## preview's later hits), so a 3-stack crack bares DEF to three of them.
+static func adjust_hit(ctx: Dictionary, tsc: StatusComponent, spend: bool = true, ahead: int = 0) -> void:
 	if tsc == null:
 		return
 	if tsc.has(&"washi_pocket"):  # TRUE NULL for the pocket (§12.4): no DEF, no resistance, no weakness multiplier
 		ctx["def"] = 0.0
 		ctx["resist"] = 1.0
 		ctx["weakness"] = false
-	if tsc.has(&"exposed"):
+	if tsc.stacks(&"exposed") > ahead:
 		ctx["def"] = 0.0
+	if spend:
+		spend_hit(tsc)
+
+
+## A hit landed on the bearer: The Last Joke's crack loses one stack (PartyHit.context, after its `terms`).
+static func spend_hit(tsc: StatusComponent) -> void:
+	if tsc != null and tsc.has(&"exposed"):
 		tsc.remove_stacks(&"exposed", 1)
 
 

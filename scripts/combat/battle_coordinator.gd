@@ -522,9 +522,9 @@ func cmd_attack(actor: Node, target: Node, boost: int = 0) -> Dictionary:
 	var action := {
 		"kind": "attack", "attacker": actor, "casters": [actor], "tags": Array(st.weapon_tags),
 		"shape": {"shape": TechDef.Shape.SINGLE, "scale": CombatConstants.BOOST_SCALE[boost]},
-		"hits": maxi(1, st.weapon_hits), "base": 1.0, "uses": TechDef.Uses.PHYSICAL, "boost": boost,
-		"tech": null, "aim": position_of(target), "primary": target, "synergy": 1.0,
+		"hits": maxi(1, st.weapon_hits), "aim": position_of(target), "primary": target,
 	}
+	action.merge(PartyHit.action_keys(self, null, boost, [actor]))  # base 1.0, P.Atk, no synergy (the preview's too)
 	var info: Dictionary = _resolve_action(action)
 	_finish_turn(actor, 0.0)
 	_after_party_action(info)
@@ -564,7 +564,6 @@ func cmd_tech(actor: Node, tech_id: StringName, target: Node, aim: Vector3, boos
 	bank.spend(boost)
 	if boost > 0:
 		boost_used.emit(actor, boost)
-	var synergy: float = tech.synergy_base() * _pair_synergy(casters)
 	var aim_point: Vector3 = aim
 	if target != null:
 		aim_point = position_of(target)
@@ -574,10 +573,9 @@ func cmd_tech(actor: Node, tech_id: StringName, target: Node, aim: Vector3, boos
 		"kind": "tech", "attacker": actor, "casters": casters, "tags": Array(tech.tags),
 		"shape": {"shape": tech.shape, "radius": tech.radius, "length": tech.length, "width": tech.width,
 			"inner_radius": tech.inner_radius, "beams": tech.beams, "scale": tech.shape_scale(boost)},
-		"hits": tech.hit_count, "base": tech.base_per_hit, "uses": tech.uses, "boost": boost,
-		"tech": tech, "aim": aim_point, "primary": target, "synergy": synergy,
-		"steps": maxi(1, tech.steps), "guaranteed_crit": tech.guaranteed_crit,
+		"hits": tech.hit_count, "aim": aim_point, "primary": target, "steps": maxi(1, tech.steps),
 	}
+	action.merge(PartyHit.action_keys(self, tech, boost, casters))  # base, stat, synergy × pair synergy, crit
 	for k in ACTION_OPTIONS:
 		if options.has(k):
 			action[k] = options[k]
@@ -771,6 +769,12 @@ func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int,
 	var aim_point: Vector3 = position_of(target) if target != null else aim
 	var found: Array = CastReach.caught(self, tech, TacticalPositioner.targets_in_shape(shape, position_of(actor), aim_point, _enemy_candidates(), _blockers(), CastReach.extra_origins(self, [actor] + partners)))
 	var bonus_if_status: Dictionary = TechEffects.bonus_if_status(tech)
+	var casters: Array = [actor]
+	for pa in partners:
+		if pa != actor and not casters.has(pa):
+			casters.append(pa)
+	var keys: Dictionary = PartyHit.action_keys(self, tech, boost, casters)  # the damage keys cmd_tech builds
+	var best: CombatantStats = PartyHit.best_caster(casters, int(keys["uses"]), st)
 	var out: Dictionary = {}
 	for h in found:
 		var e: Node = h["node"]
@@ -781,30 +785,10 @@ func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int,
 			p = sh.preview_action(t_tags, hits * int(h["hits"]), ShaveBonus.against(self, actor, tech, boost, e, t_tags, bonus_if_status), st.actor_id, ShaveBonus.penalty(actor, t_tags, tech))
 		p["hits"] = hits * int(h["hits"])
 		p["sealed"] = undamageable.has(e)  # a sealed body takes no HP damage; the plates still shave
-		p["damage"] = 0 if p["sealed"] else _estimate_damage(actor, tech, e, boost, hits * int(h["hits"]), int(h["rank"]), t_tags)
+		p["damage"] = 0 if p["sealed"] else PartyHit.estimate(self, keys, actor, best, e, t_tags, hits * int(h["hits"]), int(h["rank"]))
 		out[e] = p
 	CastReach.after_plates(self, tech, actor, out, aim_point, boost)  # shave_any, auto_break, a crossing plate
 	return out
-
-
-func _estimate_damage(actor: Node, tech: TechDef, target: Node, boost: int, hits: int, rank: int, tags: Array) -> int:
-	var a := CombatantStats.of(actor)
-	var t := CombatantStats.of(target)
-	var sh := ShieldComponent.of(target)
-	var uses: int = tech.uses if tech != null else TechDef.Uses.PHYSICAL
-	var base: float = tech.base_per_hit if tech != null else 1.0
-	var broken: bool = sh != null and sh.is_broken
-	var pair: Dictionary = DamagePipeline.pick_stats(uses, a, t, (CombatConstants.BREAK_DEF_MULT if broken else 1.0))
-	var ctx := {
-		"atk": pair["atk"], "def": pair["def"], "base": base * EffectTable.damage_mult(self, tech, boost, target), "synergy": tech.synergy_base() if tech != null else 1.0,
-		"party_synergy": party_synergy(), "home_canvas": _home_canvas(actor), "boost_level": boost,
-		"weakness": sh != null and sh.hits_weakness(tags), "broken": broken, "falloff_rank": rank,
-		"resist": DamagePipeline.resist_factor(tags, sh, t), "variance": 1.0,
-		"astral": tags.has(CombatTags.ASTRAL), "target_hp": t.hp, "is_boss": t.kind == "boss",
-	}
-	PartyHit.null_rule(ctx, tags, StatusComponent.of(target))
-	var one: Dictionary = DamagePipeline.compute_hit(ctx)
-	return int(one["damage"]) * hits
 
 
 func party_synergy() -> float:
@@ -911,7 +895,7 @@ func _begin_enemy_turn(e: Node) -> void:
 	enemy_action_started.emit(e, action)
 	var wind: float = float(action.get("wind_up_s", 0.0))
 	if sc != null:
-		wind += sc.hitch_seconds()
+		wind += sc.hitch_seconds(bool(action.get("stepped", false)))  # Knock-Static as it was when chosen
 	if wind > 0.0:
 		wind_ups[e] = {"action": action, "left": wind, "total": wind}
 		telegraph_started.emit(e, action)
@@ -1004,10 +988,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 	var perfect: bool = bool(_perfect_frame_pending.get(attacker, false))
 	_perfect_frame_pending.erase(attacker)
 	var hits_per: int = int(action.get("hits", 1))
-	var flicker: bool = false
-	if a_stats.actor_id == &"sera":
-		var sol := SolidityComponent.of(attacker)
-		flicker = sol != null and sol.ghost_layers() >= 3
+	var flicker: bool = PartyHit.flicker(attacker)
 	var filter: Callable = action.get("target_filter", Callable())
 	var a_sc := StatusComponent.of(attacker)
 	var push_per_hit: float = float(action.get("gauge_push_per_hit", 0.0))

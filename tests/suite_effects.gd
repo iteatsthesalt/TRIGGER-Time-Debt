@@ -26,14 +26,15 @@ const AUDIT_UNHANDLED: Array[String] = [
 ## The action cmd_tech builds for `tech_id` (TechEffects.apply is called with it directly).
 func _action(c: BattleCoordinator, actor: Node, tech_id: StringName, aim: Vector3, primary: Node = null, boost: int = 0, casters: Array = []) -> Dictionary:
 	var tech: TechDef = Data.techs[tech_id]
-	return {
-		"kind": "tech", "attacker": actor, "casters": casters if not casters.is_empty() else [actor], "tags": Array(tech.tags),
+	var who: Array = casters if not casters.is_empty() else [actor]
+	var action := {
+		"kind": "tech", "attacker": actor, "casters": who, "tags": Array(tech.tags),
 		"shape": {"shape": tech.shape, "radius": tech.radius, "length": tech.length, "width": tech.width,
 			"inner_radius": tech.inner_radius, "beams": tech.beams, "scale": tech.shape_scale(boost)},
-		"hits": tech.hit_count, "base": tech.base_per_hit, "uses": tech.uses, "boost": boost, "tech": tech,
-		"aim": c.position_of(primary) if primary != null else aim, "primary": primary, "synergy": tech.synergy_base(),
-		"steps": 1, "guaranteed_crit": tech.guaranteed_crit,
+		"hits": tech.hit_count, "aim": c.position_of(primary) if primary != null else aim, "primary": primary, "steps": 1,
 	}
+	action.merge(PartyHit.action_keys(c, tech, boost, who))  # base, stat, synergy × pair synergy, crit: cmd_tech's
+	return action
 
 
 func _cast(c: BattleCoordinator, actor: Node, tech_id: StringName, aim: Vector3, primary: Node = null, boost: int = 0, casters: Array = []) -> Dictionary:

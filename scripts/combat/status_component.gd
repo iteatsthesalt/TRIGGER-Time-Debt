@@ -187,11 +187,6 @@ func movement_multiplier() -> float:
 	return m
 
 
-## What the bearer's hits keep of their damage: Refracted splits 20% away as a harmless prism (§7.3).
-func outgoing_multiplier() -> float:
-	return 1.0 - CombatConstants.REFRACTED_SPLIT if has(&"refracted") else 1.0
-
-
 ## Accuracy modifier (additive, 0 = normal).
 func accuracy_mod() -> float:
 	var a: float = 0.0
@@ -262,9 +257,13 @@ func is_untargetable() -> bool:
 	return has(&"phased") or has(&"cloaked") or has(&"untargetable")
 
 
-func hitch_seconds() -> float:
+## The hitch (late start) of the bearer's action (§12.2): 0.5 s under Magnetized or Gramophone Resonance's
+## hitched, which hitch the 'next action' (turns 2, read after the turn's countdown: DECISIONS "Readings chosen"),
+## or under Knock-Static, which hitches every action of its turns: EnemyBrain reads it when the action is chosen,
+## before the countdown, and passes it as `stepped`; 0.5 s more from Mercury SLOW's second stack.
+func hitch_seconds(stepped: bool = false) -> float:
 	var h: float = 0.0
-	if has(&"magnetized") or has(&"knock_static") or has(&"hitched"):  # hitched: Gramophone Resonance's rattle
+	if stepped or has(&"magnetized") or has(&"knock_static") or has(&"hitched"):
 		h += 0.5
 	if has(&"mercury_slow") and stacks(&"mercury_slow") >= 2:
 		h += 0.5

@@ -1,9 +1,10 @@
 ## Combat Laws Bible §18.7 acceptance checks the fixtures can reach, as behaviour (audit cluster "tests_acceptance"):
 ## #5 a Break stops the body, its gauge and its navigation; #7 the rebuild's timing and the body's 0.4 s resume; #8
 ## HOLD's lock and its charge; #9 the statue's 8 s and its 112% hull; #13 Boost power, shape, the Lv2 debuff and the
-## Lv4 field; #14 Rewind's HP, gauge and position; #20 Mercury SLOW; #22 Glenn's steal through the command; #23 every
-## technique's plate preview against the plates its cast leaves. Then a boss's HP-window phase change through an
-## attack (and one that waits for the Break), a refused technique in the battle scene, and EnemyDef's data rules.
+## Lv4 field; #14 Rewind's HP, gauge and position; #20 Mercury SLOW; #22 Glenn's steal through the command, on one
+## body and over many; #23 every technique's plate preview against the plates its cast leaves. Then a boss's
+## HP-window phase change through an attack (and one that waits for the Break), a refused technique in the battle
+## scene, and EnemyDef's data rules.
 ## #25 lives in suite_engine_saves (the defeat's -5 and the siege) and suite_core (no Game Over).
 extends "res://tests/suite_base.gd"
 
@@ -382,6 +383,36 @@ func test_check_22_one_steal_takes_at_most_three_bp_and_duplicates_none() -> voi
 	check_eq(int(r["info"].get("stolen", -1)), 3, "it takes 3 BP, not 4")
 	check_eq(int(e.get_meta("stolen_bp")), 7, "the counter loses 3")
 	check_eq(c.bank.bp, 6 - 4 + 3, "the pool paid the Boost and gained exactly those 3")
+
+
+## #22 over many bodies: Guilt Halo steals on the Breaks it lands, and however many Break the action takes one
+## steal (§7.5: 1 BP for its size), from the counters first, and the pool gains what the counters lose.
+func test_check_22_a_steal_over_many_breaks_is_one_steal() -> void:
+	for held in [0, 2]:
+		var c := _coord()
+		var crono := _party_member(&"crono", 44, Vector3(0, 0, 0))
+		var glenn := _party_member(&"glenn", 44, Vector3(-1.0, 0, -4.0))
+		var bodies: Array = []
+		for i in 5:
+			var a: float = TAU * float(i) / 5.0
+			bodies.append(_enemy(StringName("add%d" % i), 44, Vector3(cos(a) * 1.5, 0, sin(a) * 1.5), 1, ["ASTRAL"], {"hp": 500000}))
+		_start(c, [crono, glenn], bodies, {"techs": Data.techs, "max_bp": 9, "max_spend": 4})
+		_tough(crono)
+		_tough(glenn)
+		CombatantStats.of(glenn).mp = 999
+		c._open_window(glenn, false)  # Glenn waits in the Ready Pool
+		c._open_window(crono, false)
+		c.bank.bp = 0
+		for b in bodies:
+			b.set_meta("stolen_bp", held)
+		var r: Dictionary = c.cmd_tech(crono, &"guilt_halo", null, c.position_of(crono), 0, [glenn])
+		check(bool(r.get("ok", false)), "Guilt Halo casts: %s" % str(r.get("error", "")))
+		check_eq((r["info"].get("breaks", []) as Array).size(), 5, "five bodies Break in one cast")
+		check_eq(c.bank.bp, 1, "counters of %d: one steal of 1 BP for the action, not one per Break (§7.5, #22)" % held)
+		var lost: int = 0
+		for b in bodies:
+			lost += held - int(b.get_meta("stolen_bp", 0))
+		check_eq(lost, 1 if held > 0 else 0, "the counters lose what the pool gains (nothing duplicated)")
 
 
 # ---------------------------------------------------------------- #23: every technique's plate preview

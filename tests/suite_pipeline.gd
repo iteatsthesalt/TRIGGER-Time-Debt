@@ -1,7 +1,7 @@
 ## The resolution pipeline (audit cluster "pipeline"): turn statuses a caster gives itself, the Boosted Attack,
 ## NULL's true damage, HOLD, per-caster cooldowns, Sera's TACHYON turns, every residual and floor field, the
-## Divinity Field, Lv3 fields, the Break that ends a telegraph, preview parity on fields, the Dual's best
-## caster, the cap upgrades and the hooks that used to be dead.
+## Divinity Field, Lv3 fields, the Break that ends a telegraph, preview parity on fields and on damage, the Dual's
+## best caster, the cap upgrades and the hooks that used to be dead.
 extends "res://tests/suite_base.gd"
 
 
@@ -456,6 +456,83 @@ func test_preview_counts_the_watercolour_puddle() -> void:
 	check_eq(int(p[e]["shave"]), 2, "1 ASTRAL match + 1 for the puddle (§7.4)")
 	var r: Dictionary = c.cmd_tech(crono, &"time_slice", e, c.position_of(e), 0)
 	check_eq(int(r["info"]["shave"][e]), int(p[e]["shave"]), "the hit shaves what the plate said (§18.7 #23)")
+
+
+# ---------------------------------------------------------------- the preview's damage is the hit's (§4.5, #23)
+
+## A fresh battle with Crono's window open on one body that is weak to nothing (so no plate falls mid-action);
+## `height` lifts him onto a ledge.
+func _aim_at(height: float = 0.0) -> Array:
+	var c := _coord()
+	var crono := _party_member(&"crono", 30, Vector3(-1.0, height, 0))
+	var e := _enemy(&"x", 30, Vector3(1.0, 0, 0), 4, ["ICE"], {"hp": 900000})
+	_start(c, [crono], [e])
+	_sturdy(crono)
+	_advance_until_actor(c, &"crono")
+	return [c, crono, e]
+
+
+func test_preview_damage_reads_the_targets_statuses_the_crack_and_the_ledge() -> void:
+	var plain: Array = _aim_at()
+	var pc: BattleCoordinator = plain[0]
+	var base: int = int(pc.preview(plain[1], null, plain[2], Vector3.ZERO, 0)[plain[2]]["damage"])
+	check_eq(int(pc.cmd_attack(plain[1], plain[2])["info"]["damage"][plain[2]]), base, "a plain Attack deals what the aim line says")
+	var cases: Array = [
+		{"label": "Fragile", "id": &"fragile", "x": 1.5},
+		{"label": "Marked", "id": &"marked", "x": 1.25},
+		{"label": "Prism Guard", "id": &"prism_guard", "x": 0.6},
+		{"label": "Corroded DEF", "id": &"corroded", "data": {"def": true}},
+		{"label": "a 1-stack crack on a 2-hit Attack", "id": &"exposed", "stacks": 1},
+		{"label": "a 3-stack crack", "id": &"exposed", "stacks": 3},
+		{"label": "the ledge", "height": 1.5, "x": 1.0 + CombatConstants.LEDGE_BONUS},
+	]
+	for k in cases:
+		var b: Array = _aim_at(float(k.get("height", 0.0)))
+		var c: BattleCoordinator = b[0]
+		var e: Node = b[2]
+		var sc := StatusComponent.of(e)
+		if k.has("id"):
+			sc.add(k["id"], -1.0, -1, int(k.get("stacks", 1)), k.get("data", {}))
+		var stacks_before: int = sc.stacks(&"exposed")
+		var rng_before: int = c.rng.state
+		var said: int = int(c.preview(b[1], null, e, Vector3.ZERO, 0)[e]["damage"])
+		check(c.rng.state == rng_before and sc.stacks(&"exposed") == stacks_before, "%s: the preview draws nothing and spends nothing" % k["label"])
+		check(said != base, "%s: the preview reads it (%d against %d plain)" % [k["label"], said, base])
+		if k.has("x"):
+			check_near(float(said) / float(base), float(k["x"]), 0.01, "%s: x%.2f" % [k["label"], float(k["x"])])
+		check_eq(int(c.cmd_attack(b[1], e)["info"]["damage"][e]), said, "%s: the Attack deals what the aim line said" % k["label"])
+	var so: Array = _aim_at()
+	ShieldComponent.of(so[2]).shield_only = true
+	check_eq(int((so[0] as BattleCoordinator).preview(so[1], null, so[2], Vector3.ZERO, 0)[so[2]]["damage"]), 0, "a shield-only body: the aim line promises no HP damage before its Break")
+	check_eq(int((so[0] as BattleCoordinator).cmd_attack(so[1], so[2])["info"]["damage"][so[2]]), 0, "and the Attack deals none")
+
+
+func test_preview_damage_reads_a_duals_synergy_best_caster_and_guaranteed_crit() -> void:
+	var pair := {"id": "pair_cut", "name": "Pair Cut", "tier": "dual", "actors": ["crono", "krona"], "tags": ["SWORD"], "shape": "SINGLE", "hits": 2, "power": 1.0, "uses": "BEST", "costs": {}}
+	var c := _coord()
+	var crono := _party_member(&"crono", 30, Vector3(-1.0, 0, 0))
+	var krona := _party_member(&"krona", 60, Vector3(-1.0, 0, 1.0))
+	var xyloph := _party_member(&"xyloph", 60, Vector3(-1.0, 0, -1.0))
+	var e := _enemy(&"x", 30, Vector3(1.0, 0, 0), 4, ["ICE"], {"hp": 900000})
+	_start(c, [crono, krona, xyloph], [e], {"techs": _with(["triangulation"], [pair]), "max_bp": 9})
+	for u in [crono, krona, xyloph]:
+		_sturdy(u)
+		CombatantStats.of(u).mp = 999
+	for id in [&"pair_cut", &"triangulation"]:
+		var partner: Node = krona if id == &"pair_cut" else xyloph
+		c._open_window(partner, false)  # the partner waits in the Ready Pool
+		c._open_window(crono, false)
+		var tech: TechDef = c.tech_library[id]
+		var solo: int = PartyHit.estimate(c, PartyHit.action_keys(c, tech, 0, [crono]), crono, CombatantStats.of(crono), e, Array(tech.tags), tech.hit_count, 0)
+		var said: int = int(c.preview(crono, tech, e, c.position_of(e), 0, [partner])[e]["damage"])
+		check(said > solo, "%s: the preview reads the partner (%d against Crono alone %d)" % [id, said, solo])
+		var r: Dictionary = c.cmd_tech(crono, id, e, c.position_of(e), 0, [partner])
+		check(bool(r.get("ok", false)), "%s casts: %s" % [id, str(r.get("error", ""))])
+		check_eq(int(r["info"]["damage"].get(e, -1)), said, "%s: the Dual deals what the aim line said" % id)
+	var tri: TechDef = c.tech_library[&"triangulation"]
+	var keys: Dictionary = PartyHit.action_keys(c, tri, 0, [crono, xyloph])
+	check(bool(keys["guaranteed_crit"]), "the preview's Triangulation carries its guaranteed crit")
+	check_near(float(PartyHit.action_keys(c, c.tech_library[&"pair_cut"], 0, [crono, krona])["synergy"]), c.tech_library[&"pair_cut"].synergy_base() * CombatConstants.SYNERGY_CRONO_KRONA, 0.0001, "and Crono + Krona's pair synergy")
 
 
 # ---------------------------------------------------------------- COMBAT-19: the Dual's stat

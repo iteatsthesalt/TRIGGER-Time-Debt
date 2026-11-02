@@ -1,22 +1,24 @@
 ## Enemy decision making (Combat Laws Bible §3.5, §13). Picks one of the EnemyDef's actions
 ## and the battlers it aims at. Deterministic given the coordinator's RNG.
-## Statuses read here (§7.3, §12.2): Jammed rules out wind-ups (a Jammed body whose every action winds up
-## makes a plain Attack); GUILTY turns half its attacks on one of its own allies ("turned"); the action carries
-## Probability Lock (consumed: the next action rolls twice, keeps the worse) and Refracted (its damage loses
-## 20%) for EnemyStrike, read when the action is chosen so a 2-turn status covers two actions.
+## Statuses read here (§7.3, §12, §12.2): Silence seals its techniques (a Silenced body makes a plain Attack);
+## Jammed rules out wind-ups (a Jammed body whose every action winds up makes a plain Attack); GUILTY turns half its
+## attacks on one of its own allies ("turned"); the action carries Probability Lock (consumed: the next action rolls
+## twice, keeps the worse) and Refracted (its damage loses 20%) for EnemyStrike, and Knock-Static ("stepped": the
+## action hitches) for the coordinator's wind-up, read when the action is chosen so a 2-turn status covers two
+## actions.
 class_name EnemyBrain
 extends RefCounted
 
 ## Returns a normalized action: {id, name, tags, shape, radius, length, width, power, hits, wind_up_s,
 ## status, status_turns, status_seconds, target_rule, targets: Array[Node], aim: Vector3, heal, effect,
-## turned, probability_lock, refracted}
+## turned, probability_lock, refracted, stepped}
 static func choose(coord: BattleCoordinator, enemy: Node, def: EnemyDef, rng: RandomNumberGenerator) -> Dictionary:
 	var stats := CombatantStats.of(enemy)
 	var st := StatusComponent.of(enemy)
 	var actions: Array = def.actions if def != null else []
 	var pick: Dictionary = {}
-	if actions.is_empty():
-		pick = plain_attack(stats)
+	if actions.is_empty() or (st != null and not st.can_cast_techs()):
+		pick = plain_attack(stats)  # Silence: its techniques are sealed, its Attack still works (§12)
 	else:
 		var jammed: bool = st != null and not st.can_wind_up()
 		var ratio: float = stats.hp_ratio()
@@ -64,6 +66,7 @@ static func choose(coord: BattleCoordinator, enemy: Node, def: EnemyDef, rng: Ra
 	}
 	if st != null:
 		out["refracted"] = st.has(&"refracted")
+		out["stepped"] = st.has(&"knock_static")  # every action of its turns hitches (§12.2)
 		out["probability_lock"] = st.has(&"probability_lock")
 		st.remove(&"probability_lock")
 	var targets: Array = pick_targets(coord, enemy, out["target_rule"], rng)

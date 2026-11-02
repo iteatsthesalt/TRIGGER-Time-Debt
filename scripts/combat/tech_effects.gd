@@ -418,8 +418,9 @@ static func _fake_weakness(c: BattleCoordinator, _u: Node) -> StringName:
 ## Glenn's steal (§7.5, acceptance §18.7 #22): from the enemy's stolen-BP counter first (1 BP at Lv0-1, 2 at
 ## Lv2, 3 at Lv3+); only when the counter is empty, 1 BP from its "laugh". A Broken enemy whose behaviour says
 ## `steal_all_when_broken` (the Ash Ringmaster) gives up its whole counter. The pool's cap still applies.
-static func _steal_from(c: BattleCoordinator, glenn: Node, target: Node, boost: int) -> int:
-	var n: int = CombatConstants.GLENN_STEAL[clampi(boost, 0, 4)]
+## `limit`: what is left of this action's steal (EffectSteps' multi-body steal), when it is less than the level's.
+static func _steal_from(c: BattleCoordinator, glenn: Node, target: Node, boost: int, limit: int = 99) -> int:
+	var n: int = mini(CombatConstants.GLENN_STEAL[clampi(boost, 0, 4)], limit)
 	var taken: int = 0
 	var held: int = int(target.get_meta("stolen_bp", 0)) if target != null else 0
 	if held > 0:
@@ -428,7 +429,7 @@ static func _steal_from(c: BattleCoordinator, glenn: Node, target: Node, boost: 
 			n = held
 		taken = mini(held, n)
 		target.set_meta("stolen_bp", held - taken)
-	elif target != null:
+	elif target != null and n > 0:
 		taken = 1
 		target.set_meta("stolen_from", true)
 	if taken > 0:

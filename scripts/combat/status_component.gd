@@ -1,5 +1,8 @@
 ## Active statuses on one battler (Combat Laws Bible §12). Durations are seconds of battle time
 ## or turns (the bearer's own actions). The pipeline queries the modifiers; the coordinator ticks.
+## StatusRules decides how a status lands (boss rules, Ruin, Stripped); StatusTicks answers `periodic`.
+## A status whose data carries an "undo" Callable runs it when it is removed (expiry, cleanse, clear_all):
+## Stripped and NULL's strip give their plates back that way.
 class_name StatusComponent
 extends Node
 
@@ -9,6 +12,8 @@ signal periodic(id: StringName, stacks: int)
 
 ## id -> {seconds: float, turns: int, stacks: int, data: Dictionary, period_accum: float}
 var statuses: Dictionary = {}
+## id -> stack cap for this battle, over MAX_STACKS (Porcelain Silence's Ruin scaling, RuinRules).
+var cap_overrides: Dictionary = {}
 
 ## Periodic statuses: id -> seconds between ticks.
 const PERIODS := {
@@ -50,7 +55,7 @@ func ids() -> Array[StringName]:
 
 ## Apply a status. seconds < 0 and turns < 0 mean "until removed".
 func add(id: StringName, seconds: float = -1.0, turns: int = -1, add_stacks: int = 1, extra: Dictionary = {}) -> void:
-	var cap: int = int(MAX_STACKS.get(id, 99))
+	var cap: int = int(cap_overrides.get(id, MAX_STACKS.get(id, 99)))
 	if statuses.has(id):
 		var s: Dictionary = statuses[id]
 		s["seconds"] = seconds
@@ -65,8 +70,13 @@ func add(id: StringName, seconds: float = -1.0, turns: int = -1, add_stacks: int
 
 
 func remove(id: StringName) -> void:
-	if statuses.erase(id):
-		status_removed.emit(id)
+	if not statuses.has(id):
+		return
+	var undo: Variant = statuses[id]["data"].get("undo", null)
+	statuses.erase(id)
+	if undo is Callable and (undo as Callable).is_valid():
+		(undo as Callable).call()
+	status_removed.emit(id)
 
 
 func remove_stacks(id: StringName, n: int) -> void:
@@ -83,10 +93,17 @@ func clear_all() -> void:
 		remove(id)
 
 
+## What a cleanse leaves: buffs that last past a battle, Concerned (until camp, §12.3) and Ruin, which only
+## thaws (§12.2; RuinRules clears it when the battle ends). Ens rings live in the coordinator, not here.
+const CLEANSE_KEEPS: Array[StringName] = [
+	&"light_stack", &"reinforced", &"glass_ward", &"ruin_infused", &"ward", &"concerned_target", &"ruin",
+]
+
+
 ## Cleanse everything that is a debuff and not permanent-by-design.
 func cleanse() -> void:
 	for id in ids():
-		if not [&"light_stack", &"reinforced", &"ens_ring", &"glass_ward", &"ruin_infused", &"ward", &"concerned", &"ruin"].has(id):
+		if not CLEANSE_KEEPS.has(id):
 			remove(id)
 
 
@@ -124,7 +141,7 @@ func gauge_multiplier() -> float:
 	var m: float = 1.0
 	if has(&"time_stop"):
 		return 0.0
-	if has(&"mercury_slow"):
+	if has(&"mercury_slow") or has(&"ash_inhale"):  # Ash Inhale is one SLOW stack (§12.2)
 		m *= CombatConstants.MERCURY_SLOW
 	if has(&"chrono_lag"):
 		m *= CombatConstants.CHRONO_LAG
@@ -143,11 +160,17 @@ func gauge_multiplier() -> float:
 	return m
 
 
+## Movement range in battle (cmd_move): Mercury SLOW, Ash Inhale's SLOW stack, the RUIN ash field, SLOW.
 func movement_multiplier() -> float:
 	var m: float = 1.0
-	if has(&"mercury_slow") or has(&"ash_field") or has(&"slow"):
+	if has(&"mercury_slow") or has(&"ash_inhale") or has(&"ash_field") or has(&"slow"):
 		m *= 0.5
 	return m
+
+
+## What the bearer's hits keep of their damage: Refracted splits 20% away as a harmless prism (§7.3).
+func outgoing_multiplier() -> float:
+	return 1.0 - CombatConstants.REFRACTED_SPLIT if has(&"refracted") else 1.0
 
 
 ## Accuracy modifier (additive, 0 = normal).

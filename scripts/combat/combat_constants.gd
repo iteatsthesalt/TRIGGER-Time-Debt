@@ -98,6 +98,13 @@ const BLIND_ACCURACY := -0.30
 const GRIEF_MP := 2
 const GRIEF_PERIOD_S := 10.0
 const GRIEF_MAX_STACKS := 3
+const LAUGH_TRACK_MP := 1
+## DoTs tick at 15% of one hit's raw damage (§6.3); regen heals 2% max HP per tick unless it carries its own.
+const DOT_TICK_FRACTION := 0.15
+const REGEN_PCT := 0.02
+## Lv2 debuffs (§7.3): Refracted splits 20% of the bearer's damage away; GUILTY turns 50% of its attacks.
+const REFRACTED_SPLIT := 0.20
+const GUILTY_REDIRECT := 0.5
 const DIVINITY_PERIOD_S := 5.0
 const DIVINITY_CAP := 0.20
 const DIVINITY_RUIN_THAW := 0.01

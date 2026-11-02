@@ -23,6 +23,7 @@
        {"id": "whip_crack", "name": "Whip Crack", "tags": ["GUILE", "FIRE"], "shape": "CONE", "radius": 6.0, "length": 6.0, "power": 1.2, "hits": 1, "effect": "steal_bp", "bp_steal": 1, "target": "nearest", "weight": 2},
        {"id": "ash_flourish", "name": "Ash Flourish", "tags": ["SMOKE"], "shape": "CIRCLE", "radius": 3.0, "power": 0.9, "hits": 1, "status": "ash_inhale", "status_seconds": 8, "target": "weakest", "weight": 1}
      ],
+     "behaviour": {"steal_all_when_broken": true},
      "mechanics": ["while_he_stands_no_bp_is_generated_at_the_gate_glenns_theft_is_the_only_bp_source", "every_10s_battle_time_whip_crack_cone_6_0_steals_1_bp_into_visible_counter", "guile_weakness_honest_hit_only", "break_whip_freezes_mid_crack_glenn_empties_whole_counter_with_a_single_steal_exception_to_3_bp_steal_cap_pool_cap_still_applies"],
      "on_enter": "",
      "on_break": "The whip freezes mid-crack and Glenn can empty the whole counter with a single steal.",

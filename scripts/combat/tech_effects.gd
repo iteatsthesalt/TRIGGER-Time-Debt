@@ -234,18 +234,14 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 					if st4 != null and st4.true_null:
 						continue
 					if sc7 != null:
+						# 2 turns (§11.10, §9.3): the status's undo gives the plates back (StatusRules).
 						sc7.cleanse()
-						sc7.add(&"nulled", -1.0, 2)
-					if sh4 != null:
-						if sh4.weaknesses.is_empty():
-							var fake: StringName = _fake_weakness(c, u)
-							sh4.weaknesses.append(fake)
-							sh4.revealed[fake] = true
-							if sc7 != null:
-								sc7.add(&"nulled_weakness", -1.0, 2, 1, {"tag": fake})
-						else:
-							sh4.resists.clear()
-							sh4.absorbs.clear()
+						var undo: Callable = Callable()
+						if sh4 != null and sh4.weaknesses.is_empty():
+							StatusRules.create_weakness(sh4, sc7, _fake_weakness(c, u), 2)
+						elif sh4 != null:
+							undo = StatusRules.strip_resists(sh4)
+						sc7.add(&"nulled", -1.0, 2, 1, {"undo": undo} if undo.is_valid() else {})
 					info["targets"].append(u)
 			c.fields.blank(center, radius3, 8.0)
 		&"divinity_field":
@@ -271,9 +267,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 		&"swap_face":
 			info = _merge_damage(c, info, action)
 			for t in info["targets"]:
-				var sc10 := StatusComponent.of(t)
-				if sc10 != null:
-					sc10.add(&"guilty", -1.0, 2)
+				StatusRules.apply(c, t, &"guilty", -1.0, 2)
 		&"honest_laugh":
 			if target == null:
 				target = actor
@@ -409,17 +403,21 @@ static func _fake_weakness(c: BattleCoordinator, _u: Node) -> StringName:
 	return FAKE_POOL[c.rng.randi_range(0, FAKE_POOL.size() - 1)]
 
 
+## Glenn's steal (§7.5, acceptance §18.7 #22): from the enemy's stolen-BP counter first (1 BP at Lv0-1, 2 at
+## Lv2, 3 at Lv3+); only when the counter is empty, 1 BP from its "laugh". A Broken enemy whose behaviour says
+## `steal_all_when_broken` (the Ash Ringmaster) gives up its whole counter. The pool's cap still applies.
 static func _steal_from(c: BattleCoordinator, glenn: Node, target: Node, boost: int) -> int:
 	var n: int = CombatConstants.GLENN_STEAL[clampi(boost, 0, 4)]
 	var taken: int = 0
-	if target != null and target.has_meta("stolen_bp"):
-		var held: int = int(target.get_meta("stolen_bp", 0))
-		var from_counter: int = mini(held, n)
-		target.set_meta("stolen_bp", held - from_counter)
-		taken += from_counter
-		n -= from_counter
-	if n > 0 and target != null:
-		taken += 1
+	var held: int = int(target.get_meta("stolen_bp", 0)) if target != null else 0
+	if held > 0:
+		var def: EnemyDef = c.enemy_defs.get(CombatantStats.of(target).actor_id, null)
+		if def != null and bool(def.behaviour.get("steal_all_when_broken", false)) and c.is_broken(target):
+			n = held
+		taken = mini(held, n)
+		target.set_meta("stolen_bp", held - taken)
+	elif target != null:
+		taken = 1
 		target.set_meta("stolen_from", true)
 	if taken > 0:
 		c.bank.add(taken)
@@ -436,9 +434,7 @@ static func apply_enemy_effect(c: BattleCoordinator, enemy: Node, action: Dictio
 	match eff:
 		"bell_slow":
 			for u in c.party:
-				var sc := StatusComponent.of(u)
-				if sc != null:
-					sc.add(&"slow", 6.0)
+				StatusRules.apply(c, u, &"slow", 6.0)
 		"repaint":
 			if not enemy.get_meta("repainted", false):
 				enemy.set_meta("repainted", true)
@@ -458,18 +454,12 @@ static func apply_enemy_effect(c: BattleCoordinator, enemy: Node, action: Dictio
 			c.set_oil_blight(true)
 		"time_stop":
 			for h in hit_list:
-				var sc2 := StatusComponent.of(h["node"])
-				if sc2 != null:
-					sc2.add(&"time_stop", 3.0)
+				StatusRules.apply(c, h["node"], &"time_stop", 3.0)
 		"grief":
 			for h in hit_list:
-				var sc3 := StatusComponent.of(h["node"])
-				if sc3 != null:
-					sc3.add(&"grief", -1.0, -1)
+				StatusRules.apply(c, h["node"], &"grief")
 		"fog":
 			var f: Dictionary = c.fields.add(&"vhs_fog", action.get("aim", c.arena_center), 4.0, 20.0, 1)
 			c.field_added.emit(f)
 			for h in hit_list:
-				var sc4 := StatusComponent.of(h["node"])
-				if sc4 != null:
-					sc4.add(&"blind", 10.0)
+				StatusRules.apply(c, h["node"], &"blind", 10.0)

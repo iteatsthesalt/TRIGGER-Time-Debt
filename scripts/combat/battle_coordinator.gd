@@ -171,6 +171,7 @@ func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: D
 		_init_unit(e, _start_gauge(false, advantage))
 	if hover_sera != null and not party.has(hover_sera):
 		_init_unit(hover_sera, _start_gauge(true, advantage))
+	StatusRules.begin_battle(self, config)  # Ruin cap, periodic ticks, break conditions, shared plates
 	bp_changed.emit(bank.bp, bank.max_bp)
 	battle_started.emit(center)
 	state = State.TICK
@@ -262,6 +263,7 @@ func _finish(victory: bool, reason: String = "", extra: Dictionary = {}) -> void
 		var sol2 := SolidityComponent.of(hover_sera)
 		if sol2 != null:
 			sol2.end_battle()
+	StatusRules.end_battle(self)
 	last_summary = summary
 	battle_ended.emit(victory, summary)
 	state = State.IDLE
@@ -275,6 +277,7 @@ func add_enemy(u: Node, def: EnemyDef = null) -> void:
 	if def != null:
 		enemy_defs[CombatantStats.of(u).actor_id] = def
 	_init_unit(u, rng.randf_range(CombatConstants.ENEMY_START_GAUGE.x, CombatConstants.ENEMY_START_GAUGE.y) * 0.5)
+	StatusRules.enemy_added(self, u)
 	enemy_added.emit(u)
 
 
@@ -494,10 +497,9 @@ func cmd_move(actor: Node, to: Vector3) -> Dictionary:
 	if moved_this_window == actor:
 		return _fail("already moved this window")
 	moved_this_window = actor
-	var st := CombatantStats.of(actor)
 	var from: Vector3 = position_of(actor)
 	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)
-	var range_m: float = st.move_range if st != null else 6.0
+	var range_m: float = StatusRules.move_range(actor)  # SLOW halves it (§12.2)
 	if flat.length() > range_m + 0.001:
 		to = from + flat.normalized() * range_m
 	var half: float = CombatConstants.PLANE_SIZE * 0.5
@@ -781,7 +783,7 @@ func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int)
 		var sh := ShieldComponent.of(e)
 		var p: Dictionary = {"shave": 0, "breaks": false, "already_broken": false, "after": 0}
 		if sh != null:
-			p = sh.preview_action(tags, hits * int(h["hits"]), ShaveBonus.against(self, actor, tech, boost, e, tags, bonus_if_status), st.actor_id)
+			p = sh.preview_action(tags, hits * int(h["hits"]), ShaveBonus.against(self, actor, tech, boost, e, tags, bonus_if_status), st.actor_id, ShaveBonus.penalty(actor, tags))
 		p["hits"] = hits * int(h["hits"])
 		p["sealed"] = undamageable.has(e)  # a sealed body takes no HP damage; the plates still shave
 		p["damage"] = 0 if p["sealed"] else _estimate_damage(actor, tech, e, boost, hits * int(h["hits"]), int(h["rank"]), tags)
@@ -934,7 +936,7 @@ func _execute_enemy_action(e: Node, action: Dictionary) -> void:
 	var shape_id: int = int(TechDef.SHAPE_NAMES.get(shape_name, TechDef.Shape.SINGLE))
 	var aim: Vector3 = action.get("aim", position_of(targets[0]) if not targets.is_empty() else arena_center)
 	var hit_list: Array = []
-	if shape_id == TechDef.Shape.SINGLE:
+	if shape_id == TechDef.Shape.SINGLE or bool(action.get("turned", false)):  # GUILTY: one of its own allies
 		if not targets.is_empty():
 			hit_list = [{"node": targets[0], "hits": 1, "rank": 0}]
 	else:
@@ -952,7 +954,7 @@ func _execute_enemy_action(e: Node, action: Dictionary) -> void:
 	for h in hit_list:
 		var t: Node = h["node"]
 		info["targets"].append(t)
-		var dealt: int = _resolve_enemy_hits(e, t, action, int(h["hits"]), int(h["rank"]))
+		var dealt: int = EnemyStrike.resolve(self, e, t, action, int(h["hits"]), int(h["rank"]))
 		info["damage"][t] = dealt
 	if String(action.get("effect", "")) != "":
 		TechEffects.apply_enemy_effect(self, e, action, hit_list)
@@ -961,64 +963,6 @@ func _execute_enemy_action(e: Node, action: Dictionary) -> void:
 	if state == State.EXECUTING:
 		state = prev if prev != State.EXECUTING else State.TICK
 	_check_end()
-
-
-func _resolve_enemy_hits(e: Node, t: Node, action: Dictionary, shape_hits: int, rank: int) -> int:
-	var est := CombatantStats.of(e)
-	var tst := CombatantStats.of(t)
-	var tags: Array = action.get("tags", [])
-	var hits: int = maxi(1, int(action.get("hits", 1))) * maxi(1, shape_hits)
-	var total: int = 0
-	var telegraphed: bool = float(action.get("wind_up_s", 0.0)) > 0.0
-	for i in hits:
-		if not tst.is_alive():
-			break
-		# Evasion: LUK × 0.05% + Trauma Silence + status, against non-telegraphed hits only.
-		if not telegraphed:
-			var evade: float = tst.luk * 0.0005 + _evasion_bonus(t)
-			if rng.randf() < evade:
-				strike_resolved.emit(e, t, {"damage": 0, "evaded": true, "tags": tags})
-				continue
-		# Ens Parry: a perfect parry negates the hit and leaves an Ens ring.
-		if tst.is_guarding and parry_armed.has(t):
-			parry_armed.erase(t)
-			ens_rings[t] = {"left": CombatConstants.ENS_RING_DEBT_NULL_S, "shave": 1}
-			var td := TimeDebtComponent.of(t)
-			if td != null:
-				td.debt_null_left = CombatConstants.ENS_RING_DEBT_NULL_S
-			parry_result.emit(t, true)
-			strike_resolved.emit(e, t, {"damage": 0, "parried": true, "tags": tags})
-			continue
-		var uses: int = int(TechDef.USES_NAMES.get(String(action.get("uses", "BEST")), TechDef.Uses.BEST))
-		var tsc := StatusComponent.of(t)
-		var pair: Dictionary = DamagePipeline.pick_stats(uses, est, tst, (tsc.def_multiplier(false) if tsc != null else 1.0))
-		var ctx := {
-			"atk": pair["atk"], "def": pair["def"], "base": float(action.get("power", 1.0)),
-			"falloff_rank": rank, "variance": _variance(),
-			"vulnerable": tst.is_vulnerable_to(tags), "resist": (CombatConstants.RESIST_MULT if tst.is_resistant_to(tags) else 1.0),
-			"taken_mult": (tsc.damage_taken_multiplier() if tsc != null else 1.0),
-		}
-		if tst.null_shield or tst.true_null:
-			ctx["taken_mult"] = float(ctx["taken_mult"]) * (0.8 if tst.null_shield else 1.0)
-		var r: Dictionary = DamagePipeline.compute_hit(ctx)
-		var dmg: int = int(r["damage"])
-		# Shared damage along a Mycelia net (15%) and Marle's Ward are handled by the status hooks.
-		if tsc != null and tsc.has(&"ward"):
-			dmg = roundi(float(dmg) * 0.5)
-			tsc.remove(&"ward")
-		if tsc != null and tsc.has(&"glass_ward"):
-			dmg = roundi(float(dmg) * 0.5)
-			tsc.remove_stacks(&"glass_ward", 1)
-		var vulnerable_breaks_guard: bool = bool(ctx["vulnerable"])
-		if party_hp_floor > 0 and party.has(t):
-			# zero-fail fights (the 999 Shard Doll): nobody here can be knocked out
-			dmg = mini(dmg, maxi(0, tst.hp - party_hp_floor))
-		var dealt: int = tst.apply_damage(dmg, vulnerable_breaks_guard)
-		total += dealt
-		_apply_enemy_status(action, t)
-		strike_resolved.emit(e, t, {"damage": dealt, "tags": tags, "crit": r["crit"]})
-		_after_damage(t)
-	return total
 
 
 ## Passives that fire when a party member is hurt: Krona's gourd, the wrist-seam check.
@@ -1037,35 +981,6 @@ func _after_damage(t: Node) -> void:
 		if sc != null:
 			sc.add(&"concerned_target", -1.0, -1)
 		truth_moment.emit(&"galaxy_reveal")
-
-
-func _apply_enemy_status(action: Dictionary, t: Node) -> void:
-	var sid: String = String(action.get("status", ""))
-	if sid == "":
-		return
-	var sc := StatusComponent.of(t)
-	if sc == null:
-		return
-	var st := CombatantStats.of(t)
-	var resist_chance: float = minf(0.30, st.luk * 0.001)
-	if rng.randf() < resist_chance:
-		return
-	if rng.randf() > float(action.get("status_chance", 1.0)):
-		return
-	sc.add(StringName(sid), float(action.get("status_seconds", -1.0)), int(action.get("status_turns", -1)))
-
-
-func _evasion_bonus(t: Node) -> float:
-	var st := CombatantStats.of(t)
-	var bonus: float = 0.0
-	if st.actor_id == &"crono":
-		bonus += 0.10
-		if st.hp_ratio() < 0.5:
-			bonus += 0.10
-	var sc := StatusComponent.of(t)
-	if sc != null:
-		bonus += sc.evasion_bonus()
-	return bonus
 
 
 # ------------------------------------------------------------------ party resolution
@@ -1105,6 +1020,8 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 		var sol := SolidityComponent.of(attacker)
 		flicker = sol != null and sol.ghost_layers() >= 3
 	var filter: Callable = action.get("target_filter", Callable())
+	var a_sc := StatusComponent.of(attacker)
+	var penalty: int = ShaveBonus.penalty(attacker, tags)
 	var push_per_hit: float = float(action.get("gauge_push_per_hit", 0.0))
 	var bonus_if_status: Dictionary = action.get("bonus_if_status", {})
 	for h in found:
@@ -1124,10 +1041,13 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 		for i in n_hits:
 			if not tst.is_alive():
 				break
+			if not StatusRules.hit_lands(self, a_sc):  # BLIND and its kin (§12.2): a miss shaves nothing
+				strike_resolved.emit(attacker, t, {"damage": 0, "evaded": true, "missed": true, "tags": tags})
+				continue
 			var res := {"shaved": 0, "hit_weakness": false, "caused_break": false, "matched": false}
 			var was_broken: bool = sh != null and sh.is_broken
 			if sh != null:
-				res = sh.apply_strike(tags, bonus_left, attacker, a_stats.actor_id)
+				res = sh.apply_strike(tags, bonus_left, attacker, a_stats.actor_id, penalty)
 				shaved += int(res["shaved"])
 				if res["matched"]:
 					bonus_left = 0
@@ -1183,7 +1103,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 		info["damage"][t] = total
 		info["shave"][t] = shaved
 		if boost >= 2 and tst.is_alive():
-			_apply_lv2_debuff(tech, tags, t)
+			StatusRules.lv2_debuff(self, tech, tags, t)
 	ens_rings.erase(attacker)
 	if boost >= 4:
 		_leave_residual(tech, tags, action, found)
@@ -1298,22 +1218,6 @@ func _in_divinity_or_tether(actor: Node) -> bool:
 func _is_metal(u: Node) -> bool:
 	var st := CombatantStats.of(u)
 	return st != null and (st.tags.has(&"FERRO") or st.tags.has(&"GUN") or bool(u.get_meta("is_metal", false)))
-
-
-func _apply_lv2_debuff(tech: TechDef, tags: Array, t: Node) -> void:
-	var sc := StatusComponent.of(t)
-	if sc == null:
-		return
-	var id: StringName = tech.lv2_debuff if tech != null else &""
-	if id == &"":
-		var element: StringName = tech.element_tag() if tech != null else CombatTags.element_of(tags[0] if not tags.is_empty() else &"")
-		id = TechEffects.default_lv2(element)
-	if id == &"":
-		return
-	var data: Dictionary = {}
-	if id == &"corroded":
-		data["def"] = true
-	sc.add(id, -1.0, 2, 1, data)
 
 
 func _leave_residual(tech: TechDef, tags: Array, action: Dictionary, found: Array) -> void:
@@ -1639,15 +1543,12 @@ func _on_unit_defeated(unit: Node) -> void:
 	unit_koed.emit(unit)
 	if party.has(unit):
 		ready_pool.erase(unit)
-		var sc := StatusComponent.of(unit)
-		if prometheus_available and not prometheus_used and (sc == null or sc.stacks(&"ruin") < 2):
-			var td := TimeDebtComponent.of(unit)
-			if td == null or td.ruin_stacks < 2:
-				prometheus_used = true
-				bank.charge_or_owe(1)
-				CombatantStats.of(unit).revive(CombatConstants.PROMETHEUS_REVIVE_HP)
-				unit_revived.emit(unit)
-				battle_message.emit("The Prometheus Core fires.")
+		if prometheus_available and not prometheus_used and not RuinRules.blocks_prometheus(unit):
+			prometheus_used = true
+			bank.charge_or_owe(1)
+			CombatantStats.of(unit).revive(CombatConstants.PROMETHEUS_REVIVE_HP)
+			unit_revived.emit(unit)
+			battle_message.emit("The Prometheus Core fires.")
 
 
 # ------------------------------------------------------------------ fields, blights, rings

@@ -58,11 +58,18 @@ func _ready() -> void:
 		reset_vitals()
 
 
-## The effective maximum HP: Crono's ceiling is lowered by the TimeDebtComponent.
+## The effective maximum HP: Crono's ceiling is lowered by the TimeDebtComponent (Ruin included); every
+## other battler's by its Ruin stacks (RuinRules, §12.2).
 func max_hp() -> int:
-	var td := get_parent().get_node_or_null("TimeDebtComponent") if get_parent() else null
+	var body: Node = get_parent()
+	if body == null:
+		return base_max_hp
+	var td := body.get_node_or_null("TimeDebtComponent")
 	if td != null and td.has_method("max_hp_factor"):
 		return maxi(1, roundi(float(base_max_hp) * float(td.call("max_hp_factor"))))
+	var sc := body.get_node_or_null("StatusComponent") as StatusComponent
+	if sc != null and sc.has(&"ruin"):
+		return maxi(1, roundi(float(base_max_hp) * RuinRules.ceiling_factor(sc.stacks(&"ruin"))))
 	return base_max_hp
 
 

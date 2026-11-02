@@ -33,3 +33,18 @@ static func against(c: BattleCoordinator, actor: Node, tech: TechDef, boost: int
 	if tags.has(CombatTags.ASTRAL) and c.fields.has_kind_at(&"watercolour_puddle", c.position_of(target)):
 		b += 1
 	return b
+
+
+## Shave the actor's hits lose on every matching strike (§12.2): ranged [BOW][GUN] hits under BLIND lose 1,
+## Crono's ASTRAL hits under Sticky Ash lose 1. Read by the preview and the resolution alike.
+static func penalty(actor: Node, tags: Array) -> int:
+	var sc := StatusComponent.of(actor)
+	if sc == null:
+		return 0
+	var p: int = 0
+	if sc.has(&"blind") and (tags.has(CombatTags.BOW) or tags.has(CombatTags.GUN)):
+		p += 1
+	var st := CombatantStats.of(actor)
+	if sc.has(&"sticky_ash") and tags.has(CombatTags.ASTRAL) and st != null and st.actor_id == &"crono":
+		p += 1
+	return p

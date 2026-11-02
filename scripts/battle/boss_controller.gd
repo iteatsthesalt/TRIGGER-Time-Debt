@@ -339,7 +339,8 @@ func _on_unit_broken(unit: Node, _breaker: Node) -> void:
 	var sig: Array[StringName] = actor.shield.break_signature.duplicate()
 	if not _call_director("on_break", [self, sig]).get("handled", false):
 		_show_break_line()
-	if def.gate(phase_index) == "break" and not transitioning:
+	# Refills once (§5.7): the phase's first Break rebuilds the plates and the phase goes on.
+	if def.gate(phase_index) == "break" and not transitioning and not actor.shield.consume_refill():
 		if phase_index + 1 < def.phase_count():
 			gate_open = true  # the next phase begins when this Break has played out
 		else:

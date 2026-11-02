@@ -1,186 +1,217 @@
-# Asset requests for Nich's PixelLab bot
+# Asset requests for Nich's asset team
 
-Nich makes the art. Each entry below is a ready-to-send PixelLab request. The build agent imports finished
-items with `python3 tools/art/import_pixellab.py <pixellab_id|url> <asset_key>` (contract, sheet layout and
-checks in `docs/ART_PIPELINE.md`) and moves the entry to **Done** with the PixelLab id and date. Keep this
-list in priority order; the first undone entry is the most urgent. Entries marked IN PROGRESS already exist
-on the account (ids given); only the listed remaining animations are needed for them.
+Nich makes the art decisions; his asset team generates in the shared PixelLab account. Each entry below is a
+ready-to-send PixelLab request at the scale of DECISIONS "Direction: the Nov 1 recipe is the style"
+(2026-11-02). Delivery tracking lives in Linear "Time Debt - Asset Pipeline" (one issue per asset), Dropbox
+"TRIGGER Time Debt" and Slack `#all-trigger`; the contract is `docs/BOT_REVIEW.md`, and this file is the request
+text. The build lead imports finished items per `docs/ART_PIPELINE.md` §2 and §5 and moves the entry to
+**Done** with the PixelLab id and date. Keep the list in priority order: the Follow-ups come first, then the
+first undone entry is the most urgent. Asset keys are the game's ids and never change; the prompts describe
+the design without naming it (see "Prompt hygiene").
 
-## How to send one
+## Follow-ups (first)
 
-- **Characters** (anything that walks): `create_character` in **pro** mode (`mode="pro"`), `size=128` (pro's
-  maximum; the importer scales every sprite to its height in metres, so never pad or resize),
-  `view="low top-down"`, 8 directions, name it `TRIGGER <Name> v1` (v2, v3 for retries), `concept_image_url`
-  = the catalog image link given, `description` = the prompt given. For the house style, add
-  `style_character_id` = Crono's id `8d699d00-eb9f-4da7-a408-a1f70039fa1c` whenever there is no catalog image.
-- Then queue the **animations** listed, one or two at a time (`animate_character`, and pass
-  `animation_name` = the game name: `idle`, `walk`, `run`, `hurt`, `ready`, `ko`, `revive`, `release`,
-  `interact`, `attack`, `charge`, `victory`): field set = `breathing-idle` (idle), `walking` (walk),
-  `running-6-frames` (run), `taking-punch` (hurt); battle set adds `fight-stance-idle-8-frames` (ready),
-  `falling-back-death` (ko), `getting-up` (revive), `fireball` (release), `picking-up` (interact), plus a
-  custom v3 **attack** (`mode="v3"`, `frame_count=8`, weapon in the `action_description`).
-- **Creatures and things that do not walk like a person** (motes, drones, spoons, a cat robot) and **anything
-  taller than a person**: `create_character_pro_flash` with `width`/`height` 128 (creatures) or 256 (bosses) and
-  the right `template_id` (`cat`, `dog`, `custom`), or `create_8_direction_object` (max 168); same view, same
-  naming. Pro Flash animates with the same `animate_character` clips.
-- Every prompt below already carries the style line. Keep the transparent background. If a direction comes
-  back facing the wrong way (the importer reports it), delete just that direction and queue it again into the
-  same `animation_group_id`.
-
-Catalog images live at `https://raw.githubusercontent.com/iteatsthesalt/TRIGGER-Time-Debt/main/design/images/catalog/<file>.jpg`.
-
-## Sprite tiers and variants (one character is a set of sprites)
-
-Nich's rule: a character has several sprites, by situation and size, plus variants. The tiers, their PixelLab
-settings and the game file they land in (`assets/<group>/<id>/`). Every request below names its tier; a
-request without one means **field**.
-
-| Tier | Used for | PixelLab | Look | Game file |
-|---|---|---|---|---|
-| **map** | the overworld / world map, once it opens (Chapter 3 and later) | pro, `size=64`, 4 directions; clips `breathing-idle`, `walking` | tiny, bold silhouette, 2–3 colours per material | `<id>_map.png` |
-| **field** | walking around locations and biomes, and battle (battles happen on the map, so battle uses the field sprite with the battle clips added) | pro, `size=128`, `view="low top-down"`, 8 directions; field clips, then battle clips | Chrono Trigger chibi, about 3.5 heads tall (Crono 95 px) | `<id>_field.png` |
-| **action** | action sequences and cinematic close-ups: Dual and Triple Tech cut-ins, story beats, the Fair descent, duel intros | one PixelLab character per character (`create_character` v3 with the action-tier base as `reference_image_url`, `size=256`, or Pro Flash 256), with the directions the sequence needs (often S, W, E only); each sequence is a custom v3 clip (`animate_character`, `animation_name` = the clip name below, 8–12 frames) on that one character | realistic proportions, about 5.5 heads tall (Crono ~120 px in a 256 cell), full costume detail. Reference: `design/images/refs/crono_action_tier_reference.png` | `<id>_action.png` (every clip is a column group in that one sheet; the importer names them from `animation_name`) |
-| **portrait** | dialogue busts, menus | `create_image_pro` 512×512, eight expressions (Batch 5) | painted bust in the character's canvas | `<id>_portrait_<expr>.png` |
-| **variant** | the same character in another universe's art style, or a story state | the tier above it, generated again with that canvas's prompt tail (Reference Bible §1.11) and a `style_character_id` of the base sprite so the identity holds | U1 three-ink sumi-e, U2 clay with VHS, U3 ligne claire, U4 stained glass, U5 rubber-hose, U6 cel, U7 gold leaf; states `_debt60`, `_debt20`, `_debt0`, `_broken`, `_salvaged`, `_rewound` | `<id>_<variant>_<tier>.png`, e.g. `sera_u1_field.png`, `crono_debt20_field.png` |
-
-Naming in PixelLab: `TRIGGER <Name> <tier> v1`, and for variants `TRIGGER <Name> <variant> <tier> v1`
-(`TRIGGER Crono action v1`, `TRIGGER Sera u1 field v1`). The importer reads the tier and variant from the name.
-
-Which variants exist is a design call per character (Reference Bible §2.6 keeps each character in their own
-canvas by default, with Sera's seven ghost layers, Vaelos's forms and the state suffixes as the exceptions);
-Nich decides and adds them to the list. Already on the account: a realistic 5.5-head Crono
-(`d1df31ab-e2cc-47c7-a8b7-6b293769a293`, "Crono 41 (v3 from pro sprite)") is the **action** tier's base.
-
-## Batch 1: the playable cast and the Prologue's people (U0 watercolour)
+Five fixes to the 2026-11-02 prop delivery (BOT_REVIEW audit log) and the next anchors. Props are
+`create_1_direction_object`, `view="low top-down"`, transparent, canvas = `height_m × 32` rounded up to a
+multiple of 32, the U0 project palette (`palette` = `source_art/style_kit/palette_resurrect_64.hex`) unless the
+canvas says otherwise; declared in `data/props/props.json` before import.
 
 | # | Asset key | Request |
 |---|---|---|
-| 0 | `crono` | IN PROGRESS, template character (PixelLab `8d699d00-eb9f-4da7-a408-a1f70039fa1c`, "Crono 41 (pro, concept)"; has idle, walk, run, hurt, ready, ko). **Remaining:** `getting-up` (revive), `fireball` (release), `picking-up` (interact), attack v3 (`a fast one-handed katana slash from his right side, the brass gauntlet leading, a faint rainbow arc off the blade`), charge v3 4 frames loop (`crouched draw stance, the katana held back, faint clock-wisps gathering`), victory v3 8 frames (`he lowers the katana, exhales, and rests the gauntlet hand on his hip`). |
-| 1 | `sera` | IN PROGRESS (PixelLab `ce6ffc25-e512-4312-9d83-a850ab3b561f`, "Sera 17 (pro, concept)"; has idle, walk, run). **Remaining:** `taking-punch`, battle set, attack v3 (`a quick double slash with two clock-hand daggers, ribbons of light trailing`), charge v3 (`she hovers higher, daggers raised, violet light pooling`), victory v3. |
-| 2 | `krona` | IN PROGRESS (PixelLab `6af5c834-e7a7-4e8b-83d7-8fb2b4222695`, "Krona (pro, concept)", nodachi in hand; has idle, walk; this is the one wired in). The bot's `364e2216-2931-4644-b149-9a2cca9f2abd` (nodachi on her back) is kept as an alternative; **Nich picks**. Add the remaining clips to whichever he picks and tell the build agent the id. **Remaining:** `running-6-frames`, `taking-punch`, battle set, attack v3 (`a heavy two-handed nodachi slash from high right to low left, ink flicks off the blade`), charge v3 (`iai stance, both nodachi sheathed low, a held breath`), victory v3. |
-| 3 | `marle` | **ON THE ACCOUNT as `npc_marle` (`05c8ee87-ac36-41af-870a-f1bf8bc4dabc`), imported as `marle_field` (idle only).** It is realistic 5.5-head (124 px) while the cast is 3.5-head chibi: **Nich to decide** — either accept it as her field sprite (it will read taller and more detailed than Crono beside her), or make a v2 with the proportion line below for field and keep this one as `marle` **action** base. Anims still needed either way: `breathing-idle`, `walking`, `taking-punch`, `picking-up`. Original request: **Character, pro, 128, 8-dir.** Concept image `npc_marle.jpg`. Prompt: `Queen Nadia Marle, 40, blonde ponytail, ceremonial blue and cream gown with a fitted bodice, brown boots, a ledger under one arm, tired regal posture, Chrono Trigger hero proportions about 3.5 heads tall, expressive face, strong silhouette, painterly watercolour pixel shading, desaturated`. Anims: field set + `fight-stance-idle-8-frames` + attack (`she draws a small crossbow and fires one bolt`). |
-| 4 | `glenn_marshall` | **Character, pro, 128, 8-dir.** Concept image `npc_glenn.jpg`. Prompt: `Glenn, 47, one-armed Marshall of Guardia, grey swept hair and short beard, LEFT sleeve empty and pinned, green cape over white-and-gold plate armour, belts and pouches, a tall cane capped with an old bronze sword hilt in his RIGHT hand, worn boots, Chrono Trigger hero proportions about 3.5 heads tall, expressive weathered face, strong silhouette, painterly watercolour pixel shading, desaturated`. Keep the missing arm in every direction. Anims: `breathing-idle`, `walking` (cane walk), `taking-punch`, `picking-up`. |
-| 5 | `magus` | **Character, pro, 128, 8-dir.** Concept image `npc_magus.jpg`. Prompt: `Magus, tall gaunt sorcerer, long silver-lavender hair, one eye blind and clouded with a trail of liquid silver dripping from it, violet high-collared cloak over dark robes, long fingers, Chrono Trigger hero proportions about 4 heads tall, sharp expressive face, strong silhouette, painterly watercolour pixel shading, desaturated`. Keep the blind eye on the same side in every direction. Anims: field set + `fireball` + attack (`he raises one hand and a scythe of violet light sweeps across`). |
-| 6 | `vaelos_boy` | **Character, pro, 128, 8-dir.** Concept image `enemy_vaelos.jpg` (the adult; make him a boy). Prompt: `a boy of about ten who looks like Crono's son, pale alabaster skin with faint hairline cracks that leak points of starlight, short red-and-silver hair, simple cream tunic and bare feet, calm unsettling smile, Chrono Trigger child proportions about 3 heads tall, painterly watercolour pixel shading, desaturated`. Anims: `breathing-idle`, `walking`, `picking-up`. |
-| 7 | `vaelos` (Sovereign) | **Pro Flash character, 256×256, 8-dir, template `custom`** (he is nine feet tall; the importer scales by `height_m` = 2.74). Style image: a 256-px crop of `enemy_vaelos.jpg` is too large for Pro Flash, so give the full prompt and use `style_image` = Crono's south rotation URL for the pixel look. Prompt: `Vaelos, nine-foot androgynous humanoid Lavos grown from Crono's atoms, cracked alabaster skin leaking starlight, a fibre-optic mane of light, a mantle of fossilised saurian bones with server blades and shards of stained glass, long elegant hands, serene cruel face like an older Crono, tall imposing silhouette, painterly watercolour pixel shading, desaturated, violet accents`. Anims: `breathing-idle`, `walking`, `fight-stance-idle-8-frames`, `fireball`, attack (`he extends one arm and a spear of starlight erupts forward`). |
-| 8 | `villager_m` (**on the account: `feef7cc5-0f0f-4dac-a678-e71d1e42961a`, import pending its animation jobs**), `villager_f`, `child`, `elder`, `guard`, `merchant` | Six **characters, pro, 128, 8-dir**, `style_character_id` = Crono's id, no concept image. Prompts: `a Guardia townsman in a brown tunic and cap carrying a basket`; `a Guardia townswoman in a green dress and apron with a shawl`; `a Guardia child in a yellow smock with a wooden sword`; `a white-bearded elder in a grey robe leaning on a stick`; `a Guardia castle guard in blue-and-silver mail with a halberd and a plumed helm`; `a plump merchant in a red waistcoat with a money pouch and a ledger`; each ending `Chrono Trigger NPC proportions about 3.5 heads tall, friendly readable face, painterly watercolour pixel shading, desaturated`. Anims: `breathing-idle`, `walking` only. |
+| F1 | `prp_u0_clock_pillar_face` v2 (TRI-63) | **Object, 128x128, 3.2 m, U0.** A flat clock dial for the Atrium pillar (the face is a 3.2 m disc 7.8 m up the pillar in `atrium_horologe.gd`), seen straight on. Prompt: `a round porcelain clock face with a brass bezel and fine black hour marks, no hands, a hairline crack across the glass, flat and face-on`. Hands are left off: the engine moves them. The delivered v1 (a whole clocktower spire, 9 m) stays as the Truce skyline landmark under the same key's history. |
+| F2 | `prp_u0_pool_disc` (new key; TRI-69 was the rim) | **Object, 128x128, 3.8 m across (rim radius 1.9 m in `atrium_horologe.gd`), U0, top-down.** `view="high top-down"`. Prompt: `a round shallow reflecting pool seen from directly above, a low porcelain rim with brass inlay, still dark water with one faint ripple ring, flat`. Replaces `prp_u0_pool_rim` (one front arc, unusable); the Atrium keeps its primitive pool until this lands. |
+| F3 | `prp_u1_dojo_set_rusted_katana` v2 (TRI-43) | **Object, 64x32 (wide), 0.2 m tall, U1 four inks.** Prompt: `a rusted katana lying flat on an oil-stained cloth, seen from the low top-down camera, the blade along the cloth, dry-brush edges`. v1 stands upright. |
+| F4 | `prp_u0_doan_tree_sprout`, `prp_u0_doan_tree_sapling`, `prp_u0_doan_tree_ash` (TRI-77 delivered the seed only, kept as `prp_u0_doan_tree_stages`) | **Three objects, U0:** sprout 32x32 (0.4 m) `a pale green sprout with two leaves in a crack of dark earth`; sapling 64x64 (1.6 m) `a slender young tree with a silver-green crown and a single gold leaf`; ash 64x64 (1.6 m) `the same young tree burned to a black skeleton, a thread of smoke, one gold leaf left`. Same palette and light as the seed. |
+| F5 | `prp_u0_klein_journal` (TRI-72) | **The issue lists icon / field / pages variants but no PixelLab id.** Deliver the id of the field object (32x32, 0.25 m, `a thick leather journal closed with a brass clasp, a loose page sticking out`) and the icon (16x16, same journal); the pages are a UI texture (Batch 8). The prop is declared `pending` and stands in as a labelled box until then. |
+| F6 | `crono` remaining clips, then `sera`, `krona`, `marle` 64 px anchors | On "TRIGGER Anchor Crono 64 v1" (`ca2300bc-7592-4606-8973-32b9bc00056b`; idle + walk imported): queue `running-6-frames`, `taking-punch`, `fight-stance-idle-8-frames`, `falling-back-death`, `getting-up`, `fireball`, `picking-up`, attack v3 8 frames (`a fast one-handed katana slash from the right side, the brass gauntlet leading, a faint rainbow arc off the blade`), charge v3 4 frames loop (`crouched draw stance, the katana held back, faint clock-wisps gathering`), victory v3 8 frames (`lowers the katana, exhales, rests the gauntlet hand on the hip`). Then, once Nich has approved the anchor and the palette, the same recipe for Sera, Krona and Marle (Batch 1 #1–#3), delivered as `px64` variants. |
 
-## Batch 1b: action tier for the vertical slice (256 px, realistic 5.5-head, custom v3 clips)
+## Style gate (read before sending anything in volume)
 
-One action-tier character per hero, named `TRIGGER <Name> action v1`; the base for Crono exists
-(`d1df31ab-e2cc-47c7-a8b7-6b293769a293`, imported as `crono_action`, idle only). For Sera and Krona make the
-base first (pro image of the catalog painting at realistic proportions, then v3 rotation, or Pro Flash 256 with
-the painting described), then queue the clips with `animation_name` set to the clip name. Directions: south,
-west, east unless noted.
+The breakdown's production plan has four gates and the first two are open. **Phase 1, the style bible:** one
+palette, one approved south-facing hero anchor, three test tiles, one battle effect, frozen. The kit exists
+(`source_art/style_kit/`, `docs/screenshots/20_style_bible_kit_review.jpg`: sixteen 64x64 anchor candidates in
+Resurrect 64, three Wang test tilesets, a 9-slice window frame, an impact burst) and candidate 0 has been rotated
+to eight directions as the working anchor (`22_anchor_crono_px64_lineup.jpg`); **Nich has not yet picked the
+candidate or confirmed the palette** (QUESTIONS_FOR_NICH "Style bible, Phase 1"). **Phase 2, the slice:** hero
+plus one partner with field and battle sets, six NPCs, four enemies and one boss, two characters' portraits, one
+exterior Wang set and one interior kit, three techs and one gate effect, one window theme; nothing in volume
+starts until a stranger can play it and the sprites stay crisp. Until Phase 1 closes, send only the Follow-ups
+and nothing that depends on the anchor; until Phase 2 closes, send only the slice rows (Batch 1 #0–#1 and #8,
+Batch 2 #9–#12, Batch 3 #20, Batch 5 for `crono` and `sera`, Batch 8's frame); the rest is "after gate 2". The
+asset team's existing 128/256 px "field v3" sets are superseded and are not imported (BOT_REVIEW audit log).
 
-| # | Asset key / clip | Request |
+## How to send one (the 64 px recipe; the full contract is ART_PIPELINE §1)
+
+- **Characters** (anything that walks). Three calls: (1) `create_image_pro`, 64x64, `palette` = the project
+  palette hex list (`source_art/style_kit/palette_resurrect_64.hex`; Resurrect 64 until Nich confirms another),
+  `max_colors` 14, `no_background` on, fixed `seed`, outline selective, shading basic or medium, detail medium;
+  `description` = the entry's prompt + the character tail below; `negative_description` = the negative cues;
+  several candidates, Nich picks the south sprite in the Slack thread. (2) `create_character`, `mode="v3"`,
+  `reference_image_base64` = the picked sprite, `size=64`, `n_directions=8`, `view="low top-down"`, template
+  mannequin; name it per the naming rule. (3) `animate_character` for each clip listed, `animation_name` = the
+  game name: **field set** = `breathing-idle` (idle), `walking` (walk), `running-6-frames` (run),
+  `taking-punch` (hurt); **battle set** adds `fight-stance-idle-8-frames` (ready), `falling-back-death` (ko),
+  `getting-up` (revive), `fireball` (release), `picking-up` (interact); plus any custom v3 clip named in the
+  entry (`mode="v3"`, `frame_count` as given, the movement in `action_description`, nothing else). Outfit and
+  story-state variants: `create_character_state` with `color_palette_from_reference`.
+- **The character tail** (append to every character prompt): `16-bit JRPG field sprite, three heads tall, large
+  expressive eyes, strong hair silhouette, flat cel shading with one light from upper left, selective
+  dark-coloured outline, two main costume colours plus one accent, standing, south-facing, transparent
+  background`. **Negative cues** (every call): `blur, gradient, anti-aliasing, soft shading, photo, 3D render`.
+- **Enemies and bosses**: the same three calls at the size class: small 64x64, medium 64x128 or 128x64, large
+  128x128, bosses up to 192 (a canvas is `height_m × 32` plus room for the pose); v3 rotation at 128 costs 2.
+  Creatures that do not walk like a person may use `create_character_pro_flash` at the same canvas with the
+  palette as `style_image`. Clips: `breathing-idle`, one attack (v3 from the prompt), `taking-punch`
+  (+ `falling-back-death` for humanoids). Enemy tail: `16-bit JRPG enemy sprite, one idea and one silhouette,
+  flat cel shading with one light from upper left, selective dark-coloured outline, transparent background`.
+- **Props**: see Follow-ups (objects at `height_m × 32`); declare the key in `data/props/props.json` first.
+- **Textures**: `create_image_pixen` (1 generation) or `create_image_pro` (10) at 256x256, seamless, drawn flat
+  (floors from above, walls straight on), with the texture tail in ART_PIPELINE §2; the build lead runs
+  `tools/art/import_texture.py`, which budgets each to a 15-colour material palette and tiles it at 32 px/m.
+- **Tilesets**: `create_topdown_tileset` Wang sets at 32 px with `target_palette`, standard (1) for drafts and
+  pro (15) for finals; `create_tiles_pro` for building kits.
+- **UI**: `create_ui_asset` (10) for 9-slice frames at 16–64 px; icons 16/24/32 with `create_image_pro` and the
+  palette. **VFX**: the VFX Creator (`vfx_workbench`), 32 px cells (64 for big effects), 8–32 frames, quantised to
+  the palette. **Portraits**: Batch 5.
+- **Naming**: `TRIGGER <Name> [<variant>] <tier> v<N>`; a character that already has a 128 px sheet in the game
+  (crono, sera, krona, marle) is delivered as `TRIGGER <Name> px64 field v<N>` until Nich approves the anchor;
+  everyone else is plain `field`. `TEST ` and `REJECTED ` prefixes are never imported (the importer refuses them).
+- **Prompt hygiene** (the breakdown's section 14): never a Square Enix character or game name in a prompt or a
+  style-reference slot; the prompt is the design-lock identity block without the name, era cues in the
+  description, no locations in character prompts; never a ripped sprite as a reference image or inpaint base.
+- Transparent background always. A direction that comes back facing the wrong way: delete just that direction
+  and queue it again into the same `animation_group_id`. Upload nothing upscaled (`/unzoom` first).
+
+Catalog images (for the Slack concept thread and as `concept_image_url` where a tool takes one) live at
+`https://raw.githubusercontent.com/iteatsthesalt/TRIGGER-Time-Debt/main/design/images/catalog/<file>.jpg`.
+
+## Sprite tiers and variants
+
+A character is a set of sprites (ART_PIPELINE §1b): **field** = the 64x64 recipe, used in locations and in
+battle (battle clips are columns of the field sheet); **portrait** = 48x48 (Batch 5); **map** and **action**
+are to be re-specified at the new scale before any request goes out (the 256 px realistic `crono_action`
+stays until then). A **variant** is the same character in another canvas (`u1` … `u8`), a story state
+(`debt60`, `debt20`, `debt0`, `broken`, `salvaged`, `rewound`, …) or a size (`px64`), generated with the base
+as the style reference so the identity holds; which variants exist is Nich's call per character.
+
+## Batch 1: the playable cast and the Prologue's people (U0; #0–#1 and #8 are slice rows)
+
+| # | Asset key | Request |
 |---|---|---|
-| A1 | `crono` action · `smear_dash` | 8 frames. `Crono drops into a low draw stance and dashes forward in a blur, the katana trailing a smeared desaturated red-to-blue paint streak, afterimages of himself a few frames behind, watercolour drag at every edge`. Used for Astral Smear Dash and the Prologue bowl catch. |
-| A2 | `crono` action · `katana_cross` | 8 frames. `Crono steps in and cuts a long diagonal from high right to low left with the gauntlet arm, then a return cut forming an X, a faint rainbow arc off the blade`. The Crono half of Eclipse X-Strike. |
-| A3 | `sera` action base + `chronoslip_fall` | base first; then 12 frames. `Sera stumbles mid-air, her outline stuttering between frames, violet light flickering across her and the clock-hand daggers slipping from her hands, then she folds and falls`. The Prologue Chronoslip collapse. |
-| A4 | `sera` action · `rewind_cast` | 8 frames. `Sera hovers higher, both daggers raised, violet clock glyphs spinning backwards around her wrists`. The Rewind cut-in. |
-| A5 | `krona` action base + `ink_cross` | base first (realistic Krona from `playable_krona.jpg`, nodachi in hand); then 8 frames. `Krona crosses both nodachi overhead and brings them down in a scissor cut, black ink flicking off the blades, a wet ink splash where they meet`. The Krona half of Eclipse X-Strike; the two halves are composited by the engine. |
-| A6 | `krona` action · `iai_hold` | 6 frames, loop. `Krona in iai stance, both nodachi sheathed low, hair ties lifting in a held breath, ink dripping from the gourd`. Cobalt Nodachi charge. |
-| A7 | `vaelos` action · `fair_descent` | base = the Sovereign (Batch 1 #7, Pro Flash 256), south only; 12 frames. `Vaelos descends slowly from above with his arms open, the fibre-optic mane streaming upward and shifting through painting styles, starlight leaking from the cracks in his alabaster skin, bone mantle settling as his feet touch the ground`. The Fair descent (Chapter 1 beat 10). |
+| 0 | `crono` | **Anchor exists** (`ca2300bc…`, imported as `crono` `px64`: 61 px = 1.78 m, idle + walk). Remaining clips: Follow-up F6. Prompt as used: `weary 41-year-old swordsman father, spiky dull-red hair, white headband, grey stubble, frayed orange scarf, faded blue tunic, brown trousers and boots, moss-covered stone pauldrons, a heavy brass gauntlet on the RIGHT arm wired to a curved katana held low`. |
+| 1 | `sera` | **64x64, v3 from an approved south sprite, px64; clips: field set + battle set + attack v3 8 (`a quick double slash with two clock-hand daggers, ribbons of light trailing`), charge v3 4 loop (`she hovers higher, daggers raised, violet light pooling`), victory v3 8.** Prompt: `17-year-old girl, short auburn bob undercut at the sides, frayed red scarf knotted at the throat, teal jacket over a cream shirt, belt with pouch, brown trousers and boots, a short cape of manuscript paper, one blue eye and one violet eye, a hairline porcelain crack under the left eye, two clock-hand daggers held low on ribbons of light, violet accent`. 1.62 m. Supersedes the 128 px `ce6ffc25…`. |
+| 2 | `krona` | **64x64, v3 from an approved south sprite, px64, palette = the four U1 inks (her own canvas); clips: field set + battle set + attack v3 8 (`a heavy two-handed nodachi slash from high right to low left, ink flicks off the blade`), charge v3 4 loop (`iai stance, both nodachi sheathed low, a held breath`), victory v3 8.** Prompt: `ageless woman who looks early thirties, spiky red hair tied in a war-knot with white ties, tired eyes, a cheek scar, cracked black lacquered o-yoroi armour with a melted pauldron, red sash, tattered cape, a dripping gourd at the hip, bare feet, two long nodachi of snapped steel and red chitin held low`. 1.72 m. **Nich picks** nodachi in hand (the wired `6af5c834…`) or on her back (`364e2216…`) before the anchor is drawn. |
+| 3 | `marle` | **64x64, v3 from an approved south sprite, px64; clips: field set + `fight-stance-idle-8-frames` + attack v3 8 (`she draws a small crossbow and fires one bolt`) + `picking-up`.** Prompt: `queen of forty, blonde ponytail, ceremonial faded royal blue and cream gown with a fitted bodice, brown boots, a ledger tucked under one arm, tired regal posture`. 1.68 m. Supersedes the realistic 128 px `05c8ee87…` (its proportion question is closed by the recipe). |
+| 4 | `glenn_marshall` | **64x64, v3 from an approved south sprite, field; clips: `breathing-idle`, `walking` (a cane walk), `taking-punch`, `picking-up`.** Prompt: `one-armed marshal of forty-seven, grey swept-back hair and short beard, LEFT sleeve empty and pinned, green cape over white-and-gold plate armour, belts and pouches, a tall cane capped with an old bronze sword hilt in his RIGHT hand, worn boots, weathered face`. Keep the missing arm in every direction; 1.80 m (`--height-m`). |
+| 5 | `magus` | **64x64, v3 from an approved south sprite, field; clips: field set + `fireball` + attack v3 8 (`he raises one hand and a scythe of violet light sweeps across`).** Prompt: `tall gaunt sorcerer, long silver-lavender hair, one eye blind and clouded with a trail of liquid silver running from it, violet high-collared cloak over dark robes, long fingers, sharp face`. Keep the blind eye on the same side in every direction; 1.90 m. |
+| 6 | `vaelos_boy` | **64x64, v3 from an approved south sprite, field; clips: `breathing-idle`, `walking`, `picking-up`.** Prompt: `a boy of about ten with the swordsman's features, pale alabaster skin with faint hairline cracks that leak points of starlight, short red-and-silver hair, a simple cream tunic, bare feet, calm unsettling smile; a child, two and a half heads tall`. 1.35 m. |
+| 7 | `vaelos` (the Sovereign) | **128x128 (2.74 m = 88 px), anchor at 128 then v3 rotation, field; clips: `breathing-idle`, `walking`, `fight-stance-idle-8-frames`, `fireball`, attack v3 8 (`he extends one arm and a spear of starlight erupts forward`).** Prompt: `nine-foot androgynous humanoid grown from the swordsman's atoms, cracked alabaster skin leaking starlight, a fibre-optic mane of light, a mantle of fossilised saurian bones with server blades and shards of stained glass, long elegant hands, a serene cruel face like an older version of the hero, violet accents`. After gate 2. |
+| 8 | `villager_m`, `villager_f`, `child`, `elder`, `guard`, `merchant` | **Six crowd NPCs, 64x64, `create_character` v3 from text (2 each) with the palette and the approved anchor as style reference, field; clips: `breathing-idle`, `walking`.** Prompts: `a townsman in a brown tunic and cap carrying a basket`; `a townswoman in a green dress and apron with a shawl`; `a child in a yellow smock with a wooden sword`; `a white-bearded elder in a grey robe leaning on a stick`; `a castle guard in blue-and-silver mail with a halberd and a plumed helm`; `a plump merchant in a red waistcoat with a money pouch and a ledger`; each + `friendly readable face` + the tail. The 128 px `villager_m` on the account (`feef7cc5…`) is superseded. |
 
-## Batch 2: the Prologue and Chapter 1 enemies (U0)
+## Batch 1b: action tier (suspended until the tier is re-specified at the new scale)
 
-All at `size=128` unless noted; these are creatures, so use `create_character_pro_flash` (template `custom`
-unless a better template fits) or `create_8_direction_object`. Anims: `breathing-idle` plus one attack clip
-described in the prompt, plus `taking-punch`.
+One action-tier character per hero for Dual/Triple Tech cut-ins; the only base is the 256 px realistic
+`crono_action` (`d1df31ab…`, idle only). Clip descriptions, kept for the re-spec (custom v3, 8–12 frames,
+directions south, west, east unless noted): A1 `crono` `smear_dash` 8 (`drops into a low draw stance and dashes
+forward in a blur, the katana trailing a smeared red-to-blue streak, afterimages a few frames behind`); A2
+`crono` `katana_cross` 8 (`steps in and cuts a long diagonal from high right to low left with the gauntlet arm,
+then a return cut forming an X, a faint rainbow arc off the blade`); A3 `sera` base + `chronoslip_fall` 12
+(`she stumbles mid-air, her outline stuttering between frames, violet light flickering, the clock-hand daggers
+slipping from her hands, then she folds and falls`); A4 `sera` `rewind_cast` 8 (`hovers higher, both daggers
+raised, violet clock glyphs spinning backwards around her wrists`); A5 `krona` base + `ink_cross` 8 (`crosses
+both nodachi overhead and brings them down in a scissor cut, black ink flicking off the blades, a wet splash
+where they meet`); A6 `krona` `iai_hold` 6 loop (`iai stance, both nodachi sheathed low, hair ties lifting in a
+held breath, ink dripping from the gourd`); A7 `vaelos` `fair_descent` 12, south only (`descends slowly from
+above with arms open, the fibre-optic mane streaming upward, starlight leaking from the cracks, the bone
+mantle settling as the feet touch the ground`).
 
-| # | Asset key | Prompt |
+## Batch 2: the Prologue and Chapter 1 enemies (U0; #9–#12 are slice rows)
+
+Size class, then the three calls; clips `breathing-idle`, the attack described (v3), `taking-punch`. Height
+comes from the enemy def (`height_m`) or `--height-m` at import. Every prompt + the enemy tail.
+
+| # | Asset key | Request |
 |---|---|---|
-| 9 | `enm_u0_dust_mote_cluster` | `a cluster of seven glowing dust motes orbiting a faint ring of light in a kitchen, soft gold and cream, small (about 48 px), painterly watercolour pixel art`; attack: `the motes rush inward and burst outward in a wash`. |
-| 10 | `enm_u0_porcelain_shardling` | `a small porcelain imp made of a broken doll's shards, spiky red-hair fragment on its head, one blue glass eye, jagged white body with gold cracks, about 64 px, painterly watercolour pixel art`; attack: `it lunges and slashes with a shard arm`. |
-| 11 | `enm_u0_ashen_spoon` | `a wooden kitchen spoon come alive as a sumi-e brush creature, its bowl a dripping ink brush head, thin legs of dry brush strokes, three inks only: bone white, soot grey, arterial crimson, about 64 px, pixel art`; attack: `it whips its brush head and flings ink`. |
-| 12 | `vaelos_echo` | `an intangible shadow silhouette of a spiky-haired boy made of dark translucent smoke with points of starlight inside, no face, edges breaking into flickering frames, about 96 px, painterly watercolour pixel art`; attack: `it reaches out and the air around its hand stutters`. |
-| 13 | `enm_u0_trance_bellkeeper` | `a slender porcelain bell-ringer automaton carrying a brass handbell, a single crack along its jawline, cream robes with brass fittings, calm closed eyes, about 110 px, painterly watercolour pixel art`; attack: `it raises the bell and rings it, sound rings spread`. |
-| 14 | `enm_u0_gato_ruin` | `a ruined carnival boxing robot shaped like a round cat, cracked porcelain and brass, a dented chest plate with faded serial lettering, one red eye, spring-loaded punching gloves, about 120 px, painterly watercolour pixel art`; attack: `a heavy telegraphed glove punch`. |
-| 15 | `enm_u0_debtling` | `a swarm of five tiny cracked porcelain doll heads with spiky red hair scuttling on little spider legs, gold crack lines, about 48 px, painterly watercolour pixel art`; attack: `the heads leap and bite`. |
-| 16 | `enm_u0_moss_mouse` | `a round grey mouse with moss and tiny mushrooms growing on its back, bright black eyes, about 48 px, painterly watercolour pixel art` (template `custom`, or `dog` posed small); attack: `it darts forward and nips`. |
-| 17 | `enm_u0_bekkler_fragment` | `a rubber-hose cartoon doll fragment: one white-gloved arm and half a grinning painted face on a bouncing spring body, 1930s cartoon style with a watercolour wash, about 80 px, pixel art`; attack: `it stretches 300% and snaps back like an accordion`. |
-| 18 | `enm_u0_ashen_echo_krona` | `a dry-brush sumi-e silhouette of a woman with a war-knot of hair and two long swords, no face, soot grey ink with crimson accents on bone white, about 110 px, pixel art`; attack: `a wide ink slash that leaves wet ink on the ground`. |
-| 19 | `enm_u0_ferro_drone_09` | `a brass six-legged spider drone with a gramophone horn head and a glowing mercury orb in its belly, clay-and-brass look with VHS scanlines, about 90 px, pixel art`; attack: `the horn emits a cone of sound rings`. |
+| 9 | `enm_u0_dust_mote_cluster` | **Small 64x64.** `a cluster of seven glowing dust motes orbiting a faint ring of light, soft gold and cream`; attack: `the motes rush inward and burst outward in a wash`. |
+| 10 | `enm_u0_porcelain_shardling` | **Small 64x64.** `a small porcelain imp made of a broken doll's shards, a spiky red-hair fragment on its head, one blue glass eye, jagged white body with gold cracks`; attack: `it lunges and slashes with a shard arm`. |
+| 11 | `enm_u0_ashen_spoon` | **Small 64x64.** `a wooden kitchen spoon come alive as a brush creature, its bowl a dripping ink brush head, thin legs of dry brush strokes, three inks only: bone white, soot grey, arterial crimson`; attack: `it whips its brush head and flings ink`. |
+| 12 | `vaelos_echo` | **Small 64x64 (human height).** `an intangible shadow silhouette of a spiky-haired boy made of dark translucent smoke with points of starlight inside, no face, edges breaking into flickering frames`; attack: `it reaches out and the air around its hand stutters`. |
+| 13 | `enm_u0_trance_bellkeeper` | **Small 64x64 (1.9 m).** `a slender porcelain bell-ringer automaton carrying a brass handbell, a single crack along its jawline, cream robes with brass fittings, calm closed eyes`; attack: `it raises the bell and rings it, sound rings spread`. A `TEST` sprite exists on the account; not imported. |
+| 14 | `enm_u0_gato_ruin` | **Medium 128x64 (wide).** `a ruined carnival boxing robot shaped like a round cat, cracked porcelain and brass, a dented chest plate with faded serial lettering, one red eye, spring-loaded punching gloves`; attack: `a heavy telegraphed glove punch`. |
+| 15 | `enm_u0_debtling` | **Small 64x64.** `a swarm of five tiny cracked porcelain doll heads with spiky red hair scuttling on little spider legs, gold crack lines`; attack: `the heads leap and bite`. A `TEST` sprite exists; not imported. |
+| 16 | `enm_u0_moss_mouse` | **Small 64x64 (symmetric: `--mirror` allowed).** `a round grey mouse with moss and tiny mushrooms growing on its back, bright black eyes`; attack: `it darts forward and nips`. A `TEST` sprite exists; not imported. |
+| 17 | `enm_u0_bekkler_fragment` | **Small 64x64.** `a rubber-hose cartoon doll fragment: one white-gloved arm and half a grinning painted face on a bouncing spring body, 1930s cartoon style`; attack: `it stretches to three times its height and snaps back like an accordion`. |
+| 18 | `enm_u0_ashen_echo_krona` | **Small 64x64 (1.72 m).** `a dry-brush ink silhouette of a woman with a war-knot of hair and two long swords, no face, soot grey ink with crimson accents on bone white`; attack: `a wide ink slash that leaves wet ink on the ground`. |
+| 19 | `enm_u0_ferro_drone_09` | **Medium 64x128.** `a brass six-legged spider drone with a gramophone horn head and a glowing mercury orb in its belly, clay-and-brass look with scanlines`; attack: `the horn emits a cone of sound rings`. |
 
-## Batch 3: the two U0 bosses (large)
+## Batch 3: the two U0 bosses (#20 is a slice row)
 
-| # | Asset key | Prompt |
+| # | Asset key | Request |
 |---|---|---|
-| 20 | `bos_u0_atrium_cradle` | **Pro Flash character, 256×256, 8-dir, template `custom`** (3.2 m tall; `create_8_direction_object` at 168 is the fallback). Concept: `enemy_arch_curator_r_66y.jpg` as a smaller proto version (describe it; Pro Flash takes no concept image). Prompt: `a prototype Arch-Curator: a hulking robot on six brass insect legs, a rotating thoracic ring of eight gun barrels, a porcelain theatre-mask face with one sorrowful blue eye, copper vines and oil, peeled chassis showing red muscle fibre, painterly watercolour pixel art with clay-and-brass detail`. Anims: `breathing-idle` (the ring turns), attack (`the barrel ring spins and fires a volley`), `taking-punch`, `falling-back-death` (legs fold). |
-| 21 | `enm_u0_training_dummy_prime` (the 999 Shard Doll) | **Pro Flash character, 192×192, 8-dir, template `custom`** (2.0 m tall; pro mode cannot exceed 128). Describe the Crono doll from `playable_crono.jpg`. Prompt: `a life-size porcelain Bekkler doll of Crono with goggles pushed up and a glowing Time Egg replica set in its chest, standing on six reverse-jointed brass spider legs, a tungsten bracer on one arm and a mercury-silver shoulder, small porcelain masks orbiting its collar, giggling expression, gold cracks, painterly watercolour pixel art`. Anims: `breathing-idle` (head tilt), attack (`it rears up and stamps with two legs`), `taking-punch`, `falling-back-death` (cracks open on a galaxy inside). |
+| 20 | `bos_u0_atrium_cradle` | **Boss 128x128 (3.2 m = 102 px), anchor at 128 then v3 rotation (2); clips: `breathing-idle` (the ring turns), attack v3 (`the barrel ring spins and fires a volley`), `taking-punch`, `falling-back-death` (legs fold).** Prompt: `a prototype of a hulking curator robot on six brass insect legs, a rotating thoracic ring of eight gun barrels, a porcelain theatre-mask face with one sorrowful blue eye, copper vines and oil, a peeled chassis showing red muscle fibre, clay-and-brass detail` (the catalog image `enemy_arch_curator_r_66y.jpg` is the finished version; this is smaller and rougher). |
+| 21 | `enm_u0_training_dummy_prime` (the 999 Shard Doll) | **Large 128x128 (2.0 m = 64 px, legs spread); clips: `breathing-idle` (head tilt), attack v3 (`it rears up and stamps with two legs`), `taking-punch`, `falling-back-death` (cracks open on a galaxy inside).** Prompt: `a life-size porcelain carnival doll of the swordsman with goggles pushed up and a glowing egg-shaped clock-heart set in its chest, standing on six reverse-jointed brass spider legs, a tungsten bracer on one arm and a mercury-silver shoulder, small porcelain masks orbiting its collar, a giggling expression, gold cracks`. After gate 2. |
 
-## Batch 4: Chapter 2, the Crimson Shogunate (U1, sumi-e)
+## Batch 4: Chapter 2, the Crimson Shogunate (U1, sumi-e; after gate 2 except the delivered props)
 
-The whole of U1: its people, creatures, bosses, landmarks, world kit and textures. Everything here is drawn
-in **four inks only**: sumi black `#1A1A1A`, cobalt `#0D2640`, cinnabar `#8C1D18` (fire and banners), paper
-white `#F2EED8`. No gold, no grey gradients, dither inside the ink instead. Luminance is ink density. End
-every prompt with the U1 tail: `sumi-e and ukiyo-e woodblock on washi, four inks only: sumi black, cobalt,
-cinnabar, paper white, dry-brush edges, pixel art`. Deliver per `docs/BOT_REVIEW.md`.
+Everything here is drawn in **four inks only**: sumi black `#1A1A1A`, cobalt `#0D2640`, cinnabar `#8C1D18`
+(fire and banners), paper white `#F2EED8`. Send them as the `palette` with `max_colors` 4; tone is ink density
+and dither inside the ink, no gold, no grey gradients. U1 tail for characters: the character tail + `four inks
+only: sumi black, cobalt, cinnabar, paper white; dry-brush edges`. Krona's approved anchor is the style
+reference for the people.
 
-### 4a. People (characters, pro, 128, 8-dir, `style_character_id` = Krona's `6af5c834-e7a7-4e8b-83d7-8fb2b4222695`)
+### 4a. People (64x64, v3 from an approved south sprite, field)
 
 | # | Asset key | Prompt and clips |
 |---|---|---|
-| 22 | `krona_duel` (boss variant of Krona) | Same identity as Krona's field sprite but **armed**: `Krona in cracked black lacquered o-yoroi with the melted pauldron, war-knot hair, two long nodachi of snapped steel and red chitin drawn and ready, oil dripping from the hip gourd, bare feet planted in wet ink`. Clips: `fight-stance-idle-8-frames`, attack (`a two-handed overhead nodachi cut that splashes ink`), a second attack (`a low sweeping slash from right to left`), `taking-punch`, `falling-back-death` (she kneels, not dies), v3 **disarm** (6 frames: `she lowers both blades and lets one fall`). |
-| 23 | `krona_retainer_a`, `krona_retainer_b`, `krona_retainer_c` | Three retainers: `a half-corroded samurai retainer in cracked lacquered armour, a plain paper mask over the face with the lacquer flaking at the edges, kneeling-stiff posture, oil stains at the joints` (vary: spear, bow, bare hands). Clips: `breathing-idle` only (they kneel). |
-| 24 | `u1_citizen_m`, `u1_citizen_f`, `u1_painter`, `u1_child` | Kuro-Truce townsfolk: `a townsman in a plain paper mask and indigo work robe carrying a bucket of white paint`; `a townswoman in a paper mask and grey kimono with a brush`; `a gate painter on a short ladder with a wide brush, white paint dripping`; `a child in a paper mask too big for its face, holding a paper crane`. Clips: `breathing-idle`, `walking`. |
-| 25 | `lord_ashinaga_npc` (the Daimyo before the fight, seated) | `an old daimyo seated on a dais in black court robes with a cinnabar mon, writing with a long brush, face hidden by a paper mask that is a surrender petition, armour at the joints weeping black oil`. Clips: `breathing-idle` (writing). Used for the throne-room approach; the fight uses #35. |
+| 22 | `krona_duel` (boss variant of Krona; deliver as `TRIGGER Krona duel field v1`, `create_character_state` from her anchor) | `the swordswoman in cracked black lacquered o-yoroi with the melted pauldron, war-knot hair, two long nodachi of snapped steel and red chitin drawn and ready, oil dripping from the hip gourd, bare feet planted in wet ink`. Clips: `fight-stance-idle-8-frames`, attack v3 8 (`a two-handed overhead nodachi cut that splashes ink`), second attack v3 8 (`a low sweeping slash from right to left`), `taking-punch`, `falling-back-death` (she kneels, not dies), **disarm** v3 6 (`she lowers both blades and lets one fall`). |
+| 23 | `krona_retainer_a`, `krona_retainer_b`, `krona_retainer_c` | `a half-corroded samurai retainer in cracked lacquered armour, a plain paper mask over the face with the lacquer flaking at the edges, kneeling-stiff posture, oil stains at the joints` (vary: spear, bow, bare hands). Clips: `breathing-idle` only (they kneel). |
+| 24 | `u1_citizen_m`, `u1_citizen_f`, `u1_painter`, `u1_child` | `a townsman in a plain paper mask and indigo work robe carrying a bucket of white paint`; `a townswoman in a paper mask and grey kimono with a brush`; `a gate painter on a short ladder with a wide brush, white paint dripping`; `a child in a paper mask too big for its face, holding a paper crane`. Clips: `breathing-idle`, `walking`. |
+| 25 | `lord_ashinaga_npc` (the Daimyo before the fight, seated) | `an old daimyo seated on a dais in black court robes with a cinnabar crest, writing with a long brush, face hidden by a paper mask that is a surrender petition, armour at the joints weeping black oil`. Clips: `breathing-idle` (writing). The fight uses #35. |
 
-### 4b. Enemies (`create_character_pro_flash`, 128, `template_id="custom"` unless noted; clips `breathing-idle`, the attack described, `taking-punch`)
+### 4b. Enemies (size class; clips `breathing-idle`, the attack described, `taking-punch`; + the enemy tail and the four inks)
 
-| # | Asset key | Prompt |
+| # | Asset key | Request |
 |---|---|---|
-| 26 | `enm_u1_ashen_ashigaru` | `a foot soldier in armour made of folded paper plates lacquered black, a conical paper hat, a plain white mask, a short yari spear, ash on the shoulders, about 100 px`; attack: `a quick spear thrust`; extra v3 clip **repaint** (4 frames: `he slaps fresh white paper over his own chest plate`). |
-| 27 | `enm_u1_porcelain_captain` | `a taller ashigaru captain in cracked porcelain armour over paper, a cinnabar sashimono banner on his back, a katana, a mask with one crack from brow to jaw, about 110 px`; attack: `a commanding katana cut`. |
-| 28 | `enm_u1_ink_calligrapher` | `a robed scribe with a brush taller than himself, sleeves soaked black, writing in the air, the strokes he leaves hang as wet black kanji, about 100 px`; attack: `he writes a single huge kanji that slams forward`. |
-| 29 | `enm_u1_gourd_bloated_heimin` | `a peasant swollen and shiny with oil, a gourd fused to his belly, skin cracking like lacquer with black oil in the cracks, slow and sad, about 100 px`; attack: `he lurches and bursts into a cloud of ash`. Add `falling-back-death` (the burst). |
-| 30 | `enm_u1_surrender_petition_yokai` | `a surrender petition folded into an origami yokai, a paper body with brushed kanji showing through, a seal stamp for a face, hovering, about 90 px`; attack: `it unfolds flat and snaps shut around the target`. |
-| 31 | `enm_u1_crimson_banner_samurai` | `an elite samurai in full black lacquered armour carrying a tall cinnabar war banner, mask with a drawn snarl, katana sheathed, about 112 px`; attack: v3 (8 frames: `he holds a frozen ink pose for a long beat, then draws and cuts in one stroke`); the hold must read as a telegraph. |
-| 32 | `enm_u1_omen_crow` (template `custom`, flying) | `a large crow whose feathers are strips of VHS tape and scanline static, eyes of white noise, perched then flaring, about 80 px wide`; attack: `it flares its wings and a burst of static blinds`. |
-| 33 | `enm_u1_imp_crackle` | `a small sumi-ink imp made of a single splashed brush stroke with two white dot eyes, trailing wet ink on the floor, about 56 px`; attack: `it skids and paints a black streak`. |
-| 34 | `enm_u1_shogun_memory_flame` (field boss, 256) | `a column of living cinnabar fire in the rough shape of a kneeling shogun, armour outlines in the flames, a paper mask floating where the face would be, about 200 px tall`; attack: `the flame rears and sweeps a burning sleeve`. Clips: `breathing-idle` (flame loop), attack, `taking-punch`, `falling-back-death` (gutters out). |
+| 26 | `enm_u1_ashen_ashigaru` | **Small 64x64.** `a foot soldier in armour made of folded paper plates lacquered black, a conical paper hat, a plain white mask, a short yari spear, ash on the shoulders`; attack: `a quick spear thrust`; extra v3 clip **repaint** 4 (`he slaps fresh white paper over his own chest plate`). |
+| 27 | `enm_u1_porcelain_captain` | **Small 64x64.** `a taller ashigaru captain in cracked porcelain armour over paper, a cinnabar sashimono banner on his back, a katana, a mask with one crack from brow to jaw`; attack: `a commanding katana cut`. |
+| 28 | `enm_u1_ink_calligrapher` | **Medium 64x128 (the brush).** `a robed scribe with a brush taller than himself, sleeves soaked black, writing in the air, the strokes he leaves hang as wet black kanji`; attack: `he writes a single huge kanji that slams forward`. |
+| 29 | `enm_u1_gourd_bloated_heimin` | **Small 64x64.** `a peasant swollen and shiny with oil, a gourd fused to his belly, skin cracking like lacquer with black oil in the cracks, slow and sad`; attack: `he lurches and bursts into a cloud of ash`; add `falling-back-death` (the burst). |
+| 30 | `enm_u1_surrender_petition_yokai` | **Small 64x64.** `a surrender petition folded into an origami spirit, a paper body with brushed kanji showing through, a seal stamp for a face, hovering`; attack: `it unfolds flat and snaps shut around the target`. |
+| 31 | `enm_u1_crimson_banner_samurai` | **Medium 64x128 (the banner).** `an elite samurai in full black lacquered armour carrying a tall cinnabar war banner, a mask with a drawn snarl, katana sheathed`; attack v3 8 (`he holds a frozen ink pose for a long beat, then draws and cuts in one stroke`); the hold must read as a telegraph. |
+| 32 | `enm_u1_omen_crow` | **Medium 128x64 (wings).** `a large crow whose feathers are strips of videotape and scanline static, eyes of white noise, perched then flaring`; attack: `it flares its wings and a burst of static blinds`. |
+| 33 | `enm_u1_imp_crackle` | **Small 64x64.** `a small ink imp made of a single splashed brush stroke with two white dot eyes, trailing wet ink on the floor`; attack: `it skids and paints a black streak`. |
+| 34 | `enm_u1_shogun_memory_flame` (field boss) | **Boss 128x128 (3.6 m).** `a column of living cinnabar fire in the rough shape of a kneeling shogun, armour outlines in the flames, a paper mask floating where the face would be`; attack: `the flame rears and sweeps a burning sleeve`. Clips: `breathing-idle` (flame loop), attack, `taking-punch`, `falling-back-death` (gutters out). |
 
-### 4c. Bosses (`create_character_pro_flash` or `create_8_direction_object`, 256 unless noted)
+### 4c. Bosses
 
-| # | Asset key | Prompt |
+| # | Asset key | Request |
 |---|---|---|
-| 35 | `bos_u1_ashen_daimyo` (256; phases are the same body) | `Lord Ashinaga the Ashen Daimyo: a twenty-foot seated giant whose whole body is thousands of folded surrender petitions stacked and bound into the shape of a daimyo in court armour, brush in hand, armour joints weeping black oil, fire licking the floor around him, a gourd-shaped shadow where his heart is`. Clips: `breathing-idle` (writing), attack **scribe** (`he finishes a petition and flicks it off the brush`), attack **roof** (`he raises both arms and fire breathes across the floor`), `taking-punch` (petitions scatter), **crack** v3 (6 frames: `his chest cracks open to show a glowing gourd heart`), `falling-back-death` (he comes apart as porcelain over red fibre). |
-| 36 | `bos_u1_weeping_shogun` (256, concept image `enemy_weeping_shogun.jpg`) | Two bodies in one: `the Weeping Shogun: the lower body a black sumi-ink Lavos spawn with spiked brush-stroke legs, fused at a ragged seam to a brass and clay clockwork centipede with segmented armour and a weeping porcelain face; the ink half brushed, the clay half with visible thumbprints and VHS scanlines`. Clips: `breathing-idle`, attack **ink** (`the ink legs rake forward`), attack **clay** (`the centipede head slams down`), `taking-punch`, `falling-back-death` (the two halves fall apart in opposite directions). The importer splits the ink and clay halves by colour if you also deliver a mask; otherwise one sheet is fine. |
+| 35 | `bos_u1_ashen_daimyo` (phases are the same body) | **Boss 192x192 (6 m seated).** `a twenty-foot seated giant whose whole body is thousands of folded surrender petitions stacked and bound into the shape of a daimyo in court armour, brush in hand, armour joints weeping black oil, fire licking the floor around him, a gourd-shaped shadow where his heart is`. Clips: `breathing-idle` (writing), attack **scribe** (`he finishes a petition and flicks it off the brush`), attack **roof** (`he raises both arms and fire breathes across the floor`), `taking-punch` (petitions scatter), **crack** v3 6 (`his chest cracks open to show a glowing gourd heart`), `falling-back-death` (he comes apart as porcelain over red fibre). |
+| 36 | `bos_u1_weeping_shogun` (concept image `enemy_weeping_shogun.jpg`) | **Boss 192x192.** `two bodies in one: the lower body a black ink spawn with spiked brush-stroke legs, fused at a ragged seam to a brass and clay clockwork centipede with segmented armour and a weeping porcelain face; the ink half brushed, the clay half with visible thumbprints and scanlines`. Clips: `breathing-idle`, attack **ink** (`the ink legs rake forward`), attack **clay** (`the centipede head slams down`), `taking-punch`, `falling-back-death` (the two halves fall apart in opposite directions). Deliver a mask too if you can; the engine splits the halves by colour otherwise. |
 
-### 4d. Landmarks and props (`create_1_direction_object` or `create_object_pro_flash`, `view="low top-down"`, transparent)
+### 4d. Landmarks and props: delivered
 
-**Delivered and imported 2026-11-02** (Linear TRI-31..TRI-50, all twenty objects; see Done). Kept here as the record of what was asked. Flagged for a v2: `prp_u1_dojo_set_rusted_katana` stands upright instead of lying on its cloth.
+All twenty objects of this batch (Linear TRI-31..TRI-50: the guillotine, the cage, the clay gear, the torii,
+the three petitions-and-banners pieces, the gourd, the blade stand, the four dojo pieces, the six street pieces,
+the finial) were delivered and imported on 2026-11-02 at the pre-direction 128/256 canvases; one row per key
+with id, height and cell is in **Done**. Open: Follow-up F3 (the rusted katana lying flat).
 
-| # | Asset key | Prompt |
-|---|---|---|
-| 37 | `prp_u1_leene_bell_guillotine` (256) | `a tall execution guillotine whose blade and frame are cast from a melted bronze bell, black lacquered timber, cinnabar paint, bell inscriptions still visible on the blade`. |
-| 38 | `prp_u1_sera_cage` (256, concept image `prop_sera_geometric_cage.jpg`) | `a hexagonal birdcage-like prison of black iron bars hanging from chains, red glints on the bars, geometric facets, ink and clay mixed media`. Add a 4-frame **swing** clip. |
-| 39 | `prp_u1_clay_gear` (256) | `a house-sized clockwork gear of thumbprinted grey clay, half buried in a shattered pagoda roof of black chitin tiles, turning slowly, one burned jetbike wheel wedged in its teeth`. Add a 4-frame **turn** clip stepping at 12 fps feel. |
-| 40 | `prp_u1_torii` (256) | `a mossy wooden torii gate in black ink with cinnabar paint flaking, a paper charm hanging from the crossbeam`. |
-| 41 | `prp_u1_petitions_banners` (128, three objects) | `a stack of surrender petition scrolls tied with black cord`; `a tall cinnabar war banner with a black mon on a bamboo pole`; `a paper lantern painted bone white, unlit`. |
-| 42 | `prp_u1_sake_gourd` (64) | `a dripping hip gourd of dark lacquered wood with a cord, black oil beading at the stopper`. |
-| 43 | `prp_u1_vault_blade_stand` (128) | `a sword stand of black lacquer holding one long nodachi whose blade is a single stroke of deep cobalt blue`. |
-| 44 | `prp_u1_dojo_set` (128, four objects) | `a burned tatami mat with one clean corner`; `a weapon rack of charred wood with two katana`; `a kneeling cushion of grey cloth`; `a rusted katana on an oil-stained cloth`. |
-| 45 | `prp_u1_street_set` (128, six objects) | `a paper-screen door freshly painted bone white with paste still wet`; `the same door with the paper peeled, char and small soot handprints beneath`; `a wooden bucket of white paint with a brush`; `a ladder of dark timber`; `a stone lantern with a cinnabar paper panel`; `a stack of charred roof tiles`. |
-| 46 | `prp_u1_pagoda_finial` (128) | `a horned finial of black chitin from a pagoda roof, cracked, cinnabar under the curve`. |
-
-### 4e. World kit (tilesets and tiles: `create_topdown_tileset`, `create_isometric_tile` 128, or `create_image_pixen` tileable 256; delivered as PNG under `assets/incoming/`)
+### 4e. World kit (after gate 2; textures via `import_texture.py`, Wang sets at 32 px)
 
 | # | Asset key | What |
 |---|---|---|
-| 47 | `tex_u1_ink_ground` | tileable ground of wet black ink with faint paper fibre showing through; a second tile `tex_u1_ink_ground_burned` of the same ground scorched to golden watercolour (the Astral burn result). |
-| 48 | `tex_u1_washi_floor` | tileable floor of white washi paper over dark boards (the castle's paper floors), subtle brush texture. |
-| 49 | `tex_u1_castle_wall` | tileable plaster-and-timber castle wall in black ink lines on paper white, cinnabar trim strip; a `_burned` variant with char climbing from the bottom. |
-| 50 | `tex_u1_iron_bridge_deck` | tileable dark timber planks with black iron strapping. |
-| 51 | `tex_u1_carved_waves` | tileable water as carved ukiyo-e wave lines in cobalt on paper white, never transparent. |
-| 52 | `tex_u1_bamboo_wall` | tileable wall of black ink bamboo stalks with cinnabar leaves (for the grove's edges). |
-| 53 | `tex_u1_street_cobble` | tileable cobbles as ink outlines with dither, ash in the joints. |
-| 54 | `tex_u1_roof_chitin` | tileable roof of black insect-chitin scales with a cobalt sheen line. |
-| 55 | `tiles_u1_kuro_truce` | a top-down tileset: ink ground → street cobble → washi floor transitions (`create_topdown_tileset` chained), for the streets. |
-| 56 | `tiles_u1_hinterlands` | a top-down tileset: paper-white negative space → faint mountain wash → mossy ground, for the Hinterlands. |
+| 47 | `tex_u1_ink_ground` (+ `tex_u1_ink_ground_burned`) | 256 px seamless, from above: `wet black ink ground with faint paper fibre showing through`; the burned variant `the same ground scorched to golden watercolour`. |
+| 48 | `tex_u1_washi_floor` | 256 px seamless, from above: `white washi paper floor over dark boards, subtle brush texture`. |
+| 49 | `tex_u1_castle_wall` (+ `_burned`) | 256 px seamless, straight on: `plaster-and-timber castle wall in black ink lines on paper white, a cinnabar trim strip`; burned: `char climbing from the bottom`. |
+| 50 | `tex_u1_iron_bridge_deck` | 256 px seamless, from above: `dark timber planks with black iron strapping`. |
+| 51 | `tex_u1_carved_waves` | 256 px seamless, from above: `water as carved woodblock wave lines in cobalt on paper white, opaque`. |
+| 52 | `tex_u1_bamboo_wall` | 256 px seamless, straight on: `a wall of black ink bamboo stalks with cinnabar leaves`. |
+| 53 | `tex_u1_street_cobble` | 256 px seamless, from above: `cobbles as ink outlines with dither, ash in the joints`. |
+| 54 | `tex_u1_roof_chitin` | 256 px seamless, straight on: `a roof of black insect-chitin scales with a cobalt sheen line`. |
+| 55 | `tiles_u1_kuro_truce` | `create_topdown_tileset`, 32 px, `target_palette` = the four inks: ink ground → street cobble → washi floor (chained with `lower_base_tile_id`), for the streets. |
+| 56 | `tiles_u1_hinterlands` | `create_topdown_tileset`, 32 px: paper-white negative space → faint mountain wash → mossy ground, for the Hinterlands. |
 
-### 4f. U1 VFX and Krona's signatures (`animate_image`, 128 cells, four inks; `create_image_pro` for the first frame)
+### 4f. U1 VFX and Krona's signatures (VFX Creator, 32–64 px cells, four inks)
 
 | # | Asset key | What |
 |---|---|---|
@@ -193,65 +224,75 @@ cinnabar, paper white, dry-brush edges, pixel art`. Deliver per `docs/BOT_REVIEW
 | 63 | `vfx_u1_rain_strokes` | vertical calligraphy-stroke rain, 6-frame loop, tileable. |
 | 64 | `vfx_petition_spawn` | a petition folding itself into a soldier, 8 frames. |
 
-### 4g. Portraits (U1 four-ink busts, 512, eight expressions each, see Batch 5)
+### 4g. Portraits (48x48, four inks; Batch 5 recipe)
 
-krona (if not already done in Batch 5), lord_ashinaga, u1_citizen_m, u1_citizen_f, krona_retainer_a.
+`krona` (if not already done in Batch 5), `lord_ashinaga`, `u1_citizen_m`, `u1_citizen_f`, `krona_retainer_a`.
 
-## Batch 5: portraits (dialogue busts)
+## Batch 5: portraits (48x48 pixel busts; `crono` and `sera` are slice rows)
 
-`create_image_pro`, 512×512, transparent, one call per expression with the catalog image as a labelled
-reference (`usage: "character base"`). Expressions, in this order: neutral, sad, angry, surprised, smile, hurt,
-special_a, special_b. Import target `assets/portraits/<id>/<id>_<expr>.png` (the game looks there first).
-Order: crono, sera, marle, robo, glenn, magus, krona (U1 four-ink prompt tail), vaelos, lucca, bekkler.
-Prompt tails per canvas are in Reference Bible §1.11; identity blocks in §4 and §5.
+`create_image_pro`, **48x48**, `view="side"`, the character's approved south sprite as the style image, the
+project palette (or the four inks for U1) with `max_colors` 14, transparent; one call per expression. Six
+expressions, named for the files: `neutral` (calm), `happy`, `angry`, `sad`, `surprised`, `determined`
+(`PortraitCache` falls back to `neutral`, so deliver that one first). Import target
+`assets/portraits/<id>/<id>_<expr>.png`. Order: crono, sera, marle, robo, glenn, magus, krona, vaelos, lucca,
+bekkler. Prompts: the character's identity block (no name) + `48 px pixel-art bust, head and shoulders,
+three-quarter face, same palette as the field sprite, flat cel shading, selective outline`. Supersedes the 512
+painted busts (Reference Bible §1.4 PRT).
 
-## Batch 6: Prologue props and the Atrium (billboards, `create_1_direction_object` or `create_object_pro_flash`, `view="low top-down"`)
+## Batch 6: Prologue props and the Atrium: delivered
 
-**Delivered and imported 2026-11-02** (Linear TRI-51..TRI-78, 27 objects; see Done; the kitchen, courtyard and Atrium now stand them, `docs/screenshots/11–13`). Still wanted from this batch: `prp_u0_klein_journal` (TRI-72 lists icon/field/pages variants but no PixelLab id), the sprout / sapling / ash stages of `prp_u0_doan_tree_stages` (TRI-77 delivered the seed only), a flat **clock face** for Robo's pillar (TRI-63 `prp_u0_clock_pillar_face` came back as a complete clocktower spire, kept as the Truce skyline landmark), and a top-down **pool** (TRI-69 `prp_u0_pool_rim` is a single front arc of rim; the Atrium keeps its primitive pool until a full disc or kit tiles arrive).
+All 27 objects (Linear TRI-51..TRI-78) were delivered and imported on 2026-11-02 at the pre-direction canvases;
+the kitchen, courtyard and Atrium stand nineteen of them (`docs/screenshots/11`–`13`), the rest await their
+scenes; one row per key in **Done**. Open: Follow-ups F1 (clock face), F2 (pool), F4 (tree stages), F5
+(Klein journal).
 
-128 px unless noted, transparent, U0 watercolour tail. Kitchen: copper porridge pot on a hook, stone counter
-with two porcelain bowls, long oak table, three-legged stool with an ink-burned groove, brass speaking tube,
-copper pots on a shelf, a hearth with embers (3-frame flicker), stained-glass window panel (texture, 128×192).
-Courtyard: stone well, hand cart, moss flower bed, iron portcullis. Atrium Horologe (Reference Bible §3.2,
-§5.4.3, plate-00): the clock pillar face 256, brass gate arch 256, the Seed of Doan pot (§5.7.7), gramophone
-on a workbench (§5.7.5), the little Bekkler doll, dummy plinth, reflecting pool rim tiles, loft ladder, Robo's
-rest alcove.
+## Batch 7: U0 textures: done by the build lead (2026-11-02)
 
-## Batch 7: U0 textures (tileable, 64 px/m, `create_image_pixen` or `pro` at 256×256 then tiled; a `_normal` from the importer)
+The twelve materials (castle_flagstone, castle_wall_block, oak_plank, oak_beam, slate_roof, brass_panel,
+cobble_wet, grass_moss, dirt_path, fair_canvas_stripe, stone_steps, plaster_cream) were generated with
+`create_image_pixen` / `create_image_pro`, budgeted to 15 colours, tiled at 32 px/m and are in
+`assets/textures/generated/` with rows in `source_art/MANIFEST.csv` (`docs/screenshots/21_kitchen_snes_density.jpg`).
+Nich says which to redo (one generation each). New U0 materials follow the same route (ART_PIPELINE §2).
 
-castle_flagstone, castle_wall_block, oak_plank, oak_beam, slate_roof, brass_panel, cobble_wet, grass_moss,
-dirt_path, fair_canvas_stripe, stone_steps, plaster_cream. Import target `assets/textures/generated/<name>_albedo.png`
-(the game looks there first).
+## Batch 8: UI (the frame is a slice row; the rest after gate 2)
 
-## Batch 8: UI (`create_ui_asset` and `create_image_pro` icons; Reference Bible §6 and the UI prompt tail)
+Delivered and copied as is to `assets/ui/generated/` (not wired): `ui_battle_command_menu`,
+`ui_party_status_card`, `ui_menu_kit`, `ui_dialogue_box` (navy and gold). **Style gate:** Nich picks that set
+(B) or the palette-locked 9-slice frame in the style kit (A, `source_art/style_kit/window_frame_resurrect64_256.png`)
+before anything more is made. Then, in the chosen theme, with `create_ui_asset` (frames) and `create_image_pro`
+with the palette (icons): tooltip frame 9-slice 32, cursor hand 16, target cursor 24, nine element icons 32
+(astral, tachyon, ruin, ferro, mycelia, vitreous, guile, hz, null; shape as well as colour), ten status icons 16
+(bleed, burn, slow, haste, seal, break, guard, stagger, oil_blight, rewound), HP/BP/turn gauges, shield plate
+housing 48x24 with the key glyphs, the Klein journal pages texture (F5). Import target `assets/ui/generated/`.
 
-Dialogue frame 9-slice, menu frame, tooltip frame, cursor hand 16, target cursor 24, nine element icons 32
-(astral, tachyon, ruin, ferro, mycelia, vitreous, guile, hz, null; shape as well as colour), ten status icons
-16 (bleed, burn, slow, haste, seal, break, guard, stagger, oil_blight, rewound), HP/BP/turn gauges, shield plate
-housing 48×24 with the key glyphs. Import target `assets/ui/generated/`.
+## Batch 9: VFX flipbooks (after gate 2; the impact burst exists in the style kit)
 
-## Batch 9: VFX flipbooks (`animate_image`, 128 cells, additive where noted)
-
-Element hits ×9 (8 frames each), Break shatter 12 (additive), plate crack 6, perfect-parry flash 4, Crono tech
-wisps 4 (loop) and Smear Dash trail 4, Sera Rewind glyph 8 and fast-forward streaks 6, Krona ink splash 8 and
-wet-ink zone 6 (loop). Import target `assets/vfx/generated/<family>/<id>_fb_<n>f.png`.
+VFX Creator (`vfx_workbench`), 32 px cells (64 for the Break shatter), palette-quantised, additive where noted:
+element hits ×9 (8 frames each), Break shatter 12 (additive), plate crack 6, perfect-parry flash 4, the hero's
+tech wisps 4 (loop) and Smear Dash trail 4, Sera's Rewind glyph 8 and fast-forward streaks 6, Krona's ink
+splash 8 and wet-ink zone 6 (loop). Import target `assets/vfx/generated/<family>/<id>_fb_<n>f.png`
+(ART_PIPELINE §6b).
 
 ## Done
 
+Characters and props imported from PixelLab (`data/art/pixellab_assets.json` is the record; the Linear issue
+is in Notes). Heights are the data values (`data/props/props.json`, the kits).
+
 | Asset key | PixelLab id | Imported | Notes |
 |---|---|---|---|
-| `crono_field` (idle, walk, run, hurt, ready, ko) | `8d699d00-eb9f-4da7-a408-a1f70039fa1c` | 2026-10-29 | the template; remaining battle clips listed as #0 |
-| `crono_action` (idle only) | `d1df31ab-e2cc-47c7-a8b7-6b293769a293` | 2026-10-29 | the action-tier base; clips A1–A2 pending |
-| `sera_field` (idle, walk, run) | `ce6ffc25-e512-4312-9d83-a850ab3b561f` | 2026-10-29 | remaining clips listed as #1 |
-| `krona_field` (idle, walk) | `6af5c834-e7a7-4e8b-83d7-8fb2b4222695` | 2026-10-29 | remaining clips listed as #2; alternative `364e2216…` on the account |
-| `marle_field` (idle only) | `05c8ee87-ac36-41af-870a-f1bf8bc4dabc` | 2026-10-29 | realistic proportions: see #3 |
+| `crono_px64_field` (idle, walk) | `ca2300bc-7592-4606-8973-32b9bc00056b` | 2026-11-02 | "TRIGGER Anchor Crono 64 v1": the 64 px anchor, 61 px = 1.78 m, cell 96; becomes `crono_field` when Nich approves the anchor; remaining clips F6 |
+| `crono_field` (idle, walk, run, hurt, ready, ko) | `8d699d00-eb9f-4da7-a408-a1f70039fa1c` | 2026-10-29 | the 128 px chibi template, superseded; ships until the anchor is approved |
+| `crono_action` (idle only) | `d1df31ab-e2cc-47c7-a8b7-6b293769a293` | 2026-10-29 | the 256 px action-tier base; tier to be re-specified (Batch 1b) |
+| `sera_field` (idle, walk, run) | `ce6ffc25-e512-4312-9d83-a850ab3b561f` | 2026-10-29 | 128 px, superseded; 64 px remake is #1 |
+| `krona_field` (idle, walk) | `6af5c834-e7a7-4e8b-83d7-8fb2b4222695` | 2026-10-29 | 128 px, superseded; alternative `364e2216…` on the account; 64 px remake is #2 |
+| `marle_field` (idle only) | `05c8ee87-ac36-41af-870a-f1bf8bc4dabc` | 2026-10-29 | 128 px realistic, superseded; 64 px remake is #3 |
 | `prp_u0_bekkler_doll` | `c862ecdb-89a9-45eb-980c-c13c7da1a7ca` | 2026-11-02 | TRI-67; 0.45 m, cell 128; Atrium |
 | `prp_u0_bekkler_tent` | `41966135-0fe8-4735-88f5-0d8792402f68` | 2026-11-02 | TRI-73; 3.4 m, cell 192; imported, awaiting its scene |
 | `prp_u0_brass_gate_arch` | `a96a4b60-1eed-4f09-a2e8-589a545071ca` | 2026-11-02 | TRI-64; 3.8 m, cell 224; Atrium ×8 |
-| `prp_u0_clock_pillar_face` | `b1b65e83-ec91-41ab-9da8-166875efb2cc` | 2026-11-02 | TRI-63; 9.0 m, cell 192; a whole clocktower spire, not a pillar face (not placed); imported, awaiting its scene |
+| `prp_u0_clock_pillar_face` | `b1b65e83-ec91-41ab-9da8-166875efb2cc` | 2026-11-02 | TRI-63; 9.0 m, cell 192; a whole clocktower spire, not a pillar face (not placed); v2 is F1 |
 | `prp_u0_counter_bowls` | `1bfc9189-c11d-4dc4-a3d8-d329858da146` | 2026-11-02 | TRI-52; 1.1 m, cell 96; kitchen |
-| `prp_u0_doan_tree_stages` | `0aad5a7e-5316-422b-9817-34ec0df50985` | 2026-11-02 | TRI-77; 0.5 m, cell 96; seed stage only; imported, awaiting its scene |
-| `prp_u0_dummy_plinth` | `bbb6b5f2-1163-4c8d-b670-4f25c9fe0b13` | 2026-11-02 | TRI-68; 0.6 m, cell 64; Atrium |
+| `prp_u0_doan_tree_stages` | `0aad5a7e-5316-422b-9817-34ec0df50985` | 2026-11-02 | TRI-77; 0.5 m, cell 96; seed stage only; the other stages are F4 |
+| `prp_u0_dummy_plinth` | `bbb6b5f2-1163-4c8d-b670-4f25c9fe0b13` | 2026-11-02 | TRI-68; 0.8 m, cell 64; Atrium |
 | `prp_u0_gramophone_workbench` | `6857fb3f-eba7-4e12-ad4d-54f842529b06` | 2026-11-02 | TRI-66; 1.5 m, cell 128; Atrium |
 | `prp_u0_hand_cart` | `5b91d919-d2f4-4c90-948f-54e852acfc9b` | 2026-11-02 | TRI-60; 1.5 m, cell 128; courtyard |
 | `prp_u0_hearth` | `89ddf903-c7ce-454c-8f1f-d74854fe290b` | 2026-11-02 | TRI-57; 1.9 m, cell 128, 5-frame idle loop; kitchen + Atrium |
@@ -260,7 +301,7 @@ wet-ink zone 6 (loop). Import target `assets/vfx/generated/<family>/<id>_fb_<n>f
 | `prp_u0_loft_ladder` | `5c82b89e-ec1d-48ec-a2d9-a55252f8f208` | 2026-11-02 | TRI-70; 2.4 m, cell 128; Atrium loft |
 | `prp_u0_moss_flower_bed` | `27a25879-3dce-4a3a-a98e-94428abc74e4` | 2026-11-02 | TRI-61; 0.9 m, cell 96; courtyard ×4 |
 | `prp_u0_oak_table` | `b4f8b062-9d67-4b00-9b4f-6d1c5a64cf15` | 2026-11-02 | TRI-53; 1.2 m, cell 128; kitchen |
-| `prp_u0_pool_rim` | `2b28c782-27dc-4c9f-a259-dae956ee5c3f` | 2026-11-02 | TRI-69; 1.0 m, cell 128; one front arc of rim (not placed); imported, awaiting its scene |
+| `prp_u0_pool_rim` | `2b28c782-27dc-4c9f-a259-dae956ee5c3f` | 2026-11-02 | TRI-69; 1.0 m, cell 128; one front arc of rim (not placed); the pool disc is F2 |
 | `prp_u0_porridge_pot` | `3eb122dc-c46c-48a3-9408-23a43655b4bc` | 2026-11-02 | TRI-51; 0.9 m, cell 128; kitchen |
 | `prp_u0_portcullis` | `3c15ff79-7782-4a48-a430-60f96e279541` | 2026-11-02 | TRI-62; 4.0 m, cell 128; courtyard |
 | `prp_u0_pot_shelf` | `7e896fe4-6207-4742-bfe1-c2890f367924` | 2026-11-02 | TRI-56; 1.0 m, cell 128; kitchen |
@@ -273,7 +314,7 @@ wet-ink zone 6 (loop). Import target `assets/vfx/generated/<family>/<id>_fb_<n>f
 | `prp_u0_telepods` | `4b72d8ff-bea4-41d0-bc00-f12274179e1b` | 2026-11-02 | TRI-74; 1.9 m, cell 224; imported, awaiting its scene |
 | `prp_u1_clay_gear` | `fae1201e-2d55-4c39-b63e-f38befce3e33` | 2026-11-02 | TRI-33; 4.0 m, cell 256, 5-frame idle loop; imported, awaiting its scene |
 | `prp_u1_dojo_set_cushion` | `1e8c4a44-dd17-4861-8fa5-9f3578dac56a` | 2026-11-02 | TRI-42; 0.4 m, cell 96; imported, awaiting its scene |
-| `prp_u1_dojo_set_rusted_katana` | `4ad20c87-a860-4885-8688-19fdfc2603ed` | 2026-11-02 | TRI-43; 1.1 m, cell 128; came back upright, v2 wanted lying flat; imported, awaiting its scene |
+| `prp_u1_dojo_set_rusted_katana` | `4ad20c87-a860-4885-8688-19fdfc2603ed` | 2026-11-02 | TRI-43; 1.1 m, cell 128; came back upright; v2 lying flat is F3 |
 | `prp_u1_dojo_set_tatami` | `5d748077-ebb5-4acf-9f16-69c768ae1b5c` | 2026-11-02 | TRI-40; 0.9 m, cell 128; imported, awaiting its scene |
 | `prp_u1_dojo_set_weapon_rack` | `e6a1b202-c0cc-44a9-b252-664036456b49` | 2026-11-02 | TRI-41; 1.6 m, cell 128; imported, awaiting its scene |
 | `prp_u1_leene_bell_guillotine` | `d58bc077-79db-4bdc-8036-9e30871b9470` | 2026-11-02 | TRI-31; 4.5 m, cell 256; imported, awaiting its scene |
@@ -292,3 +333,11 @@ wet-ink zone 6 (loop). Import target `assets/vfx/generated/<family>/<id>_fb_<n>f
 | `prp_u1_torii` | `37ea4f86-3834-4a4a-b64c-37b0168ec25f` | 2026-11-02 | TRI-34; 4.0 m, cell 192; imported, awaiting its scene |
 | `prp_u1_vault_blade_stand` | `446ce3e9-1e32-46a2-a7a2-694c3efd6f38` | 2026-11-02 | TRI-39; 0.6 m, cell 128; imported, awaiting its scene |
 | `prp_u2_seed_of_doan` | `c4f7051a-c770-4278-b743-4420a83ea924` | 2026-11-02 | TRI-78; 0.5 m, cell 128; imported, awaiting its scene |
+
+Pending in `data/props/props.json` with no PixelLab id: `prp_u0_klein_journal` (TRI-72, Follow-up F5).
+
+Generated or copied by the build lead, logged in `source_art/MANIFEST.csv` rather than `pixellab_assets.json`:
+the twelve Batch 7 textures (`assets/textures/generated/`, 2026-11-02); the four Batch 8 panels
+(`assets/ui/generated/`, asset team, 2026-11-02, unwired); the Phase-1 style kit (`source_art/style_kit/`:
+16 anchor candidates, 3 Wang test tilesets, 1 window frame, 1 impact burst, 2026-11-02; nothing from it ships
+until Nich picks).

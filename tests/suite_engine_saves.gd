@@ -37,9 +37,11 @@ func test_leans_keep_int_keys_and_their_cap_across_a_save() -> void:
 	check(Saves.suspended, "the test runner keeps Saves in the scratch directory")
 	Flags.leans.clear()
 	var p0: int = Flags.prismatic
+	var b0: int = Flags.beckons
 	for i in 5:
 		Flags.add_lean(1, "P")
 	check_eq(Flags.prismatic, p0 + 5, "five Prismatic leans in U1")
+	check_eq(Flags.beckons, b0, "a lean is earned in battle and grants no Beckons (Combat Laws 7.7, CORE-22)")
 	var parsed: Variant = JSON.parse_string(JSON.stringify(Flags.to_save()))
 	Flags.from_save(parsed)
 	check(Flags.leans.has(1) and not Flags.leans.has("1"), "after a JSON round trip the universe key is the int again")

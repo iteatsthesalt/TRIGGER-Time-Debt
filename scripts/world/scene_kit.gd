@@ -1,9 +1,11 @@
-## Helpers to build textured primitives at the game's 64 px/m density (Reference Bible §1.2), used by
-## the diorama and by the location builders until the Blender kits arrive.
+## Helpers to build textured primitives at the game's 32 px/m density (the Nov 1 recipe, DECISIONS
+## "Direction"; it was 64 px/m per Reference Bible §1.2), used by the diorama and by the location builders
+## until real kits arrive.
 class_name SceneKit
 extends RefCounted
 
-const TILE_M := 16.0  # a 1024 px texture covers 16 m at 64 px/m
+const PX_PER_M := 32.0  # SNES density: a 64 px hero is 1.78 m, a 256 px tile is 8 m
+const TILE_M := 1024.0 / PX_PER_M  # the 1024 px material sheets cover 32 m
 ## Where imported textures land (docs/ART_PIPELINE.md §6): <material>_albedo.png + _normal.png.
 const GENERATED_DIR := "res://assets/textures/generated"
 ## Placeholder materials by name until the generated ones exist.

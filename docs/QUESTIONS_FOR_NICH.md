@@ -43,7 +43,7 @@ Things I'd like your view on when you have a moment. None of them block the buil
   Overrule any of them there; the room updates by itself.
 
 ## Style bible, Phase 1 (2026-11-02): see docs/screenshots/20_style_bible_kit_review.jpg
-- **Which sprite scale is the game?** Three exist now: the 128 px chibi field tier the engine ships
+- **Scale: answered in session (the Nov 1 recipe: 64 px three-head sprites, a 32 px/m world).** Still open from the sheet: which anchor candidate and which palette. Three sizes existed before the answer: the 128 px chibi field tier the engine ships
   (Crono 95 px tall), the asset team's 256 px "field v3" sets on the account, and your Nov 1 breakdown's
   32/64 px three-head recipe. Section A of the sheet is that recipe: a 64x64 anchor in the Resurrect 64
   palette (16 candidates; 0, 8 and 12 read best to me; the gauntlet lands on the wrong arm in most, an
@@ -54,3 +54,7 @@ Things I'd like your view on when you have a moment. None of them block the buil
   code-drawn until you choose.
 - **Textures:** the twelve U0 textures are in the rooms now (screenshot 21). Say which to redo; they cost
   one generation each.
+- **The asset team's 256 px sets.** About fifty canonical `TRIGGER <Name> field v3` characters on the
+  account are at 128 or 256 px and are not imported (DECISIONS, "Direction"). Do you want the team told
+  to stop at that size and re-spec from the 64 px anchor once it is approved? I can post the note in
+  #all-trigger, or you can.

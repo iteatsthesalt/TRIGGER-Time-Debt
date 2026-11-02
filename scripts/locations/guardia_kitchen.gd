@@ -29,7 +29,7 @@ func build() -> void:
 	camera_pitch = 32.0
 	map_bounds = Rect2(-9.5, -7.5, 23.5, 12.5)
 	var stone := SceneKit.named("castle_flagstone", 0.95, Color(0.92, 0.9, 0.88))
-	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.95, 0.95, 0.95))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(1.0, 0.95, 0.86))
 	var wood := SceneKit.named("oak_plank", 0.85)
 	var dark_wood := SceneKit.named("oak_beam", 0.85, Color(0.6, 0.55, 0.5))
 	# ---- floors

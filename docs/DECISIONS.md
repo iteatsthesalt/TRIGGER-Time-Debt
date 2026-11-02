@@ -174,3 +174,21 @@ questions are in QUESTIONS_FOR_NICH. Every generated file is logged in `source_a
 model, seed, prompt, palette, post-process), the AI-disclosure log the breakdown section 14 asks for; it
 lives in `source_art/` because Godot imports any CSV under `assets/` as a translation table. Touches
 Reference Bible 1.11 (Route G) and 5.6/5.9, the breakdown sections 9, 10, 13 and 14.
+
+## Direction: the Nov 1 recipe is the style, and everything is remade at its scale (2026-11-02, Nich)
+Nich confirmed in session that the assets "need to be remade the right size and this new style we are
+reaching for": his Nov 1 "Chrono-Style Recreation Breakdown". Numbers adopted from it: sprites on a 64x64
+canvas, three heads tall (the hero about 56 px for 1.78 m, so about 32 px per metre), a twelve-colour
+budget per character from one locked palette (Resurrect 64 is the working palette until Nich confirms a
+different one), coloured selective outlines and no pure black, held-frame animation timed like the
+original (walk 6 steps, run 2-4, attack 7 poses); world textures and tiles at the same 32 px per metre
+(`SceneKit.TILE_M` goes from 16 m to 32 m per 1024 px texture, so a 256 px tile is 8 m), drawn flat
+with two-tone light and shadow, high-key lighting. Superseded: the Reference Bible's 64 px/m texel rule
+(1.2) and the 3.5-head 128 px chibi field tier (Crono 95 px), the asset team's 256 px "field v3" sets
+on the PixelLab account (not imported; the character import started today was stopped before it wrote
+anything), and the first twelve painterly 512 px textures (replaced by 256 px SNES-density ones the
+same day). The 128 px cast and the chibi NPC placeholders stay in the game until their 64 px
+replacements exist, one character at a time, starting with the hero anchor (style-kit candidate 0
+rotated to eight directions as "TRIGGER Anchor Crono 64 v1"). Every open ASSET_REQUESTS entry is to be
+re-specified at this scale before it is sent. Touches Reference Bible 1.2, 1.4, 2.3 and 3; ART_PIPELINE
+1 and 1b; the breakdown sections 3, 5, 6 and 12.

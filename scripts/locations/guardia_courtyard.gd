@@ -15,7 +15,7 @@ func build() -> void:
 	map_bounds = Rect2(-12, -12, 24, 22)
 	var stone := SceneKit.named("castle_flagstone", 0.9, Color(0.85, 0.87, 0.9))
 	var gravel := SceneKit.named("grass_moss", 1.0, Color(0.9, 0.9, 0.92))
-	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.9, 0.9, 0.95))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.98, 0.94, 0.86))
 	SceneKit.floor_plane(self, Vector2(26, 24), Vector3(0, 0, -1), gravel, "Ground")
 	# a flagstone path from the keep door (north) to the gatehouse (south)
 	SceneKit.box(self, Vector3(3.0, 0.04, 20.0), Vector3(0, 0.02, -1), stone, "Path", false)

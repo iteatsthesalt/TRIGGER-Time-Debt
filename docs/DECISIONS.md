@@ -155,3 +155,22 @@ were checked clear. The Atrium pool and Robo's pillar face keep their primitives
 (PRP-S/PRP-M are one billboard contract; the glTF option is unused for now), §5.7 and §11.7 (the delivered set: the manifest's own rows plus Batch 6's dressing keys that §11.7 never
 listed, `prp_u0_counter_bowls` … `prp_u0_robo_rest_alcove`; `data/props/props.json` is now the complete list,
 the bible table is not edited).
+
+## PixelLab generation by the build lead: Prologue textures, the UI panels, and Nich's Phase-1 style kit (2026-11-02)
+Nich opened PixelLab to the build lead ("it's so you can make stuff for the game"). First batch, 9,590
+generations on the account, about 50 spent: (1) the twelve U0 textures of ASSET_REQUESTS Batch 7
+(`create_image_pixen` at 512 px, one generation each; six regenerated with stricter prompts after the
+first pass drew whole castles instead of surfaces), wrap-blended so they tile, tiled 2x2 to the 1024 px =
+16 m contract of `SceneKit.named`, with luminance normal maps, in `assets/textures/generated/`; (2) the
+four UI panels the asset team had already generated (battle command menu, party status card, menu kit,
+dialogue box) imported as delivered into `assets/ui/generated/`, not yet wired: the dialogue box and HUD
+stay code-drawn until Nich picks between that navy-and-gold set and (3) the palette-locked candidate from
+the style kit; (3) the Phase-1 style-bible kit the Nov 1 breakdown asks to freeze before volume work: a
+64x64 hero anchor (`create_image_pro`, Resurrect 64 palette, 16 candidates, the design-lock identity
+block without a character name), three 32 px Wang test tilesets, one 9-slice window frame and one impact
+burst (VFX Creator game pack), all under `source_art/style_kit/` with the review sheet
+`docs/screenshots/20_style_bible_kit_review.jpg`. Nothing from the kit ships until Nich picks; the
+questions are in QUESTIONS_FOR_NICH. Every generated file is logged in `source_art/MANIFEST.csv` (tool,
+model, seed, prompt, palette, post-process), the AI-disclosure log the breakdown section 14 asks for; it
+lives in `source_art/` because Godot imports any CSV under `assets/` as a translation table. Touches
+Reference Bible 1.11 (Route G) and 5.6/5.9, the breakdown sections 9, 10, 13 and 14.

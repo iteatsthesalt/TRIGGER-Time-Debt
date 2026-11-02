@@ -41,3 +41,16 @@ Things I'd like your view on when you have a moment. None of them block the buil
 - **Prop heights.** Each imported prop has a height in metres in `data/props/props.json` (the hearth 1.9 with
   its chimney breast, the oak table 1.2, the portcullis arch 4.0, the torii 4.0; the reasoning in `notes`).
   Overrule any of them there; the room updates by itself.
+
+## Style bible, Phase 1 (2026-11-02): see docs/screenshots/20_style_bible_kit_review.jpg
+- **Which sprite scale is the game?** Three exist now: the 128 px chibi field tier the engine ships
+  (Crono 95 px tall), the asset team's 256 px "field v3" sets on the account, and your Nov 1 breakdown's
+  32/64 px three-head recipe. Section A of the sheet is that recipe: a 64x64 anchor in the Resurrect 64
+  palette (16 candidates; 0, 8 and 12 read best to me; the gauntlet lands on the wrong arm in most, an
+  inpaint fixes that). Pick a scale and, if 64, a candidate and a palette (Resurrect 64 is a proposal;
+  Apollo, Endesga 64 and Jehkoba64 are saved beside it) and every later request follows it.
+- **Window frame A or B?** A = the palette-locked 9-slice frame in the sheet (section C); B = the asset
+  team's navy-and-gold dialogue box and menu kit (now in `assets/ui/generated/`). The dialogue box stays
+  code-drawn until you choose.
+- **Textures:** the twelve U0 textures are in the rooms now (screenshot 21). Say which to redo; they cost
+  one generation each.

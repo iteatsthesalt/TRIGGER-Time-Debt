@@ -91,15 +91,19 @@ if [ "$QUICK" = 0 ]; then
 fi
 
 if [ "$VISUAL" = 1 ]; then
-  # The error lines of a windowed Godot log, minus the known-harmless ones: lavapipe/llvmpipe chatter, the
-  # ObjectDB leak report at exit (PROGRESS known issues), and the Vulkan *context* failing to start on a machine
-  # without a Vulkan surface (a container under xvfb), after which Godot falls back to OpenGL 3 and says so.
+  # The error lines of a windowed Godot log, minus the known-harmless ones: lavapipe/llvmpipe chatter and the
+  # ObjectDB leak report at exit (PROGRESS known issues). Only for a run under xvfb-run (NO_SURFACE=1, set where
+  # xvfb-run is chosen) is the Vulkan *context* failing to start dropped as well: xvfb offers no Vulkan surface,
+  # so Godot falls back to OpenGL 3 and says so. On a GPU desktop a Vulkan context error still prints and fails.
+  NO_SURFACE=0
   log_errors() {
-    awk '
+    local harmless="lavapipe\|llvmpipe\|resources still in use at exit"
+    if [ "$NO_SURFACE" = 1 ]; then harmless="$harmless\|Vulkan instance extension VK_KHR_surface not found"; fi
+    awk -v no_surface="$NO_SURFACE" '
       /SCRIPT ERROR|ERROR:/ { if (held != "") print held; held = $0; next }
-      { if (held != "") { if ($0 !~ /rendering_context_driver_vulkan\.cpp/) print held; held = "" } }
+      { if (held != "") { if (no_surface != 1 || $0 !~ /rendering_context_driver_vulkan\.cpp/) print held; held = "" } }
       END { if (held != "") print held }
-    ' "$1" | grep -v "lavapipe\|llvmpipe\|resources still in use at exit\|Vulkan instance extension VK_KHR_surface not found"
+    ' "$1" | grep -v "$harmless"
   }
   step "smoke boot (600 frames, software Vulkan)"
   mkdir -p /tmp/captures
@@ -107,10 +111,12 @@ if [ "$VISUAL" = 1 ]; then
   CAP_DIR=/tmp/captures
   if command -v cygpath >/dev/null 2>&1; then CAP_DIR="$(cygpath -m /tmp/captures)"; fi
   if command -v xvfb-run >/dev/null 2>&1; then
+    NO_SURFACE=1
     timeout 900 xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --rendering-driver vulkan --audio-driver Dummy \
       --resolution 1280x720 --script res://tools/capture/smoke.gd -- --frames=600 --out="$CAP_DIR" > /tmp/check_smoke.log 2>&1
   else
     # A desktop with a real GPU (Nich's Windows machine): run the window directly.
+    NO_SURFACE=0
     timeout 900 godot --path . --rendering-driver vulkan --audio-driver Dummy \
       --resolution 1280x720 --script res://tools/capture/smoke.gd -- --frames=600 --out="$CAP_DIR" > /tmp/check_smoke.log 2>&1
   fi
@@ -126,7 +132,8 @@ if [ "$VISUAL" = 1 ]; then
     local scene="$1" frames="$2"; shift 2
     local log="/tmp/check_capture_${scene}.log" rc
     local run=(godot)
-    if command -v xvfb-run >/dev/null 2>&1; then run=(xvfb-run -a -s "-screen 0 1280x720x24" godot); fi
+    NO_SURFACE=0
+    if command -v xvfb-run >/dev/null 2>&1; then run=(xvfb-run -a -s "-screen 0 1280x720x24" godot); NO_SURFACE=1; fi
     timeout 900 "${run[@]}" --path . --rendering-driver vulkan --audio-driver Dummy --resolution 1280x720 \
       --script res://tools/capture/smoke.gd -- --frames="$frames" --every="$frames" --scene="$scene" \
       --prefix="check_${scene}" --out="$CAP_DIR" "$@" > "$log" 2>&1

@@ -13,6 +13,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -20,6 +21,9 @@ import unittest
 import zipfile
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+# The shell for the bash-script tests, resolved once along PATH: on Nich's Windows PC (Git Bash, the Windows python
+# shim) a bare "bash" goes through CreateProcess, which searches System32 first and can start WSL's bash.exe.
+BASH = shutil.which("bash")
 for sub in ("tools/common", "tools/art", "tools/art/pipeline", "tools/audio"):
     sys.path.insert(0, os.path.join(ROOT, sub))
 
@@ -292,7 +296,8 @@ class SetupGodot(unittest.TestCase):
     def test_sourcing_leaves_the_callers_shell_options_alone(self):
         """check.sh runs without errexit and reads each step's result itself: a sourced setup_godot.sh must not
         turn errexit on (TOOLS-1). A copy runs against a stub Godot, so nothing is downloaded."""
-        import shutil
+        if BASH is None:
+            self.skipTest("bash not on PATH")
         with _scratch() as d:
             os.makedirs(os.path.join(d, "tools"))
             shutil.copy(os.path.join(ROOT, "tools", "setup_godot.sh"), os.path.join(d, "tools", "setup_godot.sh"))
@@ -304,7 +309,7 @@ class SetupGodot(unittest.TestCase):
             os.chmod(stub, 0o755)
             script = ("set -uo pipefail; source tools/setup_godot.sh > /dev/null; echo \"rc=$?\"; "
                       "set -o | grep -E '^errexit'; echo nothing | grep -E 'SCRIPT ERROR' | head -1; echo reached")
-            r = subprocess.run(["bash", "-c", script], cwd=d, capture_output=True, text=True,
+            r = subprocess.run([BASH, "-c", script], cwd=d, capture_output=True, text=True,
                                env=dict(os.environ, GODOT_VERSION="4.7.2"))
             self.assertIn("rc=0", r.stdout, r.stderr)
             self.assertRegex(r.stdout, r"errexit\s+off")
@@ -313,8 +318,10 @@ class SetupGodot(unittest.TestCase):
 
 class RenderArgs(unittest.TestCase):
     def _dry(self, *args):
+        if BASH is None:
+            self.skipTest("bash not on PATH")
         env = dict(os.environ, RENDER_DRY_RUN="1")
-        r = subprocess.run(["bash", os.path.join(ROOT, "tools", "capture", "render.sh"), *args], env=env,
+        r = subprocess.run([BASH, os.path.join(ROOT, "tools", "capture", "render.sh"), *args], env=env,
                            capture_output=True, text=True, cwd=ROOT)
         return r.returncode, r.stdout.strip()
 

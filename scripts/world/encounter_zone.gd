@@ -37,6 +37,7 @@ var _await_separation: bool = false
 func _ready() -> void:
 	_rng.seed = hash(String(encounter_id) + name)
 	add_to_group("encounter_zones")
+	process_physics_priority = -1  # step the wanderers before their own CombatActor tick (gravity once per tick)
 
 
 func spawn(parent: Node) -> void:
@@ -69,7 +70,7 @@ func _physics_process(delta: float) -> void:
 		if not _targets.has(e) or e.global_position.distance_to(_targets[e]) < 0.3:
 			if _waits.get(e, 0.0) > 0.0:
 				_waits[e] = float(_waits[e]) - delta
-				e.velocity = Vector3.ZERO
+				e.velocity = Vector3(0.0, e.velocity.y, 0.0)  # standing: its own tick keeps the fall
 				e.sprite.update_from_velocity(Vector3.ZERO)
 				continue
 			var ang: float = _rng.randf_range(0.0, TAU)
@@ -78,13 +79,7 @@ func _physics_process(delta: float) -> void:
 			_waits[e] = _rng.randf_range(0.8, 2.5)
 		var to: Vector3 = _targets[e]
 		var flat := Vector3(to.x - e.global_position.x, 0.0, to.z - e.global_position.z)
-		var spd: float = 1.4
-		e.velocity.x = flat.normalized().x * spd
-		e.velocity.z = flat.normalized().z * spd
-		if not e.is_on_floor():
-			e.velocity.y -= 20.0 * delta
-		e.move_and_slide()
-		e.sprite.update_from_velocity(e.velocity)
+		e.step(flat.normalized() * 1.4, delta)
 
 
 ## Called every physics frame by the location with the leader; starts the fight on contact.

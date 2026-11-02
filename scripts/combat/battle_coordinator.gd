@@ -57,6 +57,7 @@ var spared: Array[Node] = []
 var fled: Array[Node] = []
 var bank := BoostBank.new()
 var fields := BattleFields.new()
+var statues := StatueTimers.new()
 var rng := RandomNumberGenerator.new()
 var arena_center: Vector3 = Vector3.ZERO
 var tech_library: Dictionary = {}
@@ -136,6 +137,7 @@ func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: D
 	ens_rings.clear()
 	cooldowns.clear()
 	ko_order.clear()
+	statues.clear()
 	fields.clear()
 	battle_time = 0.0
 	oil_blight = false
@@ -325,7 +327,7 @@ func advance(delta: float) -> void:
 		if not is_instance_valid(u):
 			continue
 		var sh := ShieldComponent.of(u)
-		if sh != null:
+		if sh != null and _alive(u):  # a body that died Broken never recovers: it stands as a statue (§5.4)
 			if sh.is_broken:
 				if sh.tick(dt):
 					unit_recovered.emit(u)
@@ -338,6 +340,7 @@ func advance(delta: float) -> void:
 		var td := TimeDebtComponent.of(u)
 		if td != null:
 			td.tick(dt)
+	statues.tick(dt)
 	_tick_fields(dt)
 	_tick_oil_blight(dt)
 	_tick_ens_rings(dt)
@@ -1632,6 +1635,7 @@ func _on_unit_broken(breaker: Node, unit: Node) -> void:
 
 func _on_unit_defeated(unit: Node) -> void:
 	ko_order.append(unit)
+	statues.on_defeated(unit, enemies.has(unit) and is_broken(unit))
 	unit_koed.emit(unit)
 	if party.has(unit):
 		ready_pool.erase(unit)
@@ -1811,10 +1815,7 @@ func _party_candidates(include_hover: bool = false) -> Array:
 func _blockers() -> Array:
 	var out: Array = []
 	for e in enemies:
-		if not is_instance_valid(e):
-			continue
-		var sh := ShieldComponent.of(e)
-		if sh != null and sh.is_broken:
+		if is_instance_valid(e) and is_broken(e) and (_alive(e) or statues.standing(e)):
 			out.append({"pos": position_of(e), "radius": CombatantStats.of(e).body_radius * (1.0 + CombatConstants.BREAK_HULL_INFLATION)})
 	return out
 

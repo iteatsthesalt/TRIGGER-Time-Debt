@@ -507,7 +507,7 @@ func _on_strike(attacker: Node, target: Node, info: Dictionary) -> void:
 		Audio.play_sfx("combat/shield_chip", 0.0, 1.0 + 0.05 * float(int(info.get("shave", 0))))
 	if target is CombatActor:
 		var ca := target as CombatActor
-		if ca.stats.is_alive():
+		if ca.stats.is_alive() and not coordinator.is_broken(target):  # a Broken body stays locked mid-step (§5.4)
 			ca.sprite.play(&"hurt", &"ready" if ca.is_party else &"idle")
 			if ca.time_debt != null:
 				Audio.play_sfx("porcelain/tink")
@@ -552,8 +552,7 @@ func _on_koed(unit: Node) -> void:
 func _on_revived(unit: Node) -> void:
 	if unit is CombatActor:
 		var ca := unit as CombatActor
-		ca.visible = true
-		ca.frozen = false
+		ca.restore_body()  # stops die()'s fade: a revived ally is visible and opaque again
 		ca.sprite.play(&"revive", &"ready")
 
 

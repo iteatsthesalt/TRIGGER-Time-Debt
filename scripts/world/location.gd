@@ -32,16 +32,14 @@ var _party_root: Node3D
 
 
 func _ready() -> void:
-	Universe.set_universe(universe_id, true)
 	world = HD2DWorld.new()
 	world.name = "World"
-	world.environment = HD2DWorld.make_environment(universe_id)
 	add_child(world)
-	key_light = HD2DWorld.add_three_point_lights(self, universe_id != 4 and universe_id != 6)
 	_party_root = Node3D.new()
 	_party_root.name = "Party"
 	add_child(_party_root)
-	build()
+	build()  # a subclass sets location_id, universe_id, the camera and the bounds here (README "add a scene")
+	_apply_universe()
 	_spawn_party()
 	rig = HD2DCameraRig.new()
 	rig.name = "CameraRig"
@@ -79,6 +77,14 @@ func _ready() -> void:
 	Game.integrity_changed.connect(_on_game_integrity)
 	Game.debt_changed.connect(_on_game_debt)
 	_start_after_ready()
+
+
+## The universe this location stands in, read after build() so universe_id set there counts: the canvas
+## stack and grade, the environment's background and ambient, and the key light (warm except in U4 and U6).
+func _apply_universe() -> void:
+	Universe.set_universe(universe_id, true)
+	world.environment = HD2DWorld.make_environment(universe_id)
+	key_light = HD2DWorld.add_three_point_lights(self, universe_id != 4 and universe_id != 6)
 
 
 ## after_ready() runs once the script that brought us here (a "go" command) has finished.
@@ -390,8 +396,9 @@ func _on_rewind() -> void:
 	pass
 
 
-## The Rewind presentation: Sera's ghosts in other canvases, a tape-rewind sting, +5% translucency,
-## and the crack under her left eye spreading. Returns false when Sera is not here.
+## The Rewind presentation (Story Bible Ch1 beat 2): Sera's ghosts in other canvases, a tape-rewind sting,
+## +5 Translucency Debt, and her look following it (CombatActor.set_porcelain_visuals: the crack spreads and her
+## body thins), with the truth lens for a breath. Returns false when Sera is not here.
 func field_rewind(sera: Node, target: Node = null) -> bool:
 	if sera == null or not (sera is CombatActor):
 		return false
@@ -416,7 +423,7 @@ func field_rewind(sera: Node, target: Node = null) -> bool:
 	Game.set_debt(Game.sera_debt + 5.0)
 	if s.solidity:
 		s.solidity.debt = Game.sera_debt
-	s.sprite.set_porcelain(1, clampf(Game.sera_debt / 100.0 + 0.2, 0.2, 1.0), 0.0)
+	s.set_porcelain_visuals()
 	if rig:
 		rig.set_truth(true)
 		var tw2 := create_tween()

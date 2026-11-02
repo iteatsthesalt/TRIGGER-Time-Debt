@@ -81,6 +81,7 @@ func _ready() -> void:
 	_flow_time_label.offset_top = 26
 	_flow_time_label.add_theme_font_size_override("font_size", 8)
 	_flow_time_label.add_theme_color_override("font_color", Color(PALE, 0.6))
+	_flow_time_label.visible = Game.debug_mode  # the battle-time readout is a debug aid, not player HUD
 	root.add_child(_flow_time_label)
 
 

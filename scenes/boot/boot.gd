@@ -2,9 +2,12 @@
 ##   --scene=<id> / --location=<id>   start in a location instead of the title
 ##   --spawn=<marker>                  the marker to stand on (default "start")
 ##   --checkpoint=<id>                 set Game.checkpoint first (a scene's state machine reads it)
-##   --party=a,b,c                     set the active party
-##   --chapter=<n>  --integrity=<n>    set chapter (Game.set_chapter unlocks chapter-gated kit entries) / Crono's integrity
-##   --level=<n>                       set every roster member's level
+##   --party=a,b,c                     set the active party (a guest such as Marle gets her roster row)
+##   --level=<n>                       set every roster member's level, the party's guests included
+##   --chapter=<n>                     set the chapter; a start into a location learns that chapter's kit
+##                                     (without --chapter: chapter 0, the Prologue kit). BootArgs applies the
+##                                     three in this order, whatever their order here
+##   --integrity=<n>                   set Crono's integrity
 ##   --flag=Name:State                 set a flag (repeatable)
 ##   --say=<text>                      show one narrator line once the scene is up (capture/debug)
 ## Battle arguments are read elsewhere: --autobattle by BattleScene (scripts/battle/battle_scene.gd) and the test
@@ -23,22 +26,13 @@ func _ready() -> void:
 			spawn = StringName(arg.trim_prefix("--spawn="))
 		elif arg.begins_with("--checkpoint="):
 			Game.checkpoint = StringName(arg.trim_prefix("--checkpoint="))
-		elif arg.begins_with("--party="):
-			var ids: Array[StringName] = []
-			for p in arg.trim_prefix("--party=").split(","):
-				ids.append(StringName(p))
-			Game.set_party(ids)
-		elif arg.begins_with("--chapter="):
-			# set_chapter, not the bare field: it unlocks the chapter-gated kit entries (probes need the techs)
-			Game.set_chapter(int(arg.trim_prefix("--chapter=")))
 		elif arg.begins_with("--integrity="):
 			Game.set_integrity(float(arg.trim_prefix("--integrity=")))
-		elif arg.begins_with("--level="):
-			for id in Game.roster.keys():
-				Game.roster[id]["level"] = int(arg.trim_prefix("--level="))
 		elif arg.begins_with("--flag="):
 			var parts: PackedStringArray = arg.trim_prefix("--flag=").split(":")
 			Flags.set_flag(StringName(parts[0]), StringName(parts[1]) if parts.size() > 1 else &"set")
+	# --party, --level and --chapter (the kit the probes fight with)
+	BootArgs.apply(OS.get_cmdline_user_args(), target != &"title")
 	await get_tree().process_frame
 	if Router.has_location(target):
 		Router.go(target, spawn, 0.0)

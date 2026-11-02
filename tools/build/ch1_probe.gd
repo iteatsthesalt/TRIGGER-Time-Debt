@@ -1,5 +1,6 @@
 ## Headless Chapter 1 playthrough in the Atrium: loft wake → crack check (focus) → rewind (R) → downstairs
 ## → Father Tank → dummy fight (autobattle) → Glenn → rest → midnight → hearth → the Fair call.
+## Ends with `PROBE_END ok=<bool>` and exits with 1 when it is false (a stall, a failed check, a timeout).
 ##   godot --headless --path . --script res://tools/build/ch1_probe.gd -- --autobattle
 extends SceneTree
 
@@ -201,6 +202,11 @@ func _process(_delta: float) -> bool:
 	if not _started:
 		return false
 	_frame += 1
-	if _finished or _frame > 90000:
+	if not _finished and _frame > 90000:
+		print("PROBE timeout")
+		_fail = true
+		_end()
+	if _finished:
+		quit(1 if _fail else 0)
 		return true
 	return false

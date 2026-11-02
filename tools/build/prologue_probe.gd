@@ -1,6 +1,7 @@
 ## Headless Prologue playthrough: boots into the kitchen with a fresh game, lets the opening scripts
 ## auto-advance, opens the gate, walks into the hall to start the Cradle, autobattles it, then takes
-## the exit to the courtyard and on to the Atrium. Prints PROBE lines; exits with 1 on a stall.
+## the exit to the courtyard and on to the Atrium. Prints PROBE lines and ends with `PROBE_END ok=<bool>`;
+## exits with 1 on a stall or a timeout.
 ##   godot --headless --path . --script res://tools/build/prologue_probe.gd -- --autobattle
 extends SceneTree
 
@@ -146,8 +147,12 @@ func _process(_delta: float) -> bool:
 		return false
 	_frame += 1
 	if _finished:
+		quit(1 if _fail else 0)
 		return true
 	if _frame > 60000:
 		print("PROBE timeout at stage %s" % _stage)
+		_fail = true
+		_end()
+		quit(1)
 		return true
 	return false

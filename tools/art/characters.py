@@ -53,7 +53,9 @@ CHARACTERS = {
     },
     # ------------------------------------------------------------------ supporting cast / NPCs
     "marle": {
-        "id": "marle", "group": "npcs", "canvas": "u0", "fps": 60, "height": 106, "build": 0.9, "female": True,
+        # she has a kit (data/characters/marle.json), so her sheets live under assets/characters/marle with the
+        # PixelLab import; spritegen refuses to overwrite it (the old assets/npcs/marle paper doll is gone)
+        "id": "marle", "group": "characters", "canvas": "u0", "fps": 60, "height": 106, "build": 0.9, "female": True,
         "hair": "ponytail",
         "palette": {
             "skin": "#EBC7A8", "skin_shadow": "#C1977B", "hair": "#E2C25A", "hair_shadow": "#A88B32",

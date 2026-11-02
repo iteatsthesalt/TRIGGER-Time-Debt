@@ -91,15 +91,19 @@ def write_manifest(manifest: dict, path: str) -> None:
 
 def refresh_manifest() -> dict:
     """Rebuild the manifest from what is on disk: track and bed sidecars, measured SFX files."""
-    manifest = {"music": {}, "sfx": [], "ambience": [], "motifs": [], "targets": {"music_lufs": -20.0, "ambience_lufs": -26.0, "sfx_peak_dbfs": -1.0}, "problems": []}
+    # nothing is checked against the targets here: problems is null (not evaluated), not an empty list
+    manifest = {"music": {}, "sfx": [], "ambience": [], "motifs": [], "targets": {"music_lufs": -20.0, "ambience_lufs": -26.0, "sfx_peak_dbfs": -1.0},
+                "problems": None, "problems_by_group": {}, "checked_groups": [], "build_seconds": None}
     for p in sorted(glob.glob(os.path.join(AUDIO, "music", "*.json"))):
         side = json.load(open(p, encoding="utf-8"))
         manifest["music"][side["id"]] = side
     for p in sorted(glob.glob(os.path.join(AUDIO, "ambience", "*.json"))):
         manifest["ambience"].append(json.load(open(p, encoding="utf-8")))
+    import godot_import
     for p in sorted(glob.glob(os.path.join(AUDIO, "sfx", "**", "*.wav"), recursive=True)):
         m = measure_file(p)
         m["family"] = os.path.basename(os.path.dirname(p))
+        m["loop"] = godot_import.sidecar_loops(p + ".import")  # keep the loop flag the last build wrote
         manifest["sfx"].append(m)
     manifest["motifs"] = [os.path.relpath(p, ROOT) for p in sorted(glob.glob(os.path.join(AUDIO, "music", "motifs", "*.*")))]
     return manifest
@@ -129,14 +133,17 @@ def main(argv=None) -> int:
         groups = {k: True for k in groups}
     t0 = time.time()
     # partial builds update the existing manifest instead of replacing it
-    manifest = {"music": {}, "sfx": [], "ambience": [], "motifs": []}
+    manifest = {"music": {}, "sfx": [], "ambience": [], "motifs": [], "problems_by_group": {}}
     if os.path.exists(manifest_path):
         try:
             manifest.update({k: v for k, v in json.load(open(manifest_path, encoding="utf-8")).items() if k in manifest})
         except (ValueError, OSError):
             pass
+    if not isinstance(manifest.get("problems_by_group"), dict):
+        manifest["problems_by_group"] = {}
     manifest["targets"] = {"music_lufs": -20.0, "ambience_lufs": -26.0, "sfx_peak_dbfs": -1.0}
     problems = []
+    group_problems = {}  # the groups this run checked -> their problems (a partial build keeps the others')
 
     if groups["motifs"] and (not args.only or "motif" in args.only):
         import motifs
@@ -172,6 +179,8 @@ def main(argv=None) -> int:
                 if lufs is not None and side["id"].startswith("mus_") and not side["id"].startswith("mus_stings") and side["id"] != "mus_transit_chronoslip":
                     if abs(lufs - (-20.0)) > 1.5:
                         problems.append(f"{side['id']} mix is {lufs} LUFS (target −20)")
+        if not args.only:  # a filtered run measured only some tracks: it is no verdict for the group
+            group_problems["music"] = list(problems)
 
     if groups["sfx"]:
         import families
@@ -181,10 +190,15 @@ def main(argv=None) -> int:
             print("\nSFX:")
             for fam in wanted:
                 rows += families.build_all(fam)
+        sfx_problems = []
         for r in rows:
             print("  " + fmt_row(r) + ("  loop" if r.get("loop") else ""))
+            r.setdefault("family", os.path.basename(os.path.dirname(r["file"])))
             if abs(r["peak_dbfs"] + 1.0) > 0.2:
-                problems.append(f"{r['file']} peak {r['peak_dbfs']} (target −1 dBFS)")
+                sfx_problems.append(f"{r['file']} peak {r['peak_dbfs']} (target −1 dBFS)")
+        problems += sfx_problems
+        if not args.only:
+            group_problems["sfx"] = sfx_problems
         manifest["sfx"] = [r for r in manifest["sfx"] if r.get("family") not in wanted] + rows
 
     if groups["ambience"] and (not args.only or "amb" in args.only):
@@ -197,9 +211,15 @@ def main(argv=None) -> int:
             manifest["ambience"].append(r)
 
     import godot_import
-    godot_import.main()
+    godot_import.main(manifest["sfx"])  # the loop flags of the rows just built (and kept)
     manifest["build_seconds"] = round(time.time() - t0, 1)
-    manifest["problems"] = problems
+    manifest["problems_by_group"].update(group_problems)
+    manifest["checked_groups"] = sorted(manifest["problems_by_group"].keys())
+    # the gate's verdict covers the music and SFX groups (the two with targets) once both were measured
+    if all(g in manifest["problems_by_group"] for g in ("music", "sfx")):
+        manifest["problems"] = [p for g in sorted(manifest["problems_by_group"]) for p in manifest["problems_by_group"][g]]
+    else:
+        manifest["problems"] = None
     write_manifest(manifest, manifest_path)
     total = sum(os.path.getsize(p) for p in glob.glob(os.path.join(AUDIO, "**", "*.*"), recursive=True))
     print(f"\nDone in {manifest['build_seconds']} s. audio/ holds {total / 1024 / 1024:.1f} MB. Manifest: audio/AUDIO_MANIFEST.json")

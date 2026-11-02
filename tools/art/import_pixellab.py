@@ -22,7 +22,8 @@ folder, canvas, frame rate and height are resolved from the game data:
     a boss whose sprite is <key>        -> assets/bosses/u<n>/<key>/
     anything else (an NPC)              -> assets/npcs/<key>/
 
-Every import writes the sheet (eight direction rows: s, w, e, n, sw, se, nw, ne), a `_n` normal sheet, the
+Every import writes the sheet (eight direction rows: s, w, e, n, sw, se, nw, ne; the four cardinals when no
+diagonal was delivered), a `_n` normal sheet, the
 `_frames.json` table, the `.import` sidecars, a contact sheet under source_art/, and records the asset in
 data/art/pixellab_assets.json under `<key>[_<variant>]_<tier>` (PixelLab id, key, tier, variant, date,
 settings). Re-running rebuilds the sheet (for example after more animations were generated). Options override
@@ -119,12 +120,15 @@ README = [
     "python3 tools/art/import_pixellab.py <pixellab_id> <key>. Nich's picks in the Character Creator are",
     "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted.",
     "kind character: key <id>[_<variant>]_<tier> (tier map/field/action/portrait, variant a canvas u0-u8 or a",
-    "state such as debt20, px64), path assets/<group>/<id>/, cell, height_px = height_m, anims {name: frames},",
-    "missing = directions filled by mirroring or rotation, history = earlier PixelLab ids for the same key.",
+    "state such as debt20, px64), path assets/<group>/<id>/, cell, height_px = height_m, rows = the direction",
+    "rows (8, or the 4 cardinals when no diagonal was delivered), rotations, clips {game anim: PixelLab clip},",
+    "anims {name: frames}, missing = directions filled by mirroring or rotation (or left without a drawing),",
+    "history = earlier PixelLab ids for the same key.",
     "kind object (a prop, docs/ART_PIPELINE.md section 6): key = the prp_u<n>_ key from data/props/props.json,",
     "tier/variant empty, universe, request = the Linear issue (TRI-nn) or ASSET_REQUESTS entry it fulfils, path",
     "assets/props/u<n>/<key>/, width_px, rows = the direction rows drawn, rotations = the PixelLab rotations",
-    "delivered, anims {name: frames} (a single clip is the looping idle; the drawn rotation is the still column).",
+    "delivered, clips {game anim: PixelLab slug}, anims {name: frames} (a single clip is the looping idle; the",
+    "drawn rotation is the still column).",
     "Items whose PixelLab name starts with TEST or REJECTED are never imported (the importer refuses them)."]
 
 
@@ -178,6 +182,7 @@ def import_object(pid, args):
         "canvas": canvas, "fps": fps, "height_m": data["height_m"], "height_px": data["height_px"],
         "width_px": data["width_px"], "cell": data["cell"], "rows": data["rows"],
         "rotations": data["source"]["rotations"],
+        "clips": data["source"]["clips"],
         "anims": {k: v["count"] for k, v in data["anims"].items()},
     })
     rel_sheet = os.path.relpath(os.path.join(out, f"{args.key}.png"), ROOT)
@@ -272,7 +277,8 @@ def main():
         "path": os.path.relpath(out, ROOT).replace(os.sep, "/"),
         "imported": datetime.date.today().isoformat(),
         "canvas": canvas, "fps": fps, "height_m": data["height_m"], "height_px": data["height_px"],
-        "cell": data["cell"], "anims": {k: v["count"] for k, v in data["anims"].items()},
+        "cell": data["cell"], "rows": data["rows"], "rotations": data["source"]["rotations"],
+        "clips": data["source"]["clips"], "anims": {k: v["count"] for k, v in data["anims"].items()},
         "missing": sorted(set(f"{d}:{a}" for d, a in missing)),
     })
     rel_sheet = os.path.relpath(os.path.join(out, f"{asset_id}.png"), ROOT)

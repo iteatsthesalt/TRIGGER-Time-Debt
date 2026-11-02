@@ -192,8 +192,12 @@ in the style kit (QUESTIONS_FOR_NICH "Window frame A or B?").
 ## 3. Sheet layout (what the engine reads)
 
 - Rows are directions in this order: **s, w, e, n, sw, se, nw, ne** (the first four are the old four-row
-  order, so four-row sheets still work). Columns are animations in the §1 table order, each `count` wide;
-  a character with no idle clip gets its south rotation as a one-frame `idle` column.
+  order, so four-row sheets still work; a character delivered with only the four cardinal rotations gets just
+  those four rows, which ActorSprite maps the diagonals onto). Columns are the delivered animations in the
+  importer's order (`pixellab_import.DEFAULT_MAP`: idle, walk, run, interact, emote, ready, attack, charge,
+  release, hurt, ko, revive, victory, death), each `count` wide; a character with no idle clip gets its south
+  rotation as a one-frame `idle` column. The `_frames.json` table (`col`, `count`) is authoritative, so read
+  a contact sheet against it, not against the §1 table.
 - **Cell: the smallest multiple of 32 px that holds every frame around the pivot, never below 64.** Pivot
   bottom-centre; the feet sit on the line **8 px above the cell's bottom edge**. So a 64 px sprite whose feet
   touch the canvas bottom lands in a **96** cell (the anchor: cell 96, 61 px tall); one drawn with 8 px of

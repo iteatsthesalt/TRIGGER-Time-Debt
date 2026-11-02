@@ -44,9 +44,15 @@ def _direction(name):
 
 def download_object(obj_id, dest_dir):
     """Download a PixelLab object into `dest_dir` (PNG or zip), unpack it, write metadata.json in the
-    character export's layout (so `pixellab_import.load_state` reads it) and return that metadata."""
+    character export's layout (so `pixellab_import.load_state` reads it) and return that metadata.
+    A re-import replaces the previous delivery: once the download has arrived, the old frames, metadata and
+    archive are removed first, so a v2 never inherits v1's rotations or clips (write_metadata scans the folder)."""
     os.makedirs(dest_dir, exist_ok=True)
     data = pl.fetch(f"{pl.PIXELLAB}/objects/{obj_id}/download")
+    if data[:2] != b"PK" and data[:8] != PNG_SIG:
+        head = data[:120].decode("utf-8", "replace")
+        raise RuntimeError(f"object {obj_id}: the download is neither a PNG nor a zip ({head!r})")
+    pl.clear_download(dest_dir)
     if data[:2] == b"PK":
         with open(os.path.join(dest_dir, "object.zip"), "wb") as f:
             f.write(data)
@@ -60,9 +66,6 @@ def download_object(obj_id, dest_dir):
         os.makedirs(rot_dir, exist_ok=True)
         with open(os.path.join(rot_dir, "unknown.png"), "wb") as f:
             f.write(data)
-    else:
-        head = data[:120].decode("utf-8", "replace")
-        raise RuntimeError(f"object {obj_id}: the download is neither a PNG nor a zip ({head!r})")
     return write_metadata(obj_id, dest_dir)
 
 

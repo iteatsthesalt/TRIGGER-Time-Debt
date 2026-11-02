@@ -26,6 +26,8 @@ from PIL import Image
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "tools", "art"))
 import pixel  # noqa: E402
+sys.path.insert(0, os.path.join(ROOT, "tools", "common"))
+from godot_uid import godot_uid  # noqa: E402
 
 OUT = os.path.join(ROOT, "assets", "textures", "generated")
 MANIFEST = os.path.join(ROOT, "source_art", "MANIFEST.csv")
@@ -123,24 +125,34 @@ def write_import(png_path, normal=False):
                 if line.startswith("uid="):
                     uid = line.strip().split("uid://")[1].rstrip('"')
     if uid is None:
-        h = hashlib.sha1(rel.encode()).hexdigest()
-        alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
-        n = int(h[:16], 16)
-        uid = ""
-        for _ in range(13):
-            uid += alphabet[n % 36]
-            n //= 36
+        # Godot's own base-34 text (tools/common/godot_uid.py), so the next --import keeps it
+        uid = godot_uid("res://" + rel)[len("uid://"):]
     md5 = hashlib.md5(("res://" + rel).encode()).hexdigest()
     with open(imp, "w") as f:
         f.write(IMPORT_TEMPLATE.format(uid=uid, name=os.path.basename(png_path), md5=md5, rel=rel,
                                        normal=1 if normal else 0))
 
 
+def tile_error(width, height):
+    """Why a source tile cannot make a SHEET px sheet at 32 px/m, or "" when it can. SceneKit maps every
+    sheet over a fixed SHEET / 32 metres (scene_kit.gd TILE_M), so the tile must be square and divide SHEET
+    exactly; any other size would silently change the world's pixels per metre."""
+    if width != height:
+        return f"the tile is {width}x{height}; it must be square"
+    if width <= 0 or SHEET % width != 0:
+        sizes = ", ".join(str(SHEET >> k) for k in range(6, -1, -1))
+        return f"a {width} px tile does not divide the {SHEET} px sheet (use a square tile of {sizes} px)"
+    return ""
+
+
 def import_texture(src, name, universe="u0", colours=15, border=12, strength=1.6, tool="", model="", seed="", prompt="", note=""):
     img = fetch_job(src) if UUID.match(src) else Image.open(src).convert("RGB")
+    err = tile_error(img.width, img.height)
+    if err:
+        raise SystemExit(f"{name}: {err}; the sheet would not stay at 32 px/m")
     tile = to_material_palette(img, colours)
     tile = to_material_palette(Image.fromarray(wrap_blend(np.asarray(tile), border)), colours)
-    reps = max(1, SHEET // tile.width)
+    reps = SHEET // tile.width
     sheet = Image.new("RGB", (tile.width * reps, tile.height * reps))
     for x in range(reps):
         for y in range(reps):

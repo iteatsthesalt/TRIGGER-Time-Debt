@@ -16,9 +16,9 @@ var _started: bool = false
 func _initialize() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--frames="):
-			frames_total = int(arg.trim_prefix("--frames="))
+			frames_total = maxi(1, int(arg.trim_prefix("--frames=")))
 		elif arg.begins_with("--every="):
-			every = int(arg.trim_prefix("--every="))
+			every = maxi(1, int(arg.trim_prefix("--every=")))
 		elif arg.begins_with("--out="):
 			out_dir = arg.trim_prefix("--out=")
 		elif arg.begins_with("--scene="):

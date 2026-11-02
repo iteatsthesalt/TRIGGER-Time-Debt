@@ -1587,7 +1587,8 @@
       "lufs_i": -19.36,
       "file": "audio/sfx/combat/boost_lv1.wav",
       "size_bytes": 100844,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 1.2,
@@ -1597,7 +1598,8 @@
       "lufs_i": -19.62,
       "file": "audio/sfx/combat/boost_lv2.wav",
       "size_bytes": 115244,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 1.35,
@@ -1607,7 +1609,8 @@
       "lufs_i": -19.01,
       "file": "audio/sfx/combat/boost_lv3.wav",
       "size_bytes": 129644,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 1.5,
@@ -1617,7 +1620,8 @@
       "lufs_i": -20.85,
       "file": "audio/sfx/combat/boost_lv4.wav",
       "size_bytes": 144044,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 0.4,
@@ -1627,7 +1631,8 @@
       "lufs_i": -17.5,
       "file": "audio/sfx/combat/bp_gain.wav",
       "size_bytes": 38444,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 0.4,
@@ -1637,7 +1642,8 @@
       "lufs_i": -17.88,
       "file": "audio/sfx/combat/bp_spend.wav",
       "size_bytes": 38444,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 6.18,
@@ -1647,7 +1653,8 @@
       "lufs_i": -17.82,
       "file": "audio/sfx/combat/break_gong_vinyl.wav",
       "size_bytes": 593322,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 0.14,
@@ -1657,7 +1664,8 @@
       "lufs_i": -21.71,
       "file": "audio/sfx/combat/shield_chip_01.wav",
       "size_bytes": 13484,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 0.14,
@@ -1667,7 +1675,8 @@
       "lufs_i": -20.39,
       "file": "audio/sfx/combat/shield_chip_02.wav",
       "size_bytes": 13484,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 0.14,
@@ -1677,7 +1686,8 @@
       "lufs_i": -21.02,
       "file": "audio/sfx/combat/shield_chip_03.wav",
       "size_bytes": 13484,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 0.14,
@@ -1687,7 +1697,8 @@
       "lufs_i": -21.18,
       "file": "audio/sfx/combat/shield_chip_04.wav",
       "size_bytes": 13484,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 0.14,
@@ -1697,7 +1708,8 @@
       "lufs_i": -21.41,
       "file": "audio/sfx/combat/shield_chip_05.wav",
       "size_bytes": 13484,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 1.6,
@@ -1707,7 +1719,8 @@
       "lufs_i": -14.75,
       "file": "audio/sfx/combat/shield_rebuild.wav",
       "size_bytes": 153644,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 4.56,
@@ -1717,7 +1730,8 @@
       "lufs_i": -22.87,
       "file": "audio/sfx/combat/statue_shatter.wav",
       "size_bytes": 437802,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 1.047,
@@ -1727,7 +1741,8 @@
       "lufs_i": -11.55,
       "file": "audio/sfx/combat/telegraph_loop.wav",
       "size_bytes": 100574,
-      "family": "combat"
+      "family": "combat",
+      "loop": true
     },
     {
       "duration_s": 0.9,
@@ -1737,7 +1752,8 @@
       "lufs_i": -15.59,
       "file": "audio/sfx/combat/weak_bell.wav",
       "size_bytes": 86444,
-      "family": "combat"
+      "family": "combat",
+      "loop": false
     },
     {
       "duration_s": 0.596,
@@ -1747,7 +1763,8 @@
       "lufs_i": -12.89,
       "file": "audio/sfx/creatures/u0_voice_01.wav",
       "size_bytes": 57256,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.737,
@@ -1757,7 +1774,8 @@
       "lufs_i": -13.25,
       "file": "audio/sfx/creatures/u0_voice_02.wav",
       "size_bytes": 70800,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.74,
@@ -1767,7 +1785,8 @@
       "lufs_i": -13.81,
       "file": "audio/sfx/creatures/u0_voice_03.wav",
       "size_bytes": 71090,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.579,
@@ -1777,7 +1796,8 @@
       "lufs_i": -13.55,
       "file": "audio/sfx/creatures/u0_voice_04.wav",
       "size_bytes": 55662,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.684,
@@ -1787,7 +1807,8 @@
       "lufs_i": -14.27,
       "file": "audio/sfx/creatures/u0_voice_05.wav",
       "size_bytes": 65754,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.534,
@@ -1797,7 +1818,8 @@
       "lufs_i": -15.03,
       "file": "audio/sfx/creatures/u1_voice_01.wav",
       "size_bytes": 51324,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.562,
@@ -1807,7 +1829,8 @@
       "lufs_i": -15.2,
       "file": "audio/sfx/creatures/u1_voice_02.wav",
       "size_bytes": 54038,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.653,
@@ -1817,7 +1840,8 @@
       "lufs_i": -14.75,
       "file": "audio/sfx/creatures/u1_voice_03.wav",
       "size_bytes": 62736,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.613,
@@ -1827,7 +1851,8 @@
       "lufs_i": -15.97,
       "file": "audio/sfx/creatures/u1_voice_04.wav",
       "size_bytes": 58906,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.474,
@@ -1837,7 +1862,8 @@
       "lufs_i": -16.26,
       "file": "audio/sfx/creatures/u1_voice_05.wav",
       "size_bytes": 45590,
-      "family": "creatures"
+      "family": "creatures",
+      "loop": false
     },
     {
       "duration_s": 0.09,
@@ -1847,7 +1873,8 @@
       "lufs_i": -22.66,
       "file": "audio/sfx/footsteps/u0_ceramic_01.wav",
       "size_bytes": 8684,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.09,
@@ -1857,7 +1884,8 @@
       "lufs_i": -23.29,
       "file": "audio/sfx/footsteps/u0_ceramic_02.wav",
       "size_bytes": 8684,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.09,
@@ -1867,7 +1895,8 @@
       "lufs_i": -21.1,
       "file": "audio/sfx/footsteps/u0_ceramic_03.wav",
       "size_bytes": 8684,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.09,
@@ -1877,7 +1906,8 @@
       "lufs_i": -22.88,
       "file": "audio/sfx/footsteps/u0_ceramic_04.wav",
       "size_bytes": 8684,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.09,
@@ -1887,7 +1917,8 @@
       "lufs_i": -22.53,
       "file": "audio/sfx/footsteps/u0_ceramic_05.wav",
       "size_bytes": 8684,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.16,
@@ -1897,7 +1928,8 @@
       "lufs_i": -26.41,
       "file": "audio/sfx/footsteps/u0_moss_01.wav",
       "size_bytes": 15404,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.16,
@@ -1907,7 +1939,8 @@
       "lufs_i": -24.18,
       "file": "audio/sfx/footsteps/u0_moss_02.wav",
       "size_bytes": 15404,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.16,
@@ -1917,7 +1950,8 @@
       "lufs_i": -21.9,
       "file": "audio/sfx/footsteps/u0_moss_03.wav",
       "size_bytes": 15404,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.16,
@@ -1927,7 +1961,8 @@
       "lufs_i": -26.83,
       "file": "audio/sfx/footsteps/u0_moss_04.wav",
       "size_bytes": 15404,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.16,
@@ -1937,7 +1972,8 @@
       "lufs_i": -25.72,
       "file": "audio/sfx/footsteps/u0_moss_05.wav",
       "size_bytes": 15404,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.13,
@@ -1947,7 +1983,8 @@
       "lufs_i": -21.32,
       "file": "audio/sfx/footsteps/u1_woodblock_01.wav",
       "size_bytes": 12524,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.13,
@@ -1957,7 +1994,8 @@
       "lufs_i": -22.02,
       "file": "audio/sfx/footsteps/u1_woodblock_02.wav",
       "size_bytes": 12524,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.13,
@@ -1967,7 +2005,8 @@
       "lufs_i": -22.69,
       "file": "audio/sfx/footsteps/u1_woodblock_03.wav",
       "size_bytes": 12524,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.13,
@@ -1977,7 +2016,8 @@
       "lufs_i": -22.11,
       "file": "audio/sfx/footsteps/u1_woodblock_04.wav",
       "size_bytes": 12524,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.13,
@@ -1987,7 +2027,8 @@
       "lufs_i": -22.82,
       "file": "audio/sfx/footsteps/u1_woodblock_05.wav",
       "size_bytes": 12524,
-      "family": "footsteps"
+      "family": "footsteps",
+      "loop": false
     },
     {
       "duration_s": 0.4,
@@ -1997,7 +2038,8 @@
       "lufs_i": -18.14,
       "file": "audio/sfx/magic/astral_contact.wav",
       "size_bytes": 38444,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 0.6,
@@ -2007,7 +2049,8 @@
       "lufs_i": -17.98,
       "file": "audio/sfx/magic/astral_gesture.wav",
       "size_bytes": 57644,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 3.32,
@@ -2017,7 +2060,8 @@
       "lufs_i": -18.3,
       "file": "audio/sfx/magic/astral_tail.wav",
       "size_bytes": 318762,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 0.5,
@@ -2027,7 +2071,8 @@
       "lufs_i": -15.15,
       "file": "audio/sfx/magic/astral_travel.wav",
       "size_bytes": 48044,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 1.4,
@@ -2037,7 +2082,8 @@
       "lufs_i": -17.27,
       "file": "audio/sfx/magic/ruin_contact.wav",
       "size_bytes": 134444,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 0.5,
@@ -2047,7 +2093,8 @@
       "lufs_i": -17.63,
       "file": "audio/sfx/magic/ruin_gesture.wav",
       "size_bytes": 48044,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 4.6,
@@ -2057,7 +2104,8 @@
       "lufs_i": -15.83,
       "file": "audio/sfx/magic/ruin_tail.wav",
       "size_bytes": 441642,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 0.45,
@@ -2067,7 +2115,8 @@
       "lufs_i": -15.34,
       "file": "audio/sfx/magic/ruin_travel.wav",
       "size_bytes": 43244,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 0.6,
@@ -2077,7 +2126,8 @@
       "lufs_i": -14.39,
       "file": "audio/sfx/magic/tachyon_contact.wav",
       "size_bytes": 57644,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 1.0,
@@ -2087,7 +2137,8 @@
       "lufs_i": -15.4,
       "file": "audio/sfx/magic/tachyon_gesture.wav",
       "size_bytes": 96044,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 4.48,
@@ -2097,7 +2148,8 @@
       "lufs_i": -16.67,
       "file": "audio/sfx/magic/tachyon_tail.wav",
       "size_bytes": 430122,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 0.8,
@@ -2107,7 +2159,8 @@
       "lufs_i": -14.15,
       "file": "audio/sfx/magic/tachyon_travel.wav",
       "size_bytes": 76844,
-      "family": "magic"
+      "family": "magic",
+      "loop": false
     },
     {
       "duration_s": 1.2,
@@ -2117,7 +2170,8 @@
       "lufs_i": -23.42,
       "file": "audio/sfx/porcelain/crack_large_01.wav",
       "size_bytes": 115244,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 1.2,
@@ -2127,7 +2181,8 @@
       "lufs_i": -26.31,
       "file": "audio/sfx/porcelain/crack_large_02.wav",
       "size_bytes": 115244,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 1.2,
@@ -2137,7 +2192,8 @@
       "lufs_i": -22.42,
       "file": "audio/sfx/porcelain/crack_large_03.wav",
       "size_bytes": 115244,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 1.2,
@@ -2147,7 +2203,8 @@
       "lufs_i": -20.47,
       "file": "audio/sfx/porcelain/crack_large_04.wav",
       "size_bytes": 115244,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 1.2,
@@ -2157,7 +2214,8 @@
       "lufs_i": -20.18,
       "file": "audio/sfx/porcelain/crack_large_05.wav",
       "size_bytes": 115244,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.256,
@@ -2167,7 +2225,8 @@
       "lufs_i": -24.17,
       "file": "audio/sfx/porcelain/crack_small_01.wav",
       "size_bytes": 24662,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.257,
@@ -2177,7 +2236,8 @@
       "lufs_i": -24.21,
       "file": "audio/sfx/porcelain/crack_small_02.wav",
       "size_bytes": 24736,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.255,
@@ -2187,7 +2247,8 @@
       "lufs_i": -24.53,
       "file": "audio/sfx/porcelain/crack_small_03.wav",
       "size_bytes": 24478,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.226,
@@ -2197,7 +2258,8 @@
       "lufs_i": -23.12,
       "file": "audio/sfx/porcelain/crack_small_04.wav",
       "size_bytes": 21700,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.255,
@@ -2207,7 +2269,8 @@
       "lufs_i": -22.88,
       "file": "audio/sfx/porcelain/crack_small_05.wav",
       "size_bytes": 24492,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 1.6,
@@ -2217,7 +2280,8 @@
       "lufs_i": -22.48,
       "file": "audio/sfx/porcelain/crystalline_spill.wav",
       "size_bytes": 153644,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 6.0,
@@ -2227,7 +2291,8 @@
       "lufs_i": -7.65,
       "file": "audio/sfx/porcelain/galaxy_hum_220.wav",
       "size_bytes": 576044,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": true
     },
     {
       "duration_s": 6.0,
@@ -2237,7 +2302,8 @@
       "lufs_i": -6.85,
       "file": "audio/sfx/porcelain/galaxy_hum_432.wav",
       "size_bytes": 576044,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": true
     },
     {
       "duration_s": 0.1,
@@ -2247,7 +2313,8 @@
       "lufs_i": -21.23,
       "file": "audio/sfx/porcelain/tink_01.wav",
       "size_bytes": 9644,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.1,
@@ -2257,7 +2324,8 @@
       "lufs_i": -21.52,
       "file": "audio/sfx/porcelain/tink_02.wav",
       "size_bytes": 9644,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.1,
@@ -2267,7 +2335,8 @@
       "lufs_i": -21.92,
       "file": "audio/sfx/porcelain/tink_03.wav",
       "size_bytes": 9644,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.1,
@@ -2277,7 +2346,8 @@
       "lufs_i": -21.79,
       "file": "audio/sfx/porcelain/tink_04.wav",
       "size_bytes": 9644,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 0.1,
@@ -2287,7 +2357,8 @@
       "lufs_i": -21.01,
       "file": "audio/sfx/porcelain/tink_05.wav",
       "size_bytes": 9644,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 1.8,
@@ -2297,7 +2368,8 @@
       "lufs_i": -12.87,
       "file": "audio/sfx/porcelain/wind_chime_crack.wav",
       "size_bytes": 172844,
-      "family": "porcelain"
+      "family": "porcelain",
+      "loop": false
     },
     {
       "duration_s": 6.0,
@@ -2307,7 +2379,8 @@
       "lufs_i": -13.74,
       "file": "audio/sfx/status/grief_whisper.wav",
       "size_bytes": 576044,
-      "family": "status"
+      "family": "status",
+      "loop": true
     },
     {
       "duration_s": 4.0,
@@ -2317,7 +2390,8 @@
       "lufs_i": -20.32,
       "file": "audio/sfx/status/mercury_slosh.wav",
       "size_bytes": 384044,
-      "family": "status"
+      "family": "status",
+      "loop": true
     },
     {
       "duration_s": 6.0,
@@ -2327,7 +2401,8 @@
       "lufs_i": -19.75,
       "file": "audio/sfx/status/oil_drip.wav",
       "size_bytes": 576044,
-      "family": "status"
+      "family": "status",
+      "loop": true
     },
     {
       "duration_s": 4.0,
@@ -2337,7 +2412,8 @@
       "lufs_i": -19.61,
       "file": "audio/sfx/status/ruin_tear.wav",
       "size_bytes": 384044,
-      "family": "status"
+      "family": "status",
+      "loop": true
     },
     {
       "duration_s": 6.0,
@@ -2347,7 +2423,8 @@
       "lufs_i": -13.04,
       "file": "audio/sfx/status/vhs_fog.wav",
       "size_bytes": 576044,
-      "family": "status"
+      "family": "status",
+      "loop": true
     },
     {
       "duration_s": 5.257,
@@ -2357,7 +2434,8 @@
       "lufs_i": -14.84,
       "file": "audio/sfx/time/amber_rift.wav",
       "size_bytes": 504726,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 5.2,
@@ -2367,7 +2445,8 @@
       "lufs_i": -12.98,
       "file": "audio/sfx/time/chronoslip.wav",
       "size_bytes": 998440,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 0.8,
@@ -2377,7 +2456,8 @@
       "lufs_i": -8.97,
       "file": "audio/sfx/time/fast_forward.wav",
       "size_bytes": 153644,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 8.24,
@@ -2387,7 +2467,8 @@
       "lufs_i": -18.08,
       "file": "audio/sfx/time/fracture_sky.wav",
       "size_bytes": 1582120,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 3.92,
@@ -2397,7 +2478,8 @@
       "lufs_i": -10.95,
       "file": "audio/sfx/time/gate_open_u0.wav",
       "size_bytes": 376362,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 3.44,
@@ -2407,7 +2489,8 @@
       "lufs_i": -13.55,
       "file": "audio/sfx/time/gate_open_u1.wav",
       "size_bytes": 330282,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 1.393,
@@ -2417,7 +2500,8 @@
       "lufs_i": -10.43,
       "file": "audio/sfx/time/rewind.wav",
       "size_bytes": 267560,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 1.3,
@@ -2427,7 +2511,8 @@
       "lufs_i": -10.28,
       "file": "audio/sfx/time/tape_stop.wav",
       "size_bytes": 249644,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 0.8,
@@ -2437,7 +2522,8 @@
       "lufs_i": -8.47,
       "file": "audio/sfx/time/universe_switch.wav",
       "size_bytes": 153644,
-      "family": "time"
+      "family": "time",
+      "loop": false
     },
     {
       "duration_s": 0.25,
@@ -2447,7 +2533,8 @@
       "lufs_i": -15.59,
       "file": "audio/sfx/ui/cancel.wav",
       "size_bytes": 48044,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 0.4,
@@ -2457,7 +2544,8 @@
       "lufs_i": -15.23,
       "file": "audio/sfx/ui/close.wav",
       "size_bytes": 76844,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 0.3,
@@ -2467,7 +2555,8 @@
       "lufs_i": -15.27,
       "file": "audio/sfx/ui/confirm.wav",
       "size_bytes": 57644,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 0.08,
@@ -2477,7 +2566,8 @@
       "lufs_i": -18.21,
       "file": "audio/sfx/ui/cursor.wav",
       "size_bytes": 15404,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 2.44,
@@ -2487,7 +2577,8 @@
       "lufs_i": -19.84,
       "file": "audio/sfx/ui/door.wav",
       "size_bytes": 468520,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 0.3,
@@ -2497,7 +2588,8 @@
       "lufs_i": -20.02,
       "file": "audio/sfx/ui/error.wav",
       "size_bytes": 57644,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 1.68,
@@ -2507,7 +2599,8 @@
       "lufs_i": -13.51,
       "file": "audio/sfx/ui/open.wav",
       "size_bytes": 322600,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 0.28,
@@ -2517,7 +2610,8 @@
       "lufs_i": -15.14,
       "file": "audio/sfx/ui/page.wav",
       "size_bytes": 53804,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 2.22,
@@ -2527,7 +2621,8 @@
       "lufs_i": -18.07,
       "file": "audio/sfx/ui/save.wav",
       "size_bytes": 426280,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 4.24,
@@ -2537,7 +2632,8 @@
       "lufs_i": -11.7,
       "file": "audio/sfx/ui/sync_hold_freeze.wav",
       "size_bytes": 814120,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 1.2,
@@ -2547,7 +2643,8 @@
       "lufs_i": -14.4,
       "file": "audio/sfx/ui/tube.wav",
       "size_bytes": 230444,
-      "family": "ui"
+      "family": "ui",
+      "loop": false
     },
     {
       "duration_s": 0.65,
@@ -2557,7 +2654,8 @@
       "lufs_i": -17.64,
       "file": "audio/sfx/weapons/crono_slash_01.wav",
       "size_bytes": 62444,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.65,
@@ -2567,7 +2665,8 @@
       "lufs_i": -19.63,
       "file": "audio/sfx/weapons/crono_slash_02.wav",
       "size_bytes": 62444,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.65,
@@ -2577,7 +2676,8 @@
       "lufs_i": -19.64,
       "file": "audio/sfx/weapons/crono_slash_03.wav",
       "size_bytes": 62444,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.65,
@@ -2587,7 +2687,8 @@
       "lufs_i": -19.68,
       "file": "audio/sfx/weapons/crono_slash_04.wav",
       "size_bytes": 62444,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.65,
@@ -2597,7 +2698,8 @@
       "lufs_i": -20.3,
       "file": "audio/sfx/weapons/crono_slash_05.wav",
       "size_bytes": 62444,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 1.7,
@@ -2607,7 +2709,8 @@
       "lufs_i": -16.06,
       "file": "audio/sfx/weapons/krona_nodachi_01.wav",
       "size_bytes": 163244,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 1.7,
@@ -2617,7 +2720,8 @@
       "lufs_i": -18.04,
       "file": "audio/sfx/weapons/krona_nodachi_02.wav",
       "size_bytes": 163244,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 1.7,
@@ -2627,7 +2731,8 @@
       "lufs_i": -17.61,
       "file": "audio/sfx/weapons/krona_nodachi_03.wav",
       "size_bytes": 163244,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 1.7,
@@ -2637,7 +2742,8 @@
       "lufs_i": -17.3,
       "file": "audio/sfx/weapons/krona_nodachi_04.wav",
       "size_bytes": 163244,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 1.7,
@@ -2647,7 +2753,8 @@
       "lufs_i": -15.71,
       "file": "audio/sfx/weapons/krona_nodachi_05.wav",
       "size_bytes": 163244,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.5,
@@ -2657,7 +2764,8 @@
       "lufs_i": -15.55,
       "file": "audio/sfx/weapons/sera_dagger_01.wav",
       "size_bytes": 48044,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.5,
@@ -2667,7 +2775,8 @@
       "lufs_i": -15.03,
       "file": "audio/sfx/weapons/sera_dagger_02.wav",
       "size_bytes": 48044,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.5,
@@ -2677,7 +2786,8 @@
       "lufs_i": -14.74,
       "file": "audio/sfx/weapons/sera_dagger_03.wav",
       "size_bytes": 48044,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.5,
@@ -2687,7 +2797,8 @@
       "lufs_i": -15.21,
       "file": "audio/sfx/weapons/sera_dagger_04.wav",
       "size_bytes": 48044,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     },
     {
       "duration_s": 0.5,
@@ -2697,7 +2808,8 @@
       "lufs_i": -15.73,
       "file": "audio/sfx/weapons/sera_dagger_05.wav",
       "size_bytes": 48044,
-      "family": "weapons"
+      "family": "weapons",
+      "loop": false
     }
   ],
   "ambience": [
@@ -2762,7 +2874,10 @@
     "ambience_lufs": -26.0,
     "sfx_peak_dbfs": -1.0
   },
-  "problems": [],
+  "problems": null,
+  "problems_by_group": {},
+  "checked_groups": [],
+  "build_seconds": null,
   "counts": {
     "music_files": 51,
     "sfx_files": 112,

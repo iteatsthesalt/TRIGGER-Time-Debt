@@ -8,7 +8,8 @@
 The hourly check from CLAUDE.md: `git pull --rebase`, run this, wire the new assets in, screenshot them.
 Each item goes through tools/art/import_pixellab.py (objects to the prop route, characters to the character
 route); successes are stamped `"imported": "<date>"` in incoming.json, failures are listed and left alone.
-Items without a PixelLab id (hand-made files under assets/incoming/) are reported, not imported. Items whose
+Items without a PixelLab id (hand-made files under assets/incoming/) and kinds without a route here (tileset, ui,
+portrait, texture, vfx) are reported, not imported. Items whose
 PixelLab name starts with TEST or REJECTED are skipped and listed (the asset team's rule: they never ship);
 --force imports them anyway, and also re-imports items already recorded.
 """
@@ -25,7 +26,11 @@ INCOMING = os.path.join(ROOT, "data", "art", "incoming.json")
 RECORD = os.path.join(ROOT, "data", "art", "pixellab_assets.json")
 IMPORTER = os.path.join(HERE, "import_pixellab.py")
 sys.path.insert(0, HERE)
-from import_pixellab import is_never_import  # noqa: E402
+from import_pixellab import is_never_import, parse_name  # noqa: E402
+
+## The kinds import_pixellab.py has a route for (docs/BOT_REVIEW.md lists seven): every other kind is skipped and
+## listed (import it by hand, docs/ART_PIPELINE.md), never pushed through the character route.
+ROUTES = {"character": "character", "object": "object"}
 
 
 def load(path, default):
@@ -40,14 +45,21 @@ def items_of(doc):
     return doc if isinstance(doc, list) else doc.get("items", [])
 
 
+def kind_of(item):
+    """The item's kind (`character` when it names none)."""
+    return str(item.get("kind") or "character")
+
+
 def record_key(item):
     """The key the importer records an item under (<key>[_<variant>]_<tier> for characters, the key itself
-    for objects)."""
+    for objects). Tier and variant are read as import_pixellab.py reads them: the item's fields, else its
+    PixelLab name ("TRIGGER Sera px64 field v1"), else field / base."""
     key = item["asset_key"]
-    if item.get("kind", "character") != "character":
+    if kind_of(item) != "character":
         return key
-    variant = item.get("variant", "") or ""
-    tier = item.get("tier", "field") or "field"
+    name_tier, name_variant = parse_name(item.get("pixellab_name", ""))
+    variant = item.get("variant") or name_variant or ""
+    tier = item.get("tier") or name_tier or "field"
     return key + ("_" + variant if variant else "") + "_" + tier
 
 
@@ -70,6 +82,9 @@ def main():
         if not pid:
             skipped.append(f"{key}: no PixelLab id ({item.get('note', item.get('path', 'hand-made?'))})")
             continue
+        if kind_of(item) not in ROUTES:
+            skipped.append(f"{key}: kind {kind_of(item)} has no import route here yet (import it by hand, docs/ART_PIPELINE.md)")
+            continue
         rk = record_key(item)
         if rk in recorded and recorded[rk].get("pixellab_id") == pid and not args.force:
             continue
@@ -77,7 +92,7 @@ def main():
         if is_never_import(name) and not args.force:
             skipped.append(f"{key}: '{name}' is a TEST/REJECTED item and never ships (--force overrides)")
             continue
-        kind = "object" if item.get("kind") == "object" else "character"
+        kind = ROUTES[kind_of(item)]
         cmd = [sys.executable, IMPORTER, pid, key, "--kind", kind, "--name", name,
                "--request", str(item.get("request", ""))]
         if args.force:

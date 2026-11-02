@@ -8,7 +8,8 @@ rebuilding a sheet by hand. The generation itself happens through the PixelLab M
 animate_character); given a finished PixelLab character id this writes the game's contract, where the stem is
 `<key>[_<variant>]_<tier>` (e.g. `crono_field`, `crono_action`, `sera_u1_field`; docs/ART_PIPELINE.md §2):
 
-    assets/<group>/<key>/<stem>.png             8 direction rows (s, w, e, n, sw, se, nw, ne) × animation columns
+    assets/<group>/<key>/<stem>.png             8 direction rows (s, w, e, n, sw, se, nw, ne; only s, w, e, n when
+                                                no diagonal was delivered) × animation columns
     assets/<group>/<key>/<stem>_frames.json     cell, per-anim {col, count, fps, loop, holds}, height_px, height_m
     assets/<group>/<key>/<stem>_n.png           the generated normal sheet
     assets/<group>/<key>/<stem>.png.import      lossless, no mipmaps, fix alpha border
@@ -26,6 +27,7 @@ import io
 import json
 import os
 import re
+import shutil
 import sys
 import urllib.request
 import zipfile
@@ -37,6 +39,8 @@ from scipy import ndimage
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "tools", "art"))
 import pixel  # noqa: E402
+sys.path.insert(0, os.path.join(ROOT, "tools", "common"))
+from godot_uid import godot_uid  # noqa: E402
 
 PIXELLAB = "https://api.pixellab.ai/mcp"
 # Row order of the game's sheets. The first four match the old 4-row sheets, so every existing reader still works.
@@ -76,11 +80,30 @@ def fetch(url, dest=None):
     return data
 
 
+def clear_download(dest_dir):
+    """Remove a previous delivery's raw files from `dest_dir` (frames, metadata, archive; contact.png is
+    rewritten by every build) so a re-import never mixes two deliveries. Only call it once the new download
+    is in hand: the cached frames are the fallback when a download fails."""
+    if not os.path.isdir(dest_dir):
+        return
+    for entry in os.listdir(dest_dir):
+        path = os.path.join(dest_dir, entry)
+        if os.path.isdir(path) and not os.path.islink(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
+
+
 def download_character(char_id, dest_dir):
-    """Download and unpack a PixelLab character; returns the parsed metadata."""
+    """Download and unpack a PixelLab character (replacing any earlier download there); returns the parsed
+    metadata."""
     os.makedirs(dest_dir, exist_ok=True)
-    zpath = os.path.join(dest_dir, "character.zip")
-    data = fetch(f"{PIXELLAB}/characters/{char_id}/download", zpath)
+    data = fetch(f"{PIXELLAB}/characters/{char_id}/download")
+    if data[:2] != b"PK":
+        raise RuntimeError(f"character {char_id}: the download is not a zip ({data[:120].decode('utf-8', 'replace')!r})")
+    clear_download(dest_dir)
+    with open(os.path.join(dest_dir, "character.zip"), "wb") as f:
+        f.write(data)
     with zipfile.ZipFile(io.BytesIO(data)) as z:
         z.extractall(dest_dir)
     with open(os.path.join(dest_dir, "metadata.json")) as f:
@@ -118,8 +141,10 @@ def import_listing(text, char_id, dest_dir, only=None):
     if os.path.exists(meta_path):
         with open(meta_path) as f:
             old = json.load(f)
-        if old.get("states"):
-            meta = old
+        if old.get("states") and str(old["states"][0].get("character", {}).get("id", "")) == char_id:
+            meta = old  # more of the same character: keep the frames already fetched
+        else:
+            clear_download(dest_dir)  # another character's frames (a new delivery for this key): start clean
     frames = meta["states"][0]["frames"]
     frames.setdefault("rotations", {})
     frames.setdefault("animations", {})
@@ -260,6 +285,16 @@ def check_directions(rotations, animations):
     return problems
 
 
+def sheet_rows(rotations, animations):
+    """The direction rows a character sheet gets: the eight of ROWS when any diagonal was delivered (as a
+    rotation or a clip direction), else the four cardinals (s, w, e, n), which ActorSprite maps diagonals onto,
+    so a four-rotation delivery never carries blank diagonal rows."""
+    drawn = set(rotations.keys())
+    for dirs in animations.values():
+        drawn.update(d for d, frames in dirs.items() if frames)
+    return list(ROWS) if any(d in drawn for d in ROWS[4:]) else list(ROWS[:4])
+
+
 def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps=60.0, anim_map=None,
                 extra_rows=None, mirror_missing=True, suffix="_field", density_px_per_m=None):
     """Pack rotations and animations into the game sheet and write the frame table.
@@ -317,14 +352,20 @@ def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps
         col += count
     total_cols = col
 
-    sheet = Image.new("RGBA", (total_cols * cell, len(ROWS) * cell), (0, 0, 0, 0))
+    rows = sheet_rows(rotations, {n: animations[pl] for n, (pl, _, _) in chosen.items()})
+    for d in rows:
+        if d not in rotations and not any(animations[pl].get(d) for pl, _, _ in chosen.values()):
+            print(f"WARNING {game_id}: no {d} rotation and no {d} frames: that row of the sheet stays empty")
+    sheet = Image.new("RGBA", (total_cols * cell, len(rows) * cell), (0, 0, 0, 0))
     missing = []
-    for r, direction in enumerate(ROWS):
+    for r, direction in enumerate(rows):
         rot = rotations.get(direction)
         for game_name, pl_name, count in columns:
             c0 = table[game_name]["col"]
             if pl_name is None:
                 frames = [rot] if rot is not None else []
+                if rot is None:
+                    missing.append((direction, game_name))  # the idle-from-rotation column has no drawing
             else:
                 frames = animations[pl_name].get(direction, [])
                 if not frames and mirror_missing:
@@ -363,12 +404,14 @@ def build_sheet(game_id, meta, src_dir, out_dir, canvas="u0", height_m=1.78, fps
         height_m = float(height_px) / float(density_px_per_m or CAST_DENSITY)
     data = {
         "cell": cell,
-        "rows": [SHORT[d] for d in ROWS],
+        "rows": [SHORT[d] for d in rows],
         "mirror_w": False,
         "fps": fps,
         "height_px": int(height_px),
         "height_m": round(float(height_m), 3),
-        "source": {"pixellab_character": meta["states"][0]["character"]["id"], "canvas": canvas},
+        "source": {"pixellab_character": meta["states"][0]["character"]["id"], "canvas": canvas,
+                   "rotations": sorted(rotations.keys()),
+                   "clips": {g: c[0] for g, c in chosen.items()}},
         "anims": table,
     }
     with open(os.path.join(out_dir, f"{game_id}{suffix}_frames.json"), "w") as f:
@@ -469,13 +512,8 @@ def write_import(png_path, normal=False):
                 if line.startswith("uid="):
                     uid = line.strip().split("uid://")[1].rstrip('"')
     if uid is None:
-        h = hashlib.sha1(rel.encode()).hexdigest()
-        alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
-        n = int(h[:16], 16)
-        uid = ""
-        for _ in range(13):
-            uid += alphabet[n % 36]
-            n //= 36
+        # Godot's own base-34 text (tools/common/godot_uid.py), so the next --import keeps it
+        uid = godot_uid("res://" + rel)[len("uid://"):]
     md5 = hashlib.md5(("res://" + rel).encode()).hexdigest()
     with open(imp, "w") as f:
         f.write(IMPORT_TEMPLATE.format(uid=uid, name=os.path.basename(png_path), md5=md5, rel=rel,

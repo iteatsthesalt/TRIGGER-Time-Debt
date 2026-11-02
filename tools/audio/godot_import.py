@@ -5,7 +5,9 @@ lines without anyone touching the import dock (Reference Bible §1.12).
 
 OGG music: loop on, loop_offset = the end of the intro, bpm / beat_count / bar_beats from the track
 sidecar (Godot then loops at the beat count and folds the tail into the loop start). Stings: loop off.
-OGG ambience: loop on. WAV: QOA, trim on for one-shots; loops get loop_mode forward and no trim.
+OGG ambience: loop on. WAV: QOA, trim on for one-shots; loops get loop_mode forward and no trim. Which SFX
+loop is read from the `loop` flag of their manifest rows (families.py's `write_sfx(..., loop=True)`), never
+from a list kept here.
 UIDs are derived from the path so a rebuild writes identical files. Godot regenerates the
 `.godot/imported/` cache from these on its next scan.
 """
@@ -20,21 +22,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 AUDIO = os.path.join(ROOT, "audio")
-
-LOOPED_WAVS = {"telegraph_loop", "galaxy_hum_432", "galaxy_hum_220", "grief_whisper", "vhs_fog", "mercury_slosh", "ruin_tear", "oil_drip"}
-
-
-def godot_uid(res_path: str) -> str:
-    """Godot's ResourceUID text form (base 34: a–y then 0–8) of a 63-bit hash of the path."""
-    h = int.from_bytes(hashlib.sha1(res_path.encode()).digest()[:8], "big") & 0x7FFFFFFFFFFFFFFF
-    if h == 0:
-        h = 1
-    txt = ""
-    while h:
-        c = h % 34
-        txt = (chr(ord("a") + c) if c < 25 else chr(ord("0") + (c - 25))) + txt
-        h //= 34
-    return "uid://" + txt
+sys.path.insert(0, os.path.join(ROOT, "tools", "common"))
+from godot_uid import godot_uid  # noqa: E402  (one encoder for every sidecar writer)
 
 
 def res_path(path: str) -> str:
@@ -122,16 +111,38 @@ def wav_channels(path: str) -> int:
     return struct.unpack("<H", head[i + 10: i + 12])[0] if i >= 0 else 1
 
 
-def main() -> int:
+def sfx_loop_flags(rows: list[dict] | None = None) -> dict[str, bool]:
+    """`audio/sfx/<family>/<name>.wav` -> loop. The one source is the `loop` flag `sfx/base.write_sfx` puts on
+    every row (families.py's `loop=True`): the rows build_all.py just built, else the sfx rows of
+    audio/AUDIO_MANIFEST.json."""
+    if rows is None:
+        path = os.path.join(AUDIO, "AUDIO_MANIFEST.json")
+        rows = json.load(open(path, encoding="utf-8")).get("sfx", []) if os.path.exists(path) else []
+    return {str(r["file"]).replace(os.sep, "/"): bool(r["loop"]) for r in rows if "file" in r and "loop" in r}
+
+
+def sidecar_loops(import_path: str) -> bool:
+    """True when an existing WAV sidecar loops (edit/loop_mode=2, Forward)."""
+    if not os.path.exists(import_path):
+        return False
+    with open(import_path, encoding="utf-8") as f:
+        return any(line.strip() == "edit/loop_mode=2" for line in f)
+
+
+def main(sfx_rows: list[dict] | None = None) -> int:
+    """Write every sidecar. `sfx_rows`: the SFX rows of a fresh build (their `loop` flags); a WAV no row names
+    keeps the loop mode of its existing sidecar."""
     written = 0
+    loops = sfx_loop_flags(sfx_rows)
     for p in sorted(glob.glob(os.path.join(AUDIO, "music", "*.ogg"))):
         loop, off, bpm, beats, bar = music_params(p)
         written += _write(p + ".import", ogg_import(p, loop, off, bpm, beats, bar))
     for p in sorted(glob.glob(os.path.join(AUDIO, "ambience", "*.ogg"))):
         written += _write(p + ".import", ogg_import(p, True, 0.0, 0.0, 0, 4))
     for p in sorted(glob.glob(os.path.join(AUDIO, "sfx", "**", "*.wav"), recursive=True)):
-        name = os.path.basename(p)[:-4]
-        written += _write(p + ".import", wav_import(p, name in LOOPED_WAVS, wav_channels(p) == 1))
+        rel = os.path.relpath(p, ROOT).replace(os.sep, "/")
+        loop = loops[rel] if rel in loops else sidecar_loops(p + ".import")
+        written += _write(p + ".import", wav_import(p, loop, wav_channels(p) == 1))
     for p in sorted(glob.glob(os.path.join(AUDIO, "music", "motifs", "*.wav"))):
         written += _write(p + ".import", wav_import(p, False, True))
     print(f"godot_import: {written} .import files written or updated under audio/")

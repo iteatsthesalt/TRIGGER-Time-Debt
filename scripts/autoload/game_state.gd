@@ -300,8 +300,8 @@ func set_debt(v: float) -> void:
 
 func set_chapter(c: int) -> void:
 	chapter = c
-	# chapter-gated kit entries unlock for everyone recruited so far
-	for id in recruited:
+	# chapter-gated kit entries unlock for everyone who can learn: the recruited and a guest in the roster (Marle)
+	for id in learners():
 		_learn_defaults(id)
 	chapter_changed.emit(c)
 

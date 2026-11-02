@@ -46,14 +46,20 @@ chapter-gated kit entries), `--integrity=<n>`, `--level=<n>` (every roster membe
 (repeatable), `--say=<text>`. Battle arguments are read by BattleScene and the test arena, not by boot:
 `--autobattle`, `--boss=<id>`, `--boss_hp=<n>`.
 
-Headless probes play the game without a window and print `PROBE_END ok=true`:
+Headless probes play the game without a window and end with `PROBE_END ok=true` (ok=false and exit code 1 on a
+stall, a failed check, a lost battle or a timeout); `tools/check.sh` runs all three (not with `--quick`), after the
+data lint and the Python tooling's self-tests (`tools/build/test_tools.py`), and fails unless each prints
+`PROBE_END ok=true`:
 
 ```bash
 godot --headless --path . --script res://tools/build/prologue_probe.gd -- --autobattle      # the whole Prologue
 godot --headless --path . --script res://tools/build/ch1_probe.gd -- --autobattle           # Chapter 1 in the Atrium
 godot --headless --path . --script res://tools/build/battle_probe.gd -- --scene=test_arena --autobattle --boss=atrium_cradle --party=crono,sera,marle --level=4
-# any boss after the Prologue also needs --chapter=<n>: kit entries unlock by chapter (Game.set_chapter), so
-# without it a Chapter 1+ boss is fought with the Prologue kit, e.g. --boss=shard_doll_999 --chapter=1 --level=4
+# battle_probe: ok = the battle started and was won; it prints each party member's level and known techs at the
+# start. A debug start into a location learns its chapter's kit (BootArgs): without --chapter that is the Prologue
+# kit, so a boss after the Prologue needs --chapter=<n>, e.g. --boss=shard_doll_999 --chapter=1 --level=4.
+# --level=<n> applies to every party member, guests (Marle) included, whatever the order of the arguments.
+godot --headless --path . --script res://tools/build/curves_probe.gd   # the stat curves at a few levels (a balance reference, no verdict)
 ```
 
 Visual captures (a cloud container has no GPU; software Vulkan runs at ~2 fps, keep them short; on Nich's PC the

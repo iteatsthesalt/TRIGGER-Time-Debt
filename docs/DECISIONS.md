@@ -121,3 +121,37 @@ or drop (Linear TRI-79; a unit test pins exactly those three so the answer canno
 enemy glob missed `data/enemies/u9/postgame_enemies.json`; the writers included its seven keys anyway and
 the brief now says every file under `data/enemies/`. Touches Story Bible section 10 (voice) and section 8.1
 (the Possibility Codex reads `codex.json`).
+
+## Props are billboards with a height in metres (2026-11-02)
+Nich's asset team delivered the first 47 PixelLab *objects* (Linear TRI-31..TRI-78: Batch 4d's U1 landmarks and
+Batch 6's Prologue and Atrium dressing). Rather than a glTF route, a prop is a lit billboard: the same
+`ActorSprite`, `sprite_canvas` shader, `_n` normal sheet and per-canvas finish as the cast, so a hearth is lit,
+shadowed and graded exactly like the people standing at it, and the second prop costs nothing
+(`Location.add_prop(key, pos)`). Each prop's size is a design value, not a pixel count: `data/props/props.json`
+declares `height_m` per key (a stool 0.6, the oak table 1.2 with its foreshortened top, the hearth 1.9 because
+the drawing carries its chimney breast, the portcullis arch 4.0, the torii 4.0; every call written in `notes`),
+`solid` (a collision box sized from the drawn width), `y_offset`, `anims` (clip fps), `emission`, `pending`, and
+`Data` treats an unknown field or a key that does not name its universe as an error. The importer reads the
+height from there (`tools/art/pipeline/pixellab_objects.py`, reached through `import_pixellab.py` for any
+`prp_` key), accepts PixelLab's two download shapes (a bare PNG for a still object, a zip with rotations and
+clips), packs one row per rotation with the cell as the smallest multiple of 32 that holds the frames (64 to
+256), makes a single ambient clip the looping `idle` with the drawn rotation kept as `still`, and keeps U1's
+saturation (the four inks arrive on-palette; the character route's 0.30 would grey the cinnabar). A pending or
+unknown key stands in as a labelled box of the declared height so a scene never breaks. `data/art/incoming.json`
+now carries the delivery record in the `docs/BOT_REVIEW.md` shape and `tools/art/import_incoming.py` is the
+hourly import. Judgement calls on the delivery: `prp_u0_clock_pillar_face` is a whole clocktower spire (kept as a
+Truce landmark, Robo's pillar keeps its animated hands), `prp_u0_pool_rim` is one front arc (the Atrium pool
+stays primitive), `prp_u1_dojo_set_rusted_katana` stands upright (v2 wanted), `prp_u0_doan_tree_stages` is the
+seed only; the kitchen hearth moved from the west wall to the west end of the back wall because a front-view
+hearth read as a free-standing stove edge-on, and the counter shortened to make room; the Atrium's eight gate
+arches are walk-through billboards with their universe panel billboarded behind them. Two Atrium layout calls
+came out of the captures: the camera-facing third of the ring now keeps only its ledge for the columns and
+balconies as well as the wall (they stood between the follow camera and the hearth, the pool and the gates),
+and the hearth corner (hearth, benches, `hearth*` markers, the HearthSeat prompt) moved a step in from the
+gate ring to x -7.9 / -5.4 so gate U2's arch no longer hides it; the mice zone at (-9, -3) and the pool rim
+were checked clear. The Atrium pool and Robo's pillar face keep their primitives (see QUESTIONS_FOR_NICH). Touches Reference Bible
+§1.2 (prop pixels sit at the cast's density, ~1.2× the environment texel, and up to 2× for the 128 px arches),
+§1.3 (`assets/props/<u>/<id>/` holds a sheet, a frames json and a normal rather than `<id>.png` alone), §1.4
+(PRP-S/PRP-M are one billboard contract; the glTF option is unused for now), §5.7 and §11.7 (the delivered set: the manifest's own rows plus Batch 6's dressing keys that §11.7 never
+listed, `prp_u0_counter_bowls` … `prp_u0_robo_rest_alcove`; `data/props/props.json` is now the complete list,
+the bible table is not edited).

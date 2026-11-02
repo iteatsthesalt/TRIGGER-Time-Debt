@@ -149,11 +149,68 @@ With the MCP tools: `list_characters(limit=50)`, `list_objects(limit=50)`, `list
 (or is clearly for the game) and is not yet in `data/art/pixellab_assets.json`: import it, wire it in,
 screenshot it, record it. Characters still showing pending jobs: wait, or import with `--listing`.
 
-## 6. Other asset kinds (import routes to add as they arrive)
+## 6. Objects / props (the second real route, 2026-11-02)
 
-- **Objects / props** (`create_8_direction_object`, `create_1_direction_object`, `create_object_pro_flash`):
-  `get_object` gives the rotation URLs; props are billboards placed by `Location.add_prop` (to write with the
-  first prop) under `assets/props/u<n>/<key>.png`.
+Props are PixelLab **objects** (`create_1_direction_object`, `create_8_direction_object`,
+`create_object_pro_flash`; `view="low top-down"`, transparent, the canvas's prompt tail), named
+`TRIGGER <Name> field v<N>` and registered by the bot in `data/art/incoming.json` with `"kind": "object"`.
+In the game a prop is **a billboard with a height in metres**: the same `ActorSprite` + `sprite_canvas`
+shader + `_n` normal sheet as the cast, so it is lit, shadowed and graded by the universe like everyone else.
+
+**Contract.** `/mcp/objects/<id>/download` returns a bare PNG (one rotation, no clips) or a zip holding
+`rotations/<direction>.png` (`unknown` for a single rotation) and optionally
+`animations/<slug>/<direction>/frame_NNN.png`. The importer takes both and writes:
+
+| File | What |
+|---|---|
+| `assets/props/u<n>/<key>/<key>.png` | one row per rotation (1 row, or 4 `s w e n`, or 8, missing sides mirrored or filled from the nearest drawn one); columns = `idle`, then each clip. A single clip is the looping `idle` (the hearth's embers at 6 fps) and the drawn rotation becomes a one-frame `still`; with no clip, `idle` is the rotation. Cell = the smallest multiple of 32 that holds every frame about its canvas centre (64 for the gourd, 128 for most, 192–256 for the arches and the tent); pivot bottom-centre, feet 8 px up as for characters |
+| `<key>_frames.json` | the character contract (`cell`, `rows`, `anims` {col, count, fps, loop, holds}, `height_px`, `height_m`) plus `width_px` (the drawn width, for the collision box) and `source` (object id, canvas, rotations, clip slugs) |
+| `<key>_n.png` + `.import` sidecars | the normal sheet and lossless, no-mipmap import settings (as §3) |
+| `source_art/props/<key>/pixellab/` | the raw download (`object.zip` or the PNG), the unpacked frames, a character-shaped `metadata.json` and `contact.png` |
+| `data/art/pixellab_assets.json` | the record: `kind: "object"`, `group: "props"`, `universe`, `request` (the Linear issue), rotations, clips, cell, height |
+
+Finish per canvas: U0 as the cast (hard alpha, ink line #2C2C2C, saturation 0.92); **U1 keeps its saturation**
+(the four inks arrive on-palette; the character route's 0.30 would grey the cinnabar) and only has its line
+pulled to sumi black.
+
+**Height comes from data.** `data/props/props.json` declares every prop before it is imported: `key`
+(`prp_u<n>_<name>`), `universe`, `height_m` (the full drawn height in metres: a stool 0.6, a table 1.2 with its
+foreshortened top, a hearth with its chimney breast 1.9, a portcullis arch 4.0, a torii 4.0; the reasoning in
+`notes`), `solid` (a collision box `width_px × pixel_size` wide, `height_m` tall, half as deep, clamped 0.3–1.2 m,
+or an explicit `footprint`), `y_offset` (shelves, windows, pots on counters), `anims` (game name →
+`{match: <slug substring>, fps, loop, holds}`), `emission` (the stained-glass panel glows), `pending` (declared,
+not delivered), `request`. `Data` validates it (unknown fields, a key that does not name its universe, a
+non-positive height are errors), `lint_data.py` and the unit suite check every non-pending prop has its sheet,
+frames json and normal sheet, and that every object in `pixellab_assets.json` has an entry.
+
+**Import.**
+
+```
+python3 tools/art/import_pixellab.py 89ddf903-c7ce-454c-8f1f-d74854fe290b prp_u0_hearth --name "TRIGGER Hearth field v1" --request TRI-57
+python3 tools/art/import_pixellab.py <object_id> prp_u1_torii --kind object      # the key or an /objects/ URL already says object
+python3 tools/art/import_incoming.py                                              # everything in data/art/incoming.json not yet recorded
+python3 tools/art/import_incoming.py --dry-run --only prp_u0_hearth,prp_u0_oak_table
+```
+
+**Engine.** `SpriteLibrary.resolve_prop(key, universe)` / `apply_prop(sprite, key, fps, universe)` /
+`frames_meta(r)`; `PropBillboard.make(key, facing, solid)` builds the sprite at the data height with its
+collision body, or a labelled placeholder box of the declared height when the sheet is missing or the prop is
+pending; `Location.add_prop(key, pos, facing := &"s", solid := true)` places it (data `y_offset` added) and
+returns it (`set_still` freezes an animated prop on its drawn rotation, `set_tint`), `Location.get_prop(key)`
+finds it again. Interactables stay separate nodes, so a prop can be swapped under an existing prompt.
+
+**Review.** `source_art/props/<key>/pixellab/contact.png` against the catalog image and §5.7; then the room:
+`bash tools/capture/render.sh guardia_kitchen kitchen 40 --checkpoint=prologue_breakfast_done --party=crono,marle,sera`
+(`guardia_courtyard`, `atrium`). Judge width next to Crono (1.78 m), the ground line, and whether the drawn
+view agrees with where it stands: a front-view hearth belongs on the back wall, not edge-on on a side wall.
+
+What the first delivery taught (47 objects, TRI-31..78): the route must accept a bare PNG; `clock_pillar_face`
+came back as a whole clocktower spire (a skyline landmark, not a face for Robo's pillar); `pool_rim` is one
+front arc (a pool needs a top-down disc or kit tiles); `dojo_set_rusted_katana` stands upright instead of lying
+on its cloth; `doan_tree_stages` is the seed stage only. The 256 canvases pack into 192–256 cells.
+
+## 6b. Other asset kinds (import routes to add as they arrive)
+
 - **Portraits** (`create_image_pro` / `pro_flash`, 512×512 bust, eight expressions): `assets/portraits/<id>/<id>_<expr>.png`;
   `PortraitCache` already looks there first.
 - **Textures** (`create_image_*` tileable, 64 px/m): `assets/textures/generated/<material>_albedo.png` + `_normal.png`;

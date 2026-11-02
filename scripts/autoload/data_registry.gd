@@ -13,6 +13,7 @@ var items: Dictionary = {}
 var encounters: Dictionary = {}
 var dialogue: Dictionary = {}     ## script id -> Array of commands
 var bosses: Dictionary = {}
+var props: Dictionary = {}        ## prop key StringName -> Dictionary (data/props: universe, height_m, solid …)
 var text: Dictionary = {}         ## text layer: kind (bestiary, techs, items, ambient, codex) -> Dictionary
 var text_gaps: PackedStringArray = [] ## game ids that have no text yet (a warning, not an error)
 var errors: PackedStringArray = []
@@ -36,6 +37,7 @@ func load_all() -> void:
 	encounters.clear()
 	dialogue.clear()
 	bosses.clear()
+	props.clear()
 	text.clear()
 	text_gaps.clear()
 	for d in _json_files("res://data/techs"):
@@ -87,6 +89,9 @@ func load_all() -> void:
 	for d in _json_files("res://data/bosses"):
 		if d is Dictionary and d.has("id"):
 			bosses[StringName(String(d["id"]))] = d
+	for d in _json_files("res://data/props"):
+		for entry in d.get("props", []):
+			_add_prop(entry)
 	for path in _list_files("res://data/dialogue", ".json"):
 		var d2: Variant = _load_json(path)
 		if d2 is Dictionary:
@@ -171,6 +176,62 @@ func _check_text_layer() -> void:
 			errors.append("text/ambient: %s has no lines" % key)
 	if not text_gaps.is_empty():
 		push_warning("Data: %d game ids have no text yet (see Data.text_gaps)" % text_gaps.size())
+
+
+## The fields a data/props entry may carry (docs/ART_PIPELINE.md §6); anything else is a typo and an error.
+const PROP_FIELDS: Array[String] = ["key", "universe", "height_m", "solid", "y_offset", "anims", "emission", "footprint", "pending", "request", "notes"]
+const PROP_ANIM_FIELDS: Array[String] = ["match", "fps", "loop", "holds"]
+
+
+## A prop is a billboard with a height in metres: the key names its universe (prp_u<n>_…), height_m is
+## required and positive, the optional fields are typed, and nothing unknown is allowed.
+func _add_prop(entry: Variant) -> void:
+	if not (entry is Dictionary):
+		errors.append("props: an entry is not an object")
+		return
+	var e: Dictionary = entry
+	var key := StringName(String(e.get("key", "")))
+	if key == &"":
+		errors.append("props: entry without a key")
+		return
+	if props.has(key):
+		errors.append("duplicate prop key %s" % key)
+	for f in e.keys():
+		if not PROP_FIELDS.has(String(f)):
+			errors.append("prop %s: unknown field %s" % [key, f])
+	var universe: int = int(e.get("universe", -1))
+	if universe < 0 or universe > 9:
+		errors.append("prop %s: universe must be 0..9" % key)
+	elif not String(key).begins_with("prp_u%d_" % universe):
+		errors.append("prop %s: key does not name its universe u%d" % [key, universe])
+	var h: Variant = e.get("height_m", null)
+	if not (h is float or h is int) or float(h) <= 0.0:
+		errors.append("prop %s: height_m must be a positive number" % key)
+	for name in ["solid", "pending"]:
+		if e.has(name) and not (e[name] is bool):
+			errors.append("prop %s: %s must be true or false" % [key, name])
+	for name in ["y_offset", "emission"]:
+		if e.has(name) and not (e[name] is float or e[name] is int):
+			errors.append("prop %s: %s must be a number" % [key, name])
+	if e.has("footprint") and not (e["footprint"] is Array and (e["footprint"] as Array).size() == 2):
+		errors.append("prop %s: footprint must be [width, depth]" % key)
+	var anims: Variant = e.get("anims", {})
+	if not (anims is Dictionary):
+		errors.append("prop %s: anims must be an object" % key)
+	else:
+		for a in (anims as Dictionary).keys():
+			var spec: Variant = anims[a]
+			if not (spec is Dictionary):
+				errors.append("prop %s: anim %s must be an object" % [key, a])
+				continue
+			for f in (spec as Dictionary).keys():
+				if not PROP_ANIM_FIELDS.has(String(f)):
+					errors.append("prop %s: anim %s has unknown field %s" % [key, a, f])
+	props[key] = e
+
+
+func prop(key: StringName) -> Dictionary:
+	return props.get(key, {})
 
 
 ## Every item id a dialogue command can hand out (give_item, key_item, relic), including inside choices.

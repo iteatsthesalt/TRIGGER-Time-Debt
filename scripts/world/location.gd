@@ -22,6 +22,7 @@ var follow: PartyFollow
 var party_actors: Array[CombatActor] = []
 var npc_actors: Dictionary = {}
 var markers: Dictionary = {}
+var prop_nodes: Array[PropBillboard] = []
 var zones: Array[EncounterZone] = []
 var battle: BattleScene
 var prompt_label: Label
@@ -184,6 +185,26 @@ func _say_ambient_line(by: Node, npc: FieldNPC) -> void:
 	if by is Node3D:
 		npc.face_toward((by as Node3D).global_position)
 	Story.run(&"", [{"say": String(lines[n])}])
+
+
+## A prop from data/props (docs/ART_PIPELINE.md §6): a lit billboard standing at `pos` (its data y_offset
+## added), with a collision box when the prop is solid; a labelled placeholder box when the asset has not
+## arrived, so the scene builds either way. `facing` picks the row on multi-rotation sheets. Returns the
+## PropBillboard (set_still, set_tint) for scripts.
+func add_prop(key: StringName, pos: Vector3, facing: StringName = &"s", solid: bool = true) -> Node3D:
+	var p: PropBillboard = PropBillboard.make(key, facing, solid)
+	add_child(p)
+	p.position = pos + Vector3(0.0, p.y_offset, 0.0)
+	prop_nodes.append(p)
+	return p
+
+
+## The first placed prop with this key (null when the room has none).
+func get_prop(key: StringName) -> PropBillboard:
+	for p in prop_nodes:
+		if p.key == key:
+			return p
+	return null
 
 
 ## A cast member standing in the scene before (or without) joining the party: a full CombatActor built

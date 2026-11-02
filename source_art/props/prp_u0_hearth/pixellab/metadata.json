@@ -1,0 +1,29 @@
+{
+ "group_id": "",
+ "export_version": "object",
+ "states": [
+  {
+   "character": {
+    "id": "89ddf903-c7ce-454c-8f1f-d74854fe290b",
+    "name": ""
+   },
+   "folder": "",
+   "frames": {
+    "rotations": {
+     "south": "rotations/unknown.png"
+    },
+    "animations": {
+     "the_embers_in_the_hearth_flicker_and_glow_softly": {
+      "south": [
+       "animations/the_embers_in_the_hearth_flicker_and_glow_softly/unknown/frame_000.png",
+       "animations/the_embers_in_the_hearth_flicker_and_glow_softly/unknown/frame_001.png",
+       "animations/the_embers_in_the_hearth_flicker_and_glow_softly/unknown/frame_002.png",
+       "animations/the_embers_in_the_hearth_flicker_and_glow_softly/unknown/frame_003.png",
+       "animations/the_embers_in_the_hearth_flicker_and_glow_softly/unknown/frame_004.png"
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

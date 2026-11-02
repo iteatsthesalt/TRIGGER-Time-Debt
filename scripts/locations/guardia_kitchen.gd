@@ -1,6 +1,7 @@
 ## The Guardia Atrium family kitchen and the hall beyond it (Story Bible §6 Prologue beats 2–8).
 ## West room: hearth, counter, pot, table, Sera's stool, speaking tube, dusty stained glass. The
 ## Fracture Gate seals the doorway to the east hall, where the Atrium Cradle unfolds from the pantry.
+## The dressing is Nich's PixelLab props (`add_prop`, data/props); the walls and floors stay primitives.
 extends Location
 
 const CP_START := &"prologue_kitchen"
@@ -58,43 +59,33 @@ func build() -> void:
 	var brass := SceneKit.flat_color(Color(0.78, 0.6, 0.3), Color.BLACK, 0.0, 0.3, 0.9)
 	SceneKit.box(self, Vector3(0.2, 3.4, 0.2), Vector3(13.3, 1.7, -1.1), brass, "ExitJambA", false)
 	SceneKit.box(self, Vector3(0.2, 3.4, 0.2), Vector3(13.3, 1.7, 1.1), brass, "ExitJambB", false)
-	# ---- stained glass (two tall windows on the kitchen back wall, one in the hall)
-	var glass := _stained_glass_material()
-	for wx in [-6.5, -2.5]:
-		_window(glass, Vector3(wx, 2.4, -6.48), Vector2(1.8, 3.0))
-	_window(glass, Vector3(9.0, 2.6, -6.98), Vector2(2.6, 3.2))
-	# ---- hearth on the west wall with embers
-	var hearth := SceneKit.flat_color(Color(0.22, 0.2, 0.19), Color.BLACK, 0.0, 0.9)
-	SceneKit.box(self, Vector3(1.0, 2.4, 2.6), Vector3(-8.5, 1.2, -3.0), hearth, "Hearth")
-	SceneKit.box(self, Vector3(1.1, 0.25, 2.8), Vector3(-8.45, 2.5, -3.0), hearth, "HearthMantle", false)
-	var ember := SceneKit.flat_color(Color(1.0, 0.45, 0.1), Color(1.0, 0.5, 0.12), 4.0)
-	SceneKit.box(self, Vector3(0.3, 0.3, 1.4), Vector3(-8.0, 0.3, -3.0), ember, "Embers", false)
-	SceneKit.omni(self, Vector3(-7.3, 1.0, -3.0), Color(1.0, 0.62, 0.3), 2.4, 7.0, true)
-	# ---- counter, pots, shelf, speaking tube
-	SceneKit.box(self, Vector3(4.2, 0.9, 1.0), Vector3(-5.2, 0.45, -5.7), stone, "Counter")
+	# ---- stained glass: Nich's panel (Batch 6) on the kitchen back wall twice and once in the hall; it glows
+	# through the sprite shader's emission, and the violet sun shafts below fall from the same spots
+	for wx in [-6.0, -3.4]:
+		add_prop(&"prp_u0_stained_glass_panel", Vector3(wx, 0.0, -6.45))
+	add_prop(&"prp_u0_stained_glass_panel", Vector3(11.5, 0.0, -6.95))
+	# ---- the hearth at the west end of the back wall, its embers flickering at 6 fps, the fire light before it
+	add_prop(&"prp_u0_hearth", Vector3(-7.9, 0.0, -6.1))
+	SceneKit.omni(self, Vector3(-7.9, 1.0, -5.3), Color(1.0, 0.62, 0.3), 2.4, 7.0, true)
+	# ---- the counter: the stone slab the ritual happens at (the pot hangs on its wall hook over it), the
+	# bowl counter beside it, the pot shelf above, the speaking tube standing by the partition
+	SceneKit.box(self, Vector3(3.6, 0.9, 1.0), Vector3(-4.9, 0.45, -5.7), stone, "Counter")
+	add_prop(&"prp_u0_porridge_pot", Vector3(-4.6, 0.0, -6.2))
 	var copper := SceneKit.flat_color(Color(0.72, 0.45, 0.28), Color.BLACK, 0.0, 0.35, 0.8)
-	SceneKit.cylinder(self, 0.32, 0.36, Vector3(-4.6, 1.08, -5.7), copper, "Pot", false)
-	SceneKit.cylinder(self, 0.2, 0.2, Vector3(-3.7, 1.0, -5.7), copper, "Pot2", false)
 	SceneKit.cylinder(self, 0.16, 0.26, Vector3(-6.3, 1.03, -5.7), copper, "Pot3", false)
-	SceneKit.box(self, Vector3(2.6, 0.08, 0.4), Vector3(-2.0, 2.2, -6.45), wood, "Shelf", false)
-	for i in 4:
-		SceneKit.cylinder(self, 0.1, 0.18, Vector3(-3.0 + float(i) * 0.6, 2.33, -6.45), copper, "Jar%d" % i, false)
-	SceneKit.cylinder(self, 0.08, 2.0, Vector3(-0.2, 1.6, -6.4), brass, "Tube", false)
-	SceneKit.cylinder(self, 0.22, 0.2, Vector3(-0.2, 2.7, -6.3), brass, "TubeHorn", false)
-	# ---- table, benches, bowls, stool
-	SceneKit.box(self, Vector3(3.6, 0.12, 1.4), Vector3(-2.5, 0.84, 0.4), wood, "TableTop")
-	for p in [Vector3(-4.1, 0.4, -0.15), Vector3(-0.9, 0.4, -0.15), Vector3(-4.1, 0.4, 0.95), Vector3(-0.9, 0.4, 0.95)]:
-		SceneKit.box(self, Vector3(0.14, 0.8, 0.14), p, wood, "Leg", false)
-	SceneKit.box(self, Vector3(3.0, 0.08, 0.35), Vector3(-2.5, 0.45, -0.7), dark_wood, "BenchN", false)
+	add_prop(&"prp_u0_counter_bowls", Vector3(-2.0, 0.0, -5.9))
+	add_prop(&"prp_u0_pot_shelf", Vector3(-2.0, 0.15, -6.4))
+	add_prop(&"prp_u0_speaking_tube", Vector3(-0.2, 0.0, -6.15))
+	# ---- table, bench, bowls, Sera's stool
+	add_prop(&"prp_u0_oak_table", Vector3(-2.5, 0.0, 0.4))
+	SceneKit.box(self, Vector3(1.6, 0.08, 0.35), Vector3(-2.5, 0.45, -0.7), dark_wood, "BenchN", false)
 	var porcelain := SceneKit.flat_color(Color(0.93, 0.92, 0.88), Color.BLACK, 0.0, 0.4)
 	var ash := SceneKit.flat_color(Color(0.45, 0.44, 0.42), Color.BLACK, 0.0, 0.9)
-	bowl = SceneKit.cylinder(self, 0.14, 0.08, Vector3(-1.4, 0.94, 0.7), porcelain, "SeraBowl", false)
-	bowl_ash = SceneKit.cylinder(self, 0.14, 0.08, Vector3(-1.4, 0.94, 0.7), ash, "SeraBowlAsh", false)
+	bowl = SceneKit.cylinder(self, 0.14, 0.08, Vector3(-1.9, 0.94, 0.75), porcelain, "SeraBowl", false)
+	bowl_ash = SceneKit.cylinder(self, 0.14, 0.08, Vector3(-1.9, 0.94, 0.75), ash, "SeraBowlAsh", false)
 	bowl_ash.visible = false
-	SceneKit.cylinder(self, 0.14, 0.08, Vector3(-3.4, 0.94, 0.1), porcelain, "Bowl2", false)
-	SceneKit.cylinder(self, 0.22, 0.45, Vector3(-1.4, 0.225, 1.5), wood, "Stool")
-	var groove := SceneKit.flat_color(Color(0.05, 0.05, 0.06), Color.BLACK, 0.0, 0.3)
-	SceneKit.box(self, Vector3(0.06, 0.46, 0.2), Vector3(-1.18, 0.23, 1.5), groove, "StoolGroove", false)
+	SceneKit.cylinder(self, 0.14, 0.08, Vector3(-3.1, 0.94, 0.55), porcelain, "Bowl2", false)
+	add_prop(&"prp_u0_ink_stool", Vector3(-1.4, 0.0, 1.5))
 	# ---- crates and barrels in the hall, the pantry recess where the Cradle waits
 	SceneKit.box(self, Vector3(0.7, 0.7, 0.7), Vector3(3.0, 0.35, -6.2), wood, "Crate")
 	SceneKit.box(self, Vector3(0.6, 0.6, 0.6), Vector3(3.8, 0.3, -5.6), wood, "Crate2")
@@ -111,7 +102,7 @@ func build() -> void:
 	# ---- the Fracture Gate: a brass lattice in the doorway
 	_build_gate(brass)
 	# ---- lights: the window sun shafts, a cool fill from the hall
-	for wx in [-6.5, -2.5]:
+	for wx in [-6.0, -3.4]:
 		var sun := SpotLight3D.new()
 		sun.position = Vector3(wx, 3.8, -4.6)
 		sun.rotation_degrees = Vector3(-72, 0, 0)
@@ -464,52 +455,13 @@ func _use_exit(_by: Node) -> void:
 
 # ------------------------------------------------------------------ dressing
 
-func _window(glass: Material, pos: Vector3, size: Vector2) -> void:
-	var win := MeshInstance3D.new()
-	var q := QuadMesh.new()
-	q.size = size
-	win.mesh = q
-	win.material_override = glass
-	win.position = pos
-	add_child(win)
-	var frame := SceneKit.flat_color(Color(0.18, 0.17, 0.16), Color.BLACK, 0.0, 0.7)
-	SceneKit.box(self, Vector3(size.x + 0.3, 0.15, 0.2), pos + Vector3(0, size.y * 0.5 + 0.05, 0.02), frame, "WinTop", false)
-	SceneKit.box(self, Vector3(size.x + 0.3, 0.15, 0.2), pos + Vector3(0, -size.y * 0.5 - 0.05, 0.02), frame, "WinBottom", false)
-	SceneKit.box(self, Vector3(0.15, size.y + 0.2, 0.2), pos + Vector3(-size.x * 0.5 - 0.05, 0, 0.02), frame, "WinL", false)
-	SceneKit.box(self, Vector3(0.15, size.y + 0.2, 0.2), pos + Vector3(size.x * 0.5 + 0.05, 0, 0.02), frame, "WinR", false)
-
-
-func _stained_glass_material() -> ShaderMaterial:
-	var sh := Shader.new()
-	sh.code = """
-shader_type spatial;
-render_mode unshaded, cull_disabled;
-void fragment() {
-	vec2 uv = UV;
-	vec2 g = floor(uv * vec2(4.0, 6.0));
-	float h = fract(sin(dot(g, vec2(12.9898, 78.233))) * 43758.5453);
-	vec3 a = vec3(0.17, 0.30, 0.61); vec3 b = vec3(0.76, 0.27, 0.43); vec3 c = vec3(0.88, 0.64, 0.23); vec3 d = vec3(0.31, 0.72, 0.69);
-	vec3 col = h < 0.25 ? a : (h < 0.5 ? b : (h < 0.75 ? c : d));
-	vec2 f = fract(uv * vec2(4.0, 6.0));
-	float lead = step(f.x, 0.06) + step(0.94, f.x) + step(f.y, 0.06) + step(0.94, f.y);
-	float dust = 0.55 + 0.45 * fract(sin(dot(floor(uv * 40.0), vec2(4.1, 9.7))) * 1234.5);
-	col = mix(col * dust, vec3(0.08), clamp(lead, 0.0, 1.0));
-	ALBEDO = col * 0.4;
-	EMISSION = col * 1.6 * (1.0 - clamp(lead, 0.0, 1.0));
-}
-"""
-	var m := ShaderMaterial.new()
-	m.shader = sh
-	return m
-
-
 func _build_motes() -> void:
 	motes = GPUParticles3D.new()
 	motes.name = "DustMotes"
 	motes.amount = 40
 	motes.lifetime = 6.0
 	motes.emitting = true
-	motes.position = Vector3(-4.6, 1.4, -5.7)
+	motes.position = Vector3(-4.6, 1.3, -6.0)
 	var pm := ParticleProcessMaterial.new()
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
 	pm.emission_ring_radius = 0.45

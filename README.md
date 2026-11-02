@@ -66,18 +66,19 @@ scripts/
   combat/                the Combat Laws core: stats, timeline, shields/Break, damage, Boost, statuses, techs, AI (headless-tested)
   battle/                BattleScene + HUD glue, BossController, bosses/<id>.gd directors (per-boss mechanics)
   actors/                CombatActor, ActorSprite (lit billboard), SpriteLibrary (sheet lookup), PlayerController, PartyFollow, FieldNPC
-  world/                 Location base (every playable scene extends it), SceneKit (materials, primitives), EncounterZone, Interactable
+  world/                 Location base (every playable scene extends it), SceneKit (materials, primitives), PropBillboard (placed props), EncounterZone, Interactable
   locations/             one script per location (build(), after_ready())
   render/                HD2DWorld (compositor canvas stack), HD2DCameraRig, CanvasStackEffect
   ui/                    title, dialogue box, battle HUD, portraits, speaker styles
 shaders/                 sprite_canvas (lit billboard, porcelain states), canvas stack compute shaders, grade LUTs
 data/                    all content as JSON (see "Adding content")
-assets/                  characters/ npcs/ enemies/ bosses/ (imported sprite sheets) · portraits/ ui/generated/ textures/generated/ vfx/generated/ (import targets for those kinds)
+assets/                  characters/ npcs/ enemies/ bosses/ (imported sprite sheets) · props/u<n>/<key>/ (imported PixelLab objects: sheet, frames json, normal)
+                         portraits/ ui/generated/ textures/generated/ vfx/generated/ (import targets for those kinds)
                          textures/ (procedural placeholders), luts/, materials/
 source_art/              raw PixelLab downloads, contact sheets, prompts (rebuild sources; ignored by Godot)
 audio/                   music (OGG + stems, loop points in .import), sfx/<family>/, beds; built by tools/audio/build_all.py
 tests/                   run_tests.gd and the headless check suites
-tools/                   setup_godot.sh · check.sh · art/import_pixellab.py (+ art/pipeline/) · art/ (placeholder generators, pixel.py helpers)
+tools/                   setup_godot.sh · check.sh · art/import_pixellab.py + art/import_incoming.py (+ art/pipeline/: characters, objects) · art/ (placeholder generators, pixel.py helpers)
                          audio/ (synthesis toolchain) · build/ (probes, parse_all, lint_data) · capture/ (render.sh, smoke.gd)
 design/                  the three bibles, AUDIT.md, images/catalog (59) and images/plates (12)
 prototype/               the earlier combat core (reference only; its systems live in scripts/combat now)
@@ -141,6 +142,22 @@ variants (another canvas `u1`…, or a state `debt20`…). Import a finished ass
 `tools/capture/render.sh test_lineup lineup 30 -- --ids=<key> --tier=<tier>`; the import is recorded in
 `data/art/pixellab_assets.json`. In code: `SpriteLibrary.apply(sprite, id, fps, tier, variant)` falls back to
 field/base, and `ActorSprite.set_tier(&"action")` / `set_variant(&"u1")` swap a live sprite for a cut-in.
+
+**A prop.** Props are PixelLab *objects* (Nich's Batch 4d / Batch 6), placed as lit billboards with a height in
+metres. Declare it first in `data/props/props.json` (`key` = `prp_u<n>_<name>`, `universe`, `height_m` judged
+from Reference Bible §1.2 / §5.7 / §11.7, `solid`, optional `y_offset`, `anims` {name: {match, fps, loop,
+holds}}, `emission`, `footprint`, `pending`, `request`, `notes`; unknown fields are errors), then import it:
+`python3 tools/art/import_pixellab.py <object_id|url> prp_u0_hearth --request TRI-57` (a `prp_` key or an
+`/objects/` URL takes the object route; `--kind object` forces it). That writes
+`assets/props/u<n>/<key>/<key>.png` (one row per rotation, columns = idle then each clip; a single clip becomes
+the looping idle and the drawn rotation a `still` column), `<key>_frames.json` (the character contract plus
+`width_px`), `<key>_n.png`, the `.import` sidecars, `source_art/props/<key>/pixellab/` and the record in
+`data/art/pixellab_assets.json` (kind `object`). `python3 tools/art/import_incoming.py` imports everything the
+bot registered in `data/art/incoming.json` that is not yet recorded. In a location:
+`add_prop(&"prp_u0_hearth", Vector3(x, 0, z))` (optional `facing` row and `solid` override) returns a
+`PropBillboard` (`set_still`, `set_tint`); a pending or unknown key stands in as a labelled box of the declared
+height, so the scene builds either way. `lint_data.py` and the unit suite check every declared prop has its
+sheet.
 
 **The text layer.** `data/text/` holds the prose the game reads aloud: `bestiary.json` (one entry per enemy
 key and boss id: `name`, `entry`, `weak_hint`, `break_line`), `techs.json` (`description`, `flavor` per tech

@@ -1,0 +1,35 @@
+{
+ "cell": 128,
+ "rows": [
+  "s"
+ ],
+ "mirror_w": false,
+ "fps": 60.0,
+ "height_px": 103,
+ "width_px": 91,
+ "height_m": 1.9,
+ "source": {
+  "pixellab_object": "89ddf903-c7ce-454c-8f1f-d74854fe290b",
+  "canvas": "u0",
+  "rotations": [
+   "south"
+  ],
+  "clips": {
+   "idle": "the_embers_in_the_hearth_flicker_and_glow_softly"
+  }
+ },
+ "anims": {
+  "idle": {
+   "col": 0,
+   "count": 5,
+   "fps": 6.0,
+   "loop": true
+  },
+  "still": {
+   "col": 5,
+   "count": 1,
+   "fps": 1.0,
+   "loop": true
+  }
+ }
+}

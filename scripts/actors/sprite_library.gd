@@ -8,6 +8,8 @@ extends RefCounted
 static var _placeholders: Dictionary = {}
 
 const GROUPS := ["characters", "npcs", "enemies", "bosses"]
+## Props live apart from the cast: assets/props/u<n>/<key>/ (see resolve_prop).
+const PROP_GROUP := "props"
 ## Default frame table for generated CHR-F sheets (columns): idle 4, walk 6, run 6, interact 3, emote 4,
 ## ready 4, attack 6, charge 4, release 6, hurt 3, ko 6, revive 5, victory 6, break 1, death 6.
 const DEFAULT_TABLE := {
@@ -51,6 +53,54 @@ static func resolve(id: String, tier: StringName = &"field", variant: StringName
 			var legacy: String = "%s/%s_sheet.png" % [dir, id]
 			if ResourceLoader.exists(legacy):
 				return {"id": id, "dir": dir, "stem": id + "_sheet", "sheet": legacy, "tier": &"field", "variant": &""}
+	return {}
+
+
+## Props (docs/ART_PIPELINE.md §6) have no tiers or variants: assets/props/u<n>/<key>/<key>.png with the
+## same _frames.json / _n contract. `universe` narrows the search; -1 scans u0..u9. Returns the same
+## dictionary shape as resolve(), or {}.
+static func resolve_prop(key: String, universe: int = -1) -> Dictionary:
+	var subs: Array[String] = []
+	if universe >= 0:
+		subs.append("u%d/" % universe)
+	else:
+		for u in 10:
+			subs.append("u%d/" % u)
+	for sub in subs:
+		var dir: String = "res://assets/%s/%s%s" % [PROP_GROUP, sub, key]
+		var path: String = "%s/%s.png" % [dir, key]
+		if ResourceLoader.exists(path):
+			return {"id": key, "dir": dir, "stem": key, "sheet": path, "tier": &"field", "variant": &""}
+	return {}
+
+
+## Load a prop sheet onto a sprite (height from its frames json, normal sheet picked up). Returns false,
+## leaving the sprite untouched, when the prop has no sheet; PropBillboard then shows its placeholder.
+static func apply_prop(sprite: ActorSprite, key: String, fps: float = 60.0, universe: int = -1) -> bool:
+	var r: Dictionary = resolve_prop(key, universe)
+	if r.is_empty():
+		return false
+	sprite.sprite_id = key
+	sprite.tier = &"field"
+	sprite.variant = &""
+	_apply_resolved(sprite, r, fps, false)
+	return true
+
+
+## The raw frames table of a resolved sheet (cell, rows, height_px, width_px, height_m, anims …) for
+## callers that need more than ActorSprite keeps, such as a prop's footprint. {} when there is none.
+static func frames_meta(r: Dictionary) -> Dictionary:
+	if r.is_empty():
+		return {}
+	var path: String = "%s/%s_frames.json" % [r["dir"], r["stem"]]
+	if not FileAccess.file_exists(path):
+		return {}
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return {}
+	var json := JSON.new()
+	if json.parse(f.get_as_text()) == OK and json.data is Dictionary:
+		return json.data
 	return {}
 
 

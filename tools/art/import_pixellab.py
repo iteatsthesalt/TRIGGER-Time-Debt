@@ -6,8 +6,12 @@
     python3 tools/art/import_pixellab.py 8d699d00-eb9f-4da7-a408-a1f70039fa1c crono
     python3 tools/art/import_pixellab.py https://api.pixellab.ai/mcp/characters/<id>/download enm_u0_porcelain_shardling
     python3 tools/art/import_pixellab.py <id> marle --listing /tmp/marle_listing.txt    # zip still locked (jobs pending)
+    python3 tools/art/import_pixellab.py <object_id> prp_u0_hearth --request TRI-57       # a prop (PixelLab object)
 
-The asset key is the game's sprite id. A character is a SET of sprites: tiers (map 64 / field 128 / action
+The asset key is the game's sprite id. A key that starts with `prp_` (or an `/objects/` URL, or
+`--kind object`) is a prop: it takes the object route (`pipeline/pixellab_objects.py`) and lands in
+`assets/props/u<n>/<key>/<key>.png` with its height from `data/props/props.json`. Everything else is a
+character. A character is a SET of sprites: tiers (map 64 / field 128 / action
 256 / portrait 512) and variants (another canvas such as u1, or a story state such as debt20). The tier and
 variant come from the PixelLab name when you pass it (`--name "TRIGGER Sera u1 field v1"`), else from
 `--tier` / `--variant`, else field/base. The file written is `<key>[_<variant>]_<tier>.png`. The target
@@ -40,6 +44,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, os.path.join(HERE, "pipeline"))
 import pixellab_import as pl  # noqa: E402
+import pixellab_objects as po  # noqa: E402
 
 RECORD = os.path.join(ROOT, "data", "art", "pixellab_assets.json")
 UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
@@ -115,10 +120,66 @@ def record(key, entry):
         json.dump(data, f, indent=1, sort_keys=False)
 
 
+def import_object(pid, args):
+    """The prop route: download the object, build assets/props/u<n>/<key>/, record it."""
+    t = po.resolve_prop_target(ROOT, args.key, height_m=args.height_m)
+    canvas = args.canvas or t["canvas"]
+    fps = args.fps or t["fps"]
+    src = os.path.join(ROOT, "source_art", "props", args.key, "pixellab")
+    meta_path = os.path.join(src, "metadata.json")
+    if args.skip_download and os.path.exists(meta_path):
+        meta = load_json(meta_path)
+    else:
+        try:
+            meta = po.download_object(pid, src)
+        except Exception as e:
+            if os.path.exists(meta_path):
+                print(f"download failed ({e}); rebuilding from the cached frames")
+                meta = load_json(meta_path)
+            else:
+                raise SystemExit(f"download failed ({e})")
+    out = os.path.join(ROOT, "assets", "props", t["subdir"])
+    sheet, data = po.build_object_sheet(args.key, meta, src, out, canvas=canvas, height_m=t["height_m"], fps=fps,
+                                        anim_table=t["anims"])
+    contact = os.path.join(src, "contact.png")
+    pl.contact_sheet(sheet, data["cell"], contact)
+    record(args.key, {
+        "pixellab_id": pid,
+        "pixellab_name": args.name,
+        "id": args.key,
+        "tier": "",
+        "variant": "",
+        "kind": "object",
+        "group": "props",
+        "universe": t["universe"],
+        "request": args.request or t["request"],
+        "path": os.path.relpath(out, ROOT).replace(os.sep, "/"),
+        "imported": datetime.date.today().isoformat(),
+        "canvas": canvas, "fps": fps, "height_m": data["height_m"], "height_px": data["height_px"],
+        "width_px": data["width_px"], "cell": data["cell"], "rows": data["rows"],
+        "rotations": data["source"]["rotations"],
+        "anims": {k: v["count"] for k, v in data["anims"].items()},
+    })
+    rel_sheet = os.path.relpath(os.path.join(out, f"{args.key}.png"), ROOT)
+    print(f"{args.key} <- object {pid}: {rel_sheet} {sheet.width}x{sheet.height} cell {data['cell']} rows {data['rows']} "
+          f"height {data['height_px']}px = {data['height_m']} m, width {data['width_px']}px, anims {data['anims']}")
+    print(f"  contact sheet: {os.path.relpath(contact, ROOT)}")
+    print(f"  place it: Location.add_prop(&\"{args.key}\", Vector3(x, 0, z))")
+
+
+def is_object(args):
+    if args.kind != "auto":
+        return args.kind == "object"
+    return args.key.startswith("prp_") or "/objects/" in args.source
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("source", help="PixelLab character id, download URL or character page URL")
     ap.add_argument("key", help="asset key = the game's sprite id")
+    ap.add_argument("--kind", default="auto", choices=["auto", "character", "object"],
+                    help="object = a prop (default: object when the key starts with prp_ or the URL says /objects/)")
+    ap.add_argument("--request", default="", help="the Linear issue or ASSET_REQUESTS entry this fulfils (recorded)")
     ap.add_argument("--group", default=None, choices=["characters", "npcs", "enemies", "bosses"])
     ap.add_argument("--tier", default=None, choices=list(TIERS), help="map | field | action | portrait (default: from --name, else field)")
     ap.add_argument("--variant", default=None, help="canvas (u1…) or state (debt20…) variant; default: from --name, else base")
@@ -134,6 +195,9 @@ def main():
     args = ap.parse_args()
 
     pid = extract_id(args.source)
+    if is_object(args):
+        import_object(pid, args)
+        return
     t = resolve_target(args.key)
     if args.group:
         t["group"] = args.group
@@ -180,6 +244,7 @@ def main():
         "variant": variant,
         "kind": "character",
         "group": t["group"],
+        "request": args.request,
         "path": os.path.relpath(out, ROOT).replace(os.sep, "/"),
         "imported": datetime.date.today().isoformat(),
         "canvas": canvas, "fps": fps, "height_m": data["height_m"], "height_px": data["height_px"],

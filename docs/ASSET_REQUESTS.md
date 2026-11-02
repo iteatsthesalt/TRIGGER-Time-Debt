@@ -150,6 +150,8 @@ cinnabar, paper white, dry-brush edges, pixel art`. Deliver per `docs/BOT_REVIEW
 
 ### 4d. Landmarks and props (`create_1_direction_object` or `create_object_pro_flash`, `view="low top-down"`, transparent)
 
+**Delivered and imported 2026-11-02** (Linear TRI-31..TRI-50, all twenty objects; see Done). Kept here as the record of what was asked. Flagged for a v2: `prp_u1_dojo_set_rusted_katana` stands upright instead of lying on its cloth.
+
 | # | Asset key | Prompt |
 |---|---|---|
 | 37 | `prp_u1_leene_bell_guillotine` (256) | `a tall execution guillotine whose blade and frame are cast from a melted bronze bell, black lacquered timber, cinnabar paint, bell inscriptions still visible on the blade`. |
@@ -205,6 +207,8 @@ Prompt tails per canvas are in Reference Bible §1.11; identity blocks in §4 an
 
 ## Batch 6: Prologue props and the Atrium (billboards, `create_1_direction_object` or `create_object_pro_flash`, `view="low top-down"`)
 
+**Delivered and imported 2026-11-02** (Linear TRI-51..TRI-78, 27 objects; see Done; the kitchen, courtyard and Atrium now stand them, `docs/screenshots/11–13`). Still wanted from this batch: `prp_u0_klein_journal` (TRI-72 lists icon/field/pages variants but no PixelLab id), the sprout / sapling / ash stages of `prp_u0_doan_tree_stages` (TRI-77 delivered the seed only), a flat **clock face** for Robo's pillar (TRI-63 `prp_u0_clock_pillar_face` came back as a complete clocktower spire, kept as the Truce skyline landmark), and a top-down **pool** (TRI-69 `prp_u0_pool_rim` is a single front arc of rim; the Atrium keeps its primitive pool until a full disc or kit tiles arrive).
+
 128 px unless noted, transparent, U0 watercolour tail. Kitchen: copper porridge pot on a hook, stone counter
 with two porcelain bowls, long oak table, three-legged stool with an ink-burned groove, brass speaking tube,
 copper pots on a shelf, a hearth with embers (3-frame flicker), stained-glass window panel (texture, 128×192).
@@ -241,3 +245,50 @@ wet-ink zone 6 (loop). Import target `assets/vfx/generated/<family>/<id>_fb_<n>f
 | `sera_field` (idle, walk, run) | `ce6ffc25-e512-4312-9d83-a850ab3b561f` | 2026-10-29 | remaining clips listed as #1 |
 | `krona_field` (idle, walk) | `6af5c834-e7a7-4e8b-83d7-8fb2b4222695` | 2026-10-29 | remaining clips listed as #2; alternative `364e2216…` on the account |
 | `marle_field` (idle only) | `05c8ee87-ac36-41af-870a-f1bf8bc4dabc` | 2026-10-29 | realistic proportions: see #3 |
+| `prp_u0_bekkler_doll` | `c862ecdb-89a9-45eb-980c-c13c7da1a7ca` | 2026-11-02 | TRI-67; 0.45 m, cell 128; Atrium |
+| `prp_u0_bekkler_tent` | `41966135-0fe8-4735-88f5-0d8792402f68` | 2026-11-02 | TRI-73; 3.4 m, cell 192; imported, awaiting its scene |
+| `prp_u0_brass_gate_arch` | `a96a4b60-1eed-4f09-a2e8-589a545071ca` | 2026-11-02 | TRI-64; 3.8 m, cell 224; Atrium ×8 |
+| `prp_u0_clock_pillar_face` | `b1b65e83-ec91-41ab-9da8-166875efb2cc` | 2026-11-02 | TRI-63; 9.0 m, cell 192; a whole clocktower spire, not a pillar face (not placed); imported, awaiting its scene |
+| `prp_u0_counter_bowls` | `1bfc9189-c11d-4dc4-a3d8-d329858da146` | 2026-11-02 | TRI-52; 1.1 m, cell 96; kitchen |
+| `prp_u0_doan_tree_stages` | `0aad5a7e-5316-422b-9817-34ec0df50985` | 2026-11-02 | TRI-77; 0.5 m, cell 96; seed stage only; imported, awaiting its scene |
+| `prp_u0_dummy_plinth` | `bbb6b5f2-1163-4c8d-b670-4f25c9fe0b13` | 2026-11-02 | TRI-68; 0.6 m, cell 64; Atrium |
+| `prp_u0_gramophone_workbench` | `6857fb3f-eba7-4e12-ad4d-54f842529b06` | 2026-11-02 | TRI-66; 1.5 m, cell 128; Atrium |
+| `prp_u0_hand_cart` | `5b91d919-d2f4-4c90-948f-54e852acfc9b` | 2026-11-02 | TRI-60; 1.5 m, cell 128; courtyard |
+| `prp_u0_hearth` | `89ddf903-c7ce-454c-8f1f-d74854fe290b` | 2026-11-02 | TRI-57; 1.9 m, cell 128, 5-frame idle loop; kitchen + Atrium |
+| `prp_u0_ink_stool` | `6112a4dd-aa92-40cb-948f-1db480d3304d` | 2026-11-02 | TRI-54; 0.6 m, cell 96; kitchen |
+| `prp_u0_leene_bell` | `1aafb3c2-d678-4872-99ce-f3ce593d1336` | 2026-11-02 | TRI-75; 2.8 m, cell 160; imported, awaiting its scene |
+| `prp_u0_loft_ladder` | `5c82b89e-ec1d-48ec-a2d9-a55252f8f208` | 2026-11-02 | TRI-70; 2.4 m, cell 128; Atrium loft |
+| `prp_u0_moss_flower_bed` | `27a25879-3dce-4a3a-a98e-94428abc74e4` | 2026-11-02 | TRI-61; 0.9 m, cell 96; courtyard ×4 |
+| `prp_u0_oak_table` | `b4f8b062-9d67-4b00-9b4f-6d1c5a64cf15` | 2026-11-02 | TRI-53; 1.2 m, cell 128; kitchen |
+| `prp_u0_pool_rim` | `2b28c782-27dc-4c9f-a259-dae956ee5c3f` | 2026-11-02 | TRI-69; 1.0 m, cell 128; one front arc of rim (not placed); imported, awaiting its scene |
+| `prp_u0_porridge_pot` | `3eb122dc-c46c-48a3-9408-23a43655b4bc` | 2026-11-02 | TRI-51; 0.9 m, cell 128; kitchen |
+| `prp_u0_portcullis` | `3c15ff79-7782-4a48-a430-60f96e279541` | 2026-11-02 | TRI-62; 4.0 m, cell 128; courtyard |
+| `prp_u0_pot_shelf` | `7e896fe4-6207-4742-bfe1-c2890f367924` | 2026-11-02 | TRI-56; 1.0 m, cell 128; kitchen |
+| `prp_u0_robo_rest_alcove` | `13d9167d-fa81-4657-a20b-f34fb7363f27` | 2026-11-02 | TRI-71; 2.8 m, cell 128; Atrium |
+| `prp_u0_robos_ribbon` | `8eff6e4f-6f0c-4ace-bfea-722d35448693` | 2026-11-02 | TRI-76; 0.3 m, cell 96; imported, awaiting its scene |
+| `prp_u0_seed_of_doan_pot` | `1869f296-e811-42bf-be15-f9e61f285261` | 2026-11-02 | TRI-65; 1.1 m, cell 128; Atrium |
+| `prp_u0_speaking_tube` | `538e8657-1d67-4d7e-b01b-cec3a9852885` | 2026-11-02 | TRI-55; 1.6 m, cell 128; kitchen |
+| `prp_u0_stained_glass_panel` | `ee86cc0c-e8e6-433c-89fb-7d66ee592da3` | 2026-11-02 | TRI-58; 3.0 m, cell 192; kitchen ×3 |
+| `prp_u0_stone_well` | `3c966da7-03f4-4854-9552-282af352a642` | 2026-11-02 | TRI-59; 2.0 m, cell 128; courtyard |
+| `prp_u0_telepods` | `4b72d8ff-bea4-41d0-bc00-f12274179e1b` | 2026-11-02 | TRI-74; 1.9 m, cell 224; imported, awaiting its scene |
+| `prp_u1_clay_gear` | `fae1201e-2d55-4c39-b63e-f38befce3e33` | 2026-11-02 | TRI-33; 4.0 m, cell 256, 5-frame idle loop; imported, awaiting its scene |
+| `prp_u1_dojo_set_cushion` | `1e8c4a44-dd17-4861-8fa5-9f3578dac56a` | 2026-11-02 | TRI-42; 0.4 m, cell 96; imported, awaiting its scene |
+| `prp_u1_dojo_set_rusted_katana` | `4ad20c87-a860-4885-8688-19fdfc2603ed` | 2026-11-02 | TRI-43; 1.1 m, cell 128; came back upright, v2 wanted lying flat; imported, awaiting its scene |
+| `prp_u1_dojo_set_tatami` | `5d748077-ebb5-4acf-9f16-69c768ae1b5c` | 2026-11-02 | TRI-40; 0.9 m, cell 128; imported, awaiting its scene |
+| `prp_u1_dojo_set_weapon_rack` | `e6a1b202-c0cc-44a9-b252-664036456b49` | 2026-11-02 | TRI-41; 1.6 m, cell 128; imported, awaiting its scene |
+| `prp_u1_leene_bell_guillotine` | `d58bc077-79db-4bdc-8036-9e30871b9470` | 2026-11-02 | TRI-31; 4.5 m, cell 256; imported, awaiting its scene |
+| `prp_u1_pagoda_finial` | `cb738aec-e6ce-4975-8e02-8d9a8964f131` | 2026-11-02 | TRI-50; 1.2 m, cell 128; imported, awaiting its scene |
+| `prp_u1_petitions_banners_lantern` | `c0a7f865-79c2-4c18-998a-37db24f483d0` | 2026-11-02 | TRI-37; 0.9 m, cell 128; imported, awaiting its scene |
+| `prp_u1_petitions_banners_scrolls` | `2104cb75-dabf-430f-a0fb-5b53470e776f` | 2026-11-02 | TRI-35; 0.5 m, cell 96; imported, awaiting its scene |
+| `prp_u1_petitions_banners_war_banner` | `2db8eba7-f567-4d87-99ea-4092115b9e5f` | 2026-11-02 | TRI-36; 2.6 m, cell 128; imported, awaiting its scene |
+| `prp_u1_sake_gourd` | `acb8217f-21ee-43b0-a015-07632309455f` | 2026-11-02 | TRI-38; 0.35 m, cell 64; imported, awaiting its scene |
+| `prp_u1_sera_cage` | `46a70648-787c-4315-a783-f5fe6c3238e3` | 2026-11-02 | TRI-32; 2.6 m, cell 224, 5-frame idle loop; imported, awaiting its scene |
+| `prp_u1_street_set_door_painted` | `73021fa1-ab77-4ace-90d0-4faee358c50a` | 2026-11-02 | TRI-44; 2.0 m, cell 128; imported, awaiting its scene |
+| `prp_u1_street_set_door_peeled` | `b7df11ac-89ee-425e-8e5d-ea37a2fd331c` | 2026-11-02 | TRI-45; 2.0 m, cell 128; imported, awaiting its scene |
+| `prp_u1_street_set_ladder` | `29e31e3c-ff78-49c2-bf8b-f36efbd39ccb` | 2026-11-02 | TRI-47; 2.4 m, cell 128; imported, awaiting its scene |
+| `prp_u1_street_set_paint_bucket` | `a797c0e3-aead-4453-90c0-836fa6187ec7` | 2026-11-02 | TRI-46; 0.5 m, cell 128; imported, awaiting its scene |
+| `prp_u1_street_set_roof_tiles` | `058b2f90-6626-46f3-abbc-10f998d0c17e` | 2026-11-02 | TRI-49; 0.7 m, cell 96; imported, awaiting its scene |
+| `prp_u1_street_set_stone_lantern` | `b9ba3dea-85a3-47ca-b5f5-bc6f87c1de13` | 2026-11-02 | TRI-48; 1.6 m, cell 128; imported, awaiting its scene |
+| `prp_u1_torii` | `37ea4f86-3834-4a4a-b64c-37b0168ec25f` | 2026-11-02 | TRI-34; 4.0 m, cell 192; imported, awaiting its scene |
+| `prp_u1_vault_blade_stand` | `446ce3e9-1e32-46a2-a7a2-694c3efd6f38` | 2026-11-02 | TRI-39; 0.6 m, cell 128; imported, awaiting its scene |
+| `prp_u2_seed_of_doan` | `c4f7051a-c770-4278-b743-4420a83ea924` | 2026-11-02 | TRI-78; 0.5 m, cell 128; imported, awaiting its scene |

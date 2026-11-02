@@ -1,7 +1,8 @@
 ## The Atrium Horologe (Story Bible U0, §9.7; Reference Bible §3.2, plate-00): Porre's gutted clocktower
 ## in Truce, grown through by Robo. A vertical brass cylinder: moss-garden floor, workbench ring, gate ring,
 ## and at its centre Robo's torso as the clock pillar. The hub: save, heal, swap, inspect, plant, train,
-## choose a gate. Chapter 1 plays out here (beats 1–9) before the Fair.
+## choose a gate. Chapter 1 plays out here (beats 1–9) before the Fair. The hall is primitives; the hearth,
+## Seed pot, gramophone workbench, plinth, alcove, ladder, doll and the eight gate arches are PixelLab props.
 extends Location
 
 const GATE_UNIVERSES := [1, 2, 3, 4, 5, 6, 7, 8]
@@ -66,9 +67,14 @@ func build() -> void:
 	_ring_wall(13.6, 7.0, wall, 28)
 	for i in 12:
 		var a: float = float(i) / 12.0 * TAU
-		SceneKit.cylinder(self, 0.45, 8.0, Vector3(cos(a) * 12.6, 4.0, sin(a) * 12.6), wall, "Column%d" % i)
-		var bal := SceneKit.box(self, Vector3(5.5, 0.25, 1.6), Vector3(cos(a + TAU / 24.0) * 12.4, 4.5, sin(a + TAU / 24.0) * 12.4), wood, "Balcony%d" % i, false)
-		bal.rotation.y = -(a + TAU / 24.0) + PI * 0.5
+		# the camera-facing third of the ring keeps only its ledge (diorama convention, as _ring_wall):
+		# full columns and balconies there stood between the follow camera and the hearth, the pool and the gates
+		if sin(a) <= 0.45:
+			SceneKit.cylinder(self, 0.45, 8.0, Vector3(cos(a) * 12.6, 4.0, sin(a) * 12.6), wall, "Column%d" % i)
+		var ba: float = a + TAU / 24.0
+		if sin(ba) <= 0.45:
+			var bal := SceneKit.box(self, Vector3(5.5, 0.25, 1.6), Vector3(cos(ba) * 12.4, 4.5, sin(ba) * 12.4), wood, "Balcony%d" % i, false)
+			bal.rotation.y = -ba + PI * 0.5
 	for i in 7:
 		SceneKit.cylinder(self, 0.18 + 0.03 * float(i % 3), 3.0 + 0.6 * float(i), Vector3(11.4, 2.0 + 0.3 * float(i), -3.0 + float(i) * 0.9), brass, "Pipe%d" % i, false)
 	# ---- the dais and the pillar (Robo's torso), the clock face, the hands, the copper vines
@@ -103,25 +109,22 @@ func build() -> void:
 	var water := SceneKit.flat_color(Color(0.25, 0.45, 0.6, 0.85), Color(0.2, 0.4, 0.6), 0.6, 0.05)
 	water.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	pool_water = SceneKit.cylinder(self, 1.6, 0.1, Vector3(-4.5, 0.58, 4.0), water, "PoolWater", false)
-	var terracotta := SceneKit.flat_color(Color(0.6, 0.38, 0.25), Color.BLACK, 0.0, 0.9)
-	SceneKit.cylinder(self, 0.5, 0.7, Vector3(5.5, 0.35, 5.5), terracotta, "SeedPot")
-	var mercury := SceneKit.flat_color(Color(0.8, 0.82, 0.85), Color(0.6, 0.65, 0.7), 0.5, 0.1, 1.0)
-	SceneKit.cylinder(self, 0.18, 0.18, Vector3(5.5, 0.8, 5.5), mercury, "SeedOrb", false)
-	# ---- the workbench ring (north), the gramophone at six o'clock, Lucca's dummy lab at north-west
+	# the Seed of Doan in its garden pot (Nich's prop; the sprout grows above it after the first watering)
+	add_prop(&"prp_u0_seed_of_doan_pot", Vector3(5.5, 0.0, 5.5))
+	# ---- the workbench ring (north) with the little Bekkler doll on it, the gramophone workbench at six
+	# o'clock, Lucca's dummy lab at north-west on its plinth, Robo's rest alcove set into the north wall
 	SceneKit.box(self, Vector3(4.0, 0.9, 1.0), Vector3(0.0, 0.45, -9.5), wood, "Workbench")
 	SceneKit.box(self, Vector3(1.6, 0.9, 1.0), Vector3(5.0, 0.45, -9.0), wood, "Workbench2")
-	SceneKit.cylinder(self, 0.4, 0.9, Vector3(0.0, 0.45, 9.8), wood, "GramophoneTable")
-	var horn := SceneKit.cylinder(self, 0.5, 0.8, Vector3(0.0, 1.45, 9.8), brass, "GramophoneHorn", false)
-	horn.rotation.x = -0.9
-	SceneKit.box(self, Vector3(1.4, 0.2, 1.4), Vector3(-8.0, 0.1, -8.0), stone, "DummyPlinth")
-	# the hearth (west): a brass stove with embers, where the family sits at night
-	var hearth_m := SceneKit.flat_color(Color(0.22, 0.2, 0.19), Color.BLACK, 0.0, 0.9)
-	SceneKit.box(self, Vector3(1.2, 1.6, 1.8), Vector3(-11.6, 0.8, 1.5), hearth_m, "Hearth")
-	var ember := SceneKit.flat_color(Color(1.0, 0.45, 0.1), Color(1.0, 0.5, 0.12), 3.0)
-	SceneKit.box(self, Vector3(0.3, 0.4, 1.0), Vector3(-10.95, 0.5, 1.5), ember, "Embers", false)
-	SceneKit.omni(self, Vector3(-10.0, 1.0, 1.5), Color(1.0, 0.62, 0.3), 1.8, 6.0, false)
-	for bz in [0.2, 2.8]:
-		SceneKit.box(self, Vector3(1.2, 0.45, 0.5), Vector3(-9.6, 0.225, bz), wood, "HearthBench")
+	add_prop(&"prp_u0_bekkler_doll", Vector3(-1.2, 0.0, -9.4))
+	add_prop(&"prp_u0_gramophone_workbench", Vector3(0.0, 0.0, 9.8))
+	add_prop(&"prp_u0_dummy_plinth", Vector3(-8.0, 0.0, -8.15))
+	add_prop(&"prp_u0_robo_rest_alcove", Vector3(0.0, 0.0, -12.0))
+	# the hearth (west), its embers flickering, where the family sits at night. It stands a step in from the
+	# gate ring (x -7.9) so gate U2's arch and the west balcony do not hide it from the follow camera.
+	add_prop(&"prp_u0_hearth", Vector3(-7.9, 0.0, 0.5))
+	SceneKit.omni(self, Vector3(-6.9, 1.0, 0.5), Color(1.0, 0.62, 0.3), 1.8, 6.0, false)
+	for bz in [-0.8, 1.8]:
+		SceneKit.box(self, Vector3(1.2, 0.45, 0.5), Vector3(-6.0, 0.225, bz), wood, "HearthBench")
 	# ---- the loft: a wall of Crono's old Truce house set into the tower, reached by a brass ramp-stair
 	SceneKit.box(self, Vector3(6.0, 0.3, 5.0), Vector3(8.0, LOFT_Y - 0.15, -7.0), wood, "LoftFloor")
 	var plaster := SceneKit.flat_color(Color(0.86, 0.8, 0.68), Color.BLACK, 0.0, 1.0)
@@ -130,6 +133,7 @@ func build() -> void:
 	SceneKit.box(self, Vector3(1.2, 1.4, 0.1), Vector3(6.8, LOFT_Y + 1.7, -9.2), win_m, "LoftWindow", false)
 	SceneKit.box(self, Vector3(1.6, 0.5, 2.2), Vector3(9.8, LOFT_Y + 0.25, -7.5), SceneKit.flat_color(Color(0.5, 0.3, 0.3)), "SeraBed", false)
 	SceneKit.box(self, Vector3(1.0, 1.2, 0.6), Vector3(6.0, LOFT_Y + 0.6, -8.5), wood, "CronoChair", false)
+	add_prop(&"prp_u0_loft_ladder", Vector3(8.2, LOFT_Y, -9.0))
 	SceneKit.box(self, Vector3(0.1, 1.0, 5.0), Vector3(5.0, LOFT_Y + 0.5, -7.0), brass, "LoftRailW", false)
 	SceneKit.box(self, Vector3(6.0, 1.0, 0.1), Vector3(8.0, LOFT_Y + 0.5, -4.5), brass, "LoftRailS", false)
 	# the ramp (walkable) from (5.2, 0, -1.0) rising to the loft edge at z = -4.5; stair treads over it for the look
@@ -172,9 +176,9 @@ func build() -> void:
 	add_marker("window_ink", Vector3(9.5, 0, 6.5))
 	add_marker("father_tank", Vector3(7.5, 0, 4.0))
 	add_marker("workbench", Vector3(0.0, 0.0, -8.3))
-	add_marker("hearth", Vector3(-9.0, 0.0, 1.5))
-	add_marker("hearth_crono", Vector3(-9.6, 0.0, 0.9))
-	add_marker("hearth_marle", Vector3(-9.6, 0.0, 2.3))
+	add_marker("hearth", Vector3(-5.4, 0.0, 0.5))
+	add_marker("hearth_crono", Vector3(-6.0, 0.0, -0.1))
+	add_marker("hearth_marle", Vector3(-6.0, 0.0, 1.3))
 	add_marker("glenn", Vector3(-6.2, 0.0, -7.6))
 	add_marker("right_gate", Vector3(10.5, 0.0, 3.5))
 	# ---- interactables
@@ -187,9 +191,9 @@ func build() -> void:
 	Interactable.make(self, "Workbench", Vector3(0.0, 0.8, -8.7), &"atrium_workbench", "Workbench", 1.1)
 	var dummy := Interactable.make(self, "Dummy", Vector3(-7.4, 0.8, -6.6), &"", "The 999 Shield Dummy", 1.3)
 	dummy.callback = Callable(self, "_use_dummy")
-	hearth_interact = Interactable.make(self, "HearthSeat", Vector3(-9.0, 0.8, 1.5), &"", "The hearth", 1.1)
+	hearth_interact = Interactable.make(self, "HearthSeat", Vector3(-5.4, 0.8, 0.5), &"", "The hearth", 1.1)
 	hearth_interact.callback = Callable(self, "_use_hearth")
-	var dummy_actor := add_npc(&"shard_doll_999", "shard_doll_999", Vector3(-8.0, 0.2, -8.0), "s")
+	var dummy_actor := add_npc(&"shard_doll_999", "shard_doll_999", Vector3(-8.0, 0.3, -8.0), "s")
 	dummy_actor.frozen = true
 	# the ink that gathers at the east window (Father Tank)
 	_build_window_ink()
@@ -559,19 +563,27 @@ func _ring_wall(radius: float, height: float, mat: Material, segments: int) -> v
 		b.rotation.y = -a + PI * 0.5
 
 
-func _build_gate(u: int, pos: Vector3, angle: float, frame_mat: Material) -> void:
+## A universe gate: Nich's brass arch (a billboard, walked through to its interactable) with the universe's
+## colour panel standing in its opening, a billboard too so every gate on the ring faces the camera.
+func _build_gate(u: int, pos: Vector3, angle: float, _frame_mat: Material) -> void:
 	var holder := Node3D.new()
 	holder.name = "Gate%d" % u
 	holder.position = pos
 	holder.rotation.y = -angle + PI * 0.5
 	add_child(holder)
-	SceneKit.box(holder, Vector3(0.4, 3.4, 0.4), Vector3(-1.2, 1.7, 0), frame_mat, "JambA", false)
-	SceneKit.box(holder, Vector3(0.4, 3.4, 0.4), Vector3(1.2, 1.7, 0), frame_mat, "JambB", false)
-	SceneKit.box(holder, Vector3(2.8, 0.4, 0.4), Vector3(0, 3.6, 0), frame_mat, "Lintel", false)
+	add_prop(&"prp_u0_brass_gate_arch", pos, &"s", false)
 	var unlocked: bool = Flags.has(StringName("Gate_U%d_Open" % u))
 	var col: Color = GATE_COLOURS.get(u, Color.WHITE)
 	var fill := SceneKit.flat_color(col * (0.9 if unlocked else 0.12), col, 2.0 if unlocked else 0.15, 0.3)
-	var panel := SceneKit.box(holder, Vector3(2.0, 3.2, 0.15), Vector3(0, 1.7, 0.1), fill, "Panel", false)
+	fill.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
+	var panel := MeshInstance3D.new()
+	panel.name = "Panel%d" % u
+	var quad := QuadMesh.new()
+	quad.size = Vector2(1.5, 2.9)
+	panel.mesh = quad
+	panel.material_override = fill
+	panel.position = pos + Vector3(0.0, 1.5, -0.08)
+	add_child(panel)
 	gates[u] = panel
 	var it := Interactable.make(holder, "GateUse", Vector3(0, 0.8, 1.0), &"", "Gate: " + Universe.name_of(u), 1.1)
 	it.callback = func(_by: Node) -> void: _use_gate(u)

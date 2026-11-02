@@ -63,6 +63,7 @@ func run() -> void:
 		test_boss_defs_validate_and_phase_windows,
 		test_coordinator_add_enemy_and_undamageable,
 		test_sprite_library_tiers_and_variants,
+		test_props_data_sheets_and_fallback,
 	]
 	for t in tests:
 		_current = t.get_method()
@@ -1208,3 +1209,53 @@ func test_sprite_library_tiers_and_variants() -> void:
 	check(not sprite.set_tier(&"map") and sprite.loaded_tier == &"field", "a missing tier reports false and shows field")
 	check(absf(sprite.pixel_size * 95.0 - 1.78) < 0.01, "height mapping: 95 drawn px stand 1.78 m")
 	sprite.queue_free()
+
+
+func test_props_data_sheets_and_fallback() -> void:
+	# data/props declares every prop (a billboard with a height in metres); each delivered one has its sheet,
+	# frames json and normal sheet under assets/props/u<n>/<key>/; SpriteLibrary resolves and loads them;
+	# add_prop falls back to a labelled box for a pending or unknown key instead of breaking the scene.
+	check(Data.props.size() >= 40, "props loaded from data/props (%d)" % Data.props.size())
+	var delivered: int = 0
+	for key in Data.props.keys():
+		var e: Dictionary = Data.props[key]
+		if bool(e.get("pending", false)):
+			continue
+		delivered += 1
+		var r: Dictionary = SpriteLibrary.resolve_prop(String(key), int(e["universe"]))
+		check(not r.is_empty(), "%s has a sheet under assets/props/u%d" % [key, int(e["universe"])])
+		if r.is_empty():
+			continue
+		check(FileAccess.file_exists("%s/%s_frames.json" % [r["dir"], key]), "%s has a frames json" % key)
+		check(ResourceLoader.exists("%s/%s_n.png" % [r["dir"], key]), "%s has a normal sheet" % key)
+		var meta: Dictionary = SpriteLibrary.frames_meta(r)
+		check(int(meta.get("height_px", 0)) > 0 and int(meta.get("width_px", 0)) > 0 and int(meta.get("cell", 0)) % 32 == 0, "%s frames json carries height_px, width_px and a 32-multiple cell" % key)
+		check(absf(float(meta.get("height_m", 0.0)) - float(e["height_m"])) < 0.001, "%s sheet height matches data/props" % key)
+	check(delivered >= 40, "at least forty props delivered (%d)" % delivered)
+	var hearth: Dictionary = SpriteLibrary.resolve_prop("prp_u0_hearth")
+	check(hearth.get("sheet", "") == "res://assets/props/u0/prp_u0_hearth/prp_u0_hearth.png", "the hearth resolves without a universe hint")
+	check(SpriteLibrary.resolve_prop("prp_u0_hearth", 1).is_empty(), "a wrong universe hint finds nothing")
+	var sprite := ActorSprite.new()
+	root.add_child(sprite)
+	_track(sprite)
+	check(SpriteLibrary.apply_prop(sprite, "prp_u0_hearth"), "apply_prop loads the hearth")
+	check(sprite.rows == 1 and sprite.anims.has(&"idle") and int(sprite.anims[&"idle"]["count"]) == 5 and sprite.anims.has(&"still"), "one rotation row; idle is the five-frame ember loop, still is the drawn rotation")
+	check(absf(sprite.pixel_size * 103.0 - 1.9) < 0.01, "103 drawn px stand 1.9 m")
+	check(not SpriteLibrary.apply_prop(sprite, "prp_u0_nothing_here"), "apply_prop reports a missing prop")
+	var p: PropBillboard = PropBillboard.make(&"prp_u0_hearth")
+	root.add_child(p)
+	_track(p)
+	check(not p.placeholder and p.sprite != null and p.body != null, "a delivered solid prop gets its sprite and a collision body")
+	check(p.footprint.x > 1.5 and p.footprint.x < 1.9 and absf(p.footprint.y - 1.9) < 0.001, "the collision box is sized from the drawn width (%s)" % str(p.footprint))
+	var loose: PropBillboard = PropBillboard.make(&"prp_u0_bekkler_doll")
+	root.add_child(loose)
+	_track(loose)
+	check(loose.body == null and absf(loose.y_offset - 0.9) < 0.001, "a prop declared not solid has no body; its y_offset comes from data")
+	var pending: PropBillboard = PropBillboard.make(&"prp_u0_klein_journal")
+	root.add_child(pending)
+	_track(pending)
+	check(pending.placeholder and pending.get_node_or_null("Placeholder") != null and pending.get_node_or_null("Label") != null, "a pending prop stands in as a labelled box")
+	var unknown: PropBillboard = PropBillboard.make(&"prp_u0_not_a_prop")
+	root.add_child(unknown)
+	_track(unknown)
+	check(unknown.placeholder and unknown.body != null and absf(unknown.footprint.y - 1.0) < 0.001, "an unknown key falls back to a 1 m labelled box with collision")

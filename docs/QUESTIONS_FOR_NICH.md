@@ -27,3 +27,17 @@ Things I'd like your view on when you have a moment. None of them block the buil
   them in the data or the bibles, so `data/text/items.json` says "Acquisition source not yet recorded." for
   exactly those three (Linear TRI-79). Name a source for each (a Truce shop, a chest in the Atrium, a drop)
   and the build lead will write the five-word `found` line and, if it is a shop, the stock entry.
+
+## Props (2026-11-02)
+- **Robo's clock face.** TRI-63 `prp_u0_clock_pillar_face` came back as a whole clocktower spire, not a flat
+  dial for the Atrium pillar, so the pillar keeps its primitive porcelain face with the moving hands and eyes.
+  Do you want a v2 as a flat 256 dial (hands left off: the engine moves them), or shall the spire become the
+  Truce skyline landmark and the pillar face stay code-drawn?
+- **The Atrium pool.** TRI-69 `prp_u0_pool_rim` is a single front arc of rim. A billboard cannot read as a
+  round pool from the 32° camera; shall the pool be a top-down tile (a 256 disc with its water, PRP-M) or a
+  glTF ring from the kit?
+- **Klein journal id.** TRI-72 lists icon/field/pages variants but no PixelLab id; the journal is declared
+  `pending` in `data/props/props.json` and stands in as a labelled box.
+- **Prop heights.** Each imported prop has a height in metres in `data/props/props.json` (the hearth 1.9 with
+  its chimney breast, the oak table 1.2, the portcullis arch 4.0, the torii 4.0; the reasoning in `notes`).
+  Overrule any of them there; the room updates by itself.

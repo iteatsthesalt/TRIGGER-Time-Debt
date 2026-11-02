@@ -1,0 +1,35 @@
+{
+ "cell": 224,
+ "rows": [
+  "s"
+ ],
+ "mirror_w": false,
+ "fps": 24.0,
+ "height_px": 187,
+ "width_px": 83,
+ "height_m": 2.6,
+ "source": {
+  "pixellab_object": "46a70648-787c-4315-a783-f5fe6c3238e3",
+  "canvas": "u1",
+  "rotations": [
+   "south"
+  ],
+  "clips": {
+   "idle": "the_hanging_cage_swings_gently_side_to_side_on_its"
+  }
+ },
+ "anims": {
+  "idle": {
+   "col": 0,
+   "count": 5,
+   "fps": 6.0,
+   "loop": true
+  },
+  "still": {
+   "col": 5,
+   "count": 1,
+   "fps": 1.0,
+   "loop": true
+  }
+ }
+}

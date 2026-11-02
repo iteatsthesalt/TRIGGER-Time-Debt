@@ -120,8 +120,50 @@ if text:
     gaps += [f"codex:{k}" for k in flags if k not in cx]
     for k, lines in text.get("ambient", {}).items():
         if not isinstance(lines, list) or not lines: errors.append(f"text/ambient: {k} has no lines")
+# Props (data/props, docs/ART_PIPELINE.md section 6): a billboard with a height in metres. Fields are a closed
+# set, the key names its universe, and every delivered prop has its sheet, frames json and normal sheet under
+# assets/props/u<n>/<key>/; a prop marked pending may have none yet. Every object recorded in
+# data/art/pixellab_assets.json must have a props entry (the importer reads its height from there).
+PROP_FIELDS = {"key", "universe", "height_m", "solid", "y_offset", "anims", "emission", "footprint", "pending", "request", "notes"}
+PROP_ANIM_FIELDS = {"match", "fps", "loop", "holds"}
+props = {}
+for p in sorted((ROOT/"data/props").rglob("*.json")) if (ROOT/"data/props").exists() else []:
+    d = load(p)
+    if not d: continue
+    for e in d.get("props", []):
+        k = e.get("key")
+        if not k: errors.append(f"{p.name}: prop without a key"); continue
+        if k in props: errors.append(f"duplicate prop {k}")
+        props[k] = e
+        for f in set(e) - PROP_FIELDS: errors.append(f"prop {k}: unknown field {f}")
+        u = e.get("universe")
+        if not isinstance(u, int) or not 0 <= u <= 9: errors.append(f"prop {k}: universe must be 0..9")
+        elif not k.startswith(f"prp_u{u}_"): errors.append(f"prop {k}: key does not name its universe u{u}")
+        h = e.get("height_m")
+        if not isinstance(h, (int, float)) or isinstance(h, bool) or h <= 0: errors.append(f"prop {k}: height_m must be a positive number")
+        for name in ("solid", "pending"):
+            if name in e and not isinstance(e[name], bool): errors.append(f"prop {k}: {name} must be true or false")
+        for name in ("y_offset", "emission"):
+            if name in e and (isinstance(e[name], bool) or not isinstance(e[name], (int, float))): errors.append(f"prop {k}: {name} must be a number")
+        if "footprint" in e and not (isinstance(e["footprint"], list) and len(e["footprint"]) == 2): errors.append(f"prop {k}: footprint must be [width, depth]")
+        anims = e.get("anims", {})
+        if not isinstance(anims, dict): errors.append(f"prop {k}: anims must be an object")
+        else:
+            for a, spec in anims.items():
+                if not isinstance(spec, dict): errors.append(f"prop {k}: anim {a} must be an object"); continue
+                for f in set(spec) - PROP_ANIM_FIELDS: errors.append(f"prop {k}: anim {a} has unknown field {f}")
+        if not e.get("pending"):
+            folder = ROOT / "assets" / "props" / f"u{u}" / k
+            for suffix in (".png", "_frames.json", "_n.png"):
+                if not (folder / f"{k}{suffix}").exists(): errors.append(f"prop {k}: missing {folder.relative_to(ROOT)}/{k}{suffix} (import it, or mark it pending)")
+rec_path = ROOT / "data/art/pixellab_assets.json"
+if rec_path.exists():
+    rec = load(rec_path) or {}
+    for k, v in rec.items():
+        if isinstance(v, dict) and v.get("kind") == "object" and k not in props:
+            errors.append(f"pixellab_assets: object {k} has no entry in data/props")
 print(f"data lint: {len(techs)} techs, {len(enemies)} enemies, {len(bosses)} bosses, {len(chars)} characters, {len(flags)} flags, "
-      f"{len(encounters)} encounters, {len(dialogue)} scripts, {len(items)} items, text layer: {len(text)} files, {len(gaps)} ids without text")
+      f"{len(encounters)} encounters, {len(dialogue)} scripts, {len(items)} items, {len(props)} props, text layer: {len(text)} files, {len(gaps)} ids without text")
 for g in gaps[:20]: print("  WARN: no text for", g)
 if len(gaps) > 20: print(f"  WARN: ... and {len(gaps) - 20} more")
 for e in errors: print("  ERROR:", e)

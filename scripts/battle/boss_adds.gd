@@ -3,10 +3,10 @@
 ## owns one and does the spawning (EnemySpawner).
 ##
 ## A row: {key, count, phase ("<phase id>" or "start"), def? (inline definition), shield? level? weak? tags?
-## resist? hp? xp? (overrides on the codex enemy), trigger?, requires? ("Flag=State"), respawn_s?}.
+## resist? hp? xp? (overrides on the codex enemy), trigger?, requires? ("Name:State"), respawn_s?}.
 ## - `trigger` rows never spawn when their phase begins: "every_<N>pct_hp_lost" fires each time the boss loses
 ##   another N% while the phase lasts; any other trigger id waits for spawn_triggered(id) (a director's call).
-## - `requires` holds a row back unless the boss's `holds` says the pair is set (Goyama=Incinerated).
+## - `requires` holds a row back unless the boss's `holds` says the reference holds (Goyama:Incinerated).
 ## - `respawn_s`: an add of that row that falls comes back that many battle seconds later, while its phase lasts.
 ## The cap per kind is the file's `max_adds`, else the largest authored count (never below EnemySpawner's 3), so
 ## an authored "6 arms" places six.

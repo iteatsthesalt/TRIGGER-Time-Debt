@@ -12,11 +12,11 @@
     {"id": "hover_fast_forward", "unlock": {"chapter": 2}},
     {"id": "borrowed_future", "unlock": {"chapter": 4}},
     {"id": "rewind_reel", "unlock": {"chapter": 6}},
-    {"id": "slip_backtrack", "unlock": {"flag": "U6_Matriarch_Fed"}},
-    {"id": "hz_static_pure", "unlock": {"flag": "U6_Matriarch_Unplugged"}},
+    {"id": "slip_backtrack", "unlock": {"flag": "U6_Matriarch:Fed"}},
+    {"id": "hz_static_pure", "unlock": {"flag": "U6_Matriarch:Unplugged"}},
     {"id": "null_sera", "unlock": {"chapter": 8}},
     {"id": "borrowed_future_true", "unlock": {"level": 80}},
-    {"id": "atropos_ribbon", "unlock": {"flag": "True_Ending_Route"}}
+    {"id": "atropos_ribbon", "unlock": {"story": "true_ending_route"}}
   ],
   "passives": ["quantum_flicker", "chronoslip"]
 }

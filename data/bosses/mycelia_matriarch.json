@@ -55,7 +55,7 @@
       {"id": "spared", "label": "Leave her Broken", "flag": "", "state": "", "lean": "Light", "requires": "leave her Broken at the end of Phase 3; she gives a seed that heals Ruin stacks (one stack per use, three uses)"}
     ], "notes": "No named flag in data/flags; Light lean only."}
   ],
-  "drops": ["matriarch_seed"],
+  "drops": [{"item": "matriarch_seed", "count": 3}],
   "flags": {},
   "notes": "Optional Floor field boss (codex E17). Lv 27, HP 60,000. A Spore Mother rooted in the fungal river. The seed drop is the Spared reward. Tags inferred (Spore Mother)."
 }

@@ -7,7 +7,7 @@
 ## by the boss's director (scripts/battle/bosses/<id>.gd calling open_gate / advance_phase). A gated phase may be
 ## zero-width (R-66Y's Possibility Branch): it is entered when the phase before it is left. An ungated last phase
 ## whose window ends above 0 ends the fight when it closes (the Krona duel yields at 50%).
-## `shield_by_branch` / `hp_from_by_branch` ({"Flag=State": value}) pick a value by the branch already taken.
+## `shield_by_branch` / `hp_from_by_branch` ({"Name:State": value}, FlagRef) pick a value by the branch already taken.
 class_name BossDef
 extends RefCounted
 
@@ -38,7 +38,7 @@ var drops: Array = []
 var flags: Dictionary = {}
 var notes: String = ""
 var raw: Dictionary = {}
-## Tests a "Flag=State" pair for the *_by_branch tables (BossController points it at Flags); unset = none holds.
+## Tests a "Name:State" flag reference for the *_by_branch tables (BossController points it at Flags); unset = none holds.
 var holds: Callable = Callable()
 
 
@@ -84,7 +84,7 @@ func phase_def(i: int) -> EnemyDef:
 	var sh: Dictionary = p.get("shield", {})
 	var d: Dictionary = {
 		"id": String(id), "key": String(id), "name": display_name, "universe": universe, "level": level,
-		"kind": String(raw.get("kind", "boss")), "hp": hp, "xp": int(raw.get("xp", 0)), "sprite": String(sprite), "size": size, "body_radius": body_radius, "fps": fps,
+		"kind": String(raw.get("kind", "boss")), "hp": hp, "xp": int(raw.get("xp", 0)), "sprite": String(sprite), "art": String(raw.get("art", "")), "size": size, "body_radius": body_radius, "fps": fps,
 		"is_metal": is_metal,
 		"tags": p.get("tags", CombatTags.to_names(raw.get("tags", []))),
 		"weak": sh.get("weak", []), "resist": sh.get("resist", resist), "nullify": sh.get("nullify", []),
@@ -143,7 +143,7 @@ func ends_at() -> float:
 	return float(phase(last).get("hp_to", 0.0))
 
 
-## {"Flag=State": value}: the value of the first entry whose pair `holds`, else `fallback`.
+## {"Name:State": value}: the value of the first entry whose reference `holds`, else `fallback`.
 func by_branch(table: Variant, fallback: Variant) -> Variant:
 	if table is Dictionary and holds.is_valid():
 		for k in (table as Dictionary).keys():

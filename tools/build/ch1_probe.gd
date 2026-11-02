@@ -146,7 +146,7 @@ func _run() -> void:
 		if it:
 			it.call("use", null)
 			await _wait_until(func() -> bool: return _idle(), 2000, "glenn")
-			print("PROBE glenn: offered=%s refused=%s" % [str(F.call("has", &"Glenn_Duals_Offered")), str(F.call("has", &"Glenn_Duals_Refused"))])
+			print("PROBE glenn: Glenn_Duals=%s" % str(F.call("state", &"Glenn_Duals")))
 	# rest with Robo → night
 	S.call("run", &"atrium_robo")
 	await _wait_until(func() -> bool: return _idle(), 2000, "robo rest")

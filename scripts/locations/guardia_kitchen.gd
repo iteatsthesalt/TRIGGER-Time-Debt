@@ -241,7 +241,6 @@ func first_chronoslip() -> void:
 	Audio.set_rtpc("slip", 1.0)
 	if world:
 		world.set_leak(1, 0.75)
-	Universe.leaks[1] = 0.75
 	shake(0.25)
 	if bowl_ash:
 		bowl_ash.visible = true
@@ -259,7 +258,6 @@ func first_chronoslip() -> void:
 	await get_tree().create_timer(4.0 if not Story.skip_waits else 0.01).timeout
 	if world:
 		world.set_leak(1, 0.0)
-	Universe.leaks.erase(1)
 	Audio.set_rtpc("slip", 0.0)
 	if sera is CombatActor:
 		var s2 := sera as CombatActor

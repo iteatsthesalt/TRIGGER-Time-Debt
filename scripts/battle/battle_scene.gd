@@ -121,8 +121,8 @@ func _knows_tech(a: Node, t: TechDef) -> bool:
 		return false
 	if not Game.knows_tech(st.actor_id, t.id):
 		return false
-	for f in t.requires_flags:
-		if not Flags.has(f):
+	for f in t.requires_flags:  # "Name:State" flag references (FlagRef)
+		if not Flags.holds(String(f)):
 			return false
 	return true
 
@@ -140,8 +140,7 @@ func _build_plane() -> void:
 	plane_mat = ShaderMaterial.new()
 	plane_mat.shader = _plane_shader
 	plane_mat.set_shader_parameter("reveal", 0.0)
-	var g: Dictionary = Universe.grade(universe)
-	plane_mat.set_shader_parameter("tint", g.get("paper", Color(0.96, 0.93, 0.86)))
+	plane_mat.set_shader_parameter("tint", CanvasStackEffect.paper_of(universe))  # the one grade table
 	plane.material_override = plane_mat
 	plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	plane.position = center + Vector3(0, 0.03, 0)
@@ -563,7 +562,7 @@ func _on_spared(unit: Node) -> void:
 		var tw := create_tween()
 		tw.tween_property(ca.sprite, "transparency", 1.0, 1.0)
 		tw.tween_callback(func() -> void: ca.visible = false)
-	Flags.add_lean(universe, "L")
+	# the spare's Light lean is paid at victory, by the codex signature (RewardResolver)
 
 
 func _on_enemy_action(enemy: Node, action: Dictionary) -> void:

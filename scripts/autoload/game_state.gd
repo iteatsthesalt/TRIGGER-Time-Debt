@@ -10,6 +10,9 @@ signal settings_changed
 ## A fresh run started (New Game): listeners that keep per-run state (Story's script variables) clear it.
 signal new_game_started
 
+## Item kinds (data/items/items.json `kind`): consumable and material go to the inventory, key to key_items,
+## relic to relics, counter to the Flags counter the item names (Kirie Scales count toward Ending 8).
+const ITEM_KINDS: Array[StringName] = [&"consumable", &"material", &"key", &"relic", &"counter"]
 const ROSTER_ORDER: Array[StringName] = [&"crono", &"sera", &"krona", &"cassia", &"xyloph", &"vesper", &"glenn", &"static", &"omega", &"vaelos_child"]
 
 ## actor_id -> {level, xp, hp_ratio, known_techs: Array, equipment: {}, flags: {}}
@@ -19,6 +22,8 @@ var recruited: Array[StringName] = [&"crono", &"sera"]
 var inventory: Dictionary = {}      ## item id -> count
 var key_items: Array[StringName] = []
 var relics: Array[StringName] = []
+## Enemy keys whose drops have been awarded this cycle (RewardResolver): a kit `drop` unlock reads it.
+var looted: Array[StringName] = []
 var crono_integrity: float = 100.0
 var sera_debt: float = 0.0
 var sera_permanent_baseline: float = 0.0
@@ -49,6 +54,9 @@ func _ready() -> void:
 	if roster.is_empty():
 		new_game()
 	Flags.flag_set.connect(func(_id: StringName, _s: StringName) -> void: CapUpgrades.apply(self, Flags.flags))  # §15.7
+	# a flag or an affinity threshold can unlock kit techs (KitUnlocks)
+	Flags.flag_set.connect(func(_id: StringName, _s: StringName) -> void: refresh_unlocks(KitUnlocks.ON_FLAGS))
+	Flags.affinity_changed.connect(func(_l: int, _d: int, _p: int) -> void: refresh_unlocks(KitUnlocks.ON_FLAGS))
 
 
 func _process(delta: float) -> void:
@@ -58,14 +66,13 @@ func _process(delta: float) -> void:
 func new_game() -> void:
 	roster.clear()
 	for id in ROSTER_ORDER:
-		roster[id] = {"level": 1, "xp": 0, "hp_ratio": 1.0, "known_techs": [], "equipment": {}, "flags": {}}
-	roster[&"crono"]["level"] = 1
-	roster[&"sera"]["level"] = 1
+		roster[id] = _default_row(1)
 	active_party = [&"crono"]
 	recruited = [&"crono", &"sera"]
 	inventory = {"tonic": 3, "ether": 1}
 	key_items.clear()
 	relics.clear()
+	looted.clear()
 	crono_integrity = 100.0
 	sera_debt = 0.0
 	krona_corruption = 0.0
@@ -91,6 +98,10 @@ func new_game() -> void:
 	new_game_started.emit()
 
 
+func _default_row(level: int) -> Dictionary:
+	return {"level": level, "xp": 0, "hp_ratio": 1.0, "known_techs": [], "equipment": {}, "flags": {}}
+
+
 func join_level_for(id: StringName) -> int:
 	match id:
 		&"krona":
@@ -111,6 +122,11 @@ func join_level_for(id: StringName) -> int:
 
 
 func recruit(id: StringName, join_level: int = -1) -> void:
+	if Data.character(id).is_empty() and not roster.has(id):
+		push_warning("Game.recruit: no kit and no roster row for %s; ignored" % id)
+		return
+	if not roster.has(id):  # an actor added after this save was written
+		roster[id] = _default_row(1)
 	if not recruited.has(id):
 		recruited.append(id)
 		var lv: int = join_level if join_level > 0 else join_level_for(id)
@@ -121,13 +137,48 @@ func recruit(id: StringName, join_level: int = -1) -> void:
 	party_changed.emit()
 
 
-func _learn_defaults(id: StringName) -> void:
-	var kit: Dictionary = Data.character(id)
-	for entry in kit.get("techs", []):
-		var tid: String = String(entry.get("id", entry) if entry is Dictionary else entry)
-		var unlock: Dictionary = entry.get("unlock", {}) if entry is Dictionary else {}
-		if unlock.is_empty() or (unlock.has("chapter") and int(unlock["chapter"]) <= chapter) or unlock.get("on_join", false):
-			learn_tech(id, StringName(tid))
+## Learn the kit entries of `id` whose unlock holds (KitUnlocks). With `kinds`, only the entries that wait on
+## one of those kinds are checked (a flag set, a level-up, a drop); learning is idempotent.
+func _learn_defaults(id: StringName, kinds: Array[String] = []) -> void:
+	for pair in KitUnlocks.entries(Data.character(id)):
+		var unlock: Dictionary = pair[1]
+		if not kinds.is_empty() and not KitUnlocks.waits_on(unlock, kinds):
+			continue
+		if KitUnlocks.holds(unlock, id):
+			learn_tech(id, StringName(String(pair[0])))
+
+
+## Everyone who can learn: the recruited and any guest with a roster row (Marle).
+func learners() -> Array[StringName]:
+	var out: Array[StringName] = recruited.duplicate()
+	for id in roster.keys():
+		if not out.has(id) and bool(Data.character(id).get("guest", false)):
+			out.append(id)
+	return out
+
+
+## Re-check the kit entries that wait on `kinds` for every learner (KitUnlocks.ON_FLAGS / ON_LEVEL / ON_DROP).
+func refresh_unlocks(kinds: Array[String]) -> void:
+	for id in learners():
+		_learn_defaults(id, kinds)
+
+
+## A member's level after a battle (BattleAftermath.write_back): level-gated kit entries arrive (§15.8).
+func set_level(id: StringName, lv: int) -> void:
+	if not roster.has(id):
+		return
+	var before: int = int(roster[id]["level"])
+	roster[id]["level"] = lv
+	if lv > before:
+		_learn_defaults(id, KitUnlocks.ON_LEVEL)
+
+
+## An enemy's drops were awarded (RewardResolver): kit `drop` unlocks naming it arrive.
+func note_drop(enemy_key: StringName) -> void:
+	if looted.has(enemy_key):
+		return
+	looted.append(enemy_key)
+	refresh_unlocks(KitUnlocks.ON_DROP)
 
 
 func learn_tech(id: StringName, tech_id: StringName) -> void:
@@ -204,6 +255,27 @@ func add_relic(id: StringName) -> void:
 		relics.append(id)
 
 
+## Give `n` of an item by its catalogue kind: the one path for boss and enemy drops (RewardResolver) and
+## dialogue grants. An id the catalogue does not define goes by `fallback` with a warning (lint rejects one).
+## Returns the kind it was given as.
+func grant(id: StringName, n: int = 1, fallback: StringName = &"relic") -> StringName:
+	var def: Dictionary = Data.items.get(id, {})
+	var kind: StringName = StringName(String(def.get("kind", "consumable")))
+	if def.is_empty():
+		push_warning("Game.grant: %s is not in data/items/items.json; given as %s" % [id, fallback])
+		kind = fallback
+	match kind:
+		&"key":
+			add_key_item(id)
+		&"relic":
+			add_relic(id)
+		&"counter":
+			Flags.add_counter(StringName(String(def.get("counter", id))), n)
+		_:
+			add_item(id, n)
+	return kind
+
+
 func set_integrity(v: float) -> void:
 	crono_integrity = clampf(v, 0.0, 100.0)
 	integrity_changed.emit(crono_integrity)
@@ -243,8 +315,11 @@ func to_save() -> Dictionary:
 	var ros: Dictionary = {}
 	for id in roster.keys():
 		ros[String(id)] = roster[id]
+	var lt: Array = []
+	for k2 in looted:
+		lt.append(String(k2))
 	return {
-		"roster": ros, "active_party": ap, "recruited": rec, "inventory": inventory, "key_items": ki, "relics": rl,
+		"roster": ros, "active_party": ap, "recruited": rec, "inventory": inventory, "key_items": ki, "relics": rl, "looted": lt,
 		"crono_integrity": crono_integrity, "sera_debt": sera_debt, "sera_permanent_baseline": sera_permanent_baseline,
 		"krona_corruption": krona_corruption, "cassia_synergy": cassia_synergy, "cassia_resentment": cassia_resentment,
 		"chapter": chapter, "checkpoint": String(checkpoint), "location": String(location), "spawn_point": String(spawn_point),
@@ -256,6 +331,8 @@ func to_save() -> Dictionary:
 
 func from_save(d: Dictionary) -> void:
 	roster.clear()
+	for id in ROSTER_ORDER:  # an actor added after the save was written still has a row
+		roster[id] = _default_row(1)
 	for id in d.get("roster", {}).keys():
 		roster[StringName(id)] = d["roster"][id]
 	active_party.clear()
@@ -271,6 +348,9 @@ func from_save(d: Dictionary) -> void:
 	relics.clear()
 	for r2 in d.get("relics", []):
 		relics.append(StringName(String(r2)))
+	looted.clear()
+	for k2 in d.get("looted", []):
+		looted.append(StringName(String(k2)))
 	crono_integrity = float(d.get("crono_integrity", 100.0))
 	sera_debt = float(d.get("sera_debt", 0.0))
 	sera_permanent_baseline = float(d.get("sera_permanent_baseline", 0.0))

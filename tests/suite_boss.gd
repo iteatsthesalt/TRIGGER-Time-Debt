@@ -121,7 +121,7 @@ func test_phase_windows_walk_one_at_a_time_and_enter_gated_phases() -> void:
 	check_eq(r66y.phase_for_ratio(0.49), 1, "R-66Y at 49% stands in the zero-width Possibility Branch")
 	check_eq(r66y.next_phase(1, 0.2), -1, "a gated phase is never left by HP")
 	check_eq(r66y.next_phase(1, 0.49, true), 2, "answered (Salvage by default), Heart Expose begins at 50%")
-	r66y.holds = func(pair: String) -> bool: return pair == "R66Y=Rewound"
+	r66y.holds = func(pair: String) -> bool: return pair == "R66Y:Rewound"  # one flag spelling (FlagRef)
 	check_eq(r66y.next_phase(1, 0.45, true), -1, "after the Mercy Rewind Heart Expose waits for 40%")
 	check_eq(r66y.next_phase(1, 0.39, true), 2, "and begins below it")
 	check_eq(r66y.phase_def(2).shield, 8, "the Rewound heart carries 8 plates (shield_by_branch)")

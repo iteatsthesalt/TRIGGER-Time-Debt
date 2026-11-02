@@ -8,7 +8,7 @@
     {"id": "astral_field", "name": "Astral Field", "tier": "single", "actors": ["crono"], "tags": ["ASTRAL", "AURA"], "shape": "SELF_AURA", "radius": 4.0, "hits": 1, "power": 0.8, "uses": "ASTRAL", "effect": "astral_field", "costs": {"crono": {"strain_pct": 3}}, "unlock": {"chapter": 3}},
     {"id": "luminaire", "name": "Luminaire", "tier": "ultimate", "actors": ["crono"], "tags": ["ASTRAL", "SWORD", "TIME_DEBT", "LIGHT"], "shape": "CIRCLE", "radius": 6.0, "hits": 4, "power": 1.0, "uses": "ASTRAL", "lv2_debuff": "displaced", "costs": {"crono": {"strain_pct": 8}}, "unlock": {"level": 35}},
     {"id": "unborrowed_time", "name": "Unborrowed Time", "tier": "single", "actors": ["crono"], "tags": ["ASTRAL", "NULL", "SWORD"], "shape": "SINGLE", "hits": 2, "power": 1.2, "uses": "ASTRAL", "costs": {"crono": {"strain_pct": 1.2}}, "unlock": {"level": 78}},
-    {"id": "null_erasure", "name": "Null Erasure", "tier": "single", "actors": ["crono"], "tags": ["NULL", "VOID", "LAVOS"], "shape": "LINE_PIERCE", "length": 18.0, "width": 1.2, "hits": 1, "power": 2.2, "uses": "ASTRAL", "flat_shave_bonus": 4, "costs": {"crono": {"camp_strain_pct": 5}}, "unlock": {"flag": "Dark_40"}},
+    {"id": "null_erasure", "name": "Null Erasure", "tier": "single", "actors": ["crono"], "tags": ["NULL", "VOID", "LAVOS"], "shape": "LINE_PIERCE", "length": 18.0, "width": 1.2, "hits": 1, "power": 2.2, "uses": "ASTRAL", "flat_shave_bonus": 4, "costs": {"crono": {"camp_strain_pct": 5}}, "unlock": {"dark_min": 40}},
     {"id": "null_crono", "name": "NULL", "tier": "single", "actors": ["crono"], "tags": ["NULL"], "shape": "CIRCLE", "radius": 3.0, "target": "point", "effect": "null_strip", "costs": {"crono": {"strain_pct": 2}}, "unlock": {"chapter": 8}}
   ]
 }

@@ -2,7 +2,6 @@
 extends Node
 
 signal location_loaded(id: StringName, node: Node)
-signal fade_finished
 
 ## Location id -> scene path. Filled by _register_defaults() and register(); an entry whose scene is not built
 ## yet is tolerated (has_location checks the file), so callers guard with has_location or read go()'s result.
@@ -114,7 +113,6 @@ func fade_in(seconds: float) -> void:
 	var tw := create_tween()
 	tw.tween_property(fade, "color:a", 0.0, seconds)
 	await tw.finished
-	fade_finished.emit()
 
 
 func adopt_current_scene() -> void:

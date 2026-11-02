@@ -19,7 +19,6 @@ var _ambience_player: AudioStreamPlayer
 var _sfx_pool: Array[AudioStreamPlayer] = []
 var _vo_player: AudioStreamPlayer
 var _stream_cache: Dictionary = {}
-var _music_fade: Tween
 var _lowpass: AudioEffectLowPassFilter
 var _pitch: AudioEffectPitchShift
 var _master_set: bool = false

@@ -42,7 +42,10 @@ var lv4_field: StringName = &""
 var lv3_field: StringName = &""
 var flat_shave_bonus: int = 0
 var wind_up_s: float = 0.0
+## The bible's Unlock column, for reference and lint; what Game evaluates is the actor's kit entry
+## (data/characters, KitUnlocks), which may be later (on_join for the chapter the actor joins in).
 var unlock: Dictionary = {}
+## Flag references ("Name:State", FlagRef) that must hold for the tech to be offered.
 var requires_flags: Array[StringName] = []
 var effect: StringName = &""
 ## enemy | ally | self | party | point | any
@@ -174,7 +177,7 @@ func validation_errors() -> PackedStringArray:
 			errors.append("%s: unknown tag %s" % [id, tg])
 	if hit_count < 1:
 		errors.append("%s: hits must be >= 1" % id)
-	if shape in [Shape.CIRCLE, Shape.SELF_AURA, Shape.CAGE] and radius <= 0.0:
+	if shape in [Shape.CIRCLE, Shape.SELF_AURA, Shape.CAGE] and (radius <= 0.0 or not raw.has("radius")):  # radius defaults to 1.0
 		errors.append("%s: shape needs a radius" % id)
 	if shape in [Shape.LINE_PIERCE, Shape.CONE, Shape.CROSS] and length <= 0.0:
 		errors.append("%s: shape needs a length" % id)

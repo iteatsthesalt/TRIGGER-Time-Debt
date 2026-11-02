@@ -26,6 +26,8 @@ var _params := PackedFloat32Array()
 var _ready: bool = false
 
 ## Per-universe parameters (sat, paper rgb, paper amount, gold, edge, vhs, posterize, ink, edge rgb, scanline, chroma px, fps).
+## The one grade table: the battle plane's paper tint reads it too (paper_of); the fps column must equal
+## data/universes/universes.json (Universe.fps_of reads that; suite_progression checks they agree).
 const GRADES := [
 	[0.85, 0.96, 0.93, 0.86, 0.55, 0.15, 0.10, 0.00, 0.0, 0.00, 0.18, 0.17, 0.17, 0.0, 0.0, 60.0],   # U0 watercolour
 	[0.20, 0.95, 0.93, 0.85, 0.65, 0.00, 0.75, 0.00, 0.0, 0.85, 0.10, 0.10, 0.10, 0.0, 0.0, 24.0],   # U1 sumi-e
@@ -38,6 +40,12 @@ const GRADES := [
 	[0.90, 1.00, 1.00, 1.00, 0.40, 0.60, 0.30, 0.30, 0.0, 0.00, 0.20, 0.20, 0.20, 0.5, 1.0, 15.0],   # U8 porcelain null
 	[0.00, 1.00, 1.00, 1.00, 0.95, 0.10, 0.00, 0.00, 0.0, 0.00, 0.20, 0.20, 0.20, 0.0, 0.0, 60.0],   # U9 white void
 ]
+
+
+## The paper colour of universe `u` (the battle plane's tint, BattleScene).
+static func paper_of(u: int) -> Color:
+	var g: Array = GRADES[clampi(u, 0, GRADES.size() - 1)]
+	return Color(float(g[1]), float(g[2]), float(g[3]))
 
 
 func _init() -> void:

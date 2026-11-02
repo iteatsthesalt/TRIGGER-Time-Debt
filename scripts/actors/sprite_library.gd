@@ -152,7 +152,8 @@ static func _apply_resolved(sprite: ActorSprite, r: Dictionary, fps: float, defa
 static func apply_enemy(sprite: ActorSprite, def: EnemyDef, tier: StringName = &"field", variant: StringName = &"") -> void:
 	var id: String = String(def.sprite if def.sprite != &"" else def.key)
 	var key: String = String(def.key)
-	for cand in [id, key]:
+	var cands: Array = [id, key] if def.art == &"" else [id, key, String(def.art)]  # `art`: a folder alias
+	for cand in cands:
 		var r: Dictionary = resolve(cand, tier, variant, ["enemies", "bosses"], ["u%d/" % def.universe, ""])
 		if not r.is_empty():
 			sprite.sprite_id = cand

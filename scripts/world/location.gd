@@ -68,8 +68,8 @@ func _ready() -> void:
 	for z in zones:
 		z.spawn(self)
 		z.triggered.connect(_on_zone_triggered)
-	if field_music != &"":
-		Audio.play_music(field_music)
+	if field_track() != &"":
+		Audio.play_music(field_track())
 	if ambience != &"":
 		Audio.play_ambience(ambience)
 	Story.battle_requested.connect(_on_story_battle)
@@ -311,7 +311,6 @@ func _ink_slow(on: bool) -> void:
 			a.sprite.set_tint(Color(0.75, 0.75, 0.78))
 		else:
 			a.sprite.set_tint(Color.WHITE)
-	Universe.leaks[1] = 0.6 if on else 0.0
 	if world:
 		world.set_leak(1, 0.6 if on else 0.0)
 	if on:
@@ -449,9 +448,18 @@ func _on_game_debt(_v: float) -> void:
 
 # ------------------------------------------------------------------ battle hand-off
 
+## The field track: the location's own, else its universe's `music_field` (data/universes/universes.json).
+func field_track() -> StringName:
+	return field_music if field_music != &"" else StringName(_universe_music("music_field"))
+
+
+func _universe_music(field: String) -> String:
+	return String(Data.universe(universe_id).get(field, ""))
+
+
 func _on_zone_triggered(zone: EncounterZone, advantage: String) -> void:
 	var enc: Dictionary = Data.encounters.get(zone.encounter_id, {})
-	start_battle(zone.living(), zone.global_position, {"advantage": advantage, "boss": zone.boss, "music": enc.get("music", "")}, zone)
+	start_battle(zone.living(), zone.global_position, {"advantage": advantage, "boss": zone.boss, "music": enc.get("music", _universe_music("music_battle"))}, zone)
 
 
 func _on_story_battle(encounter_id: StringName, cmd: Dictionary) -> void:
@@ -468,7 +476,7 @@ func _on_story_battle(encounter_id: StringName, cmd: Dictionary) -> void:
 		var def: EnemyDef = Data.enemy(key)
 		if def == null:
 			continue
-		var a: CombatActor = CombatActor.create_enemy(def, -1, "_s%d" % idx)
+		var a: CombatActor = EffectiveRank.create(def, ek, enc, "_s%d" % idx)  # §15.3: scaled to the party
 		add_child(a)
 		a.global_position = leader_pos + Vector3(4.0 + float(idx % 3) * 1.6, 0.0, -2.0 + float(idx / 3) * 2.0)
 		enemies.append(a)
@@ -487,6 +495,8 @@ func _on_story_battle(encounter_id: StringName, cmd: Dictionary) -> void:
 		enemies.push_front(b)
 		if music == "":
 			music = String(cmd.get("music", "mus_boss_%s" % boss_id))
+	if music == "":
+		music = _universe_music("music_battle")
 	var center: Vector3 = leader_pos + Vector3(2.5, 0.0, 0.0)
 	if cmd.has("center") and get_marker(StringName(String(cmd["center"]))) != null:
 		center = get_marker(StringName(String(cmd["center"])))
@@ -531,8 +541,8 @@ func _on_battle_finished(victory: bool, summary: Dictionary, zone: EncounterZone
 		BattleAftermath.regroup(party_actors, summary.get("withdraw_at", null))
 	follow.snap_behind()
 	_refresh_porcelain()
-	if field_music != &"":
-		Audio.play_music(field_music)
+	if field_track() != &"":
+		Audio.play_music(field_track())
 	if battle != null:
 		battle.queue_free()
 		battle = null

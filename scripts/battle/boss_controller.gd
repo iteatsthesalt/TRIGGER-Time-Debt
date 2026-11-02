@@ -80,10 +80,9 @@ func setup(battle_scene: BattleScene, coord: BattleCoordinator, boss_actor: Comb
 	phase_changed.emit(0, def.phase(0))
 
 
-## A "Flag=State" pair holds (BossDef's *_by_branch tables, an add's `requires`).
+## A flag reference holds (BossDef's *_by_branch tables, an add's `requires`): "Name:State" or "Name" (FlagRef).
 static func holds(pair: String) -> bool:
-	var p: PackedStringArray = pair.split("=", true, 1)
-	return p.size() == 2 and Flags.is_state(StringName(p[0].strip_edges()), StringName(p[1].strip_edges()))
+	return Flags.holds(pair)
 
 
 func phase() -> Dictionary:
@@ -230,7 +229,7 @@ func answer_branch(option_id: String, entry: Dictionary = {}) -> void:
 
 
 ## End the fight as a victory with the boss still standing (its last phase Broke, it yielded, a director's scripted
-## end): its XP counts as a defeat's (BattleCoordinator._award_xp reads the boss_defeated meta) and its drops are
+## end): its XP counts as a defeat's (RewardResolver.award_xp reads the boss_defeated meta) and its drops are
 ## given. The battle ends once the action in progress has resolved.
 func end_fight(reason: String = "scripted") -> void:
 	if ended:
@@ -244,12 +243,7 @@ func _close() -> void:
 	ended = true
 	_call_director("on_defeat", [self])
 	boss_defeated.emit(actor)
-	for item in def.drops:
-		var iid: StringName = StringName(String(item))
-		if Data.items.has(iid):
-			Game.add_item(iid)
-		else:
-			Game.add_relic(iid)
+	RewardResolver.give(def.drops, coordinator.rng)  # by each item's catalogue kind (Game.grant), like enemy drops
 
 
 # ---------------------------------------------------------------- adds

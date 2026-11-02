@@ -11,7 +11,7 @@
     {"id": "prism_guard", "unlock": {"on_join": true}},
     {"id": "rose_window", "unlock": {"level": 38}},
     {"id": "prism_refraction", "unlock": {"level": 40}},
-    {"id": "fractured_lens", "unlock": {"flag": "Central_Eye_Broken"}},
+    {"id": "fractured_lens", "unlock": {"flag": "Central_Eye:Broken"}},
     {"id": "vitreous_refraction", "unlock": {"on_join": true}},
     {"id": "refraction_needle", "unlock": {"on_join": true}},
     {"id": "chrono_prism", "unlock": {"on_join": true}},
@@ -23,7 +23,7 @@
     {"id": "anachronism_glass", "unlock": {"chapter": 7}},
     {"id": "first_light_that_never_was", "unlock": {"chapter": 6}},
     {"id": "carnival_of_souls", "unlock": {"chapter": 6}},
-    {"id": "washi_hollow_rebirth", "unlock": {"flag": "Kami_Ori_Wounds_Kept"}}
+    {"id": "washi_hollow_rebirth", "unlock": {"flag": "Kami_Ori:Wounds_Kept"}}
   ],
   "passives": ["fractured_lens_tell", "prism_split"]
 }

@@ -27,7 +27,7 @@
      "on_break": "He stops mending and looks up.",
      "notes": "100-70%. Shield 14, Tags [AURA][ASTRAL][NULL], Weak [TACHYON][ASTRAL][VITREOUS], plus one weakness added per dialogue answer. He does not attack."},
     {"id": "atom_claim", "name": "Atom Claim", "hp_from": 0.7, "hp_to": 0.4,
-     "shield": {"shield": 18, "shield_by_branch": {"Vaelos_Father=Rejected": 22}, "weak": ["FERRO", "SOUND", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+     "shield": {"shield": 18, "shield_by_branch": {"Vaelos_Father:Rejected": 22}, "weak": ["FERRO", "SOUND", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["ASTRAL", "SAURIA", "FIRE", "RUIN"],
      "actions": [
        {"id": "perfected_smear_dash", "name": "Perfected Smear Dash", "tags": ["ASTRAL", "SWORD"], "shape": "LINE_PIERCE", "length": 8.0, "width": 1.2, "power": 1.5, "hits": 1, "target": "nearest", "weight": 3},
@@ -38,7 +38,7 @@
      "mechanics": ["shield_plus_4_if_vaelos_father_rejected", "galaxy_chest_opens_on_the_original_atoms", "uses_cronos_moves_perfected_smear_dash_leaves_gold_leaf_instead_of_a_crack", "summons_two_lavic_filament_guardians", "lavic_filial_field_forces_crono_to_tank_while_sera_under_40pct_hp", "time_debt_well_live_crono_below_20pct_hp_drains_galaxy_heals_vaelos_5pct", "cassias_wire_loom_mend_keeps_him_above", "light_70_hesitates_one_turn_after_any_rewind_that_shows_him_losing", "dark_70_heirloom_incinerate_burns_time_eggs_plus_50pct_damage", "bpm_100"],
      "on_enter": "Vaelos: I didn't steal. I incubated. You were vapor. You were everywhere and nowhere. I made you a somewhere. Let me make her a somewhere too.",
      "on_break": "",
-     "notes": "70-40%. Shield 18 (+4 if Vaelos_Father=Rejected). Tags [ASTRAL][SAURIA][FIRE][RUIN]. Weak [FERRO][SOUND][TACHYON]. Heirloom Incinerate is used only with Dark >= 70."},
+     "notes": "70-40%. Shield 18 (+4 if Vaelos_Father:Rejected). Tags [ASTRAL][SAURIA][FIRE][RUIN]. Weak [FERRO][SOUND][TACHYON]. Heirloom Incinerate is used only with Dark >= 70."},
     {"id": "porcelain_truth", "name": "Porcelain Truth", "hp_from": 0.4, "hp_to": 0.1,
      "shield": {"shield": 22, "weak": ["ASTRAL", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["NULL", "ASTRAL", "AURA", "VITREOUS"],

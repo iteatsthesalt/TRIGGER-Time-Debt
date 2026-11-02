@@ -51,8 +51,7 @@ func spawn(parent: Node) -> void:
 		var def: EnemyDef = Data.enemy(key)
 		if def == null:
 			continue
-		var level: int = int(ek.get("level", -1)) if ek is Dictionary else -1
-		var a: CombatActor = CombatActor.create_enemy(def, level, "_%d" % idx)
+		var a: CombatActor = EffectiveRank.create(def, ek, enc, "_%d" % idx)  # §15.3: scaled to the party
 		parent.add_child(a)
 		var ang: float = _rng.randf_range(0.0, TAU)
 		var r: float = _rng.randf_range(0.0, radius * 0.6)

@@ -30,7 +30,6 @@ var skip_waits: bool = false
 ## The last `go` the Router refused (unknown location or a transition already running); &"" when none.
 var last_refused_go: StringName = &""
 var _battle_waiting: bool = false
-var _depth: int = 0
 var _in_run_cmd: bool = false
 var _history: Array[Dictionary] = []
 var _vars: Dictionary = {}
@@ -80,7 +79,6 @@ func run(id: StringName, inline: Array = []) -> void:
 	var nested: bool = running
 	var outer_id: StringName = current_id
 	var outer_waiting: bool = _battle_waiting
-	_depth += 1
 	running = true
 	current_id = id
 	script_started.emit(id)
@@ -103,7 +101,6 @@ func run(id: StringName, inline: Array = []) -> void:
 			else:
 				push_warning("Story: unknown label %s" % jump)
 	box.hide_box()
-	_depth -= 1
 	script_finished.emit(id)
 	if nested:
 		current_id = outer_id
@@ -275,12 +272,13 @@ func _apply_side_effects(cmd: Dictionary) -> void:
 		Flags.add_counter(StringName(String(cmd["counter"])), int(cmd.get("add", 1)))
 	if cmd.has("var"):
 		_vars[String(cmd["var"])] = cmd.get("value", true)
+	# the item catalogue's kind decides where it goes (Game.grant); the verb is the fallback for an unlisted id
 	if cmd.has("give_item"):
-		Game.add_item(StringName(String(cmd["give_item"])), int(cmd.get("n", 1)))
+		Game.grant(StringName(String(cmd["give_item"])), int(cmd.get("n", 1)), &"consumable")
 	if cmd.has("key_item"):
-		Game.add_key_item(StringName(String(cmd["key_item"])))
+		Game.grant(StringName(String(cmd["key_item"])), 1, &"key")
 	if cmd.has("relic"):
-		Game.add_relic(StringName(String(cmd["relic"])))
+		Game.grant(StringName(String(cmd["relic"])), 1, &"relic")
 	if cmd.has("integrity"):
 		Game.set_integrity(Game.crono_integrity + float(cmd["integrity"]))
 	if cmd.has("set_integrity"):

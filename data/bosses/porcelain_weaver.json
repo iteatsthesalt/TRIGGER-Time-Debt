@@ -6,6 +6,7 @@
   "hp": 26000,
   "kind": "boss",
   "sprite": "bos_u2_porcelain_weaver",
+  "art": "weaver",
   "size": 3.5,
   "body_radius": 1.4,
   "fps": 12,

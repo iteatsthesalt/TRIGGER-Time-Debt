@@ -223,6 +223,7 @@ for bid, b in bosses.items():
             named_scripts.add(ph["script"])
             if ph["script"] not in dialogue: errors.append(f"boss {bid} phase {i}: unknown script {ph['script']}")
     for d in b.get("drops", []):
+        d = d.get("item") if isinstance(d, dict) else d
         if d in granted: warnings.append(f"boss {bid}: drop {d} is also handed out by dialogue (it would be given twice)")
 for sid in dialogue:
     if re.search(r"_(phase\d+|p\d+|mid)$", sid) and sid not in named_scripts:
@@ -300,6 +301,120 @@ for tid, t in techs.items():
 if unlearnable:
     warnings.append(f"techs: {len(unlearnable)} Dual/Triple id(s) appear in no actor's kit and no dialogue learn command:")
     warnings += [f"    {u}" for u in unlearnable]
+# Progression references (DECISIONS "One flag spelling", "Kit unlocks", "Item kinds"). A flag reference outside
+# dialogue is "Name" or "Name:State" (FlagRef) naming a defined flag and state: kit and tech unlocks, a tech's
+# requires_flags, a boss's *_by_branch keys and the `requires` of its adds and actions (prose `requires` is skipped)
+# and a universe's hazard_by_flag. Dialogue may also set script-local flags data/flags does not define (warned,
+# counted); a defined flag it names must use one of its states.
+def flag_ref_error(ref):
+    if not isinstance(ref, str) or "=" in ref or not ref.strip(): return f"flag reference {ref!r} is not Name or Name:State"
+    name, _, state = ref.partition(":")
+    if name not in flags: return f"flag reference {ref!r} names no flag in data/flags"
+    if state and state not in [st.get("id") for st in flags[name].get("states", [])]: return f"flag reference {ref!r}: {name} has no state {state}"
+    return ""
+def boss_refs(o):
+    out = []
+    if isinstance(o, dict):
+        for k, v in o.items():
+            if k.endswith("_by_branch") and isinstance(v, dict): out += list(v)
+            out += boss_refs(v)
+    elif isinstance(o, list):
+        for v in o:
+            if isinstance(v, dict) and isinstance(v.get("requires"), str) and (":" in v["requires"] or "=" in v["requires"]) and " " not in v["requires"]: out.append(v["requires"])
+            out += boss_refs(v)
+    return out
+UNLOCK_KINDS = {"chapter", "on_join", "level", "flag", "light_min", "dark_min", "prismatic_min", "drop", "story"}
+story_unlocks = []
+for cid, d in chars.items():
+    for t in d.get("techs", []):
+        if not isinstance(t, dict): continue
+        for k, v in t.get("unlock", {}).items():
+            where = f"character {cid} tech {t['id']} unlock"
+            if k not in UNLOCK_KINDS: errors.append(f"{where}: unknown kind {k} (one of {', '.join(sorted(UNLOCK_KINDS))})")
+            elif k in ("chapter", "level", "light_min", "dark_min", "prismatic_min") and not isinstance(v, (int, float)): errors.append(f"{where}: {k} must be a number")
+            elif k == "flag" and flag_ref_error(v): errors.append(f"{where}: {flag_ref_error(v)}")
+            elif k == "drop" and not enemies.get(v, {}).get("drops"): errors.append(f"{where}: drop {v} names no enemy that drops anything")
+            elif k == "story" and t["id"] not in learned: story_unlocks.append(f"{t['id']} ({cid}, {v})")
+    for group, tags in (("weapon", d.get("weapon", {}).get("tags", [])), ("vulnerable", d.get("vulnerable", [])), ("resistant", d.get("resistant", []))):
+        for tg in tags:
+            if tg not in KNOWN: errors.append(f"character {cid}: unknown tag {tg} in {group}")
+if story_unlocks:
+    warnings.append(f"techs: {len(story_unlocks)} kit tech(s) unlock by `story` and no dialogue learn command teaches them yet:")
+    warnings += [f"    {u}" for u in story_unlocks]
+for tid, t in techs.items():
+    refs = list(t.get("requires_flags", [])) + ([t["unlock"]["flag"]] if "flag" in t.get("unlock", {}) else [])
+    for r in refs:
+        if flag_ref_error(r): errors.append(f"tech {tid}: {flag_ref_error(r)}")
+for bid, b in bosses.items():
+    for r in boss_refs(b):
+        if flag_ref_error(r): errors.append(f"boss {bid}: {flag_ref_error(r)}")
+for p in sorted((ROOT/"data/universes").rglob("*.json")):
+    for u in (load(p) or {}).get("universes", []):
+        for r in u.get("hazard_by_flag", {}):
+            if flag_ref_error(r): errors.append(f"universe {u.get('id')}: hazard_by_flag {flag_ref_error(r)}")
+script_flags = {}
+def dialogue_flag(sid, ref, state=""):
+    name, _, st = str(ref).partition(":")
+    st = state or st
+    if name not in flags: script_flags.setdefault(name, set()).add(sid); return
+    states = [s2.get("id") for s2 in flags[name].get("states", [])]
+    if st and st not in states: errors.append(f"{sid}: flag {name} has no state {st}")
+for sid, cmds in dialogue.items():
+    for c in cmds:
+        if not isinstance(c, dict): continue
+        for node in [c] + [o for o in c.get("choice", []) if isinstance(o, dict)]:
+            if "set_flag" in node: dialogue_flag(sid, node["set_flag"], node.get("state", ""))
+            if isinstance(node.get("set"), dict): dialogue_flag(sid, node["set"].get("flag", ""), node["set"].get("state", "set"))
+            for cond in (node.get("if"), node.get("show_if")):
+                if isinstance(cond, dict):
+                    for k in ("flag", "not_flag"):
+                        if isinstance(cond.get(k), str): dialogue_flag(sid, cond[k], cond.get("state", ""))
+        if "boss_id" in c and c["boss_id"] and c["boss_id"] not in bosses: errors.append(f"{sid}: unknown boss_id {c['boss_id']}")
+if script_flags:
+    warnings.append(f"flags: {len(script_flags)} script-local flag id(s) set or read by dialogue are not in data/flags (no codex, no affinity): {', '.join(sorted(script_flags))}")
+# Keyed plates: ShieldComponent plays the keyed weights, so a phase or enemy that keys its plates must say the same count.
+def keyed_check(where, shield, keyed):
+    total = sum(int(k.get("weight", 1)) for k in keyed)
+    if total != shield: errors.append(f"{where}: shield {shield} but its keyed plates weigh {total}")
+for k, e in enemies.items():
+    if e.get("keyed_plates"): keyed_check(f"enemy {k}", int(e.get("shield", 1)), e["keyed_plates"])
+for bid, b in bosses.items():
+    for ph in b.get("phases", []):
+        sh = ph.get("shield", {})
+        if isinstance(sh, dict) and sh.get("keyed_plates"): keyed_check(f"boss {bid} phase {ph.get('id')}", int(sh.get("shield", 1)), sh["keyed_plates"])
+# Items (data/items/items.json, Game.grant): every id a boss or enemy drops or dialogue hands out is a catalogue item
+# with a known kind; a dialogue verb that disagrees with the kind is warned (Game.grant follows the kind).
+ITEM_KINDS = {"consumable", "material", "key", "relic", "counter"}
+for iid, it in items.items():
+    if it.get("kind", "consumable") not in ITEM_KINDS: errors.append(f"item {iid}: unknown kind {it.get('kind')}")
+    if it.get("kind") == "counter" and not it.get("counter"): errors.append(f"item {iid}: a counter item names its counter")
+def drop_ids(drops):
+    return [d.get("item") if isinstance(d, dict) else d for d in drops]
+for bid, b in bosses.items():
+    for iid in drop_ids(b.get("drops", [])):
+        if iid not in items: errors.append(f"boss {bid}: drop {iid} is not in data/items/items.json")
+for k, e in enemies.items():
+    for iid in drop_ids(e.get("drops", [])):
+        if iid not in items: errors.append(f"enemy {k}: drop {iid} is not in data/items/items.json")
+VERB_KINDS = {"give_item": {"consumable", "material", "counter"}, "key_item": {"key"}, "relic": {"relic"}}
+for sid, cmds in dialogue.items():
+    for c in cmds:
+        if not isinstance(c, dict): continue
+        for node in [c] + [o for o in c.get("choice", []) if isinstance(o, dict)]:
+            for verb, kinds in VERB_KINDS.items():
+                if verb not in node: continue
+                iid = node[verb]
+                if iid not in items: errors.append(f"{sid}: {verb} {iid} is not in data/items/items.json")
+                elif items[iid].get("kind", "consumable") not in kinds: warnings.append(f"{sid}: {verb} {iid} but the catalogue kind is {items[iid].get('kind')} (Game.grant gives it as that)")
+# Delivered enemy/boss stand-ins (assets/enemies|bosses/<folder>/<folder>_painted.png) must resolve to an enemy key,
+# a boss id, a sprite id or an `art` alias, or SpriteLibrary never finds them (warned).
+art_names = set(enemies) | set(bosses)
+for e in list(enemies.values()) + list(bosses.values()):
+    art_names |= {e.get("sprite", ""), e.get("art", "")}
+for group in ("enemies", "bosses"):
+    base = ROOT / "assets" / group
+    for painted in sorted(base.rglob("*_painted.png")) if base.exists() else []:
+        if painted.parent.name not in art_names: warnings.append(f"assets/{group}: {painted.parent.relative_to(base)} matches no enemy key, boss id, sprite or art alias (its stand-in is never drawn)")
 # Props (data/props, docs/ART_PIPELINE.md section 6): a billboard with a height in metres. Fields are a closed
 # set, the key names its universe, and every delivered prop has its sheet, frames json and normal sheet under
 # assets/props/u<n>/<key>/; a prop marked pending may have none yet. Every object recorded in

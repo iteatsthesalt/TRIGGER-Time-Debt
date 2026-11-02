@@ -13,7 +13,7 @@ static func main_items(scene: BattleScene, actor: CombatActor) -> Array:
 	items.append({"label": "Tech", "cmd": "techs", "enabled": not c.available_techs(actor).is_empty()})
 	items.append({"label": "Guard", "cmd": "guard"})
 	items.append({"label": "Sync Hold", "cmd": "sync", "enabled": SyncHoldRules.can_hold(c, actor)})
-	items.append({"label": "Item", "cmd": "items", "enabled": not Game.inventory.is_empty()})
+	items.append({"label": "Item", "cmd": "items", "enabled": item_items().size() > 1})  # a usable item, not just Back
 	items.append({"label": "Swap", "cmd": "swap", "enabled": scene.roster.can_swap(c)})
 	items.append({"label": "Spare", "cmd": "spare", "enabled": not targets(c, "spare").is_empty()})
 	if SealPayment.offered(scene, actor):
@@ -46,7 +46,7 @@ static func item_items() -> Array:
 	var items: Array = []
 	for id in Game.inventory.keys():
 		var def: Dictionary = Data.items.get(StringName(id), {})
-		if def.is_empty() or def.has("crafting"):
+		if not ItemUse.usable_in_battle(def):  # materials, key items, relics stay in the bag
 			continue
 		items.append({"label": "%s ×%d" % [String(def.get("name", id)), int(Game.inventory[id])], "cmd": "item", "payload": {"item": def}})
 	items.append({"label": "Back", "cmd": "back"})

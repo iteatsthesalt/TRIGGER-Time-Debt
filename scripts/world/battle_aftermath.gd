@@ -59,12 +59,12 @@ static func restore_party(party: Array, ratio: float) -> void:
 		ca.restore_body()
 
 
-## Level, XP and HP ratio into the member's roster row (a guest has one too, Game.set_party), Crono's
-## integrity and Sera's Debt into Game. A member still down (a reserve, never stood up) records `ratio`,
+## Level (Game.set_level), XP and HP ratio into the member's roster row (a guest has one too, Game.set_party),
+## Crono's integrity and Sera's Debt into Game. A member still down (a reserve, never stood up) records `ratio`,
 ## and a living one at least `ratio`, matching what restore_party gives the field party.
 static func write_back(a: CombatActor, ratio: float) -> void:
 	var row: Dictionary = Game.roster.get(a.actor_id, {})
-	row["level"] = a.stats.level
+	Game.set_level(a.actor_id, a.stats.level)  # level-gated kit techs arrive (KitUnlocks)
 	row["xp"] = a.stats.xp
 	row["hp_ratio"] = maxf(a.stats.hp_ratio(), ratio) if a.stats.is_alive() else ratio
 	if a.time_debt != null:

@@ -63,7 +63,7 @@
     {"id": "hiss_choice", "after_phase": "adolescence", "options": [
       {"id": "unplug", "label": "Unplug", "flag": "U6_Matriarch", "state": "Unplugged", "requires": "Light +30: Static screams once (432 Hz to 220 Hz), SIGNAL is lost forever, the rain stops; Sera learns hz_static_pure"},
       {"id": "stay_plugged", "label": "Stay Plugged", "flag": "U6_Matriarch", "state": "Fed", "requires": "Dark +25: Static keeps SIGNAL, the Red Bike unlocks fully, conductivity drain -50%, +1 BP per rain-soaked kill, Crono's integrity -10"},
-      {"id": "teach_hiss", "label": "Teach Hiss to Sing", "flag": "U6_Matriarch", "state": "Hiss_Lullaby", "requires": "Prismatic +15: needs Arris_Dome=Sleeping and a Prometheus Core not burned selfishly (Prometheus_Core=Saved); Cassia records the future lullaby and plays it into the past CRT; Amber Rift; unlocks the Vapor Memory Core"}
+      {"id": "teach_hiss", "label": "Teach Hiss to Sing", "flag": "U6_Matriarch", "state": "Hiss_Lullaby", "requires": "Prismatic +15: needs Arris_Dome:Sleeping and a Prometheus Core not burned selfishly (Prometheus_Core:Saved); Cassia records the future lullaby and plays it into the past CRT; Amber Rift; unlocks the Vapor Memory Core"}
     ], "notes": ""}
   ],
   "drops": ["vapor_memory_core_fragment"],

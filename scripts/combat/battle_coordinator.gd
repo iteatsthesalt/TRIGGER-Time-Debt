@@ -171,6 +171,7 @@ func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: D
 	if hover_sera != null and not party.has(hover_sera):
 		_init_unit(hover_sera, _start_gauge(true, advantage))
 	StatusRules.begin_battle(self, config)  # Ruin cap, periodic ticks, break conditions, shared plates
+	RewardResolver.watch(self)  # how each enemy is finished: its lean and its drops at the end
 	bp_changed.emit(bank.bp, bank.max_bp)
 	battle_started.emit(center)
 	state = State.TICK
@@ -242,7 +243,7 @@ func _finish(victory: bool, reason: String = "", extra: Dictionary = {}) -> void
 	var summary: Dictionary = {"victory": victory, "reason": reason, "xp": {}, "spared": spared.size(), "battle_time": battle_time, "integrity_lost": 0.0}
 	summary.merge(extra)
 	if victory:
-		summary["xp"] = _award_xp()
+		summary.merge(RewardResolver.resolve(self), true)  # XP, drops, leans
 	for u in party + bench:
 		if not is_instance_valid(u):
 			continue
@@ -293,30 +294,6 @@ func force_end(victory: bool, reason: String = "scripted") -> void:
 	if state == State.IDLE or state == State.VICTORY or state == State.DEFEAT:
 		return
 	_finish(victory, reason)
-
-
-func _award_xp() -> Dictionary:
-	var total: int = 0
-	for e in enemies:
-		var st := CombatantStats.of(e)
-		if st == null:
-			continue
-		if spared.has(e):
-			total += roundi(float(st.xp_reward) * 0.5)
-		elif not st.is_alive() or e.has_meta(&"boss_defeated"):  # a boss that ends its fight standing (BossController.end_fight)
-			total += st.xp_reward
-	var out: Dictionary = {}
-	for u in party:
-		var st2 := CombatantStats.of(u)
-		if st2 != null:
-			var share: int = total if st2.is_alive() else roundi(float(total) * 0.75)
-			out[st2.actor_id] = {"xp": share, "levels": st2.gain_xp(share)}
-	for b in bench:
-		var st3 := CombatantStats.of(b)
-		if st3 != null:
-			var share2: int = roundi(float(total) * 0.75)
-			out[st3.actor_id] = {"xp": share2, "levels": st3.gain_xp(share2)}
-	return out
 
 
 # ------------------------------------------------------------------ timeline
@@ -625,21 +602,11 @@ const ACTION_OPTIONS: Array[String] = ["steps", "mode"]
 func cmd_item(actor: Node, item: Dictionary, target: Node) -> Dictionary:
 	if not _is_turn(actor):
 		return _fail("not this actor's turn")
+	if not ItemUse.works(self, item, target):  # refused before it leaves the bag (BattleDeck.use_item)
+		return _fail("it would do nothing")
 	state = State.EXECUTING
 	var info := {"kind": "item", "actor": actor, "item": item}
-	var st := CombatantStats.of(target) if target != null else null
-	if st != null:
-		if item.has("heal_pct"):
-			var amt: int = roundi(float(st.max_hp()) * float(item["heal_pct"]))
-			var healed: int = st.heal(amt)
-			heal_resolved.emit(actor, target, healed)
-		if item.has("mp"):
-			st.restore_mp(int(item["mp"]))
-		if item.has("revive_pct") and not st.is_alive():
-			st.revive(float(item["revive_pct"]))
-			unit_revived.emit(target)
-		if item.has("cleanse") and StatusComponent.of(target) != null:
-			StatusComponent.of(target).cleanse()
+	ItemUse.apply(self, actor, item, target)
 	_finish_turn(actor, 0.0)
 	_after_party_action(info)
 	return {"ok": true, "info": info}

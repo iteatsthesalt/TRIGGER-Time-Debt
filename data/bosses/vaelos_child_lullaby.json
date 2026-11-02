@@ -17,7 +17,7 @@
   "adds": [],
   "phases": [
     {"id": "tantrum", "name": "Tantrum (Hunger)", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
-     "shield": {"shield": 6, "weak": ["LIGHT", "ASTRAL", "TACHYON"], "resist": [], "keyed_plates": [{"material": "NULL", "key": "ASTRAL", "weight": 2}, {"material": "DARK", "key": "LIGHT", "weight": 1}, {"material": "NULL", "key": "TACHYON", "weight": 2}], "regenerating": false, "refill_once": false},
+     "shield": {"shield": 5, "weak": ["LIGHT", "ASTRAL", "TACHYON"], "resist": [], "keyed_plates": [{"material": "NULL", "key": "ASTRAL", "weight": 2}, {"material": "DARK", "key": "LIGHT", "weight": 1}, {"material": "NULL", "key": "TACHYON", "weight": 2}], "regenerating": false, "refill_once": false},
      "tags": ["NULL", "DARK"],
      "actions": [
        {"id": "tantrum_wail", "name": "Tantrum Wail", "tags": ["NULL", "DARK"], "shape": "CIRCLE", "radius": 4.0, "power": 0.0, "hits": 1, "target": "weakest", "weight": 1}
@@ -25,9 +25,9 @@
      "mechanics": ["lullaby_progress_plate_replaces_the_shield", "light_techs_shave_damage_is_irrelevant", "astral_smear_dash_trail_slows_the_tantrum_gauge", "breaking_him_with_sword_or_fire_intensifies_the_tantrum_porcelain_stress_plus_15_and_a_dark_point"],
      "on_enter": "",
      "on_break": "Sera (if Broken by SWORD or FIRE): He doesn't know sword yet.",
-     "notes": "[NULL]x4 + [DARK]x2 = 6 plates. Keys as written: NULL->ASTRAL (-2), DARK->LIGHT (-1), NULL->TACHYON (-2); these sum to 5 shave against a stated plate count of 6 (the bible is one DARK plate short; a trailing DARK->LIGHT (-1) would complete it). Weak [LIGHT][ASTRAL][TACHYON]."},
+     "notes": "[NULL]x4 + [DARK]x2 = 6 plates. Keys as written: NULL->ASTRAL (-2), DARK->LIGHT (-1), NULL->TACHYON (-2); these sum to 5 shave against a stated plate count of 6 (the bible is one DARK plate short; a trailing DARK->LIGHT (-1) would complete it). `shield` is 5, the keyed weights the fight plays (lint: shield equals the keyed sum); the sixth plate waits on Nich. Weak [LIGHT][ASTRAL][TACHYON]."},
     {"id": "hide_and_seek", "name": "Hide and Seek", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
-     "shield": {"shield": 6, "weak": ["MYCELIA", "VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [{"material": "NULL", "key": "MYCELIA", "weight": 2}, {"material": "WIND", "key": "VITREOUS", "weight": 1}, {"material": "DARK", "key": "TACHYON", "weight": 2}], "regenerating": false, "refill_once": false},
+     "shield": {"shield": 5, "weak": ["MYCELIA", "VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [{"material": "NULL", "key": "MYCELIA", "weight": 2}, {"material": "WIND", "key": "VITREOUS", "weight": 1}, {"material": "DARK", "key": "TACHYON", "weight": 2}], "regenerating": false, "refill_once": false},
      "tags": ["NULL", "WIND", "DARK"],
      "actions": [
        {"id": "hide", "name": "Hide in the White", "tags": ["NULL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "cloak", "self_target": true, "target": "nearest", "weight": 1}
@@ -35,7 +35,7 @@
      "mechanics": ["phases_to_5pct_translucency_and_hides_in_the_white", "find_him_by_listening_to_the_music_boxs_stereo_direction", "seras_duplicate_token_shows_his_echo_from_2s_ago"],
      "on_enter": "",
      "on_break": "",
-     "notes": "[NULL]x3 + [WIND]x2 + [DARK]x1 = 6 plates. Keys as written: NULL->MYCELIA (-2), WIND->VITREOUS (-1), DARK->TACHYON (-2); the weights sum to 5 and the materials do not match the stated counts exactly (transcribed literally). Weak [MYCELIA][VITREOUS][TACHYON]."},
+     "notes": "[NULL]x3 + [WIND]x2 + [DARK]x1 = 6 plates. Keys as written: NULL->MYCELIA (-2), WIND->VITREOUS (-1), DARK->TACHYON (-2); the weights sum to 5 and the materials do not match the stated counts exactly (transcribed literally). `shield` is 5, the keyed weights the fight plays; the sixth plate waits on Nich. Weak [MYCELIA][VITREOUS][TACHYON]."},
     {"id": "porcelain_spill", "name": "Porcelain Spill", "hp_from": 1.0, "hp_to": 1.0, "advance_on": "break",
      "shield": {"shield": 6, "weak": ["FERRO", "ASTRAL", "GUILE"], "resist": [], "keyed_plates": [{"material": "NULL", "key": "FERRO", "weight": 3}, {"material": "MYCELIA", "key": "ASTRAL", "weight": 2}, {"material": "SWORD", "key": "GUILE", "weight": 1}], "regenerating": false, "refill_once": false},
      "tags": ["NULL", "MYCELIA", "SWORD"],

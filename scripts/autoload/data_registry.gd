@@ -8,8 +8,7 @@ var enemies_by_id: Dictionary = {} ## E-number -> EnemyDef
 var characters: Dictionary = {}   ## StringName -> Dictionary (kit)
 var flags: Dictionary = {}        ## StringName -> Dictionary (flag def)
 var universes: Dictionary = {}    ## int -> Dictionary
-var statuses: Dictionary = {}
-var items: Dictionary = {}
+var items: Dictionary = {}        ## StringName -> Dictionary (data/items: kind, effects; Game.grant routes by kind)
 var encounters: Dictionary = {}
 var dialogue: Dictionary = {}     ## script id -> Array of commands
 var bosses: Dictionary = {}
@@ -33,7 +32,6 @@ func load_all() -> void:
 	characters.clear()
 	flags.clear()
 	universes.clear()
-	statuses.clear()
 	items.clear()
 	encounters.clear()
 	dialogue.clear()
@@ -77,9 +75,6 @@ func load_all() -> void:
 	for d in _json_files("res://data/universes"):
 		for entry in d.get("universes", []):
 			universes[int(entry["id"])] = entry
-	for d in _json_files("res://data/statuses"):
-		for entry in d.get("statuses", []):
-			statuses[StringName(String(entry["id"]))] = entry
 	for d in _json_files("res://data/items"):
 		for entry in d.get("items", []):
 			items[StringName(String(entry["id"]))] = entry
@@ -93,6 +88,7 @@ func load_all() -> void:
 	for d in _json_files("res://data/bosses"):
 		if d is Dictionary and d.has("id"):
 			bosses[StringName(String(d["id"]))] = d
+			errors.append_array(BossDef.from_dict(d).validation_errors())
 	for d in _json_files("res://data/props"):
 		for entry in d.get("props", []):
 			_add_prop(entry)
@@ -106,6 +102,8 @@ func load_all() -> void:
 		if d3 is Dictionary:
 			text[StringName(path.get_file().get_basename())] = d3
 	errors.append_array(EffectTable.enemy_errors(enemies, bosses))
+	_check_kits()
+	_check_flag_refs()
 	_check_text_layer()
 	loaded = true
 	if not errors.is_empty():
@@ -121,6 +119,60 @@ func _check_tech_signatures() -> void:
 		if seen.has(sig):
 			errors.append("techs %s and %s share tags, shape and size" % [seen[sig], id])
 		seen[sig] = id
+
+
+## Kits: every unlock is a kind KitUnlocks evaluates and names defined flags and enemies; the weapon, vulnerable
+## and resistant tags are CombatTags (a typo would never halve or double anything).
+func _check_kits() -> void:
+	for id in characters.keys():
+		var kit: Dictionary = characters[id]
+		errors.append_array(KitUnlocks.validation_errors(kit, flags, enemies))
+		var groups: Dictionary = {"weapon": kit.get("weapon", {}).get("tags", []), "vulnerable": kit.get("vulnerable", []), "resistant": kit.get("resistant", [])}
+		for g in groups.keys():
+			for tg in groups[g]:
+				if not CombatTags.is_known(StringName(String(tg))):
+					errors.append("character %s: unknown tag %s in %s" % [id, tg, g])
+
+
+## Flag references outside dialogue use one spelling, "Name" or "Name:State" (FlagRef): a tech's
+## requires_flags and unlock flag, and a boss's *_by_branch keys and its adds' and actions' `requires`.
+func _check_flag_refs() -> void:
+	for tid in techs.keys():
+		var t: TechDef = techs[tid]
+		var refs: Array = []
+		refs.append_array(t.requires_flags)  # a copy: never grow the TechDef's own list
+		if t.unlock.has("flag"):
+			refs.append(t.unlock["flag"])
+		for r in refs:
+			var e: String = FlagRef.error(String(r), flags)
+			if e != "":
+				errors.append("tech %s: %s" % [tid, e])
+	for bid in bosses.keys():
+		for r in boss_flag_refs(bosses[bid]):
+			var e2: String = FlagRef.error(r, flags)
+			if e2 != "":
+				errors.append("boss %s: %s" % [bid, e2])
+
+
+## The machine-read flag references in a boss file: *_by_branch keys anywhere, and the `requires` of its adds
+## and phase actions (a `requires` that is prose, with no ":" or "=", is a design note and is skipped).
+static func boss_flag_refs(d: Variant) -> Array[String]:
+	var out: Array[String] = []
+	if d is Dictionary:
+		for k in (d as Dictionary).keys():
+			var v: Variant = d[k]
+			if String(k).ends_with("_by_branch") and v is Dictionary:
+				for key in (v as Dictionary).keys():
+					out.append(String(key))
+			out.append_array(boss_flag_refs(v))
+	elif d is Array:
+		for v in d:
+			if v is Dictionary and (v as Dictionary).get("requires", null) is String:
+				var req: String = String(v["requires"])
+				if (req.contains(":") or req.contains("=")) and not req.contains(" "):
+					out.append(req)
+			out.append_array(boss_flag_refs(v))
+	return out
 
 
 ## The text layer (data/text/*.json, written to the contract in docs/JOB_CHATGPT.md). A text key that

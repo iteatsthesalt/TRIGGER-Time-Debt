@@ -45,7 +45,7 @@
      "mechanics": ["8_plates", "every_mercy_flag_shown_removes_1_plate_seed_of_doan_grown_azar_scholar_arris_dome_sleeping_r66y_rewound_moon_sleep", "tether_mastery_removes_the_rest", "no_damage_is_ever_dealt", "result_mycelia_global_pool_open_and_permanent_atrium_divinity_field_plus_1_plate_per_5s_plus_0_2_regeneration_carried_into_every_future_new_game"],
      "on_enter": "",
      "on_break": "",
-     "notes": "8 plates. Mercy flags that each remove 1 plate when shown: Seed_of_Doan=Grown, Azar=Scholar, Arris_Dome=Sleeping, R66Y=Rewound, Moon=Sleep. The result flag MYCELIA_GLOBAL_POOL_OPEN is not in data/flags."}
+     "notes": "8 plates. Mercy flags that each remove 1 plate when shown: Seed_of_Doan:Grown, Azar:Scholar, Arris_Dome:Sleeping, R66Y:Rewound, Moon:Sleep. The result flag MYCELIA_GLOBAL_POOL_OPEN is not in data/flags."}
   ],
   "branches": [],
   "drops": [],

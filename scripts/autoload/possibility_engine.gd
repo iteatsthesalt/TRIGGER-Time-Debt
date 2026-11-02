@@ -53,6 +53,14 @@ func is_state(id: StringName, s: StringName) -> bool:
 	return flags.get(id, &"") == s
 
 
+## A flag reference holds now: "Name" is set (any state) or "Name:State" is in that state (FlagRef).
+func holds(ref: String) -> bool:
+	var p: PackedStringArray = FlagRef.split(ref)
+	if p[0] == "" or ref.contains("="):
+		return false
+	return is_state(StringName(p[0]), StringName(p[1])) if p[1] != "" else has(StringName(p[0]))
+
+
 ## Set a flag to one of its states. Affinity and Beckons are written from the flag definition
 ## (data/flags/*.json) unless `affinity` overrides them: {light, dark, prismatic}.
 func set_flag(id: StringName, s: StringName, affinity: Dictionary = {}) -> void:

@@ -186,7 +186,8 @@ static func apply_enemy(sprite: ActorSprite, def: EnemyDef, tier: StringName = &
 					return
 	# A placeholder 2, 4 or 8 m across at the world's 32 px/m, the figure 1.6 m per metre of `size`.
 	var cell_px: int = PLACEHOLDER_CELL if def.size <= 1.3 else (PLACEHOLDER_CELL * 2 if def.size <= 2.5 else PLACEHOLDER_CELL * 4)
-	var fig_px: int = int(float(cell_px) * 0.8 * minf(1.0, def.size / (float(cell_px) / ActorSprite.PIXELS_PER_METRE)))
+	# The cell spans cell_px / 32 m; 0.8 of it is the tallest figure, reached at size = cell_px / 64.
+	var fig_px: int = int(float(cell_px) * 0.8 * minf(1.0, def.size / (float(cell_px) / (2.0 * ActorSprite.PIXELS_PER_METRE))))
 	sprite.set_seed(seed_of(key))
 	sprite.set_standin(placeholder(key, _element_colour(def), cell_px, fig_px), def.fps, ActorSprite.PIXELS_PER_METRE)
 

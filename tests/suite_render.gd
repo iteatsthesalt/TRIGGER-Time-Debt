@@ -154,6 +154,25 @@ func test_every_shipped_sheet_keeps_its_on_screen_size() -> void:
 	check_near(crono.pixel_size * 95.0, 1.78, 0.01, "Crono's 95 drawn px stand 1.78 m")
 
 
+## The rows of a sprite's bound sheet that hold any visible pixel: the drawn figure's height in pixels.
+func _figure_rows(sprite: ActorSprite) -> int:
+	var tex: Texture2D = sprite.material.get_shader_parameter("sheet") as Texture2D
+	check(tex != null, "%s has a sheet bound" % sprite.sprite_id)
+	if tex == null:
+		return 0
+	var img: Image = tex.get_image()
+	check(img != null, "%s's sheet can be read back" % sprite.sprite_id)
+	if img == null:
+		return 0
+	var rows: int = 0
+	for y in img.get_height():
+		for x in img.get_width():
+			if img.get_pixel(x, y).a > 0.0:
+				rows += 1
+				break
+	return rows
+
+
 func test_placeholders_are_drawn_at_the_world_density_at_the_old_size() -> void:
 	var s := ActorSprite.new()
 	_track(s)
@@ -162,7 +181,12 @@ func test_placeholders_are_drawn_at_the_world_density_at_the_old_size() -> void:
 	check_near(s.pixel_size, 1.0 / 32.0, 1e-6, "at 32 px per metre")
 	check_near((s.mesh as QuadMesh).size.y, 2.0, 0.001, "in the same 2 m quad as before")
 	check_near(float(SpriteLibrary.PLACEHOLDER_HEIGHT_PX) / 32.0, 1.72, 0.01, "its figure stands 1.72 m")
+	var char_rows: int = _figure_rows(s)
+	check_eq(char_rows, SpriteLibrary.PLACEHOLDER_HEIGHT_PX, "the character placeholder draws its 55 px figure")
+	check_near(float(char_rows) * s.pixel_size, 1.72, 1.0 / 32.0, "and that figure stands 1.72 m on screen")
 	var sizes: Dictionary = {}
+	var figures: Dictionary = {}
+	var bins: Dictionary = {}
 	for k in Data.enemies.keys():
 		var def: EnemyDef = Data.enemies[k]
 		var e := ActorSprite.new()
@@ -170,9 +194,32 @@ func test_placeholders_are_drawn_at_the_world_density_at_the_old_size() -> void:
 		SpriteLibrary.apply_enemy(e, def)
 		if e.cell <= 256 and is_equal_approx(e.pixel_size, 1.0 / 32.0):
 			var want: float = 2.0 if def.size <= 1.3 else (4.0 if def.size <= 2.5 else 8.0)
-			sizes[String(k)] = absf((e.mesh as QuadMesh).size.y - want) < 0.001
+			var quad_h: float = (e.mesh as QuadMesh).size.y
+			sizes[String(k)] = absf(quad_h - want) < 0.001
+			# The blob itself, not only its quad: 1.6 m per metre of `size`, capped at 0.8 of the quad.
+			var fig_m: float = float(_figure_rows(e)) * e.pixel_size
+			var fig_want: float = minf(0.8 * quad_h, 1.6 * def.size)
+			figures[String(k)] = "%.3f m (want %.3f)" % [fig_m, fig_want]
+			if absf(fig_m - fig_want) <= 1.0 / 32.0:
+				figures.erase(String(k))
+			bins[want] = int(bins.get(want, 0)) + 1
 	check(sizes.size() > 10, "enemy placeholders were drawn (%d)" % sizes.size())
 	check(not sizes.values().has(false), "each enemy placeholder keeps its 2 / 4 / 8 m quad: %s" % str(sizes.keys().filter(func(k: String) -> bool: return not bool(sizes[k]))))
+	check(int(bins.get(2.0, 0)) > 10, "the shipped size <= 1.3 placeholders were measured: %s" % str(bins))
+	check(figures.is_empty(), "each enemy placeholder's figure stands 1.6 m per metre of size, as before: %s" % str(figures))
+	# Every quad tier, by size (no shipped enemy without art is above 1.3 today): the old 64 px/m code drew
+	# 102.4 px per metre of size up to 0.8 of the cell (1.6 m per metre); at 32 px/m that is 51.2 px.
+	for case in [[1.0, 2.0, 51], [0.6, 2.0, 30], [1.5, 4.0, 76], [2.0, 4.0, 102], [2.4, 4.0, 102], [3.0, 8.0, 153], [5.0, 8.0, 204]]:
+		var d := EnemyDef.new()
+		d.key = StringName("suite_render_size_%s" % str(case[0]))
+		d.size = float(case[0])
+		var b := ActorSprite.new()
+		_track(b)
+		SpriteLibrary.apply_enemy(b, d)
+		var rows: int = _figure_rows(b)
+		check_near((b.mesh as QuadMesh).size.y, float(case[1]), 0.001, "a size-%s placeholder stands in a %s m quad" % [str(case[0]), str(case[1])])
+		check_eq(rows, int(case[2]), "a size-%s placeholder draws a %d px figure" % [str(case[0]), int(case[2])])
+		check_near(float(rows) * b.pixel_size, minf(0.8 * float(case[1]), 1.6 * float(case[0])), 1.0 / 32.0, "a size-%s figure stands 1.6 m per metre of size (capped at 0.8 of the quad)" % str(case[0]))
 
 
 # ---------------------------------------------------------------- WORLD-13: frames json keys

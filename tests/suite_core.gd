@@ -287,12 +287,13 @@ func test_breaking_strike_uses_pre_break_defence() -> void:
 	c.strike_resolved.connect(func(_a: Node, _t: Node, info: Dictionary) -> void: hits.append(info))
 	c.cmd_attack(crono, e, 0)
 	check_eq(hits.size(), 2, "two sword strikes resolved")
-	if hits.size() == 2:
-		check(bool(hits[0]["break"]) and not bool(hits[0]["crit"]), "the first strike Breaks and is not a critical")
-		check_eq(int(hits[0]["damage"]), first, "it is resolved against the unbroken DEF")
-		check(bool(hits[1]["crit"]), "the next strike sees a Broken target")
-		check_eq(int(hits[1]["damage"]), second, "DEF halved and ×1.5")
-		check(second > first, "so the reward follows the Break, it does not precede it")
+	var h0: Dictionary = hits[0] if hits.size() > 0 else {}
+	var h1: Dictionary = hits[1] if hits.size() > 1 else {}
+	check(bool(h0.get("break", false)) and not bool(h0.get("crit", true)), "the first strike Breaks and is not a critical")
+	check_eq(int(h0.get("damage", -1)), first, "it is resolved against the unbroken DEF")
+	check(bool(h1.get("crit", false)), "the next strike sees a Broken target")
+	check_eq(int(h1.get("damage", -1)), second, "DEF halved and ×1.5")
+	check(second > first, "so the reward follows the Break, it does not precede it")
 	# Worked example 2 at the coordinator: Astral Slash Lv3 Breaks a 2-plate ASTRAL-weak target in one
 	# strike and deals the bible's unbroken number (plus displacement), not ×1.5 of it.
 	var c2 := _coord()
@@ -747,10 +748,10 @@ func test_coordinator_hairline_rewind_tax() -> void:
 	check(st.hp >= 1, "the slip tax cannot KO him")
 	st.hp = st.max_hp()
 	var s2: Node = _advance_until_actor(c, &"sera")
-	if s2 == sera:
-		var hp1: int = st.hp
-		c.cmd_tech(sera, &"rewind", e, Vector3.ZERO, 0)
-		check_eq(hp1 - st.hp, roundi(float(st.max_hp()) * 0.05), "hairline Crono pays 5% max HP per Rewind")
+	check(s2 == sera, "Sera's next turn")
+	var hp1: int = st.hp
+	check(bool(c.cmd_tech(sera, &"rewind", e, Vector3.ZERO, 0).get("ok", false)), "she Rewinds again")
+	check_eq(hp1 - st.hp, roundi(float(st.max_hp()) * 0.05), "hairline Crono pays 5% max HP per Rewind")
 
 
 func test_coordinator_phase_out_two_turns_and_synergy() -> void:
@@ -807,10 +808,22 @@ func test_coordinator_guard_parry_and_ens_ring() -> void:
 			c.cmd_guard(crono)
 			c.arm_parry(crono)
 	check(not results.is_empty(), "a parry resolved")
-	if not results.is_empty() and results[0]:
-		check_eq(CombatantStats.of(crono).hp, hp0, "a perfect parry negates the hit")
-		check(c.ens_rings.has(crono), "and leaves an Ens ring")
-		check(TimeDebtComponent.of(crono).debt_null_left > 0.0, "Crono's debt costs are nulled for 5 s")
+	# A hit that lands while the window is armed is a perfect parry: keep it armed until the enemy's hit lands.
+	results.clear()
+	var hp_at_hit: int = -1
+	t = 0.0
+	while not results.has(true) and t < 30.0:
+		if c.state == BattleCoordinator.State.COMMAND_WAIT:
+			c.cmd_guard(crono)
+		if not c.parry_armed.has(crono):
+			c.arm_parry(crono)
+		hp_at_hit = CombatantStats.of(crono).hp
+		c.advance(1.0 / 60.0)
+		t += 1.0 / 60.0
+	check(results.has(true), "an armed window meets the hit: a perfect parry")
+	check_eq(CombatantStats.of(crono).hp, hp_at_hit, "a perfect parry negates the hit")
+	check(c.ens_rings.has(crono), "and leaves an Ens ring")
+	check(TimeDebtComponent.of(crono).debt_null_left > 0.0, "Crono's debt costs are nulled for 5 s")
 
 
 func test_coordinator_enemy_wind_up_and_break_cancels() -> void:
@@ -830,10 +843,13 @@ func test_coordinator_enemy_wind_up_and_break_cancels() -> void:
 	check(not telegraphs.is_empty(), "the enemy starts a wind-up")
 	check(c.wind_ups.has(e), "wind-up is running on battle time")
 	var a: Node = _advance_until_window(c, 5.0)
-	if a == crono and c.wind_ups.has(e):
-		c.cmd_attack(crono, e, 0)
-		check(ShieldComponent.of(e).is_broken, "sword hits Break it")
-		check(not c.wind_ups.has(e), "a Break cancels the wind-up")
+	check(a == crono and c.wind_ups.has(e), "Crono's window opens inside the wind-up")
+	var ended: Array = []
+	c.telegraph_ended.connect(func(en: Node) -> void: ended.append(en))
+	c.cmd_attack(crono, e, 0)
+	check(ShieldComponent.of(e).is_broken, "sword hits Break it")
+	check(not c.wind_ups.has(e), "a Break cancels the wind-up")
+	check_eq(ended, [e], "and ends its telegraph (the decal goes with it)")
 
 
 func test_coordinator_victory_rewards_and_spare() -> void:
@@ -1174,9 +1190,9 @@ func test_coordinator_add_enemy_and_undamageable() -> void:
 	check_eq(CombatantStats.of(e2).hp, hp_before, "a sealed enemy takes no HP damage")
 	c.undamageable.clear()
 	var u2: Node = _advance_until_actor(c, &"crono")
-	if u2 != null:
-		c.cmd_attack(u2, e2, 0)
-		check(CombatantStats.of(e2).hp < hp_before, "and takes damage once the seal lifts")
+	check(u2 == crono, "crono's next window")
+	c.cmd_attack(crono, e2, 0)
+	check(CombatantStats.of(e2).hp < hp_before, "and takes damage once the seal lifts")
 	c.paused = true
 	var t0: float = c.battle_time
 	c.advance(1.0)

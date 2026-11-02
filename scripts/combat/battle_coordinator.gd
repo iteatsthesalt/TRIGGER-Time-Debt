@@ -199,14 +199,14 @@ func _init_unit(u: Node, gauge: float) -> void:
 		st.is_guarding = false
 		if st.hp < 0:
 			st.reset_vitals()
-	u.remove_meta(&"sipped_action")
-	var usc := StatusComponent.of(u)
-	if usc != null:
-		usc.acting = false
 		if not _ko_callables.has(u):
 			var cb := _on_unit_defeated.bind(u)
 			st.defeated.connect(cb)
 			_ko_callables[u] = cb
+	u.remove_meta(&"sipped_action")
+	var usc := StatusComponent.of(u)
+	if usc != null:
+		usc.acting = false
 	var sh := ShieldComponent.of(u)
 	if sh != null:
 		sh.reset_shields()

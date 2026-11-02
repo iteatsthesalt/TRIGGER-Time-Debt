@@ -29,6 +29,9 @@ func test_prism_guard_lasts_until_his_next_turn() -> void:
 	var vesper := _party_member(&"vesper", 40, Vector3(-3, 0, 0))
 	var e := _enemy(&"x", 40, Vector3(3, 0, 0), 4, ["BLUNT"], {"hp": 100000})
 	_start(c, [vesper], [e], {"techs": _with(["prism_guard"])})
+	check(c._ko_callables.has(vesper), "_init_unit hooks a party member's KO")
+	check(CombatantStats.of(vesper).defeated.is_connected(c._ko_callables.get(vesper, Callable())),
+		"its defeated signal reaches _on_unit_defeated")
 	_sturdy(vesper)
 	check(_advance_until_actor(c, &"vesper") == vesper, "Vesper's window opens")
 	var r: Dictionary = c.cmd_tech(vesper, &"prism_guard", null, c.position_of(vesper), 0)

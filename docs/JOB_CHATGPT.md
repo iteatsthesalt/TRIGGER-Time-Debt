@@ -10,9 +10,14 @@ Deliver each task as one JSON file with exactly the shape given. The game reads 
 must match the ids in the repository's data files, and the JSON must validate. Hand the file to Nich; he
 commits it to `data/text/`.
 
+**Status (2026-11-02):** Tasks 1-5 were delivered on 2026-10-29 and are in `data/text/` (see
+`docs/DECISIONS.md`, "The text layer is data"). New enemies, techs, items, locations or flags need their
+entries added to the same files; `python3 tools/build/lint_data.py` lists every id that still has no text.
+Three item `found` fields await Nich (`docs/QUESTIONS_FOR_NICH.md`).
+
 ## Task 1: Bestiary (`data/text/bestiary.json`)
 
-For every enemy in `data/enemies/u*/u*_enemies.json` (key = the `key` field, 82 of them) and every boss in
+For every enemy in every JSON file under `data/enemies/` (key = the `key` field, 82 of them including the seven in `u9/postgame_enemies.json`) and every boss in
 `data/bosses/*.json` (key = the file name), write the Possibility Codex entry Sera reads aloud:
 
 ```json

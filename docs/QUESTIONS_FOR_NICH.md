@@ -21,3 +21,9 @@ Things I'd like your view on when you have a moment. None of them block the buil
   them on her back (`364e2216…`). Which do you want animated? (ASSET_REQUESTS #2.)
 - **Action-tier directions.** Cut-ins currently need south, west and east only; say if you want all eight for
   any sequence (it triples the clip cost).
+
+## Text layer (2026-11-02)
+- **Where do Mid Tonic, Revive and Cobalt Wash come from?** The writers found no vendor, chest or drop for
+  them in the data or the bibles, so `data/text/items.json` says "Acquisition source not yet recorded." for
+  exactly those three (Linear TRI-79). Name a source for each (a Truce shop, a chest in the Atrium, a drop)
+  and the build lead will write the five-word `found` line and, if it is a shop, the stock entry.

@@ -106,3 +106,18 @@ sheet) and §4 (the action tier is the realistic reading of the catalog painting
 `npc_marle` (`05c8ee87…`) from the bot is a 5.5-head, 124 px figure beside a 3.5-head cast. It is imported as
 `marle_field` so the game has her, and the decision (keep, or regenerate as chibi and move this one to her
 action tier) is left to Nich in ASSET_REQUESTS #3 and QUESTIONS_FOR_NICH.
+
+## The text layer is data, loaded and validated like everything else (2026-11-02)
+ChatGPT's text delivery of 2026-10-29 (the five JSONs of `docs/JOB_CHATGPT.md`, Linear TRI-80; package SHA-256
+`b8c3cc27cfd8301f11e0ff8eafc0e61e23d1aec59575738e99e5d65b403f50dc`) was verified against the repository
+(113 bestiary keys = 82 enemies + 31 bosses, 123 techs, 15 items, 10 locations x 12 lines, 84 flags / 148
+states, plain ASCII) and committed as `data/text/*.json`. `Data` loads it, treats a key that names nothing
+as an error and a game id without prose as a warning (`Data.text_gaps`), and offers `bestiary()`,
+`tech_text()`, `item_text()`, `codex_page()` and `ambient_lines()`; `lint_data.py` repeats the checks. The
+first consumer is `Location.add_npc`: townsfolk with no script of their own say an ambient line of their
+location. The three `found` fields the writers could not source (`mid_tonic`, `revive`, `cobalt_wash`) keep
+their honest five-word placeholder "Acquisition source not yet recorded." until Nich names a vendor, chest
+or drop (Linear TRI-79; a unit test pins exactly those three so the answer cannot be forgotten). The brief's
+enemy glob missed `data/enemies/u9/postgame_enemies.json`; the writers included its seven keys anyway and
+the brief now says every file under `data/enemies/`. Touches Story Bible section 10 (voice) and section 8.1
+(the Possibility Codex reads `codex.json`).

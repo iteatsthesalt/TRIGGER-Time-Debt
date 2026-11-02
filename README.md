@@ -142,6 +142,16 @@ variants (another canvas `u1`…, or a state `debt20`…). Import a finished ass
 `data/art/pixellab_assets.json`. In code: `SpriteLibrary.apply(sprite, id, fps, tier, variant)` falls back to
 field/base, and `ActorSprite.set_tier(&"action")` / `set_variant(&"u1")` swap a live sprite for a cut-in.
 
+**The text layer.** `data/text/` holds the prose the game reads aloud: `bestiary.json` (one entry per enemy
+key and boss id: `name`, `entry`, `weak_hint`, `break_line`), `techs.json` (`description`, `flavor` per tech
+id), `items.json` (`description`, `flavor`, `found` per item id, including the key items and relics dialogue
+hands out), `ambient.json` (twelve one-line things townsfolk say per location id) and `codex.json` (a
+`title` and one page per flag state). Plain ASCII, no numbers in tech descriptions; the full contract is
+`docs/JOB_CHATGPT.md`. `Data` loads them (`Data.bestiary(key)`, `Data.tech_text(id)`, `Data.item_text(id)`,
+`Data.codex_page(flag, state)`, `Data.ambient_lines(location_id)`); a key that names nothing in the game is a
+validation error, a game id without prose is a gap listed in `Data.text_gaps` and by `lint_data.py`. An NPC
+added with `add_npc` and no script says one of its location's ambient lines when talked to.
+
 **Music and SFX.** `tools/audio/` synthesises every track and effect (`python3 tools/audio/build_all.py`);
 `Audio.play_music(&"id")`, `Audio.play_ambience(&"id")`, `Audio.play_sfx("family/id")`,
 `Audio.set_rtpc("name", value)` drive them. New

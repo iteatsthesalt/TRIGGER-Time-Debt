@@ -1,0 +1,494 @@
+{
+  "time_slice": {
+    "description": "An Astral sword strike lowers Crono's maximum HP for the battle.",
+    "flavor": "He adjusts his grip below the crack."
+  },
+  "astral_smear_dash": {
+    "description": "Crono spends maximum HP to dash through enemies in a line, clearing VHS Fog along his path.",
+    "flavor": "The scarf arrives after the sword."
+  },
+  "astral_slash": {
+    "description": "Sweeps an Astral cone at the cost of maximum HP, leaving a trail that slows enemies crossing it.",
+    "flavor": "His wrist shakes only after the blade stops."
+  },
+  "time_debt_seal": {
+    "description": "Lowers Crono's maximum HP until camp to refund Sera's last solidity cost or prevent her impending Causal Collapse.",
+    "flavor": "He closes his hand around the flicker."
+  },
+  "bekkler_guilt": {
+    "description": "Crono spends maximum HP to take reduced hits meant for nearby allies and earn BP from the redirected attacks.",
+    "flavor": "He sets his feet where the others were standing."
+  },
+  "astral_field": {
+    "description": "An Astral pulse costs Crono maximum HP, clears nearby Grief-Resonance and VHS Fog, and reduces Ruin damage to allies inside.",
+    "flavor": "He holds his palm out until the room stops trembling."
+  },
+  "luminaire": {
+    "description": "Spends Crono's maximum HP to flood a wide circle with repeated Astral and Light strikes.",
+    "flavor": "Light escapes beneath his buckles. He leaves them fastened."
+  },
+  "unborrowed_time": {
+    "description": "Strains Crono to strike an enemy with his Time Egg core, adding damage based on its remaining HP.",
+    "flavor": "His empty hand stays open."
+  },
+  "null_erasure": {
+    "description": "Sacrifices maximum HP until camp for a piercing Null strike that Breaks Null-weak targets and strips plates from others.",
+    "flavor": "He draws the sword back through a missing color."
+  },
+  "null_crono": {
+    "description": "At the cost of Crono's maximum HP, strips tags, resistances and buffs in a circle, including allies, and gives weaknessless targets a temporary false weakness.",
+    "flavor": "His thumb follows the crease the teacher left."
+  },
+  "rewind": {
+    "description": "Spends Sera's solidity to restore an ally or enemy's HP, gauge, position and recent statuses to their last turn start.",
+    "flavor": "Sorry. Let me put that before it hurt."
+  },
+  "hold": {
+    "description": "Spends Sera's solidity to keep a Broken enemy locked in Break for longer.",
+    "flavor": "Your turn can wait. Mine already did."
+  },
+  "tachyon_needle": {
+    "description": "Fires Tachyon needles down a narrow line, pushing enemy gauges back and shaving extra plates from Magnetized targets.",
+    "flavor": "You keep standing where I was going to miss."
+  },
+  "fall_break": {
+    "description": "Reduces an ally's next Time Debt cost, including Crono's strain, Sera's solidity or Krona's Corruption.",
+    "flavor": "Papa, let me catch this end."
+  },
+  "borrowed_future": {
+    "description": "Spends Sera's solidity and pulls allied gauges backward to give the ally closest to acting a free repeat of their last action.",
+    "flavor": "Tomorrow says you're not finished."
+  },
+  "borrowed_future_true": {
+    "description": "Spends solidity and pulls allied gauges backward to duplicate the nearest-ready ally's action, extending its Breaks after Sera's voluntary phase-out.",
+    "flavor": "Save my place. I'm choosing where to come back."
+  },
+  "rewind_reel": {
+    "description": "Spends Sera's solidity to rewind enemy positions, telegraphs and gauges across the battlefield without rewinding allies.",
+    "flavor": "Terrible performance. Back to rehearsal."
+  },
+  "slip_backtrack": {
+    "description": "Spends solidity to rewind Sera's own HP, gauge and position.",
+    "flavor": "I left something behind. Mostly me."
+  },
+  "hz_static_pure": {
+    "description": "Pulses HZ and Tachyon through a circle, healing allies inside as the hits land.",
+    "flavor": "He gave me the quiet bit. Listen."
+  },
+  "null_sera": {
+    "description": "Spends Sera's solidity to strip tags, resistances and buffs in a circle, including allies, and give weaknessless targets a temporary false weakness.",
+    "flavor": "Master, does the blank have to include us?"
+  },
+  "atropos_ribbon": {
+    "description": "Spends Sera's solidity to cut Vaelos's tether along a fate line and waive upcoming party Time Debt costs, unless the Prometheus Core was burned selfishly.",
+    "flavor": "You don't get to tie a knot in my name."
+  },
+  "hover_rewind_hp": {
+    "description": "From Hover Support, Sera spends solidity to return an ally's HP to its last turn-start value.",
+    "flavor": "Still here, Papa. Just a little to the side."
+  },
+  "hover_fast_forward": {
+    "description": "From Hover Support, Sera spends solidity to advance an ally's gauge.",
+    "flavor": "Go on. I'll argue with the clock."
+  },
+  "teppo_ash_cut": {
+    "description": "Slashes a broad cone with Ruin, leaving ink that damages enemies standing in it.",
+    "flavor": "Stay clear of brush. Still wet."
+  },
+  "ruin_purge": {
+    "description": "Blasts a circle with Ruin, strips enemy buffs and leaves an Ash Field that slows enemies and wears away temporary plates.",
+    "flavor": "Less armor. Same problem."
+  },
+  "cinnabar_flare": {
+    "description": "Sweeps Ruin and Fire through a cone, igniting oil and carrying the flames along oil seams.",
+    "flavor": "Wind's wrong. Get behind me."
+  },
+  "shoguns_command": {
+    "description": "Redirects some incoming party damage onto Krona and, if she survives, lets allies' next hits ignore defense.",
+    "flavor": "Save bandages. Use mine last."
+  },
+  "oil_drinker": {
+    "description": "Heals the party from Krona's gourd while increasing her Corruption.",
+    "flavor": "Bad medicine. Better than empty hands."
+  },
+  "crimson_seppuku": {
+    "description": "Leaves Krona near death and raises Corruption to unleash a Ruin wave, reduce enemy healing, scatter Ash Fields and trigger her gourd.",
+    "flavor": "Not funeral yet. Keep gourd close."
+  },
+  "cobalt_nodachi": {
+    "description": "After a wind-up, cuts a long Ruin line through enemies and clears Ash Fields.",
+    "flavor": "Enough room. Draw now."
+  },
+  "gramophone_resonance": {
+    "description": "Blasts enemies in a cone with Ferro sound, hitting metal harder and delaying metallic enemies' next actions.",
+    "flavor": "That rattle is not part of the recording."
+  },
+  "ferro_graviton": {
+    "description": "Pulls enemies into a circle of Ferro shards and Magnetizes them.",
+    "flavor": "Lucca, may I use your calculations?"
+  },
+  "mercury_pulse": {
+    "description": "Spends Cassia's recharging mercury orb to pulse nearby enemies, reveal their weaknesses, slow them and bind them magnetically.",
+    "flavor": "The scan found a seam. The seam found me looking."
+  },
+  "wire_loom_mend": {
+    "description": "Mends an ally's HP and battle-lost maximum HP, repairing Crono's integrity or clearing art-curse hazards from other copies.",
+    "flavor": "May I touch the wrist, Crono?"
+  },
+  "sound_ring": {
+    "description": "Sends a Ferro sound wave around Cassia and leaves a lingering ring that improves amber shard drops.",
+    "flavor": "Audio log: Stop calling it feedback. It's answering."
+  },
+  "gatling_arm": {
+    "description": "Fires a piercing barrage from Cassia's bipedal arm, Magnetizing targets with the final hit.",
+    "flavor": "Recoil recorded. I would like my balance back."
+  },
+  "prometheus_overload": {
+    "description": "Detonates a burning Ferro nova that hurts nearby allies and delays Cassia's next turn, marking the Core selfishly burned without Lucca's consent.",
+    "flavor": "Lucca, I need your answer before the light."
+  },
+  "mycelia_tether": {
+    "description": "Spends Shared orbs on tethers that share allied damage and bloom into healing when snapped by damage, without shaving plates while building.",
+    "flavor": "Roots do not ask which branch deserves the rain."
+  },
+  "photosynthetic_burst": {
+    "description": "Bursts through a circle, spending Spore Tags and Sunlight Stacks to restore tethered allies' HP and MP while Xyloph is rooted.",
+    "flavor": "Stand still, little rot. Your green is coming in."
+  },
+  "dew_lance": {
+    "description": "Sends a piercing Mycelia and Water lance through enemies and extinguishes oil fires.",
+    "flavor": "Even the thirsty have sharp edges."
+  },
+  "core_lattice": {
+    "description": "Lattices Crono in his galaxy state, reducing his Astral strain costs and raising his defense.",
+    "flavor": "A trellis need not understand the stars."
+  },
+  "divinity_field": {
+    "description": "Covers the arena with a field that grows allied shields, eases Ruin, silences enemies on Break and counters Vaelos's Gravity.",
+    "flavor": "Rest your weight here. The ground has roots."
+  },
+  "reptite_crown": {
+    "description": "Strikes a circle with Mycelia petals and grows a canopy that keeps supplying Sunlight Stacks for the battle.",
+    "flavor": "How loudly the yellow grows."
+  },
+  "lily_lancets": {
+    "description": "Drives glass lancets through a line, shaving extra plates when their refracted colors match the target's shield.",
+    "flavor": "Entry 4-31: I regret the necessity of edges."
+  },
+  "cathedral_ray": {
+    "description": "Sends a piercing Vitreous ray through enemies, taking on the elemental tag of a colored pane it crosses.",
+    "flavor": "Entry 4-32: I am less certain in amber."
+  },
+  "vitreous_prism": {
+    "description": "Spends Light Stacks on extra Vitreous beams in a split cone, leaving a caustic floor.",
+    "flavor": "The cat steps out of his chest onto the light."
+  },
+  "prism_refraction": {
+    "description": "Fires a cone of Vitreous prisms without spending Light Stacks, with exceptional damage against the Glass Matriarch.",
+    "flavor": "Entry 4-33: Anger is not an archival error."
+  },
+  "baptistery": {
+    "description": "Splashes a circle with Vitreous and Water damage while restoring HP to allies inside.",
+    "flavor": "He lowers the lance; the cat paws at the thaw."
+  },
+  "rose_window": {
+    "description": "When sufficiently Boosted, bursts around Vesper and adds Vitreous and extra angled hits to party attacks.",
+    "flavor": "Entry 4-34: I can bear to see her now."
+  },
+  "fractured_lens": {
+    "description": "Fills Vesper's Light Stacks by reducing him to critical HP and leaving him Fragile.",
+    "flavor": "The open library shines through his lowered hands."
+  },
+  "prism_guard": {
+    "description": "Reduces incoming damage until Vesper's next turn and stores hits as Light Stacks, gaining more while the cat overlaps him.",
+    "flavor": "Entry 4-35: I am grateful she stayed."
+  },
+  "sleight_of_arm": {
+    "description": "Strikes an enemy at extended reach and steals BP for the party, taking a consumable if BP is unavailable.",
+    "flavor": "CHECK YOUR POCKETS! NO, THE POCKETS I LEFT YOU!"
+  },
+  "guile_feint": {
+    "description": "Feints at an enemy, steals BP and reveals who the target will attack next.",
+    "flavor": "AND NOW, A PEEK AT THE GUEST LIST!"
+  },
+  "guile_elastic": {
+    "description": "Strikes and steals BP while leaving a taunting clone to draw enemy attacks.",
+    "flavor": "MY UNDERSTUDY ACCEPTS ALL COMPLAINTS!"
+  },
+  "swap_face": {
+    "description": "Strikes an enemy and makes its attacks liable to hit its own allies.",
+    "flavor": "TRY THE SMILE! IT ITCHES LESS AFTER A WHILE!"
+  },
+  "prop_hammer": {
+    "description": "Pounds an enemy with a blunt prop hammer, shaving extra plates from inflated or rubber targets.",
+    "flavor": "GENUINE WOOD! COUNTERFEIT RESTRAINT!"
+  },
+  "balloon_escape": {
+    "description": "Lets Glenn dodge by flattening, briefly ignore Fire and block the next attempt to steal party BP.",
+    "flavor": "PLEASE DON'T FOLD THE PERFORMER AFTER USE!"
+  },
+  "honest_laugh": {
+    "description": "Leaves Glenn near death and Fragile to gain BP and make an ally's next hit count as honest Guile.",
+    "flavor": "No trick in this hand. Don't make me prove it again."
+  },
+  "prop_cannon": {
+    "description": "Fires a heavy Blunt, Fire and Guile blast through enemies in a line.",
+    "flavor": "FOR OUR FINAL ACT, PLEASE REMAIN VERY FAR AWAY!"
+  },
+  "the_last_joke": {
+    "description": "Consumes the party's BP to force Vaelos to laugh, letting subsequent hits bypass his shields and defense.",
+    "flavor": "Even god's got gap in his teeth."
+  },
+  "hz_static": {
+    "description": "Rattles enemies in a circle with HZ hits and Jams their magic casting.",
+    "flavor": "He tilts the noisy screen away from Sera."
+  },
+  "hz_white_noise": {
+    "description": "Batters a circle with white noise while temporarily hiding enemy weakness information from the party.",
+    "flavor": "Snow fills the goggles. His taped fingers keep their grip."
+  },
+  "56k_prayer": {
+    "description": "Strikes an enemy with HZ and Null, gaining damage from its debuffs and weakening Vaelos's defense when it hits him.",
+    "flavor": "The tubes brighten against his throat. His shoulders lock."
+  },
+  "red_bike_ghost": {
+    "description": "Dashes through enemies in a fiery line, slowing their gauges and actions and leaving oil fire that becomes an Ash Field.",
+    "flavor": "His yellow coat trails above the red wheels."
+  },
+  "akira_in_utero": {
+    "description": "Makes enemies across the battlefield temporarily weak to HZ without dealing damage and exposes Vaelos's true voice.",
+    "flavor": "He unfastens the coat. Cyan light spills over his taped feet."
+  },
+  "tune": {
+    "description": "Freely changes Static's frequency, ending VHS Blind and selecting the tags and support effects carried by his tuning.",
+    "flavor": "A steady picture. A small nod."
+  },
+  "null_omega": {
+    "description": "Strips tags, resistances and buffs from everyone in a circle, including allies, and grants weaknessless targets a temporary false weakness.",
+    "flavor": "The paper opens where his face ought to answer."
+  },
+  "miura_fold": {
+    "description": "Links enemy HP in a temporary fold, returning the pool's damage as true damage when it releases.",
+    "flavor": "A crease runs through the space between them."
+  },
+  "lotus_reverse": {
+    "description": "Unfolds an ally's recent past to reverse a fresh KO, refund spent MP and cleanse statuses, leaving a decoy to draw an attack.",
+    "flavor": "He smooths the crushed paper with the back of his hand."
+  },
+  "gold_leaf_severance": {
+    "description": "Spends Gold Leaf stacks to make party hits deal true damage across the battlefield and deny Vaelos his next action.",
+    "flavor": "The chime stops. Its gold keeps falling."
+  },
+  "kintsugi_mend": {
+    "description": "Restores an ally's HP and lost maximum HP, mending Crono's integrity when used on him.",
+    "flavor": "Papa, I can fill it without eating it."
+  },
+  "porcelain_memory": {
+    "description": "Strikes an enemy and adds the weakness tag Vaelos is holding.",
+    "flavor": "I kept the shape. I didn't keep you."
+  },
+  "null_spoon_hold": {
+    "description": "Places a learned weakness on an enemy so allied hits can exploit it for damage and shield shaving.",
+    "flavor": "The spoon stays level. I said so."
+  },
+  "light_bolt": {
+    "description": "Fires Light-tagged crossbow bolts at an enemy, opening plates keyed to Light.",
+    "flavor": "A crown doesn't make my hands ornamental."
+  },
+  "ward": {
+    "description": "Heals an ally and reduces the damage of their next incoming hit.",
+    "flavor": "You can be needed and still need help."
+  },
+  "vitreous_arrow": {
+    "description": "Shoots an enemy with Vitreous glass bolts.",
+    "flavor": "I asked for arrows, not another person to stand in front."
+  },
+  "eclipse_x_strike": {
+    "description": "Crono and Krona cross Astral and Ruin strikes, stripping buffs and plates at the crossing while straining Crono.",
+    "flavor": "Same stance. Watch bad wrist."
+  },
+  "overclocked_short_circuit": {
+    "description": "Sends an Astral, Ruin and Volt arc through metal, stopping at non-metal and shaving extra plates from Magnetized targets.",
+    "flavor": "Cut wires. Leave girl."
+  },
+  "solar_railgun": {
+    "description": "Strains Crono to fire him through a line of enemies, leaving overlapping watercolour and amber fields when the attack Breaks a target.",
+    "flavor": "Crono, may I count your nod as launch permission?"
+  },
+  "reinforced_guard": {
+    "description": "Takes Battle Strain now to reinforce Crono against Time Debt from upcoming gate jumps.",
+    "flavor": "Audio log: The seam isn't a handle. Stop carrying him by it."
+  },
+  "iron_maiden_scroll": {
+    "description": "Closes a Ruin and Ferro cage on enemies, strengthening ash and amber damage lingering inside.",
+    "flavor": "Latch holds. Stand clear of hinges."
+  },
+  "time_mines": {
+    "description": "Spends Sera's solidity to plant mercury mines at enemies' last turn-start positions, detonating when they return or are Rewound there.",
+    "flavor": "Cassia, mark where they looked pleased with themselves."
+  },
+  "fake_family_photo": {
+    "description": "Sera spends solidity to heal Crono in his galaxy state and ease his Battle Strain.",
+    "flavor": "Papa, stop trying to hide behind me. I'm transparent."
+  },
+  "solar_winds": {
+    "description": "Sends Astral wind through a broad cone, strengthened by Sunlight Stacks, while taking Battle Strain from Crono.",
+    "flavor": "Your scarf is learning the weather, little rot."
+  },
+  "triangulation": {
+    "description": "Strains Crono to dash along an active tether, land a guaranteed critical hit and extend Break.",
+    "flavor": "The vine bends beneath his foot and keeps its hold."
+  },
+  "spore_rail": {
+    "description": "Shreds an active tether into piercing shrapnel, releases stored shared damage as nearby healing and grows a walkable vine rail.",
+    "flavor": "Prune here. The hurt has already grown roots."
+  },
+  "mycelia_time_lapse": {
+    "description": "Speeds nearby spore ticks and extends Break without shaving plates, then refunds Sera's solidity cost.",
+    "flavor": "She calls this patient gardening. I'm being very patient, quickly."
+  },
+  "vitreous_refraction": {
+    "description": "Spends Sera's solidity to split Vitreous and Tachyon light into a fan of beams, strengthened when they pass through a tether.",
+    "flavor": "Vesper, your cat keeps pouncing on my elbows."
+  },
+  "refraction_needle": {
+    "description": "Spends Sera's solidity to split piercing Tachyon and Vitreous needles along branching lines, heavily shaving targets weak to their tags.",
+    "flavor": "The cat watches the needles. Vesper watches the cat's reflection."
+  },
+  "chrono_prism": {
+    "description": "Requires Crono's visible cracks and strains him to pause time for placement of a shield-shaving Astral, Vitreous and Tachyon circle.",
+    "flavor": "The cat rests a shadow-paw against the exposed wrist."
+  },
+  "prismlight_salvo": {
+    "description": "Fires a piercing Vitreous and Ferro rail of refracted shards aimed by the cat.",
+    "flavor": "The cat's corrections are not in my manual. I am keeping them."
+  },
+  "ash_graveyard": {
+    "description": "Strikes a circle with Ruin and Vitreous light, turning ash beneath it into a caustic floor that heals allies.",
+    "flavor": "Something grows here. Watch where you step."
+  },
+  "bloom_crown": {
+    "description": "Strikes around the casters and grows a canopy whose light heals allies and supplies Sunlight Stacks.",
+    "flavor": "Glass, you make a very peculiar leaf."
+  },
+  "masque_feint": {
+    "description": "Strikes an enemy, steals a buff and catches its next attack in a glass mask to reflect it.",
+    "flavor": "A FACE SO FINE YOU CAN SEE YOUR MISTAKES IN IT!"
+  },
+  "guilt_halo": {
+    "description": "Strikes around Crono, steals BP on a Break and briefly reduces his maximum-HP costs.",
+    "flavor": "Lean here. Painted shoulder's still shoulder."
+  },
+  "honest_stage": {
+    "description": "Requires Crono's visible cracks to cut a piercing Astral, Guile and Vitreous line through enemies and threads, shaving extra plates.",
+    "flavor": "No curtain this time, Captain."
+  },
+  "ashen_bash": {
+    "description": "Combines Crono's sword with Glenn's blunt prop blows against an enemy, at a Battle Strain cost to Crono.",
+    "flavor": "PLEASE ADMIRE THE SWORD WHILE I FIND MY HAMMER!"
+  },
+  "mercy_leap": {
+    "description": "Flings Sera through a line of enemies to reposition her, or uses Vesper's refracted leap to heal the party and clear Grief-Resonance.",
+    "flavor": "MIND THE LANDING! THE ARM'S STILL ATTACHED TO ME!"
+  },
+  "ruin_elastic": {
+    "description": "Hits an enemy with stretched Ruin ink and leaves a decoy to draw its next action.",
+    "flavor": "Ink copy volunteers. Accept offer."
+  },
+  "omega_annihilation": {
+    "description": "Collapses a circle to cancel a boss ultimate and reset its gauge, with repeated use costing Sera extra solidity.",
+    "flavor": "Sera counts him in with her fingers. He nods."
+  },
+  "tachyon_static": {
+    "description": "Spends Sera's solidity on a Tachyon and HZ line attack that raises caster evasion but hides the boss's next phase weaknesses.",
+    "flavor": "Her ghosts lean into the snow; his coat stays bright."
+  },
+  "anachronism_glass": {
+    "description": "Strikes a circle with Vitreous and HZ, granting allies inside a Glass Ward against incoming hits.",
+    "flavor": "Static braces the new pane. The cat leaves a pawprint of light."
+  },
+  "graviton_whiteout": {
+    "description": "Bombards a circle with magnetic HZ and Ferro, temporarily preventing enemy shield regeneration and rebuilding.",
+    "flavor": "His goggles and her gramophone settle on the same tremor."
+  },
+  "solar_railgun_static": {
+    "description": "Strains Crono to launch an Astral, HZ and Fire line attack, shaving extra plates when Static has tuned CARRION on the target.",
+    "flavor": "Static straightens the antenna. Crono lowers his shoulder."
+  },
+  "ferro_null": {
+    "description": "Strains Crono to pierce enemies with Ferro and Null, shaving plates regardless of weakness and increasing Dark affinity.",
+    "flavor": "The recording continues. I will not label this an accident."
+  },
+  "empress_cannon": {
+    "description": "Fires a piercing Ruin and Ferro gun barrage from bipedal Cassia, increasing Dark affinity with use.",
+    "flavor": "Heavy barrel. I'll carry front."
+  },
+  "origami_requiem": {
+    "description": "Strains Crono to dash through a fold line with Sera or Omega-Spekkio, leaving a gold field that gradually thaws Ruin.",
+    "flavor": "Paint gathers in the crease; a crane lifts clear of it."
+  },
+  "time_debt_paid": {
+    "description": "Spends Sera's solidity and Crono's integrity to heal the party and remove Glaze Erosion, with Light granting automatic revival.",
+    "flavor": "Papa, leave the pieces where I can reach them."
+  },
+  "porcelain_promise": {
+    "description": "Combines Crono's blade with Marle's Light bolts in a line, making Crono's next Astral technique cost no strain.",
+    "flavor": "You don't have to be warm for me to hold you."
+  },
+  "porcelain_promise_child": {
+    "description": "Heals allies around Crono and Vaelos, eases Crono's Battle Strain and mends his integrity.",
+    "flavor": "Your hand fits, Papa. You can stop checking."
+  },
+  "ashtear_paradox": {
+    "description": "Strains Crono to detonate an Astral, Ferro and Ruin singularity, strengthened by his galaxy state and granting Reinforced through high Cassia Synergy.",
+    "flavor": "Audio log: I asked for cooperation, not a smaller universe."
+  },
+  "ashtear_paradox_family": {
+    "description": "Costs Crono Battle Strain and Sera solidity to unleash an Astral, Ferro and Tachyon volley, with high Cassia Synergy granting Reinforced.",
+    "flavor": "The gramophone skips; Sera catches the missing beat."
+  },
+  "first_light_that_never_was": {
+    "description": "Strains Crono to release a wide Genesis blast that heals the party for the damage it deals.",
+    "flavor": "A dawn with no wound in its sky."
+  },
+  "first_light_fragment_i": {
+    "description": "Releases a weaker Genesis blast with Cassia, straining Crono and healing the party for damage dealt.",
+    "flavor": "The leaves open before the gramophone finds the sunrise."
+  },
+  "chrono_laugh": {
+    "description": "Strikes around the casters, splits shared shields into separate shields, Breaks the smallest and heals the party at the cost of strain and solidity.",
+    "flavor": "Glenn waits. Sera laughs before the painted smile returns."
+  },
+  "delta_storm": {
+    "description": "Strikes a triangular area with Astral, Ruin and Guile, gaining damage when the casters are near death and straining Crono.",
+    "flavor": "A phantom hand takes its place beside the empty sleeve."
+  },
+  "carnival_of_souls": {
+    "description": "Strikes around Glenn's glass-lit tent and adds BP that can temporarily exceed the party's cap.",
+    "flavor": "ROOM UNDER THE BIG TOP! EVEN FOR THE ONES WHO STOPPED CLAPPING!"
+  },
+  "washi_hollow_rebirth": {
+    "description": "Spends Crono's maximum HP to fully heal the party and strip plates from enemies caught in a sufficiently Boosted Venn overlap.",
+    "flavor": "Light reaches the floor through seams nobody covers."
+  },
+  "omega_triple": {
+    "description": "Strikes a wide circle, erasing even allied resistances there and granting the party Null Shield for the battle at a solidity cost to Sera.",
+    "flavor": "Static catches the falling paper before it touches her scarf."
+  },
+  "family_porcelain": {
+    "description": "With sufficient Light, costs strain and solidity to mend Crono's integrity and reinforce the party against Time Debt from upcoming gate jumps.",
+    "flavor": "Papa, Little Sister left room for my hand."
+  },
+  "fake_family_photo_real": {
+    "description": "Heals allies in a circle, eases Crono's Battle Strain and reinforces the party for its next gate jump without requiring his galaxy state.",
+    "flavor": "This time, nobody has to stand inside anybody else."
+  },
+  "first_light_child": {
+    "description": "Strikes around the family, splits shared shields or Mycelia pools into individual shields, Breaks emptied shields and heals the party for damage dealt.",
+    "flavor": "The blocks fall into open hands instead of onto the floor."
+  },
+  "promise_across_rust": {
+    "description": "Mends Crono's integrity and plants a permanent garden that reduces Glaze Erosion, paid for with strain, solidity and party BP.",
+    "flavor": "[CARE CONTINUES. RUST IS NOT A STOP COMMAND.]"
+  }
+}

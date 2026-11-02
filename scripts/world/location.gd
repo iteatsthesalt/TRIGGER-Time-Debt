@@ -165,7 +165,25 @@ func add_npc(id: StringName, sprite_id: String, pos: Vector3, facing: String = "
 	if script != &"":
 		var it := Interactable.make(n, "Talk", Vector3(0, 0.8, 0), script, prompt, 0.9)
 		it.set_meta("npc", n)
+	elif not Data.ambient_lines(location_id).is_empty():
+		var it2 := Interactable.make(n, "Talk", Vector3(0, 0.8, 0), &"", prompt, 0.9)
+		it2.set_meta("npc", n)
+		it2.callback = _say_ambient_line.bind(n)
 	return n
+
+
+## Townsfolk with no script of their own say one of the location's ambient lines (data/text/ambient.json),
+## each NPC starting at a different line and rotating, so two bumps never repeat the same line in a row.
+func _say_ambient_line(by: Node, npc: FieldNPC) -> void:
+	var lines: Array = Data.ambient_lines(location_id)
+	if lines.is_empty():
+		return
+	var start: int = absi(hash(String(npc.npc_id))) % lines.size()
+	var n: int = int(npc.get_meta("ambient_index", start))
+	npc.set_meta("ambient_index", (n + 1) % lines.size())
+	if by is Node3D:
+		npc.face_toward((by as Node3D).global_position)
+	Story.run(&"", [{"say": String(lines[n])}])
 
 
 ## A cast member standing in the scene before (or without) joining the party: a full CombatActor built

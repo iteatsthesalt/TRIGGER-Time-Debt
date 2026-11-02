@@ -1,0 +1,77 @@
+{
+  "tonic": {
+    "description": "Restores some of an ally's HP.",
+    "flavor": "A mouthful, then someone checks the wrist again.",
+    "found": "Carried at the journey's beginning."
+  },
+  "mid_tonic": {
+    "description": "Restores more of an ally's HP than a Tonic.",
+    "flavor": "Enough to stand; not an excuse to keep standing.",
+    "found": "Acquisition source not yet recorded."
+  },
+  "ether": {
+    "description": "Restores an ally's MP.",
+    "flavor": "For the kind of tired a bottle can reach.",
+    "found": "Carried at the journey's beginning."
+  },
+  "revive": {
+    "description": "Revives a fallen ally with part of their HP restored.",
+    "flavor": "Save the lecture until they're sitting up.",
+    "found": "Acquisition source not yet recorded."
+  },
+  "cobalt_wash": {
+    "description": "Clears Ink Blot, reveals hidden washi paths and paints untouchable paper foes.",
+    "flavor": "Blue admits what white paint keeps denying.",
+    "found": "Acquisition source not yet recorded."
+  },
+  "time_atom": {
+    "description": "Repairs a small amount of Crono's porcelain integrity.",
+    "flavor": "A speck of time that can still be given back.",
+    "found": "From Atom-Eaters in Vaelos Heart."
+  },
+  "tungsten_scrap": {
+    "description": "Provides tungsten bracer material for crafting.",
+    "flavor": "Lucca kept jars for this sort of almost-nothing.",
+    "found": "Dropped by broken Porcelain Shardlings."
+  },
+  "thoracic_ring_part": {
+    "description": "Provides a salvaged component for a later arm cannon.",
+    "flavor": "The masks still count it as theirs.",
+    "found": "Salvage the Atrium's Shard Doll."
+  },
+  "bekkler_doll_small": {
+    "description": "Unlocks the training doll's Amber Rift and the choice to keep a vial when sealing Krona's vein.",
+    "flavor": "At six, she picked the prize with Papa's hair.",
+    "found": "Lucca's workbench shelf, Atrium Horologe."
+  },
+  "gold_leaf_memory_flake": {
+    "description": "Combines with Cobalt Nodachi pigment for Crono's Gold Leaf repair in the Bone-Tree.",
+    "flavor": "The hearth went cold; the shape of home didn't.",
+    "found": "Tanaka hearth, after three burnings."
+  },
+  "vaelos_tooth": {
+    "description": "Increases Astral damage against Lavos-spawn.",
+    "flavor": "A clean young voice from a mouth that isn't there.",
+    "found": "Dropped by Goyama's defeated Daimyo."
+  },
+  "lavos_fibre_wrap": {
+    "description": "Strengthens Krona's Defiled Masamune with fibre torn from the Daimyo.",
+    "flavor": "Strong binding. Keep eyes on blade.",
+    "found": "Tear fibre from Goyama's Daimyo."
+  },
+  "cobalt_nodachi": {
+    "description": "Unlocks Krona's cobalt strike, reveals hidden Chronoslips and opens a portal back to U1.",
+    "flavor": "One sunrise sharpened into something she can carry.",
+    "found": "The vault beneath Goyama Castle."
+  },
+  "tungsten_wire_loom_bracer": {
+    "description": "Increases damage dealt just after an enemy is Broken.",
+    "flavor": "It came loose when the house finally unclenched.",
+    "found": "Reward for defeating Atrium Cradle."
+  },
+  "epoch_gauntlet": {
+    "description": "Can be overcharged to unleash an Astral burst.",
+    "flavor": "The wing-core flies no farther than his wrist now.",
+    "found": "Glenn's gift in Guardia's courtyard."
+  }
+}

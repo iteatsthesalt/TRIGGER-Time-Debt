@@ -55,6 +55,7 @@ func run() -> void:
 		test_coordinator_broken_body_is_cover,
 		test_coordinator_statue_and_killed_while_broken,
 		test_data_registry_loads_and_validates,
+		test_text_layer_loads_and_covers,
 		test_possibility_engine_flags_affinity_beckons,
 		test_save_roundtrip,
 		test_story_runner_inline_script,
@@ -1017,6 +1018,36 @@ func test_data_registry_loads_and_validates() -> void:
 	check(Data.characters.has(&"crono") and Data.characters.has(&"sera"), "character kits present")
 	check(Data.dialogue.has(&"prologue_breakfast"), "prologue script present")
 	check(Data.flags.size() >= 20, "flag definitions present (%d)" % Data.flags.size())
+
+
+func test_text_layer_loads_and_covers() -> void:
+	for kind in [&"bestiary", &"techs", &"items", &"ambient", &"codex"]:
+		check(Data.text.has(kind), "text layer kind %s loaded" % kind)
+	check(Data.text_gaps.is_empty(), "every enemy, boss, tech, item and flag state has prose; missing: %s" % ", ".join(Data.text_gaps.slice(0, 12)))
+	var b: Dictionary = Data.bestiary(&"dust_mote_cluster")
+	check(b.has("name") and b.has("entry") and b.has("weak_hint") and b.has("break_line"), "a bestiary entry has name, entry, weak_hint and break_line")
+	check(not Data.bestiary(&"atrium_cradle").is_empty(), "bosses are in the bestiary under their id")
+	check(Data.bestiary(&"no_such_thing").is_empty(), "an unknown key reads as empty, not null")
+	var t: Dictionary = Data.tech_text(&"astral_slash")
+	check(not String(t.get("description", "")).is_empty() and not String(t.get("flavor", "")).is_empty(), "a tech has a description and a flavor line")
+	var digits := RegEx.create_from_string("[0-9]")
+	var numbered: int = 0
+	for id in (Data.text[&"techs"] as Dictionary).keys():
+		if digits.search(String((Data.text[&"techs"][id] as Dictionary).get("description", ""))) != null:
+			numbered += 1
+	check_eq(numbered, 0, "tech descriptions carry no numbers (the brief's rule)")
+	check_eq(Data.ambient_lines(&"guardia_kitchen").size(), 12, "twelve ambient lines for the kitchen")
+	check(Data.ambient_lines(&"nowhere_at_all").is_empty(), "no lines for an unknown location")
+	check(not Data.codex_page(&"Prologue_Fall", &"Teach_Her_To_Land").is_empty(), "a codex page per flag state")
+	check(Data.codex_page(&"Prologue_Fall", &"Not_A_State").is_empty(), "no page for an unknown state")
+	check(not Data.codex_title(&"Prologue_Fall").is_empty(), "codex pages have a title")
+	check(not String(Data.item_text(&"epoch_gauntlet").get("found", "")).is_empty(), "dialogue-granted key items have text too")
+	var open: Array[String] = []
+	for id in (Data.text[&"items"] as Dictionary).keys():
+		if String((Data.text[&"items"][id] as Dictionary).get("found", "")) == "Acquisition source not yet recorded.":
+			open.append(String(id))
+	open.sort()
+	check_eq(",".join(open), "cobalt_wash,mid_tonic,revive", "exactly the three acquisition sources Nich still owes (TRI-79) are open")
 
 
 func test_possibility_engine_flags_affinity_beckons() -> void:

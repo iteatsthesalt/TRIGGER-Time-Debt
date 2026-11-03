@@ -1,5 +1,6 @@
 ## Smoke test and screenshot capture. Boots the game's main scene (or --scene=<location>), runs for
-## --frames=N frames with no script errors, saves screenshots to /tmp/captures/ every --every=N frames.
+## --frames=N frames with no script errors, saves screenshots to /tmp/captures/ every --every=N frames. Saves are
+## suspended (user://scratch), so a capture that reaches an autosave never writes the player's slot.
 ##   xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --rendering-driver vulkan --audio-driver Dummy \
 ##     --script res://tools/capture/smoke.gd -- --frames=600 --scene=test_diorama --out=/tmp/captures
 extends SceneTree
@@ -30,6 +31,8 @@ func _initialize() -> void:
 
 
 func _boot() -> void:
+	# a capture plays real scenes, which autosave: keep it out of the player's slots and settings (Saves)
+	root.get_node("Saves").set("suspended", true)
 	var packed: PackedScene = load("res://scenes/boot/boot.tscn")
 	var node: Node = packed.instantiate()
 	root.add_child(node)

@@ -192,11 +192,31 @@ func _auto_advance(line: int) -> void:
 	advanced.emit()
 
 
+## A caption alone (no line up yet, e.g. a script's first command) shows the box without its panel, so the caption
+## is drawn and no stale line comes back with it.
 func caption(text: String, seconds: float) -> void:
+	if not visible:
+		panel.visible = false
+		prompt_arrow.visible = false
+		visible = true
 	caption_label.text = text
 	caption_label.visible = true
 	await get_tree().create_timer(seconds).timeout
 	caption_label.visible = false
+
+
+## A line or a choice is up and waits for the player.
+func awaiting_input() -> bool:
+	return _wait_advance or not _choice_buttons.is_empty()
+
+
+## The screen is fading out (Router.fading_out): a line the player has already read leaves with the scene; a line
+## still waiting for confirm, and a caption, stay (they are drawn over the black).
+func clear_read_line() -> void:
+	if awaiting_input():
+		return
+	panel.visible = false
+	prompt_arrow.visible = false
 
 
 ## Show options and return the chosen index.

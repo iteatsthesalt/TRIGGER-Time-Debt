@@ -2,8 +2,10 @@
 ## Slot 0 is the autosave every checkpoint writes; 1..SLOTS are manual slots. Every file is written atomically
 ## (a temporary file renamed over it), so an interrupted write leaves the previous file whole. A slot is loaded
 ## only when it parses as a save this build understands (status): a corrupt or newer-format file reads as no save.
-## `suspended` keeps every write in a scratch directory (user://scratch): the probes and the test runner set it,
-## and the `--no-save` user argument does too, so a headless run never touches the player's saves or settings.
+## `suspended` keeps every write in this process's own scratch directory (user://scratch/<pid>, ScratchDir): the
+## probes, the test runner and the capture harness set it, the `--no-save` user argument and a debug start
+## (BootArgs.suspends_saves) do too, so such a run never touches the player's saves or settings, and two of them
+## running at once never touch each other's.
 extends Node
 
 signal saved(slot: int)
@@ -23,14 +25,29 @@ const CORRUPT := &"corrupt"
 const NEWER := &"newer"
 
 var suspended: bool = OS.get_cmdline_user_args().has("--no-save")
+var _scratch: String = ""
 
 
 func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(dir())
 
 
+## The run is over: its scratch directory goes with it.
+func _exit_tree() -> void:
+	if _scratch != "":
+		ScratchDir.remove(_scratch)
+		_scratch = ""
+
+
+## This process's scratch directory, claimed (emptied) on its first use: SCRATCH_DIR/<pid>.
+func scratch_dir() -> String:
+	if _scratch == "":
+		_scratch = ScratchDir.claim(SCRATCH_DIR, OS.get_process_id())
+	return _scratch
+
+
 func dir() -> String:
-	return SCRATCH_DIR + "/saves" if suspended else DIR
+	return scratch_dir() + "/saves" if suspended else DIR
 
 
 func slot_path(slot: int) -> String:
@@ -38,7 +55,7 @@ func slot_path(slot: int) -> String:
 
 
 func settings_path() -> String:
-	return "%s/%s" % [SCRATCH_DIR, SETTINGS_FILE] if suspended else "user://" + SETTINGS_FILE
+	return "%s/%s" % [scratch_dir(), SETTINGS_FILE] if suspended else "user://" + SETTINGS_FILE
 
 
 func save(slot: int) -> bool:
@@ -134,11 +151,36 @@ func _read(slot: int) -> Array:
 	return [LOADABLE, migrate(d)]
 
 
-## Bring an older save up to VERSION. Version 1 differs only in carrying the settings (load adopts them once)
-## and in String-keyed codex leans (Flags.from_save re-keys them), so the migration only stamps the version.
+## Flag ids a version 1 save can hold that the game no longer reads, and the "Name:State" each became: Glenn's
+## offer and refusal were two flags before they were the states of Glenn_Duals (296eba2, DATA-15).
+const RETIRED_FLAGS_V1: Dictionary = {
+	"Glenn_Duals_Offered": "Glenn_Duals:Granted",
+	"Glenn_Duals_Refused": "Glenn_Duals:Refused",
+}
+
+
+## Bring an older save up to VERSION. Version 1 carried the settings (load adopts them once), String-keyed codex
+## leans (Flags.from_save re-keys them) and the retired flag ids of RETIRED_FLAGS_V1, renamed here: a refusal kept
+## under its old id would read as no refusal, and the honour check that writes the new one never runs again.
 static func migrate(d: Dictionary) -> Dictionary:
+	if int(d.get("version", 1)) < 2:
+		var engine: Variant = d.get("flags", {})
+		if engine is Dictionary and (engine as Dictionary).get("flags") is Dictionary:
+			rename_flags((engine as Dictionary)["flags"], RETIRED_FLAGS_V1)
 	d["version"] = VERSION
 	return d
+
+
+## Rename the flags of `flags` (id -> state, a save's form) that `retired` lists (old id -> "Name:State"); a flag
+## already set under its new id keeps its state.
+static func rename_flags(flags: Dictionary, retired: Dictionary) -> void:
+	for old in retired.keys():
+		if not flags.has(old):
+			continue
+		var to: PackedStringArray = FlagRef.split(String(retired[old]))
+		if not flags.has(to[0]):
+			flags[to[0]] = to[1] if to[1] != "" else "set"
+		flags.erase(old)
 
 
 ## Write `text` to `path` through a temporary file renamed over it.

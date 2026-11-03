@@ -299,6 +299,87 @@ func test_suspended_saves_and_settings_stay_in_the_scratch_directory() -> void:
 	for probe in ["prologue_probe", "ch1_probe", "battle_probe"]:
 		var src: String = (load("res://tools/build/%s.gd" % probe) as GDScript).source_code
 		check(src.contains("get_node(\"Saves\").set(\"suspended\", true)"), "%s suspends Saves before playing" % probe)
+	# F2: the capture harness boots real scenes that autosave (render.sh and check.sh run it), and so does a
+	# debug start through boot.gd: neither may write the player's slot
+	var smoke: String = (load("res://tools/capture/smoke.gd") as GDScript).source_code
+	var at: int = smoke.find("func _boot")
+	check(at >= 0 and smoke.find("set(\"suspended\", true)", at) >= 0 and smoke.find("set(\"suspended\", true)", at) < smoke.find("boot.tscn", at), "smoke.gd suspends Saves before it boots the game")
+	var boot: String = (load("res://scenes/boot/boot.gd") as GDScript).source_code
+	var sus: int = boot.find("BootArgs.suspends_saves(")
+	check(sus >= 0 and sus < boot.find("Router.go(") and sus < boot.find("BootArgs.apply("), "boot.gd suspends a debug start's saves before it sets state or goes anywhere")
+
+
+## F5: every suspended run has its own scratch directory (SCRATCH_DIR/<pid>), so a probe and a test run on one
+## machine never read or overwrite each other's autosave; a reused process id starts empty, a live neighbour's
+## directory is left alone and a dead one's empty leftover is pruned.
+func test_each_suspended_run_has_its_own_scratch_directory() -> void:
+	var mine: String = Saves.SCRATCH_DIR.path_join(str(OS.get_process_id()))
+	check_eq(Saves.scratch_dir(), mine, "this run's scratch is named by its process id")
+	check(Saves.slot_path(0).begins_with(mine + "/"), "its autosave is in it (%s)" % Saves.slot_path(0))
+	check(Saves.settings_path().begins_with(mine + "/"), "and so are its settings")
+	_snap()
+	Game.new_game()
+	Game.checkpoint = &"t_scratch_mine"
+	check(Saves.save(0), "this run autosaves")
+	# another run (another process id) writing its own autosave beside ours, as a concurrent ch1_probe does
+	var neighbour: String = Saves.SCRATCH_DIR.path_join("2147480001")
+	var theirs: Dictionary = Saves.peek(0).duplicate(true)
+	(theirs["game"] as Dictionary)["checkpoint"] = "t_scratch_theirs"
+	check(Saves.write_atomic(neighbour.path_join("saves/slot_00.json"), JSON.stringify(theirs)), "the neighbour autosaves")
+	check_eq(String((Saves.peek(0).get("game", {}) as Dictionary).get("checkpoint", "")), "t_scratch_mine", "our slot 0 is still ours")
+	ScratchDir.remove(neighbour)
+	Saves.delete(0)
+	_restore()
+	Game.new_game()
+	var base: String = "user://scratch_dir_test"
+	ScratchDir.remove(base)
+	var other: String = ScratchDir.claim(base, 4242)
+	check_eq(other, base.path_join("4242"), "a process id is a directory")
+	check(Saves.write_atomic(other.path_join("saves/slot_00.json"), "{}"), "a run writes in it")
+	check_eq(ScratchDir.claim(base, 4242), other, "a reused process id claims the same directory")
+	check(not FileAccess.file_exists(other.path_join("saves/slot_00.json")), "emptied: a run never reads a dead run's autosave")
+	check(Saves.write_atomic(base.path_join("777/saves/slot_00.json"), "{}"), "a live neighbour's autosave")
+	DirAccess.make_dir_recursive_absolute(base.path_join("778/saves"))
+	DirAccess.make_dir_recursive_absolute(base.path_join("saves"))
+	ScratchDir.claim(base, 4243)
+	check(FileAccess.file_exists(base.path_join("777/saves/slot_00.json")), "is left alone by another run's claim")
+	check(not DirAccess.dir_exists_absolute(base.path_join("778")), "a dead run's leftover with nothing in it is pruned")
+	check(DirAccess.dir_exists_absolute(base.path_join("saves")), "an older build's flat saves/ is not touched")
+	ScratchDir.remove(base)
+	check(not DirAccess.dir_exists_absolute(base), "remove takes the whole tree")
+
+
+## F6: a version 1 save holds Glenn's verdict under the flag ids of its day (Glenn_Duals_Offered / _Refused).
+## Loading it renames them to the states of Glenn_Duals, so a refused player still hears the refusal
+## (ch1_glenn_after) and the verdict stays on record, since the honour check that writes it never runs again.
+func test_a_version_1_save_keeps_glenns_verdict() -> void:
+	_snap()
+	for case in [["Glenn_Duals_Refused", &"Refused", "Mend what you broke"], ["Glenn_Duals_Offered", &"Granted", "Rest when Robo"]]:
+		Game.new_game()
+		var d: Dictionary = {"version": 1, "game": Game.to_save(), "flags": Flags.to_save(), "universe": 0, "story": {}}
+		(d["flags"]["flags"] as Dictionary)[String(case[0])] = "set"
+		(d["flags"]["flags"] as Dictionary)["Glenn_Honour_Checked"] = "set"
+		check(Saves.write_atomic(Saves.slot_path(9), JSON.stringify(d)), "a version 1 slot with %s" % case[0])
+		check(Saves.load(9), "loads")
+		check(Flags.is_state(&"Glenn_Duals", case[1]), "%s is Glenn_Duals:%s" % [case[0], case[1]])
+		check(not Flags.has(StringName(String(case[0]))), "the retired id is gone")
+		check(Flags.has(&"Glenn_Honour_Checked"), "the honour check stays done")
+		var said: Array[String] = []
+		var cb := func(_who: String, text: String) -> void: said.append(text)
+		Story.line_shown.connect(cb)
+		_fast_story()
+		await Story.run(&"ch1_glenn_after")
+		Story.line_shown.disconnect(cb)
+		check(said.size() == 1 and said[0].begins_with(String(case[2])), "Glenn speaks to the verdict (got %s)" % str(said))
+	var kept: Dictionary = {"Glenn_Duals_Refused": "set", "Glenn_Duals": "Granted"}
+	Saves.rename_flags(kept, Saves.RETIRED_FLAGS_V1)
+	check_eq(kept, {"Glenn_Duals": "Granted"}, "a flag already under its new id keeps its state")
+	for old in Saves.RETIRED_FLAGS_V1.keys():
+		check_eq(FlagRef.error(String(Saves.RETIRED_FLAGS_V1[old]), Data.flags), "", "%s becomes a defined flag state" % old)
+	Saves.delete(9)
+	_slow_story()
+	_restore()
+	Game.new_game()
 
 
 # ---------------------------------------------------------------- porcelain_stress (CORE-21)
@@ -366,6 +447,53 @@ func test_a_field_defeat_at_five_percent_starts_the_siege() -> void:
 	Engine.time_scale = 1.0
 	check_eq(Flags.counter(AtriumSiege.COUNTER), sieges + 1, "the defeat's -5 reached 0 and the siege ran (check 25)")
 	check_near(Game.crono_integrity, 20.0, 0.001, "Crono stands reglazed at 20")
+	_restore()
+	Game.new_game()
+
+
+## F3: a save made while the siege is owed (the Cradle's `won` save, the dummy's autosave: both run before the
+## siege's coroutine gets the idle field) holds the flatline. Continuing it the title's way (Saves.load, then
+## Router.go) lands at integrity 0, and the siege starts on arrival: Atrium_Siege +1 and Crono reglazed to 20.
+func test_continue_at_the_flatline_starts_the_siege() -> void:
+	_snap()
+	Game.new_game()
+	_fast_story()
+	var router_scene: Node = Router.current_scene
+	var router_loc: StringName = Router.current_location
+	Router.current_scene = null
+	check(await Router.go(&"test_arena", &"start", 0.0), "a field to stand in")
+	var sieges: int = Flags.counter(AtriumSiege.COUNTER)
+	await Story.run(&"t_flatline_save", [{"integrity": -200}, {"say": "The floor comes up.", "who": "narrator"}, {"save": 0}, {"end": true}])
+	var t: float = 0.0
+	while (AtriumSiege.running() or Flags.counter(AtriumSiege.COUNTER) == sieges) and t < 5.0:
+		await get_tree().create_timer(0.05).timeout
+		t += 0.05
+	var slot: Dictionary = Saves.peek(0)
+	check_near(float((slot.get("game", {}) as Dictionary).get("crono_integrity", -1.0)), 0.0, 0.001, "the save made while the siege was owed holds the flatline")
+	check_eq(int(((slot.get("flags", {}) as Dictionary).get("counters", {}) as Dictionary).get(String(AtriumSiege.COUNTER), 0)), sieges, "and no siege yet")
+	# quit to the title: no Location is up while the save loads (a field would hear its integrity change)
+	Router.current_scene.free()
+	Router.current_scene = null
+	get_tree().current_scene = null
+	Game.new_game()
+	check(Saves.load(0), "Continue loads the autosave")
+	check(not AtriumSiege.running(), "loading alone starts nothing")
+	check_near(Game.crono_integrity, 0.0, 0.001, "at the flatline")
+	check(await Router.go(Game.location, Game.spawn_point, 0.0), "and lands where it was made (title.gd's route)")
+	t = 0.0
+	while (AtriumSiege.running() or Flags.counter(AtriumSiege.COUNTER) == sieges) and t < 5.0:
+		await get_tree().create_timer(0.05).timeout
+		t += 0.05
+	check_eq(Flags.counter(AtriumSiege.COUNTER), sieges + 1, "the siege starts on arrival (check 25; Ending 5 counts it)")
+	check_near(Game.crono_integrity, AtriumSiege.REGLAZE_TO, 0.001, "and Sera reglazes Crono")
+	var here: Node = Router.current_scene
+	if is_instance_valid(here):
+		here.free()
+	Router.current_scene = router_scene
+	Router.current_location = router_loc
+	get_tree().current_scene = null
+	Saves.delete(0)
+	_slow_story()
 	_restore()
 	Game.new_game()
 

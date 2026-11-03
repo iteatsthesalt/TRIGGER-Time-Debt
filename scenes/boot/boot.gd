@@ -10,11 +10,16 @@
 ##   --integrity=<n>                   set Crono's integrity
 ##   --flag=Name:State                 set a flag (repeatable)
 ##   --say=<text>                      show one narrator line once the scene is up (capture/debug)
+##   --save                            let a debug start write the player's own saves and settings: without it any
+##                                     argument above but --say (and a --scene of the title) keeps them in the
+##                                     scratch directory (BootArgs.suspends_saves, Saves.suspended)
 ## Battle arguments are read elsewhere: --autobattle by BattleScene (scripts/battle/battle_scene.gd) and the test
 ## arena, --boss=<id> and --boss_hp=<n> by the test arena (scenes/test/arena.gd).
 extends Node
 
 func _ready() -> void:
+	if BootArgs.suspends_saves(OS.get_cmdline_user_args()):
+		Saves.suspended = true  # a made-up state never overwrites the player's autosave
 	var target: StringName = &"title"
 	var spawn: StringName = &"start"
 	for arg in OS.get_cmdline_user_args():

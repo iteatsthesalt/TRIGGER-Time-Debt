@@ -17,6 +17,9 @@ signal camera_requested(mode: String, focus: Node)
 
 ## The dialogue history keeps the last lines only (a long session would otherwise hold every line ever shown).
 const HISTORY_MAX := 200
+## The dialogue box's CanvasLayer: above the Router's transition fade (Router.FADE_LAYER), so a line or a caption
+## shown on a black screen is drawn over the black, never under it (a held opening black, a time-skip caption).
+const LAYER := 110
 
 var running: bool = false
 var current_id: StringName = &""
@@ -41,12 +44,14 @@ var _vars: Dictionary = {}
 
 func _ready() -> void:
 	layer = CanvasLayer.new()
-	layer.layer = 50
+	layer.layer = LAYER
 	add_child(layer)
 	box = DialogueBox.new()
 	box.visible = false
 	layer.add_child(box)
 	Game.new_game_started.connect(reset)
+	# the box is above the fade: a line already read must not stay up while the screen goes black
+	Router.fading_out.connect(box.clear_read_line)
 
 
 func is_running() -> bool:

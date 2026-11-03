@@ -419,3 +419,71 @@ func test_every_location_cue_has_a_sound() -> void:
 			seen += 1
 			check(Audio._find_sfx(m.get_string(1)) != null, "%s (%s) plays a file under audio/sfx" % [m.get_string(1), path.get_file()])
 	check(seen > 20, "the cues were found (%d)" % seen)
+
+
+# ---------------------------------------------------------------- a New Game's wake over the held black (F1)
+
+## Press and release `action` through the root viewport, as a key does (Viewport.push_input, _unhandled_input).
+func _tap(action: String) -> void:
+	for on: bool in [true, false]:
+		var ev := InputEventAction.new()
+		ev.action = action
+		ev.pressed = on
+		root.push_input(ev)
+		await get_tree().process_frame
+
+
+func _wait(cond: Callable, max_s: float) -> bool:
+	var t: float = 0.0
+	while not bool(cond.call()) and t < max_s:
+		await get_tree().create_timer(0.05).timeout
+		t += 0.05
+	return bool(cond.call())
+
+
+## A New Game as the title starts it (Game.new_game, then Router.go to the kitchen), played by hand: the kitchen
+## holds the screen black for the wake, and the wake's caption and every line are drawn over that black and wait
+## for the player's confirm, which real key presses give. The black lifts after the wake and breakfast begins.
+func test_a_new_games_wake_is_read_over_the_held_black() -> void:
+	Game.new_game()
+	_slow_story()  # by hand: every line waits for confirm
+	var router_scene: Node = Router.current_scene
+	var router_loc: StringName = Router.current_location
+	Router.current_scene = null
+	var fade_layer: int = (Router.fade.get_parent() as CanvasLayer).layer
+	check(Story.layer.layer > fade_layer, "the dialogue layer (%d) is drawn above the transition fade (%d)" % [Story.layer.layer, fade_layer])
+	Router.go(&"guardia_kitchen", &"start", 0.1)  # the title's route (its fade shortened)
+	var box: DialogueBox = Story.box
+	check(await _wait(func() -> bool: return Story.current_id == &"prologue_wake" and box.caption_label.visible, 10.0), "the wake opens on its caption")
+	var k: Location = Router.current_scene as Location
+	if k != null:
+		_track(k)
+	check(k != null and k.holds_black, "the kitchen holds the black for its opening")
+	check(box.caption_label.is_visible_in_tree(), "the caption is drawn: its box is shown, not hidden under the script's start")
+	check_near(Router.fade.color.a, 1.0, 0.001, "and the screen behind it is black")
+	var wake_lines: int = Data.dialogue_script(&"prologue_wake").filter(func(c: Variant) -> bool: return (c as Dictionary).has("say")).size()
+	var seen: Array[String] = []
+	var taps: int = 0
+	var t: float = 0.0
+	while Story.current_id == &"prologue_wake" and taps < wake_lines * 4 and t < 20.0:
+		if not box.awaiting_input():
+			await get_tree().create_timer(0.05).timeout  # the caption's time, or the next line on its way
+			t += 0.05
+			continue
+		if seen.is_empty() or seen[-1] != box.text_label.text:
+			seen.append(box.text_label.text)
+			check(box.panel.is_visible_in_tree() and Router.fade.color.a > 0.999, "a wake line is drawn over the held black (%s...)" % box.text_label.text.left(24))
+		await _tap("confirm")  # finishes the typewriter, then advances the line
+		taps += 1
+	check_eq(seen.size(), wake_lines, "the player's confirms read every wake line")
+	check(seen.size() > 0 and seen[0].begins_with("Crono wakes"), "starting with the wake itself (got %s)" % str(seen.slice(0, 1)))
+	check(await _wait(func() -> bool: return Router.fade.color.a < 0.01, 4.0), "after the wake the black lifts")
+	check(await _wait(func() -> bool: return Story.current_id == &"prologue_breakfast", 4.0), "and breakfast begins")
+	_fast_story()
+	if box.awaiting_input():
+		box._auto_advance(box._line)  # the line shown by hand has no timer: release it; the rest runs by itself
+	check(await _idle(40.0), "the breakfast runs to its end")
+	Router.current_scene = router_scene
+	Router.current_location = router_loc
+	_slow_story()
+	Game.new_game()

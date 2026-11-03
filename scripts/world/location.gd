@@ -80,6 +80,8 @@ func _ready() -> void:
 	Story.camera_requested.connect(_on_story_camera)
 	Game.integrity_changed.connect(_on_game_integrity)
 	Game.debt_changed.connect(_on_game_debt)
+	# arriving at the flatline (a Continue from a save made while the siege was owed) starts the siege too (§16.3)
+	AtriumSiege.begin_if_owed(get_tree())
 	_start_after_ready()
 
 

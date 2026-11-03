@@ -17,7 +17,8 @@ case "$FRAMES" in
   ''|*[!0-9]*) echo "render.sh: frames must be a positive number, got '$FRAMES'" >&2; exit 2 ;;
 esac
 if [ "$FRAMES" -lt 1 ]; then echo "render.sh: frames must be at least 1" >&2; exit 2; fi
-SMOKE_ARGS=(--frames="$FRAMES" --every="$FRAMES" --scene="$SCENE" --prefix="$PREFIX")
+# --no-save: a capture's autosaves land in the scratch directory, never the player's slots (smoke.gd suspends too)
+SMOKE_ARGS=(--frames="$FRAMES" --every="$FRAMES" --scene="$SCENE" --prefix="$PREFIX" --no-save)
 if [ "${RENDER_DRY_RUN:-0}" = 1 ]; then echo "${SMOKE_ARGS[*]} $*"; exit 0; fi
 mkdir -p /tmp/captures
 # Godot is a native executable: under Git Bash it needs the Windows spelling of /tmp/captures.

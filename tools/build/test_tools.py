@@ -327,11 +327,20 @@ class RenderArgs(unittest.TestCase):
 
     def test_the_documented_forms(self):
         self.assertEqual(self._dry("test_lineup", "lineup", "--", "--ids=crono"),
-                         (0, "--frames=30 --every=30 --scene=test_lineup --prefix=lineup --ids=crono"))
+                         (0, "--frames=30 --every=30 --scene=test_lineup --prefix=lineup --no-save --ids=crono"))
         self.assertEqual(self._dry("test_lineup", "lineup", "30", "--", "--ids=crono,sera", "--anim=walk"),
-                         (0, "--frames=30 --every=30 --scene=test_lineup --prefix=lineup --ids=crono,sera --anim=walk"))
-        self.assertEqual(self._dry()[1], "--frames=30 --every=30 --scene=test_diorama --prefix=shot")
+                         (0, "--frames=30 --every=30 --scene=test_lineup --prefix=lineup --no-save --ids=crono,sera --anim=walk"))
+        self.assertEqual(self._dry()[1], "--frames=30 --every=30 --scene=test_diorama --prefix=shot --no-save")
         self.assertEqual(self._dry("a", "b", "x")[0], 2, "a frame count that is not a number is refused")
+
+    def test_a_capture_never_writes_the_players_saves(self):
+        """F2: a capture that reaches an autosave (a Chapter 1 beat, --demo=cradle) must not write user://saves."""
+        for args in [(), ("atrium", "loft", "120", "--", "--checkpoint=ch1_loft")]:
+            rc, out = self._dry(*args)
+            self.assertEqual(rc, 0)
+            self.assertIn("--no-save", out.split(), f"render.sh {' '.join(args)} passes --no-save")
+        with open(os.path.join(ROOT, "tools", "capture", "smoke.gd"), encoding="utf-8") as f:
+            self.assertIn('get_node("Saves").set("suspended", true)', f.read(), "smoke.gd suspends Saves itself")
 
 
 if __name__ == "__main__":

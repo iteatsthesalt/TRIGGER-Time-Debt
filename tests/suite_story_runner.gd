@@ -377,3 +377,52 @@ func test_a_script_waiting_on_its_battle_leaves_the_input_to_the_battle() -> voi
 	Story.battle_requested.disconnect(cb)
 	Story.script_finished.disconnect(fin)
 	_slow_story()
+
+
+# ---------------------------------------------------------------- lines and captions over a black screen (F1)
+
+## Chapter 1's time skip, as the Atrium plays it (Router.fade_out, then ch1_time_skip): its caption is the script's
+## first command and the screen is black, yet it is drawn: the box shows for it, above the fade.
+func test_a_caption_on_a_black_screen_is_drawn_over_it() -> void:
+	_fast_story()
+	Story.auto_advance_s = 0.4  # the caption's time on screen
+	await Router.fade_out(0.0)
+	check(not Story.box.visible, "no line is up before the time skip")
+	Story.run(&"ch1_time_skip")
+	await get_tree().process_frame
+	var box: DialogueBox = Story.box
+	check(box.caption_label.is_visible_in_tree(), "the caption is drawn although no line came before it")
+	check(box.caption_label.text.contains("A few days later"), "it is the time skip's caption (got %s)" % box.caption_label.text)
+	check(not box.panel.is_visible_in_tree(), "alone: no empty or stale dialogue panel comes with it")
+	check(Story.layer.layer > (Router.fade.get_parent() as CanvasLayer).layer, "and it is drawn above the black fade")
+	check_near(Router.fade.color.a, 1.0, 0.001, "the screen is black behind it")
+	while Story.is_running():
+		await get_tree().process_frame
+	await Router.fade_in(0.0)
+	_slow_story()
+
+
+## A line already read does not hang over the black: a fade-out clears it (Router.fading_out); a line still waiting
+## for confirm stays up over the black, since the box is drawn above the fade.
+func test_a_fade_out_clears_a_read_line_but_not_one_waiting() -> void:
+	_fast_story()
+	await Story.run(&"t_read_then_black", [
+		{"say": "read already", "who": "narrator"},
+		{"fade": "out", "s": 0.0},
+		{"caption": "after the fade"},
+		{"end": true},
+	])
+	check(Story.box.text_label.text == "read already" and not Story.box.panel.visible, "the read line left with the fade")
+	await Router.fade_in(0.0)
+	_slow_story()
+	var box: DialogueBox = Story.box
+	Story.run(&"t_waiting_on_black", [{"say": "still waiting", "who": "narrator"}, {"end": true}])
+	await get_tree().process_frame
+	check(box.awaiting_input(), "the line waits for confirm")
+	await Router.fade_out(0.0)
+	check(box.panel.is_visible_in_tree() and box.text_label.text == "still waiting", "a waiting line stays up over the black")
+	box._auto_advance(box._line)
+	while Story.is_running():
+		await get_tree().process_frame
+	await Router.fade_in(0.0)
+	check(not box.visible, "the script's end hides the box")

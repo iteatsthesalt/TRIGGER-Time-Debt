@@ -39,11 +39,48 @@ func test_a_debug_start_learns_the_prologue_kit_without_chapter() -> void:
 	Game.new_game()
 	BootArgs.apply(PackedStringArray(["--party=crono,sera,marle", "--level=4"]), true)
 	check_eq(Game.chapter, 0, "still the Prologue")
-	for pair in [[&"crono", &"astral_smear_dash"], [&"crono", &"time_debt_seal"], [&"sera", &"fall_break"],
+	for pair in [[&"crono", &"astral_smear_dash"], [&"crono", &"time_debt_seal"],
 			[&"marle", &"light_bolt"], [&"marle", &"ward"]]:
 		check(Game.knows_tech(pair[0], pair[1]), "%s knows %s (the Prologue kit)" % [pair[0], pair[1]])
+	check(not Game.knows_tech(&"sera", &"fall_break"), "Sera's Fall Break waits for the Cradle's phase 2, as in a real Prologue")
 	check(not Game.knows_tech(&"crono", &"time_slice"), "no Chapter 1 tech without --chapter")
 	check(not Game.knows_tech(&"sera", &"rewind"), "Sera's Rewind waits for Chapter 1")
+
+
+## F4: the kit a debug start fights the Cradle with (battle_probe: BootArgs, no --chapter) is the kit a real New Game
+## brings to it: the Prologue's own scripts (breakfast, the gate) teach Crono Astral Smear Dash and Time Debt Seal
+## before the first fight, and Sera nothing yet; the Cradle's phase-2 beat teaches her Fall Break in both, and the
+## Prologue's end (Chapter 1) leaves nobody without it.
+func test_the_debug_prologue_kit_is_the_real_one_at_the_cradle() -> void:
+	Game.new_game()
+	Story.auto_advance_s = 0.01
+	Story.auto_choice = 0
+	Story.skip_waits = true
+	await Story.run(&"prologue_breakfast")
+	await Story.run(&"prologue_gate")
+	var real: Dictionary = {}
+	for id in [&"crono", &"sera"]:
+		real[id] = (Game.roster[id]["known_techs"] as Array).duplicate()
+	check((real[&"crono"] as Array).has("time_debt_seal"), "a real Prologue teaches Crono Time Debt Seal before the Cradle (Story Bible: he uses it there)")
+	check((real[&"crono"] as Array).has("astral_smear_dash"), "and Astral Smear Dash")
+	check(not (real[&"sera"] as Array).has("fall_break"), "Sera has no Fall Break before the Cradle's phase 2")
+	Game.new_game()
+	BootArgs.apply(PackedStringArray(["--party=crono,sera,marle", "--level=4"]), true)
+	for id in [&"crono", &"sera"]:
+		var debug: Array = (Game.roster[id]["known_techs"] as Array).duplicate()
+		debug.sort()
+		var want: Array = (real[id] as Array).duplicate()
+		want.sort()
+		check_eq(debug, want, "%s fights the debug Cradle with the real Prologue kit" % id)
+	await Story.run(&"prologue_cradle_phase2")
+	check(Game.knows_tech(&"sera", &"fall_break"), "the Cradle's phase-2 beat teaches Sera Fall Break")
+	Game.new_game()
+	Game.set_chapter(1)
+	check(Game.knows_tech(&"sera", &"fall_break") and Game.knows_tech(&"crono", &"time_debt_seal"), "a Chapter 1 start knows both Prologue techs")
+	Story.auto_advance_s = -1.0
+	Story.auto_choice = -1
+	Story.skip_waits = false
+	Game.new_game()
 
 
 func test_chapter_teaches_its_kit_to_a_guest_already_in_the_party() -> void:
@@ -53,6 +90,18 @@ func test_chapter_teaches_its_kit_to_a_guest_already_in_the_party() -> void:
 	check(Game.knows_tech(&"crono", &"time_slice") and Game.knows_tech(&"sera", &"hover_rewind_hp"), "the recruited learn up to Chapter 2")
 	check(Game.knows_tech(&"marle", &"porcelain_promise"), "the guest learns her Chapter 2 tech too (set_chapter teaches every learner)")
 	check(not Game.knows_tech(&"marle", &"vitreous_arrow"), "but not her Chapter 10 one")
+
+
+## F2: a debug start plays a made-up state, so it keeps its saves and settings in the scratch directory unless
+## --save asks for the player's own; a plain start (the title, --say alone, battle-only arguments) does not.
+func test_a_debug_start_keeps_its_saves_apart_unless_asked() -> void:
+	for args in [["--scene=atrium"], ["--location=atrium", "--spawn=loft_bed"], ["--checkpoint=ch1_loft"],
+			["--party=crono,sera"], ["--level=4"], ["--chapter=1"], ["--integrity=40"], ["--flag=Atrium_Dummy:Spared"],
+			["--scene=atrium", "--checkpoint=ch1_loft", "--demo=dummy"]]:
+		check(BootArgs.suspends_saves(PackedStringArray(args)), "%s is a debug start: its saves stay in scratch" % str(args))
+	for args in [[], ["--scene=title"], ["--say=hello"], ["--autobattle"], ["--frames=60", "--every=60"]]:
+		check(not BootArgs.suspends_saves(PackedStringArray(args)), "%s is not a debug start" % str(args))
+	check(not BootArgs.suspends_saves(PackedStringArray(["--scene=atrium", "--checkpoint=ch1_loft", "--save"])), "--save lets a debug start write the player's files")
 
 
 func test_a_title_start_learns_nothing() -> void:

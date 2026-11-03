@@ -7,8 +7,28 @@
 ## 3. the chapter: `--chapter=<n>`, else the current one (0, the Prologue, for a fresh boot) when the start goes
 ##    straight into a location: Game.set_chapter learns the kit entries of that chapter for everyone who can
 ##    learn. A New Game never takes this path (the Prologue's own `learn` commands teach its kit).
+## A debug start also keeps its files apart (suspends_saves): it plays a made-up state, so its autosaves and
+## settings go to the scratch directory (Saves.suspended) unless `--save` asks for the player's own files.
 class_name BootArgs
 extends RefCounted
+
+## The boot arguments that start from a made-up state (scenes/boot/boot.gd's list, --say aside).
+const STATE_ARGS: Array[String] = [
+	"--scene=", "--location=", "--spawn=", "--checkpoint=", "--party=", "--level=", "--chapter=", "--integrity=", "--flag=",
+]
+
+
+## The run is a debug start (any STATE_ARGS other than a start on the title) and did not pass `--save`.
+static func suspends_saves(args: PackedStringArray) -> bool:
+	if args.has("--save"):
+		return false
+	for arg in args:
+		if arg == "--scene=title" or arg == "--location=title":
+			continue
+		for prefix in STATE_ARGS:
+			if arg.begins_with(prefix):
+				return true
+	return false
 
 
 ## {party: Array[StringName] (empty when not given), level: int (0 when not given), chapter: int (-1 when not given)}

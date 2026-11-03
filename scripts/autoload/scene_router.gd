@@ -2,6 +2,12 @@
 extends Node
 
 signal location_loaded(id: StringName, node: Node)
+## The screen starts to go black (fade_out): Story clears a finished line so it does not hang over the black.
+signal fading_out
+
+## The transition fade's CanvasLayer. Story's dialogue box and captions sit above it (StoryRunner.LAYER), so a line
+## or a caption shown while the screen is black (a wake in the dark, "A few days later...") is read over the black.
+const FADE_LAYER := 100
 
 ## Location id -> scene path. Filled by _register_defaults() and register(); an entry whose scene is not built
 ## yet is tolerated (has_location checks the file), so callers guard with has_location or read go()'s result.
@@ -15,7 +21,7 @@ var _layer: CanvasLayer
 
 func _ready() -> void:
 	_layer = CanvasLayer.new()
-	_layer.layer = 100
+	_layer.layer = FADE_LAYER
 	add_child(_layer)
 	fade = ColorRect.new()
 	fade.color = Color(0, 0, 0, 0)
@@ -109,6 +115,7 @@ func go(id: StringName, spawn: StringName = &"start", fade_s: float = 0.5) -> bo
 
 
 func fade_out(seconds: float) -> void:
+	fading_out.emit()
 	if seconds <= 0.0:
 		fade.color.a = 1.0
 		return

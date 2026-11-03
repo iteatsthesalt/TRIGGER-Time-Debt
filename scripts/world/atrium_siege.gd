@@ -43,7 +43,8 @@ static func destination() -> Array:
 
 
 ## Run the siege once the field is idle, if it is owed. A Location calls this whenever Game's integrity changes
-## outside a battle (a defeat's write-back, a gate toll, a story cost); one siege runs at a time.
+## outside a battle (a defeat's write-back, a gate toll, a story cost) and as it arrives (a save made while the
+## siege was owed holds integrity 0, so its Continue lands at the flatline); one siege runs at a time.
 static func begin_if_owed(tree: SceneTree) -> void:
 	if not owed():
 		return

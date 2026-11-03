@@ -126,8 +126,12 @@ if [ "$VISUAL" = 1 ]; then
   fi
   if [ "$SMOKE_RC" != 0 ]; then echo "SMOKE: FAIL (rc=$SMOKE_RC)"; FAIL=1; else echo "SMOKE: OK"; fi
 
-  # Two short scene captures, so a Location, the ActorSprite sheets and the compositor are rendered by every
-  # check (the boot above only reaches the title): the character lineup and an arena battle. Look at them.
+  # Two short scene captures, so a Location and the ActorSprite sheets are rendered by every check (the boot
+  # above only reaches the title): the character lineup, and the arena battle shot 1 s after battle_started
+  # (smoke.gd --capture_after, check_test_arena_battle_started.png: the HUD, the plates and the plane, whatever
+  # frame that is on this host) with Sera at 20 Debt, so her body goes through the sprite fade pass. Under xvfb
+  # Godot falls back to OpenGL 3 (Compatibility), which never runs the CompositorEffect canvas stack: only a
+  # Vulkan desktop renders the compositor in these. Look at them.
   capture() {
     local scene="$1" frames="$2"; shift 2
     local log="/tmp/check_capture_${scene}.log" rc
@@ -146,7 +150,8 @@ if [ "$VISUAL" = 1 ]; then
   }
   step "scene captures (lineup, arena battle)"
   capture test_lineup 60 --ids=crono,sera,krona,marle --anim=walk
-  capture test_arena 120 --autobattle --party=crono,sera,marle --level=4
+  capture test_arena 60 --capture_after=battle_started:1.0 --max_frames=900 --autobattle --party=crono,sera,marle \
+    --level=4 --debt=20
   ls -la /tmp/captures 2>/dev/null | tail -5
 fi
 

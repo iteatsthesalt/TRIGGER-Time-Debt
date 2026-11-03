@@ -96,7 +96,7 @@ func test_chapter_teaches_its_kit_to_a_guest_already_in_the_party() -> void:
 ## --save asks for the player's own; a plain start (the title, --say alone, battle-only arguments) does not.
 func test_a_debug_start_keeps_its_saves_apart_unless_asked() -> void:
 	for args in [["--scene=atrium"], ["--location=atrium", "--spawn=loft_bed"], ["--checkpoint=ch1_loft"],
-			["--party=crono,sera"], ["--level=4"], ["--chapter=1"], ["--integrity=40"], ["--flag=Atrium_Dummy:Spared"],
+			["--party=crono,sera"], ["--level=4"], ["--chapter=1"], ["--integrity=40"], ["--debt=20"], ["--flag=Atrium_Dummy:Spared"],
 			["--scene=atrium", "--checkpoint=ch1_loft", "--demo=dummy"]]:
 		check(BootArgs.suspends_saves(PackedStringArray(args)), "%s is a debug start: its saves stay in scratch" % str(args))
 	for args in [[], ["--scene=title"], ["--say=hello"], ["--autobattle"], ["--frames=60", "--every=60"]]:

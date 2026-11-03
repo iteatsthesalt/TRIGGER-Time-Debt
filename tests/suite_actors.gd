@@ -2,7 +2,8 @@
 ## EncounterZone's wander, Location's universe and field Rewind): the 8 s Broken-kill statue counts battle time
 ## and shatters, a revived ally is visible again, a hit that breaks keeps the break pose, a focus release is
 ## never swallowed, an awaited walk always resolves, gravity lands once per tick, a Location reads its
-## universe after build(), and the field Rewind shows on Sera.
+## universe after build(), the field Rewind shows on Sera, and the body's look follows the rules (a phased Sera
+## stays a ghost whatever redraws her; a Story ledger command and a reserve spawn wear the Debt at once).
 extends "res://tests/suite_base.gd"
 
 const ARENA := "res://scenes/test/arena.tscn"
@@ -383,4 +384,109 @@ func test_field_rewind_shows_on_sera() -> void:
 	check(await _end(loc, true), "a battle")
 	check_eq(int(mat.get_shader_parameter("porcelain_state")), 2, "the crack is still there after it")
 	check_near(float(mat.get_shader_parameter("opacity")), 1.0 - 10.0 * CombatActor.DEBT_OPACITY_PER_POINT, 0.001, "and so is the translucency")
+	Game.new_game()
+
+
+# ---------------------------------------------------------------- the body's look follows the rules (RA-1, RA-4)
+
+## Advance the battle clock, guarding every window, until `cond` holds or `max_s` of battle time pass.
+func _run_until(c: BattleCoordinator, cond: Callable, max_s: float) -> bool:
+	var t0: float = c.battle_time
+	while not bool(cond.call()) and c.battle_time - t0 < max_s:
+		var before: float = c.battle_time
+		_run_battle_time(c, DT)
+		if is_equal_approx(c.battle_time, before) and not (c.state == BattleCoordinator.State.COMMAND_WAIT):
+			break  # the clock stopped (the battle ended)
+	return bool(cond.call())
+
+
+func _tint(a: CombatActor) -> Color:
+	return a.sprite.material.get_shader_parameter("tint")
+
+
+## RA-1 (Combat Laws §10.2): while Sera is phased (untargetable) every redraw keeps her the gold ghost at 18 %,
+## a DoT tick on the coordinator's clock and a revive inside the phase included; when the phase passes she is
+## back at her Debt's thinness, untinted, and the battle's end leaves her at her Debt (with its interest).
+func test_a_phased_sera_stays_a_ghost_whatever_redraws_her() -> void:
+	var loc: Location = await _arena([&"crono", &"sera"])
+	Game.set_debt(20.0)
+	var scene: BattleScene = _zone_battle(loc)
+	var c: BattleCoordinator = scene.coordinator
+	var crono: CombatActor = loc.get_actor(&"crono") as CombatActor
+	var sera: CombatActor = loc.get_actor(&"sera") as CombatActor
+	_tough(crono)
+	var debt_op: float = 1.0 - 20.0 * CombatActor.DEBT_OPACITY_PER_POINT
+	check_near(sera.sprite.opacity, debt_op, 0.0001, "she starts the fight at her Debt's 0.9")
+	check(StatusRules.apply(c, sera, &"ink_dot", 4.0, -1, 1, {"tick": 3}), "a Kanji Stroke inks her")
+	c.spend_solidity(sera, sera.solidity.solidity - 15.0)
+	check(sera.solidity.is_phased(), "a Rewind past 20 phases her out")
+	check_near(sera.sprite.opacity, CombatActor.PHASED_OPACITY, 0.0001, "a ghost at 18 %")
+	check_eq(_tint(sera), CombatActor.PHASED_TINT, "in gold")
+	var ticks: Array = []
+	c.strike_resolved.connect(func(_a: Node, t: Node, info: Dictionary) -> void:
+		if t == sera and bool(info.get("dot", false)):
+			ticks.append({"phased": sera.solidity.is_phased(), "opacity": sera.sprite.opacity, "tint": _tint(sera)}))
+	check(_run_until(c, func() -> bool: return not ticks.is_empty(), 3.0), "the ink ticks on the battle clock")
+	if not ticks.is_empty():
+		check(bool(ticks[0]["phased"]), "while she is still phased")
+		check_near(float(ticks[0]["opacity"]), CombatActor.PHASED_OPACITY, 0.0001, "and the tick's hurt redraw keeps her a ghost")
+		check_eq(ticks[0]["tint"], CombatActor.PHASED_TINT, "gold, not back in the fight")
+	sera.stats.apply_damage(999999, true)
+	check(not sera.stats.is_alive() and sera.solidity.is_phased(), "a KO inside the phase leaves the phase running")
+	sera.stats.revive(0.3)
+	c.unit_revived.emit(sera)
+	_tough(sera)
+	check(sera.visible, "revived, she is in view")
+	check_near(sera.sprite.opacity, CombatActor.PHASED_OPACITY, 0.0001, "and still the phased ghost, as the rules have her")
+	check_eq(_tint(sera), CombatActor.PHASED_TINT, "gold")
+	check(_run_until(c, func() -> bool: return not sera.solidity.is_phased(), 30.0), "her phased turns pass")
+	check_near(sera.sprite.opacity, debt_op, 0.0001, "un-phased: her Debt's 0.9, not fully solid")
+	check_eq(_tint(sera), Color.WHITE, "untinted")
+	check(await _end(loc, true), "the battle ends")
+	check_near(Game.sera_debt, 23.0, 0.001, "+3 Debt interest on the 65 % she spent")
+	check_near(sera.sprite.opacity, 1.0 - 23.0 * CombatActor.DEBT_OPACITY_PER_POINT, 0.0001, "and she stands at it")
+	Game.new_game()
+
+
+## RA-4: a Story `debt` or `integrity` command in the field redraws the bodies at once (Sera thins and her crack
+## spreads, Crono's crack state follows his integrity), the cast included, and the fight after starts at it.
+func test_a_story_ledger_command_redraws_the_field_bodies() -> void:
+	var loc: Location = await _arena([&"crono", &"sera"])
+	var sera: CombatActor = loc.get_actor(&"sera") as CombatActor
+	var crono: CombatActor = loc.get_actor(&"crono") as CombatActor
+	var cast: CombatActor = loc.add_cast(&"crono", Vector3(3, 0, 6))  # a cast body standing in the scene
+	check_near(sera.sprite.opacity, 1.0, 0.0001, "no Debt: solid")
+	check_eq(int(crono.sprite.material.get_shader_parameter("porcelain_state")), 1, "full integrity: Crono pristine")
+	await Story.run(&"t_ledger", [{"debt": 25}, {"integrity": -50}, {"end": true}])
+	check_near(Game.sera_debt, 25.0, 0.001, "+25 Debt")
+	check_near(sera.sprite.opacity, 1.0 - 25.0 * CombatActor.DEBT_OPACITY_PER_POINT, 0.0001, "she thins at once")
+	check_near(float(sera.sprite.material.get_shader_parameter("crack_amount")), 0.45, 0.001, "and the crack spreads to 0.2 + Debt/100")
+	check_eq(int(crono.sprite.material.get_shader_parameter("porcelain_state")), 2, "integrity 50: Crono shows the hairline crack")
+	check_near(cast.time_debt.integrity, 50.0, 0.001, "the cast takes the ledger up too")
+	check_eq(int(cast.sprite.material.get_shader_parameter("porcelain_state")), 2, "and wears it")
+	var scene: BattleScene = _zone_battle(loc)
+	check_near(sera.sprite.opacity, 1.0 - 25.0 * CombatActor.DEBT_OPACITY_PER_POINT, 0.0001, "the fight starts at her Debt")
+	check(scene.coordinator.party.has(sera), "with her in it")
+	check(await _end(loc, true), "the battle ends")
+	Game.new_game()
+
+
+## RA-4: a reserve is spawned wearing its ledger: Sera hovering at 30 Debt stands at 0.85 through the fade pass
+## with her crack showing, not solid and pristine until her first hit.
+func test_a_reserve_sera_spawns_at_her_debt() -> void:
+	var loc: Location = await _arena([&"crono"])
+	Game.recruit(&"sera")
+	Game.sera_in_story = "hover"
+	Game.set_debt(30.0)
+	var scene: BattleScene = _zone_battle(loc)
+	var hover: CombatActor = scene.roster.hover
+	check(hover != null and hover.actor_id == &"sera", "Sera hovers on the Turn Bar")
+	if hover != null:
+		check_near(hover.sprite.opacity, 0.85, 0.0001, "at her Debt's 0.85")
+		check(hover.sprite.is_faded(), "through the fade pass")
+		check_eq(int(hover.sprite.material.get_shader_parameter("porcelain_state")), 2, "her crack showing")
+	var benched := CombatActor.create_party_member(&"sera")
+	_track(benched)
+	check_near(benched.sprite.opacity, 0.85, 0.0001, "any spawn of her wears it (create_party_member)")
+	check(await _end(loc, true), "the battle ends")
 	Game.new_game()

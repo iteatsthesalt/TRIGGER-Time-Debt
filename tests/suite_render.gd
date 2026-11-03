@@ -85,6 +85,43 @@ func test_opacity_below_one_draws_the_fade_pass_and_keeps_the_sheet() -> void:
 	check(not s.is_faded(), "and stays opaque")
 
 
+## RA-3: a faded body writes no depth, so the battle's ground overlays must come before every sprite in the
+## transparent list, or a body past the plane's centre is washed by the plane and cut by its gold edge.
+func test_the_battle_ground_overlays_draw_under_a_faded_body() -> void:
+	Game.new_game()
+	Game.recruit(&"sera")
+	Game.set_party([&"crono", &"sera"] as Array[StringName])
+	Game.set_debt(25.0)
+	var loc: Location = (load("res://scenes/test/arena.tscn") as PackedScene).instantiate()
+	root.add_child(loc)
+	_track(loc)
+	loc.place_party(&"start")
+	await get_tree().process_frame
+	var z: EncounterZone = loc.zones[0]
+	z.active = false
+	loc._on_zone_triggered(z, "normal")
+	var scene: BattleScene = loc.battle
+	scene.coordinator.auto_tick = false
+	var sera := loc.get_actor(&"sera") as CombatActor
+	check(sera.sprite.is_faded(), "Sera at 25 Debt draws through the fade pass")
+	var body: int = sera.sprite.material.render_priority
+	check(scene.plane_mat.render_priority < body, "the battle plane sorts before her (%d < %d)" % [scene.plane_mat.render_priority, body])
+	var decal: MeshInstance3D = BattleFx.telegraph(scene, {"shape": "CIRCLE", "radius": 2.0}, scene.center, scene.center.y + 0.05)
+	var ring: int = (decal.material_override as Material).render_priority
+	check(ring < body, "a wind-up decal sorts before her too")
+	check(scene.plane_mat.render_priority < ring, "and over the plane")
+	decal.queue_free()
+	scene.coordinator.force_end(true)
+	Engine.time_scale = 4.0
+	var t: float = 0.0
+	while loc.battle != null and t < 8.0:
+		await get_tree().create_timer(0.05).timeout
+		t += 0.05
+	Engine.time_scale = 1.0
+	check(loc.battle == null, "the battle still ends")
+	Game.new_game()
+
+
 # ---------------------------------------------------------------- GAP4-10: densities
 
 func test_density_fallback_follows_the_cell() -> void:
@@ -512,8 +549,13 @@ func test_un_phasing_and_reviving_return_sera_to_her_debt_opacity() -> void:
 		return
 	s.solidity.debt = 40.0
 	s.set_porcelain_visuals()
-	c.sera_phase_changed.emit(true)
+	# the look reads her phase (CombatActor.apply_body_look, RA-1): a Rewind past 20 phases her, and the
+	# coordinator says so on sera_phase_changed itself
+	c.spend_solidity(s, s.solidity.solidity - 15.0)
+	check(s.solidity.is_phased(), "a Rewind past 20 phases her out")
 	check_near(s.sprite.opacity, 0.18, 0.0001, "phased, she reads at 18 %")
+	s.solidity.phased_turns_left = 1
+	s.solidity.on_phased_turn()  # her last phased turn passes, as BattleCoordinator.advance counts it
 	c.sera_phase_changed.emit(false)
 	check_near(s.sprite.opacity, debt_op, 0.0001, "un-phased, she is back at her Debt's 0.8, not 1.0")
 	c.force_end(true)

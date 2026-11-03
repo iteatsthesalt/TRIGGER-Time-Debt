@@ -143,6 +143,7 @@ func _build_plane() -> void:
 	plane_mat.shader = _plane_shader
 	plane_mat.set_shader_parameter("reveal", 0.0)
 	plane_mat.set_shader_parameter("tint", CanvasStackEffect.paper_of(universe))  # the one grade table
+	plane_mat.render_priority = BattleFx.PLANE_RENDER_PRIORITY  # under every sprite, a faded one included
 	plane.material_override = plane_mat
 	plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	plane.position = center + Vector3(0, 0.03, 0)
@@ -587,12 +588,11 @@ func _on_boost_used(a: Node, level: int) -> void:
 		BattleFx.style_bleed(self, a as CombatActor)
 
 
-func _on_sera_phase(phased: bool) -> void:
+## Phased, a gold ghost; un-phased, back to her Debt, not fully solid (CombatActor.apply_body_look reads the phase).
+func _on_sera_phase(_phased: bool) -> void:
 	var sera: Node = coordinator.unit_by_id(&"sera")
 	if sera is CombatActor:
-		var s := sera as CombatActor
-		s.sprite.set_opacity(0.18 if phased else s.body_opacity())  # back to her Debt, not fully solid
-		s.sprite.set_tint(Color(1.0, 0.85, 0.5) if phased else Color.WHITE)
+		(sera as CombatActor).apply_body_look()
 
 
 func _on_unit_moved(unit: Node, _to: Vector3) -> void:
@@ -619,8 +619,7 @@ func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
 		summary["story"] = bool(config.get("story", false))
 		for p in party:
 			p.frozen = false
-			p.sprite.set_tint(Color.WHITE)
-			p.sprite.set_opacity(1.0)
+			p.apply_body_look()  # the phase ended with the battle (SolidityComponent.end_battle): her Debt's look
 			if p.stats.is_alive():
 				p.sprite.play(&"idle")
 		# reserves still down are recorded at the floor the field party stands up with (BattleAftermath)

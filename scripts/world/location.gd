@@ -456,13 +456,13 @@ func _refresh_porcelain() -> void:
 ## Game is the ledger for Crono's integrity and Sera's Debt (Story commands, the gate toll): the bodies follow
 ## it, each value on its own signal so a write-back of one never resets the other from a stale Game field.
 func _on_game_integrity(_v: float) -> void:
-	BattleAftermath.sync_from_game(party_actors, true, false)
+	BattleAftermath.follow_game(party_actors, npc_actors.values(), true, false, not _in_battle)
 	if not _in_battle:
 		AtriumSiege.begin_if_owed(get_tree())  # integrity 0 starts the siege (§16.3)
 
 
 func _on_game_debt(_v: float) -> void:
-	BattleAftermath.sync_from_game(party_actors, false, true)
+	BattleAftermath.follow_game(party_actors, npc_actors.values(), false, true, not _in_battle)
 
 
 # ------------------------------------------------------------------ battle hand-off

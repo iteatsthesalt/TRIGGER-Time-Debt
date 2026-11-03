@@ -342,6 +342,21 @@ class RenderArgs(unittest.TestCase):
         with open(os.path.join(ROOT, "tools", "capture", "smoke.gd"), encoding="utf-8") as f:
             self.assertIn('get_node("Saves").set("suspended", true)', f.read(), "smoke.gd suspends Saves itself")
 
+    def test_the_gates_battle_capture_follows_the_battle(self):
+        """RA-2: a fixed frame of the arena run lands on the walk on a GPU and on the empty field after the win
+        under xvfb, so the gate shoots its battle a set time after battle_started, with Sera faded by her Debt,
+        and smoke.gd fails a run whose awaited signal never fires instead of passing it with no battle shot."""
+        with open(os.path.join(ROOT, "tools", "check.sh"), encoding="utf-8") as f:
+            check = f.read().replace("\\\n", " ")
+        arena = [l for l in check.splitlines() if l.strip().startswith("capture test_arena")]
+        self.assertEqual(len(arena), 1, "check.sh captures the arena battle once")
+        self.assertRegex(arena[0], r"--capture_after=battle_started:\d", "shot after battle_started, not on a frame")
+        self.assertRegex(arena[0], r"--debt=[1-9]", "with Sera faded, so the fade pass is rendered")
+        with open(os.path.join(ROOT, "tools", "capture", "smoke.gd"), encoding="utf-8") as f:
+            smoke = f.read()
+        self.assertIn("SMOKE_FAIL", smoke)
+        self.assertIn("quit(1)", smoke, "a missing battle_started fails the capture (rc != 0, no SMOKE_OK)")
+
 
 if __name__ == "__main__":
     result = unittest.main(exit=False, verbosity=1).result

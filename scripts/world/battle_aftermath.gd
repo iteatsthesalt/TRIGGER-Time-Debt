@@ -45,6 +45,21 @@ static func sync_from_game(party: Array, integrity: bool = true, debt: bool = tr
 			ca.solidity.debt = Game.sera_debt
 
 
+## Game's ledger moved (a Story `debt` or `integrity` command, the gate toll): the party and the cast standing in
+## the location take it up, and with `redraw` (in the field) wear it at once (CombatActor.set_porcelain_visuals:
+## Sera's thinness and crack, Crono's crack state). In battle the bodies own the ledger and the battle draws them.
+static func follow_game(party: Array, cast: Array, integrity: bool, debt: bool, redraw: bool) -> void:
+	var bodies: Array = []
+	bodies.append_array(party)
+	bodies.append_array(cast)
+	sync_from_game(bodies, integrity, debt)
+	if not redraw:
+		return
+	for a in bodies:
+		if is_instance_valid(a) and a is CombatActor:
+			(a as CombatActor).set_porcelain_visuals()
+
+
 ## A battle begins: the bodies take up Game's ledger, and until the write-back Game follows Crono's and Sera's
 ## components (every in-battle charge or repair lands there first), so a Story write mid-fight (a phase script's
 ## `integrity: -2`) starts from the live value and the Game-to-body sync it fires loses nothing.

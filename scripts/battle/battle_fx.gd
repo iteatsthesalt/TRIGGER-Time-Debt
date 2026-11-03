@@ -4,6 +4,12 @@
 class_name BattleFx
 extends RefCounted
 
+## The ground overlays draw before every sprite in the transparent list (Material.render_priority): a body
+## faded by its Debt, a phase or a style bleed writes no depth, so a plane or decal sorted after it by its
+## centre would wash it. The plane goes first, the wind-up decals over it, the sprites (priority 0) last.
+const PLANE_RENDER_PRIORITY := -2
+const DECAL_RENDER_PRIORITY := -1
+
 static var _aoe_shader: Shader
 
 
@@ -16,6 +22,7 @@ static func telegraph(parent: Node3D, action: Dictionary, origin: Vector3, floor
 	var pm := PlaneMesh.new()
 	var mat := ShaderMaterial.new()
 	mat.shader = _aoe_shader
+	mat.render_priority = DECAL_RENDER_PRIORITY
 	var aim: Vector3 = action.get("aim", origin)
 	var flat := Vector3(origin.x, floor_y, origin.z)
 	var dir: Vector3 = Vector3(aim.x - origin.x, 0.0, aim.z - origin.z).normalized()

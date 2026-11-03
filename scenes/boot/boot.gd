@@ -8,6 +8,7 @@
 ##                                     (without --chapter: chapter 0, the Prologue kit). BootArgs applies the
 ##                                     three in this order, whatever their order here
 ##   --integrity=<n>                   set Crono's integrity
+##   --debt=<n>                        set Sera's Translucency Debt (the gate's arena capture draws her faded)
 ##   --flag=Name:State                 set a flag (repeatable)
 ##   --say=<text>                      show one narrator line once the scene is up (capture/debug)
 ##   --save                            let a debug start write the player's own saves and settings: without it any
@@ -33,6 +34,8 @@ func _ready() -> void:
 			Game.checkpoint = StringName(arg.trim_prefix("--checkpoint="))
 		elif arg.begins_with("--integrity="):
 			Game.set_integrity(float(arg.trim_prefix("--integrity=")))
+		elif arg.begins_with("--debt="):
+			Game.set_debt(float(arg.trim_prefix("--debt=")))
 		elif arg.begins_with("--flag="):
 			var parts: PackedStringArray = arg.trim_prefix("--flag=").split(":")
 			Flags.set_flag(StringName(parts[0]), StringName(parts[1]) if parts.size() > 1 else &"set")

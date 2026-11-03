@@ -14,7 +14,7 @@ extends RefCounted
 
 ## The boot arguments that start from a made-up state (scenes/boot/boot.gd's list, --say aside).
 const STATE_ARGS: Array[String] = [
-	"--scene=", "--location=", "--spawn=", "--checkpoint=", "--party=", "--level=", "--chapter=", "--integrity=", "--flag=",
+	"--scene=", "--location=", "--spawn=", "--checkpoint=", "--party=", "--level=", "--chapter=", "--integrity=", "--debt=", "--flag=",
 ]
 
 

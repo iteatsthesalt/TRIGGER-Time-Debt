@@ -14,6 +14,9 @@ const ARRIVE_M := 0.12
 ## Sera's look (Story Bible §4.2 "Look", Chapter 1 beat 2): her body thins by this much opacity per point
 ## of Translucency Debt (55, the field cap, leaves her at ~0.73); _set_debt_visuals.
 const DEBT_OPACITY_PER_POINT := 0.005
+## A phased Sera (Combat Laws §10.2, untargetable) reads as a gold ghost at 18 %: apply_body_look.
+const PHASED_OPACITY := 0.18
+const PHASED_TINT := Color(1.0, 0.85, 0.5)
 
 @export var actor_id: StringName = &""
 @export var is_party: bool = false
@@ -219,8 +222,9 @@ func die() -> void:
 
 
 ## Undo die(), become_statue() and on_break() on the body once a battle is over (BattleAftermath) or when a
-## fallen ally is revived mid-battle (die()'s fade is stopped): standing, visible, at body_opacity(), untinted, the Break
-## hull down and free to walk. HP and shields are the caller's.
+## fallen ally is revived mid-battle (die()'s fade is stopped): standing, visible, in its standing look
+## (apply_body_look: a Sera revived while still phased stays phased), the Break hull down and free to walk.
+## HP and shields are the caller's.
 func restore_body() -> void:
 	if _fade != null and _fade.is_valid():
 		_fade.kill()
@@ -233,8 +237,7 @@ func restore_body() -> void:
 	_set_hull(false)
 	if sprite:
 		sprite.transparency = 0.0
-		sprite.set_opacity(body_opacity())
-		sprite.set_tint(Color.WHITE)
+		apply_body_look()
 		sprite.play(&"idle")
 
 
@@ -281,7 +284,7 @@ func _set_debt_visuals() -> void:
 		sprite.set_porcelain(1, 0.0)
 	else:
 		sprite.set_porcelain(2, clampf(0.2 + debt / 100.0, 0.2, 1.0))
-	sprite.set_opacity(body_opacity())
+	apply_body_look(false)
 
 
 ## How solid the body stands when nothing else fades it: 1.0, and for Sera 1.0 - Debt * DEBT_OPACITY_PER_POINT
@@ -290,6 +293,23 @@ func body_opacity() -> float:
 	if solidity == null:
 		return 1.0
 	return clampf(1.0 - solidity.debt * DEBT_OPACITY_PER_POINT, 0.5, 1.0)
+
+
+## The one owner of the body's standing opacity and tint (a Break, a statue, die()'s fade and a scene's own
+## tint aside): while Sera is phased (SolidityComponent.is_phased) she is a PHASED_OPACITY ghost in PHASED_TINT
+## whatever redraws her (a hit, a DoT tick, a revive), otherwise the body stands at body_opacity(). `untint`
+## also clears the tint of a body that is not phased (un-phase, restore_body, a battle's end); a Debt redraw
+## (set_porcelain_visuals) passes false, so a cutscene's grey tint survives it.
+func apply_body_look(untint: bool = true) -> void:
+	if sprite == null:
+		return
+	if solidity != null and solidity.is_phased():
+		sprite.set_opacity(PHASED_OPACITY)
+		sprite.set_tint(PHASED_TINT)
+		return
+	sprite.set_opacity(body_opacity())
+	if untint:
+		sprite.set_tint(Color.WHITE)
 
 
 # ------------------------------------------------------------------ factories
@@ -343,6 +363,7 @@ static func create_party_member(id: StringName, level: int = -1) -> CombatActor:
 	a.add_child(a.sprite)
 	SpriteLibrary.apply(a.sprite, String(k.get("sprite", id)), a.canvas_fps)
 	a.sprite.position.y = float(k.get("y_offset", 0.0))  # metres the sprite floats (Sera: 0.0625)
+	a.set_porcelain_visuals()  # every spawn (field, cast, a battle reserve) wears its Debt and cracks from the start
 	return a
 
 

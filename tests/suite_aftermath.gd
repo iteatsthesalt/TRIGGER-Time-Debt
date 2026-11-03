@@ -297,6 +297,31 @@ func test_field_defeat_resets_enemies_and_floors_the_party() -> void:
 	Game.new_game()
 
 
+## Combat Laws 16.5 and DECISIONS "Ruin is battle-scoped": a zone enemy that took Ruin stacks comes back after a
+## defeat or a withdraw at its whole ceiling, not refilled to the Ruin-lowered one (BattleAftermath.restore_enemy).
+func test_a_ruined_zone_enemy_comes_back_at_its_whole_ceiling() -> void:
+	for outcome in [BattleAftermath.DEFEAT, BattleAftermath.WITHDRAW]:
+		var loc: Location = await _arena([&"crono"])
+		var z: EncounterZone = _zone_battle(loc)
+		var c: BattleCoordinator = loc.battle.coordinator
+		var ruined: CombatActor = z.enemies[0]
+		var base: int = ruined.stats.base_max_hp
+		check(StatusRules.apply(c, ruined, &"ruin", -1.0, -1, 3), "%s: Ruin lands on the enemy" % outcome)
+		check(ruined.stats.max_hp() < base, "%s: three stacks lower its ceiling" % outcome)
+		ruined.stats.hp = maxi(1, ruined.stats.max_hp() / 2)
+		if outcome == BattleAftermath.DEFEAT:
+			_actor(loc, &"crono").stats.apply_damage(999999, true)
+			check(await _end(loc, false), "the lost battle hands back to the field")
+		else:
+			c._finish(false, "withdraw")
+			check(await _await_finished(loc), "the withdraw hands back to the field")
+		check(z.enemies.has(ruined) and is_instance_valid(ruined), "%s: the Ruined enemy stays in the zone" % outcome)
+		check(not ruined.statuses.has(&"ruin"), "%s: its Ruin is gone" % outcome)
+		check_eq(ruined.stats.max_hp(), base, "%s: its ceiling is whole again" % outcome)
+		check_eq(ruined.stats.hp, base, "%s: and it stands at full strength under it" % outcome)
+	Game.new_game()
+
+
 ## GAP1-6 / BATTLE-18: story-battle bodies (the boss and its adds) are freed after the battle, so a retry
 ## spawns one boss, not a second on top of the first.
 func test_story_battle_bodies_are_freed_and_a_retry_does_not_stack() -> void:

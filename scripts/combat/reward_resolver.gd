@@ -5,8 +5,9 @@
 ##   the living party share all of it, the fallen and the bench 75%.
 ## - Drops: every defeated enemy rolls its EnemyDef.drops (`{"item", "chance", "count"}` or a bare id) into
 ##   Game.grant, which routes each item by its catalogue kind; the enemy key goes into Game.looted (kit `drop`
-##   unlocks). A boss body is skipped: its BossController gives the boss file's drops through Game.grant when
-##   the fight ends. Its adds are ordinary enemies.
+##   unlocks). A boss is one of them: its phase EnemyDef carries the boss file's drops, paid with the victory
+##   like the rest, so a boss that falls while its adds go on to win pays nothing and a retry pays once. Its
+##   adds are ordinary enemies.
 ## - Leans: an enemy resolved its codex signature way feeds that affinity (+1, capped +5 per universe,
 ##   Flags.add_lean): an L enemy when spared, a D enemy when salvaged (killed while Broken by a [RUIN] or [FERRO]
 ##   finisher) or incinerated (a [FIRE] finisher), a P enemy when a Dual or Triple finished it. An enemy with no
@@ -48,6 +49,13 @@ static func resolve(c: BattleCoordinator) -> Dictionary:
 	return {"xp": award_xp(c), "drops": award_drops(c), "leans": award_leans(c)}
 
 
+## True when `e` was defeated for the rewards: it fell, or it is a boss that ended its fight standing
+## (BossController.end_fight sets `boss_defeated`). A spared enemy was not.
+static func defeated(c: BattleCoordinator, e: Node) -> bool:
+	var st := CombatantStats.of(e)
+	return st != null and not c.spared.has(e) and (not st.is_alive() or e.has_meta(&"boss_defeated"))
+
+
 static func award_xp(c: BattleCoordinator) -> Dictionary:
 	var total: int = 0
 	for e in c.enemies:
@@ -56,7 +64,7 @@ static func award_xp(c: BattleCoordinator) -> Dictionary:
 			continue
 		if c.spared.has(e):
 			total += roundi(float(st.xp_reward) * 0.5)
-		elif not st.is_alive() or e.has_meta(&"boss_defeated"):  # a boss that ends its fight standing (BossController.end_fight)
+		elif defeated(c, e):
 			total += st.xp_reward
 	var out: Dictionary = {}
 	for u in c.party:
@@ -98,10 +106,9 @@ static func give(drops: Array, rng: RandomNumberGenerator) -> Array:
 static func award_drops(c: BattleCoordinator) -> Array:
 	var out: Array = []
 	for e in c.enemies:
-		var st := CombatantStats.of(e)
-		if st == null or st.is_alive() or c.spared.has(e) or (e as Node).has_meta("boss_id"):
+		if not defeated(c, e):
 			continue
-		var def: EnemyDef = c.enemy_defs.get(st.actor_id, null)
+		var def: EnemyDef = c.enemy_defs.get(CombatantStats.of(e).actor_id, null)
 		if def == null or def.drops.is_empty():
 			continue
 		for g in give(def.drops, c.rng):

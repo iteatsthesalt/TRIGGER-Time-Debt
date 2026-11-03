@@ -233,7 +233,8 @@ func test_every_window_is_entered_in_order_and_a_seal_holds() -> void:
 	check(await _end(loc, true), "the battle ends")
 
 
-## BATTLE-5: a fight ended by the final Break pays the boss's XP and drops, after the action resolves.
+## BATTLE-5: a fight ended by the final Break pays the boss's XP and drops with the victory, after the action
+## resolves.
 func test_final_break_pays_xp_and_drops_after_the_action() -> void:
 	var id := _boss("test_final", [_phase("only", 1.0, 1.0, 1, {"advance_on": "break"})], {"xp": 60, "drops": ["test_relic_zz"], "hp": 100000})
 	var loc: Location = await _arena()
@@ -251,14 +252,45 @@ func test_final_break_pays_xp_and_drops_after_the_action() -> void:
 	c.battle_ended.connect(func(_v: bool, _s: Dictionary) -> void: order.append("end"))
 	c.cmd_attack(crono, boss, 0)
 	check(scene.boss.ended, "the last phase's Break ends the fight")
-	check(Game.relics.has(&"test_relic_zz"), "and gives the boss's drops")
+	check(not Game.relics.has(&"test_relic_zz"), "its drops wait for the victory")
 	check(CombatantStats.of(boss).is_alive(), "the boss is left standing")
 	await get_tree().process_frame
 	check_eq(order, ["hit", "hit", "end"] as Array[String], "the battle ends once the action has resolved")
 	check(bool(c.last_summary.get("victory", false)) and String(c.last_summary.get("reason", "")) == "final_break", "a victory by final Break")
+	check(Game.relics.has(&"test_relic_zz"), "and the victory gives the boss's drops")
+	var dropped: Array = c.last_summary.get("drops", [])
+	check(dropped.any(func(d: Dictionary) -> bool: return String(d["item"]) == "test_relic_zz" and String(d["from"]) == "test_final"), "listed in the summary as the boss's (%s)" % str(dropped))
 	var xp: Dictionary = c.last_summary.get("xp", {})
 	check_eq(int(xp.get(&"crono", {}).get("xp", 0)), 60, "Crono is paid the boss's 60 XP")
 	check(await _end(loc, true), "the scene closes")
+
+
+## DECISIONS "Rewards: XP, drops and leans at victory": a boss that falls while its add stands pays nothing yet; the
+## add wiping the party pays nothing; the story's retry that wins pays the drops once.
+func test_boss_drops_wait_for_the_victory_and_a_retry_pays_once() -> void:
+	var id := _boss("test_drops", [_phase("only", 1.0, 0.0, 1)], {"drops": [{"item": "matriarch_seed", "count": 3}], "adds": [{"key": "porcelain_shardling", "count": 1, "phase": "only"}]})
+	var loc: Location = await _arena()
+	var scene: BattleScene = _fight(loc, id)
+	var c: BattleCoordinator = scene.coordinator
+	var summaries: Array[Dictionary] = []
+	c.battle_ended.connect(func(_v: bool, s: Dictionary) -> void: summaries.append(s))
+	check_eq(scene.boss.adds_alive.size(), 1, "the boss stands with one add")
+	CombatantStats.of(scene.boss.actor).apply_damage(999999, true)
+	check(scene.boss.ended, "the boss falls")
+	check(c.state != BattleCoordinator.State.IDLE and c.living_enemies().size() == 1, "its add fights on")
+	check_eq(int(Game.inventory.get("matriarch_seed", 0)), 0, "the boss's fall pays no drops")
+	CombatantStats.of(c.unit_by_id(&"crono")).apply_damage(999999, true)
+	check(await _end(loc, false), "the add wins: the battle is lost")
+	check(summaries.size() == 1 and not bool(summaries[0].get("victory", true)), "a lost battle")
+	check_eq(int(Game.inventory.get("matriarch_seed", 0)), 0, "a lost battle pays nothing")
+	var retry: BattleScene = _fight(loc, id)
+	retry.coordinator.battle_ended.connect(func(_v: bool, s: Dictionary) -> void: summaries.append(s))
+	for e in retry.coordinator.enemies.duplicate():
+		CombatantStats.of(e).apply_damage(999999, true)
+	check(await _end(loc, true), "the retry is won")
+	check_eq(int(Game.inventory.get("matriarch_seed", 0)), 3, "the victory pays the boss's drops once")
+	var dropped: Array = summaries[-1].get("drops", []) if summaries.size() == 2 else []
+	check(dropped.any(func(d: Dictionary) -> bool: return String(d["item"]) == "matriarch_seed" and String(d["from"]) == "test_drops"), "in the victory's summary (%s)" % str(dropped))
 
 
 # ---------------------------------------------------------------- gates and branches

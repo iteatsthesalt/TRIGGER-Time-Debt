@@ -100,12 +100,15 @@ static func write_back(a: CombatActor, ratio: float) -> void:
 
 
 ## An enemy left standing in the field after a battle: back on its feet at full strength, its Break, its
-## statuses and its body undone (§16.5: "Enemies return to their wander routes at full strength").
+## statuses and its body undone (§16.5: "Enemies return to their wander routes at full strength"). The statuses
+## go first: an enemy's Ruin lowers its max_hp() (StatusRules.end_battle clears only the party's), so the vitals
+## are refilled to the whole ceiling, not to the Ruined one.
 static func restore_enemy(e: CombatActor) -> void:
 	e.restore_body()
-	e.stats.reset_vitals()
+	RuinRules.clear(e)
 	if e.statuses != null:
 		e.statuses.clear_all()
+	e.stats.reset_vitals()
 	if e.shield != null:
 		e.shield.reset_shields()
 

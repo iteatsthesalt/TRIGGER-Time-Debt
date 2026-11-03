@@ -281,9 +281,7 @@ static func _auto_break(_c: BattleCoordinator, op: Dictionary, ctx: Dictionary, 
 ## progress is undone and the gauge loses what `seconds` of filling gave it (DECISIONS "Effect table").
 static func rewind_enemies(c: BattleCoordinator, seconds: float) -> void:
 	for e in c.living_enemies():
-		if c.wind_ups.has(e):
-			c.wind_ups.erase(e)
-			c.telegraph_ended.emit(e)
+		c.end_wind_up(e)
 		var st := CombatantStats.of(e)
 		c.set_gauge(e, c.get_gauge(e) - seconds * (st.gauge_speed() if st != null else 25.0))
 		var snap: Dictionary = c.turn_snapshots.get(e, {})

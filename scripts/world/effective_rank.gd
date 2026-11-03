@@ -8,9 +8,13 @@
 ## band floor of U0 meets the authored levels. A party under the band minimum meets nothing below band
 ## minimum - 2 ("never trivialize"). Past band maximum + 5 the encounter is under Time Shear: +15% speed (the
 ## SLOW immunity and the vignette wait for their systems). Bosses, mini-bosses (any kind but regular and elite)
-## and an encounter row with an explicit `level` keep their levels.
+## and an encounter row with an explicit `level` keep their levels. An add a scaled enemy summons or splits into
+## mid-battle (EnemySpawner) is laid out from its summoner's encounter the same way (create_summoned).
 class_name EffectiveRank
 extends RefCounted
+
+## The encounter terms a body was scaled with ({"hazard": int}), kept on it so its summons scale the same way.
+const META_ENCOUNTER := &"rank_encounter"
 
 const SCALED_KINDS: Array[String] = ["regular", "elite"]
 const FLOOR_BELOW_BAND := 2
@@ -74,7 +78,19 @@ static func spawn_level(def: EnemyDef, row: Variant, enc: Dictionary) -> int:
 ## Create an encounter enemy at its spawn level, under Time Shear when the party has outgrown the universe.
 static func create(def: EnemyDef, row: Variant, enc: Dictionary, suffix: String) -> CombatActor:
 	var a: CombatActor = CombatActor.create_enemy(def, spawn_level(def, row, enc), suffix)
-	if scales(def) and not (row is Dictionary and (row as Dictionary).has("level")) and time_shear(def.universe, party_average(Game.active_party)):
+	if not scales(def) or (row is Dictionary and (row as Dictionary).has("level")):
+		return a
+	a.set_meta(META_ENCOUNTER, {"hazard": int(enc.get("hazard", 0))})
+	if time_shear(def.universe, party_average(Game.active_party)):
 		a.stats.spd *= TIME_SHEAR_SPD
 		a.set_meta(&"time_shear", true)
 	return a
+
+
+## An add `summoner` calls or splits into mid-battle (EnemySpawner): a scaled kind called by a body this rank
+## scaled fights at its own ERL from the summoner's encounter, Time Shear included, so the adds keep step with the
+## encounter's own rows. Any other add (a boss's, a mini-boss's, a pinned row's) keeps its authored level.
+static func create_summoned(def: EnemyDef, summoner: Node, suffix: String) -> CombatActor:
+	if scales(def) and is_instance_valid(summoner) and summoner.has_meta(META_ENCOUNTER):
+		return create(def, null, summoner.get_meta(META_ENCOUNTER), suffix)
+	return CombatActor.create_enemy(def, -1, suffix)

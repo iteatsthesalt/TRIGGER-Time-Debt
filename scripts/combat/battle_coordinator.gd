@@ -346,8 +346,7 @@ func advance(delta: float) -> void:
 			var w: Dictionary = wind_ups[u]
 			w["left"] = float(w["left"]) - dt
 			if float(w["left"]) <= 0.0:
-				wind_ups.erase(u)
-				telegraph_ended.emit(u)
+				end_wind_up(u)
 				_execute_enemy_action(u, w["action"])
 				if state != State.TICK:
 					return
@@ -626,6 +625,7 @@ func cmd_spare(actor: Node, target: Node) -> Dictionary:
 		return _fail("cannot spare: must be Broken and at 25% HP or less")
 	state = State.EXECUTING
 	spared.append(target)
+	end_wind_up(target)  # it leaves the fight (§4.2) and takes any telegraph with it
 	unit_spared.emit(target)
 	_finish_turn(actor, 0.0)
 	_after_party_action({"kind": "spare", "actor": actor, "target": target})
@@ -883,6 +883,15 @@ func add_taunt(t: Node, turns: int, strength: float) -> void:
 
 # ------------------------------------------------------------------ enemy turns
 
+## The wind-up of `e` is over (it resolved, or a Break, a KO, a spare, an HZ hit or an effect cancelled it): the
+## entry goes and its telegraph decal with it. Returns false when `e` was not winding up.
+func end_wind_up(e: Node) -> bool:
+	if not wind_ups.erase(e):
+		return false
+	telegraph_ended.emit(e)
+	return true
+
+
 func _begin_enemy_turn(e: Node) -> void:
 	var def: EnemyDef = enemy_defs.get(CombatantStats.of(e).actor_id, null)
 	_snapshot_turn(e)
@@ -1049,8 +1058,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 			if t_tags.has(CombatTags.TACHYON) and rng.randf() < 0.25 and not broken_now:
 				gauges[t] = maxf(0.0, float(gauges.get(t, 0.0)) - 10.0)
 			if t_tags.has(CombatTags.HZ) and wind_ups.has(t) and rng.randf() < 0.15:
-				wind_ups.erase(t)
-				telegraph_ended.emit(t)
+				end_wind_up(t)
 			strike_resolved.emit(attacker, t, {"damage": dealt, "shave": res["shaved"], "weakness": res["hit_weakness"], "break": res["caused_break"], "crit": r["crit"], "tags": t_tags, "absorbed": r["absorbed"], "sealed": not bool(r["absorbed"]) and undamageable.has(t)})
 		info["damage"][t] = total
 		info["shave"][t] = shaved
@@ -1447,8 +1455,7 @@ func _check_end() -> bool:
 
 func _on_unit_broken(breaker: Node, unit: Node) -> void:
 	gauges[unit] = 0.0
-	if wind_ups.erase(unit):
-		telegraph_ended.emit(unit)  # a Break cancels the wind-up (§3.5): its decal goes with it
+	end_wind_up(unit)  # a Break cancels the wind-up (§3.5): its decal goes with it
 	if unit.has_method("on_break"):
 		unit.call("on_break")
 	unit_broken.emit(unit, breaker)
@@ -1462,6 +1469,7 @@ func _on_unit_broken(breaker: Node, unit: Node) -> void:
 
 func _on_unit_defeated(unit: Node) -> void:
 	ko_order.append(unit)
+	end_wind_up(unit)  # a body that falls mid wind-up never lands it: no telegraph stays on the plane
 	statues.on_defeated(unit, enemies.has(unit) and is_broken(unit))
 	unit_koed.emit(unit)
 	if party.has(unit):

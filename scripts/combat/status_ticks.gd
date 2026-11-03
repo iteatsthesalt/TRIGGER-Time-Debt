@@ -36,8 +36,8 @@ static func tick(c: BattleCoordinator, u: Node, id: StringName, stacks: int) -> 
 		return
 	var st := CombatantStats.of(u)
 	var sc := StatusComponent.of(u)
-	if st == null or sc == null or not st.is_alive():
-		return
+	if st == null or sc == null or not c._alive(u):
+		return  # the fallen and the spared are out of the fight (§4.2): no DoT, regen or drain reaches them
 	var n: int = maxi(1, stacks)
 	match id:
 		&"grief":

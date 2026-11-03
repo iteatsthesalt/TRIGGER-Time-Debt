@@ -376,9 +376,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 		&"omega_annihilation":
 			info = _merge_damage(c, info, action)
 			for t in info["targets"]:
-				if c.wind_ups.has(t):
-					c.wind_ups.erase(t)
-					c.telegraph_ended.emit(t)
+				c.end_wind_up(t)
 				c.set_gauge(t, 0.0)
 			actor.set_meta("used_tachyon_this_turn", true)
 	return info

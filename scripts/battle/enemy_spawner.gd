@@ -1,8 +1,9 @@
 ## Brings summoned enemies into a running battle: one rule for every summoner, a boss placing its phase adds
 ## or a regular enemy casting `summon:<key>` (TechEffects). The cap is the summoner's own: `max_adds` in its
 ## definition (the boss file, or the enemy's entry), default 3, never more than that many of one kind standing
-## beside it at once, since summoners re-cast every few turns. The newcomers ring the summoner, face the party,
-## join the coordinator and get a Turn-Bar marker and a plate.
+## beside it at once, since summoners re-cast every few turns. A scaled summoner's adds fight at the rank its
+## encounter gives them (EffectiveRank.create_summoned); a boss's keep their authored level. The newcomers ring the
+## summoner, face the party, join the coordinator and get a Turn-Bar marker and a plate.
 class_name EnemySpawner
 extends RefCounted
 
@@ -37,7 +38,7 @@ static func spawn(scene: BattleScene, edef: EnemyDef, near: Node, count: int, ca
 	var n: int = allowed(c, edef.key, near, count, cap)
 	var base: Vector3 = c.position_of(near) if near != null else c.arena_center
 	for k in n:
-		var a: CombatActor = CombatActor.create_enemy(edef, -1, "_%s%d" % [tag, k + 10 * (randi() % 1000)])
+		var a: CombatActor = EffectiveRank.create_summoned(edef, near, "_%s%d" % [tag, k + 10 * (randi() % 1000)])  # §15.3
 		scene.get_parent().add_child(a)
 		var ang: float = randf() * TAU
 		a.global_position = base + Vector3(cos(ang), 0.0, sin(ang)) * (1.8 + 0.4 * float(k))

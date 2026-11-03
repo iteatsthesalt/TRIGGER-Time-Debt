@@ -317,6 +317,71 @@ func test_one_summon_rule_with_the_summoners_own_cap() -> void:
 	Game.new_game()
 
 
+## Combat Laws 15.3: a scaled regular summoner's adds fight at the rank its encounter gives the same kind (the
+## Filament Guardian's Atom-Eaters beside the encounter's own), and a summoner nothing scaled calls its adds at
+## their authored level, as a boss's are.
+func test_a_scaled_summoners_adds_fight_at_its_encounters_rank() -> void:
+	var loc: Location = await _arena([&"crono"])
+	loc._on_story_battle(&"gallery_filament_guardian", {})
+	var scene: BattleScene = loc.battle
+	var c: BattleCoordinator = scene.coordinator
+	c.auto_tick = false
+	var atom: EnemyDef = Data.enemy(&"atom_eater")
+	var guardian: Node = c.enemies.filter(func(e: Node) -> bool: return CombatantStats.of(e).actor_id == &"lavic_filament_guardian")[0]
+	var rows: Array = c.enemies.filter(func(e: Node) -> bool: return CombatantStats.of(e).actor_id == &"atom_eater")
+	var row_level: int = CombatantStats.of(rows[0]).level
+	check(row_level != atom.level, "the encounter's Atom-Eaters are scaled off their authored Lv %d (to %d)" % [atom.level, row_level])
+	var n0: int = c.enemies.size()
+	c.request_summon(&"atom_eater", 1, guardian)
+	check_eq(c.enemies.size() - n0, 1, "the guardian calls one Atom-Eater beside the two standing")
+	var called: CombatActor = c.enemies[-1]
+	check_eq(called.stats.level, row_level, "the called Atom-Eater fights at the encounter's rank, not its authored level")
+	check_eq(called.has_meta(&"time_shear"), (rows[0] as Node).has_meta(&"time_shear"), "and shares its Time Shear")
+	check_eq(called.stats.xp_reward, CombatantStats.of(rows[0]).xp_reward, "and pays the XP of that rank")
+	var plain: CombatActor = CombatActor.create_enemy(Data.enemy(&"lavic_filament_guardian"), -1, "_plain")
+	_track(plain)
+	var authored: CombatActor = EffectiveRank.create_summoned(atom, plain, "_auth")
+	_track(authored)
+	check_eq(authored.stats.level, atom.level, "a summoner nothing scaled (a boss's add) calls at the authored level")
+	check(await _end(loc, true), "the battle ends")
+	Game.new_game()
+
+
+# ---------------------------------------------------------------- telegraphs
+
+## Combat Laws 3.5: an enemy killed (not Broken) mid wind-up takes its telegraph with it; the decal does not stay
+## painted on the plane as a threat that will never land while its allies fight on.
+func test_an_enemy_killed_mid_wind_up_takes_its_telegraph_with_it() -> void:
+	var loc: Location = await _arena([&"crono"])
+	var scene: BattleScene = _zone_battle(loc)
+	var c: BattleCoordinator = scene.coordinator
+	c.party_hp_floor = 1
+	var spoon: Node = null
+	var t: float = 0.0
+	while spoon == null and t < 60.0:
+		if c.state == BattleCoordinator.State.COMMAND_WAIT:
+			c.cmd_guard(c.active_actor)
+			continue
+		c.advance(1.0 / 30.0)
+		t += 1.0 / 30.0
+		for e in c.wind_ups.keys():
+			if CombatantStats.of(e).actor_id == &"ashen_spoon":
+				spoon = e
+	check(spoon != null, "a Spoon winds up its Ink Stir (its one action)")
+	check(scene.telegraphs.has(spoon), "its cone is painted on the plane")
+	var decal: Node = scene.telegraphs.get(spoon, null)
+	check(not ShieldComponent.of(spoon).is_broken, "it is not Broken")
+	CombatantStats.of(spoon).apply_damage(999999, true)
+	check(not CombatantStats.of(spoon).is_alive(), "a hit kills it mid wind-up")
+	check(not c.wind_ups.has(spoon), "its wind-up ends with it")
+	check(not scene.telegraphs.has(spoon), "and its telegraph goes")
+	await get_tree().process_frame
+	check(not is_instance_valid(decal), "the decal is freed")
+	check(c.living_enemies().size() >= 2 and c.state != BattleCoordinator.State.IDLE, "while its allies fight on")
+	check(await _end(loc, true), "the battle ends")
+	Game.new_game()
+
+
 # ---------------------------------------------------------------- plates
 
 ## BATTLE-19: the wind-up tint stays between cyan and orange and pulses by sin(TIME × 6); the plates are

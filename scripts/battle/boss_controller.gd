@@ -1,10 +1,10 @@
 ## Drives one boss through its phases inside a BattleScene (Combat Laws Bible §14): watches the HP pool and the
 ## phase gates (BossDef), swaps the shield/tags/actions when a phase begins, plays the phase's story script with
 ## the clock stopped, places its adds (BossAdds), asks a Possibility Branch (BossBranch), ends the fight on a
-## final Break or a yield and pays the boss's XP and drops, and forwards events to an optional per-boss director
-## at res://scripts/battle/bosses/<id>.gd. Director methods, every one optional: on_setup, on_phase, on_break
-## (return {"handled": true} to replace the break line), on_add_break, on_parry, on_action, on_tick, on_summon and
-## on_branch (return {"handled": true} to take over), on_defeat, on_battle_end.
+## final Break or a yield (RewardResolver pays the boss's XP and drops with the victory), and forwards events to
+## an optional per-boss director at res://scripts/battle/bosses/<id>.gd. Director methods, every one optional:
+## on_setup, on_phase, on_break (return {"handled": true} to replace the break line), on_add_break, on_parry,
+## on_action, on_tick, on_summon and on_branch (return {"handled": true} to take over), on_defeat, on_battle_end.
 ##
 ## §14.1: a phase that comes due while the boss is Broken waits; the Break plays out on the old plates and the new
 ## phase begins when the boss recovers. HP windows are walked one at a time, so no phase's script, seal or adds are
@@ -143,8 +143,7 @@ func _transition_to(i: int) -> void:
 	_phase_spawned = 0
 	coordinator.paused = true
 	scene.set_input_blocked(true)
-	coordinator.wind_ups.erase(actor)
-	coordinator.telegraph_ended.emit(actor)
+	coordinator.end_wind_up(actor)
 	phase_index = i
 	_apply_phase_def(i)
 	adds.begin_phase(i, actor.stats.hp_ratio())
@@ -229,8 +228,8 @@ func answer_branch(option_id: String, entry: Dictionary = {}) -> void:
 
 
 ## End the fight as a victory with the boss still standing (its last phase Broke, it yielded, a director's scripted
-## end): its XP counts as a defeat's (RewardResolver.award_xp reads the boss_defeated meta) and its drops are
-## given. The battle ends once the action in progress has resolved.
+## end): its XP and drops count as a defeat's (RewardResolver.defeated reads the boss_defeated meta). The battle
+## ends once the action in progress has resolved.
 func end_fight(reason: String = "scripted") -> void:
 	if ended:
 		return
@@ -239,11 +238,12 @@ func end_fight(reason: String = "scripted") -> void:
 	coordinator.call_deferred("force_end", true, reason)
 
 
+## The boss is down or its fight is over: the director's on_defeat plays the fall. Nothing is paid here: the drops
+## and the XP come with the victory (RewardResolver), so a fight its adds go on to win pays nothing.
 func _close() -> void:
 	ended = true
 	_call_director("on_defeat", [self])
 	boss_defeated.emit(actor)
-	RewardResolver.give(def.drops, coordinator.rng)  # by each item's catalogue kind (Game.grant), like enemy drops
 
 
 # ---------------------------------------------------------------- adds

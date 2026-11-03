@@ -519,6 +519,39 @@ func test_periodic_statuses_tick_on_battle_time() -> void:
 	check(not StatusComponent.of(crono).has_meta(StatusTicks.META), "the ticks are released when the battle ends")
 
 
+## Combat Laws 4.2 Spare ("removed from the fight alive"): a spared enemy's burn ticks no more, so it never dies
+## of it, stands no statue (LINE_PIERCE cover) and fires no KO; an enemy still in the fight keeps burning.
+func test_a_spared_enemy_takes_no_more_ticks() -> void:
+	var c := _coord()
+	var crono := _party_member(&"crono", 10, Vector3(-3, 0, 0))
+	_tough_party(crono)
+	var e := _enemy(&"spoon", 10, Vector3(3, 0, 0), 2, ["SWORD"], {"hp": 80})
+	var e2 := _enemy(&"spoon_b", 10, Vector3(3, 0, 2), 2, ["SWORD"], {"hp": 50000})
+	_start(c, [crono], [e, e2])
+	check(_advance_until_actor(c, &"crono") == crono, "Crono gets a window")
+	ShieldComponent.of(e).force_break(crono)
+	var st := CombatantStats.of(e)
+	st.hp = 16
+	for u in [e, e2]:
+		check(StatusRules.apply(c, u, &"burn", 10.5, -1, 1, {"tick": 4}), "a 10.5 s burn ticking 4 lands")
+	var ticks: Array[Node] = []
+	c.strike_resolved.connect(func(_a: Node, t: Node, info: Dictionary) -> void:
+		if bool(info.get("dot", false)):
+			ticks.append(t))
+	var koed: Array[Node] = []
+	c.unit_koed.connect(func(u: Node) -> void: koed.append(u))
+	check(bool(c.cmd_spare(crono, e).get("ok", false)), "the Broken enemy at 20% is spared")
+	var hp2: int = CombatantStats.of(e2).hp
+	_run(c, 11.0)
+	check_eq(st.hp, 16, "the spared enemy loses no HP to its burn")
+	check(st.is_alive() and not koed.has(e) and not c.ko_order.has(e), "it does not die of it, and no KO fires")
+	check(not c.statues.standing(e), "it stands no statue")
+	check(not ticks.has(e), "no DoT strike lands on it")
+	check(ticks.has(e2) and CombatantStats.of(e2).hp < hp2, "the enemy still fighting keeps burning")
+	check(c.state != BattleCoordinator.State.IDLE, "and the battle goes on")
+	c.force_end(true)
+
+
 # ---------------------------------------------------------------- accuracy and shave penalties (COMBAT-11)
 
 func test_blind_party_hits_miss_about_thirty_percent() -> void:

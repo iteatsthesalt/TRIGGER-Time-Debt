@@ -1,5 +1,5 @@
 ## What a won battle pays, in one place (Combat Laws §5.2 Spare and Salvage, §13.1 Lean, §15.2 Experience;
-## DECISIONS "Rewards: XP, drops and leans"). BattleCoordinator._finish merges resolve() into the summary on a
+## DECISIONS "Rewards: XP, drops and leans"). BattleCoordinator.finish merges resolve() into the summary on a
 ## victory; a defeat or a withdraw pays nothing.
 ## - XP: a defeated enemy (or a boss that ended its fight standing) pays its full reward, a spared one half;
 ##   the living party share all of it, the fallen and the bench 75%.

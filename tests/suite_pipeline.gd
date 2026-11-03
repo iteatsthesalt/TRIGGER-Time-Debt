@@ -138,7 +138,7 @@ func test_null_true_damage_runs_the_whole_pipeline_without_defence() -> void:
 	_sturdy(crono)
 	_advance_until_window(c)
 	var a := CombatantStats.of(crono)
-	var ctx := {"atk": a.p_atk, "def": 0.0, "base": 1.0, "party_synergy": c.party_synergy(), "home_canvas": c._home_canvas(crono), "variance": 1.0}
+	var ctx := {"atk": a.p_atk, "def": 0.0, "base": 1.0, "party_synergy": PartyHit.party_synergy(c), "home_canvas": PartyHit.home_canvas(c, crono), "variance": 1.0}
 	var want: int = int(DamagePipeline.compute_hit(ctx)["damage"])
 	var r: Dictionary = c.cmd_tech(crono, &"null_cut", e, c.position_of(e), 0)
 	check_eq(int(r["info"]["damage"][e]), want, "NULL ignores DEF and the resistance and keeps canvas and synergy (§6.3)")
@@ -154,7 +154,7 @@ func test_null_true_damage_runs_the_whole_pipeline_without_defence() -> void:
 	_start(c2, [crono2], [weak], {"techs": _with([], [null_cut])})
 	_sturdy(crono2)
 	_advance_until_window(c2)
-	var ctx2 := {"atk": CombatantStats.of(crono2).p_atk, "def": 0.0, "base": 1.0, "party_synergy": c2.party_synergy(), "home_canvas": c2._home_canvas(crono2), "variance": 1.0}
+	var ctx2 := {"atk": CombatantStats.of(crono2).p_atk, "def": 0.0, "base": 1.0, "party_synergy": PartyHit.party_synergy(c2), "home_canvas": PartyHit.home_canvas(c2, crono2), "variance": 1.0}
 	var r3: Dictionary = c2.cmd_tech(crono2, &"null_cut", weak, c2.position_of(weak), 0)
 	check_eq(int(r3["info"]["shave"][weak]), 1, "the NULL match still shaves")
 	check_eq(int(r3["info"]["damage"][weak]), int(DamagePipeline.compute_hit(ctx2)["damage"]), "but no weakness multiplier (§6.3)")
@@ -176,7 +176,7 @@ func test_any_tachyon_technique_skips_seras_solidity_regen() -> void:
 	_sturdy(sera)
 	var sol := SolidityComponent.of(sera)
 	_advance_until_window(c)
-	c.spend_solidity(sera, 20.0)
+	TechCosts.spend_solidity(c, sera, 20.0)
 	var before: float = sol.solidity
 	check(bool(c.cmd_tech(sera, &"tachyon_probe", e, c.position_of(e), 0).get("ok", false)), "a TACHYON tech with no special effect")
 	check_near(sol.solidity, before, 0.001, "gives back no solidity that turn (§10.2)")
@@ -224,11 +224,11 @@ func test_cooldowns_count_the_casters_own_turns() -> void:
 	var pulse: TechDef = c.tech_library[&"mercury_pulse"]
 	check(bool(c.cmd_tech(cassia, &"mercury_pulse", null, c.position_of(cassia), 0).get("ok", false)), "Mercury Pulse is cast")
 	check_eq(c.cooldowns.left(cassia, pulse.id), 2, "the cast itself does not count down its cooldown")
-	c._finish_turn(crono, 0.0)
-	c._finish_turn(crono, 0.0)
+	c.finish_turn(crono, 0.0)
+	c.finish_turn(crono, 0.0)
 	check_eq(c.cooldowns.left(cassia, pulse.id), 2, "another ally's turns do not recharge it")
 	check_eq(c.cooldowns.left(crono, pulse.id), 0, "and it is not his to wait for")
-	c._finish_turn(cassia, 0.0)
+	c.finish_turn(cassia, 0.0)
 	check_eq(c.cooldowns.left(cassia, pulse.id), 1, "one of her own turns")
 	check(not c.available_techs(cassia).has(pulse), "still recharging")
 	var pool: Dictionary = c.fields.add(&"amber_pool", c.position_of(cassia), 2.0, 6.0, 0)
@@ -237,8 +237,8 @@ func test_cooldowns_count_the_casters_own_turns() -> void:
 	c.fields.fields.erase(pool)
 	check_eq(c.cooldowns.left(cassia, pulse.id), 0, "and the pool's tick clears it for good")
 	c.cooldowns.start(cassia, pulse)
-	c._finish_turn(cassia, 0.0)
-	c._finish_turn(cassia, 0.0)
+	c.finish_turn(cassia, 0.0)
+	c.finish_turn(cassia, 0.0)
 	check_eq(c.cooldowns.left(cassia, pulse.id), 0, "two of her turns and it is back")
 
 
@@ -251,12 +251,12 @@ func test_ghost_ring_static_field_and_confetti_pit() -> void:
 	var e := _enemy(&"x", 10, Vector3(3, 0, 0), 8, ["ICE"], {"hp": 100000})
 	_start(c, [crono, sera], [e])
 	_sturdy(crono)
-	var out_c: float = c._fill(crono, 1.0)
-	var out_s: float = c._fill(sera, 1.0)
+	var out_c: float = c.gauge_fill(crono, 1.0)
+	var out_s: float = c.gauge_fill(sera, 1.0)
 	c.fields.add(&"ghost_ring", c.position_of(crono), 1.5, 6.0, 0)
 	c.fields.add(&"ghost_ring", c.position_of(sera), 1.5, 6.0, 0)
-	check_near(c._fill(crono, 1.0), out_c * FieldEffects.GHOST_RING_FILL, 0.0001, "a ghost ring fills an ally's gauge 1.15x (§7.4)")
-	check_near(c._fill(sera, 1.0), out_s, 0.0001, "but not Sera's: she never touches the floor (§10.2)")
+	check_near(c.gauge_fill(crono, 1.0), out_c * FieldEffects.GHOST_RING_FILL, 0.0001, "a ghost ring fills an ally's gauge 1.15x (§7.4)")
+	check_near(c.gauge_fill(sera, 1.0), out_s, 0.0001, "but not Sera's: she never touches the floor (§10.2)")
 	StatusComponent.of(e).add(&"untargetable", 10.0)
 	check(not c.targetable_enemies().has(e), "an untargetable enemy is not offered")
 	c.fields.add(&"static_field", c.position_of(e), 1.5, 6.0, 0)
@@ -520,8 +520,8 @@ func test_preview_damage_reads_a_duals_synergy_best_caster_and_guaranteed_crit()
 		CombatantStats.of(u).mp = 999
 	for id in [&"pair_cut", &"triangulation"]:
 		var partner: Node = krona if id == &"pair_cut" else xyloph
-		c._open_window(partner, false)  # the partner waits in the Ready Pool
-		c._open_window(crono, false)
+		c.open_window(partner, false)  # the partner waits in the Ready Pool
+		c.open_window(crono, false)
 		var tech: TechDef = c.tech_library[id]
 		var solo: int = PartyHit.estimate(c, PartyHit.action_keys(c, tech, 0, [crono]), crono, CombatantStats.of(crono), e, Array(tech.tags), tech.hit_count, 0)
 		var said: int = int(c.preview(crono, tech, e, c.position_of(e), 0, [partner])[e]["damage"])
@@ -598,7 +598,7 @@ func test_dead_hooks_now_fire() -> void:
 	var sure := {"id": "sure_cut", "name": "Sure Cut", "tier": "single", "actors": ["crono"], "tags": ["SWORD"], "shape": "SINGLE", "hits": 1, "power": 1.0, "uses": "PHYSICAL", "guaranteed_crit": true, "costs": {}}
 	_start(c, [crono, sera], [e], {"techs": _with([], [sure])})
 	_sturdy(crono)
-	c.spend_solidity(sera, 10.0)
+	TechCosts.spend_solidity(c, sera, 10.0)
 	check_near(float(sera.get_meta("last_solidity_cost", 0.0)), 10.0, 0.001, "spend_solidity records the last cost for Time Debt Seal")
 	check(Data.techs[&"triangulation"].guaranteed_crit, "Triangulation's guaranteed crit is data (§6.2)")
 	_advance_until_actor(c, &"crono")
@@ -620,14 +620,14 @@ func test_dead_hooks_now_fire() -> void:
 	var ks := CombatantStats.of(krona)
 	ks.hp = 1
 	c2.enemy_action_serial = 1
-	c2._after_damage(krona)
+	EnemyTurn.after_damage(c2, krona)
 	var after_one: int = ks.hp
 	check(after_one > 1, "below 25% she sips")
 	ks.hp = 1
-	c2._after_damage(krona)
+	EnemyTurn.after_damage(c2, krona)
 	check_eq(ks.hp, 1, "a second hit of the same enemy action: no second sip")
 	c2.enemy_action_serial = 2
-	c2._after_damage(krona)
+	EnemyTurn.after_damage(c2, krona)
 	check(ks.hp > 1, "the next enemy action: she may sip again")
 	# Grief: under 50% MP no Boost over 1 (float half, an odd max MP).
 	var c3 := _coord()

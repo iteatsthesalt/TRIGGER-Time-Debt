@@ -12,32 +12,32 @@ const KO_REACH_M := 3.0
 
 ## Trade `actor` for `incoming` from the Bench.
 static func swap(c: BattleCoordinator, actor: Node, incoming: Node) -> Dictionary:
-	if not c._is_turn(actor):
-		return c._fail("not this actor's turn")
-	if not c.bench.has(incoming) or not c._alive(incoming):
-		return c._fail("not on the bench")
+	if not c.is_turn(actor):
+		return c.fail("not this actor's turn")
+	if not c.bench.has(incoming) or not c.alive(incoming):
+		return c.fail("not on the bench")
 	var idx: int = c.party.find(actor)
 	if idx < 0:
-		return c._fail("only an ally on the plane can swap out")
+		return c.fail("only an ally on the plane can swap out")
 	c.state = BattleCoordinator.State.EXECUTING
-	c._finish_turn(actor, 0.0)
+	c.finish_turn(actor, 0.0)
 	_trade(c, idx, actor, incoming)
-	c._after_party_action({"kind": "swap", "actor": actor, "out": actor, "in": incoming})
+	c.after_party_action({"kind": "swap", "actor": actor, "out": actor, "in": incoming})
 	return {"ok": true}
 
 
 ## Trade the KO'd `koed` for `incoming`, on `actor`'s turn, from within KO_REACH_M.
 static func swap_koed(c: BattleCoordinator, actor: Node, koed: Node, incoming: Node) -> Dictionary:
-	if not c._is_turn(actor):
-		return c._fail("not this actor's turn")
-	if not c.party.has(koed) or c._alive(koed) or not c.bench.has(incoming) or not c._alive(incoming):
-		return c._fail("invalid swap")
+	if not c.is_turn(actor):
+		return c.fail("not this actor's turn")
+	if not c.party.has(koed) or c.alive(koed) or not c.bench.has(incoming) or not c.alive(incoming):
+		return c.fail("invalid swap")
 	if c.position_of(actor).distance_to(c.position_of(koed)) > KO_REACH_M:
-		return c._fail("too far")
+		return c.fail("too far")
 	c.state = BattleCoordinator.State.EXECUTING
 	_trade(c, c.party.find(koed), koed, incoming)
-	c._finish_turn(actor, 0.0)
-	c._after_party_action({"kind": "swap_koed", "actor": actor, "out": koed, "in": incoming})
+	c.finish_turn(actor, 0.0)
+	c.after_party_action({"kind": "swap_koed", "actor": actor, "out": koed, "in": incoming})
 	return {"ok": true}
 
 
@@ -46,8 +46,8 @@ static func _trade(c: BattleCoordinator, idx: int, outgoing: Node, incoming: Nod
 	c.bench.erase(incoming)
 	c.bench.append(outgoing)
 	c.ready_pool.erase(outgoing)
-	c._set_position(incoming, c.position_of(outgoing))
-	c._init_unit(incoming, CombatConstants.SWAP_GAUGE)
+	c.move_unit(incoming, c.position_of(outgoing))
+	c.init_unit(incoming, CombatConstants.SWAP_GAUGE)
 	if not c.swapped_once:
 		c.swapped_once = true
 		c.bank.add(1)

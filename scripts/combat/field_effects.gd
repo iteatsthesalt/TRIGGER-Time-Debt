@@ -193,4 +193,4 @@ static func free_strain_cast(c: BattleCoordinator, caster: Node) -> bool:
 
 
 static func _living(c: BattleCoordinator, units: Array) -> Array:
-	return units.filter(func(u: Node) -> bool: return c._alive(u))
+	return units.filter(func(u: Node) -> bool: return c.alive(u))

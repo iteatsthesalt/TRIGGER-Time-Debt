@@ -32,7 +32,7 @@ static func holds(c: BattleCoordinator, e: Node, condition: StringName) -> bool:
 		&"ferro_in_party":
 			for u in c.party:
 				var st := CombatantStats.of(u)
-				if c._alive(u) and st != null and String(Data.character(st.actor_id).get("element", "")) == "FERRO":
+				if c.alive(u) and st != null and String(Data.character(st.actor_id).get("element", "")) == "FERRO":
 					return true
 			return false
 	return bool(e.get_meta(MET, false))

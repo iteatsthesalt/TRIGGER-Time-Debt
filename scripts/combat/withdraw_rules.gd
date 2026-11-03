@@ -56,10 +56,10 @@ static func fall_back(c: BattleCoordinator, actor: Node, from: Vector3) -> Dicti
 ## The Withdraw command on `actor`'s window. Returns {ok, withdrew, position, reached_edge}; ok is false only
 ## when the command was not legal (not this actor's turn, a boss or story battle).
 static func attempt(c: BattleCoordinator, actor: Node) -> Dictionary:
-	if not c._is_turn(actor):
-		return c._fail("not this actor's turn")
+	if not c.is_turn(actor):
+		return c.fail("not this actor's turn")
 	if not offered(c):
-		return c._fail("cannot withdraw from a boss" if c.is_boss_battle else "this fight cannot be left")
+		return c.fail("cannot withdraw from a boss" if c.is_boss_battle else "this fight cannot be left")
 	var from: Vector3 = c.position_of(actor)
 	var reached: bool = edge_distance(c, from) <= EDGE_M
 	if not reached:
@@ -76,14 +76,14 @@ static func attempt(c: BattleCoordinator, actor: Node) -> Dictionary:
 		verdict = ("%s falls back toward the edge." if at.distance_to(from) > 0.01 else "%s finds no way back from here.") % who
 	else:
 		for e in c.enemies:
-			if c._alive(e) and float(c.gauges.get(e, 0.0)) > CombatConstants.WITHDRAW_MAX_ENEMY_GAUGE:
+			if c.alive(e) and float(c.gauges.get(e, 0.0)) > CombatConstants.WITHDRAW_MAX_ENEMY_GAUGE:
 				verdict = "%s cannot break away: an enemy is about to act." % who
 				break
 	c.state = BattleCoordinator.State.EXECUTING
 	if verdict != "":
 		c.battle_message.emit(verdict)
-		c._finish_turn(actor, 0.0)
-		c._after_party_action({"kind": "withdraw", "ok": false, "actor": actor})
+		c.finish_turn(actor, 0.0)
+		c.after_party_action({"kind": "withdraw", "ok": false, "actor": actor})
 		return {"ok": true, "withdrew": false, "position": at, "reached_edge": reached}
-	c._finish(false, "withdraw", {"withdraw_at": at})
+	c.finish(false, "withdraw", {"withdraw_at": at})
 	return {"ok": true, "withdrew": true, "position": at, "reached_edge": true}

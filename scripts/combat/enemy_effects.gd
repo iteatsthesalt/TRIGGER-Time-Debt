@@ -49,7 +49,7 @@ static func apply(c: BattleCoordinator, enemy: Node, action: Dictionary, hit_lis
 						sh2.shield_changed.emit(sh2.current_shield, sh2.max_total())
 					break
 		"oil_blight":
-			c.set_oil_blight(true)
+			c.bank.set_oil_blight(true)
 		"time_stop":
 			for h in hit_list:
 				StatusRules.apply(c, h["node"], &"time_stop", 3.0)
@@ -96,7 +96,7 @@ static func drift(c: BattleCoordinator, enemy: Node, hit_list: Array) -> void:
 	var side := Vector3(toward.z - p.z, 0.0, p.x - toward.x).normalized()
 	if side.length() < 0.01:
 		side = Vector3.RIGHT
-	c._set_position(enemy, p + side * DRIFT_M * (1.0 if c.rng.randf() < 0.5 else -1.0))
+	c.move_unit(enemy, p + side * DRIFT_M * (1.0 if c.rng.randf() < 0.5 else -1.0))
 
 
 ## The bodies a splitter sheds: the action's `summon`, else the first codex key that extends its own

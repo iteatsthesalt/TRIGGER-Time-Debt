@@ -45,7 +45,7 @@ static func action_keys(c: BattleCoordinator, tech: TechDef, boost: int, casters
 	if tech == null:
 		return {"tech": null, "base": 1.0, "uses": TechDef.Uses.PHYSICAL, "boost": boost, "synergy": 1.0}
 	return {"tech": tech, "base": tech.base_per_hit, "uses": tech.uses, "boost": boost,
-		"synergy": tech.synergy_base() * c._pair_synergy(casters), "guaranteed_crit": tech.guaranteed_crit}
+		"synergy": tech.synergy_base() * PartyHit.pair_synergy(casters), "guaranteed_crit": tech.guaranteed_crit}
 
 
 ## Sera's Quantum Flicker (§6.2, §10.2): her strikes deal +20% while three ghost layers or more show.
@@ -65,14 +65,14 @@ static func terms(c: BattleCoordinator, action: Dictionary, attacker: Node, best
 	var tst := CombatantStats.of(t)
 	var sh := ShieldComponent.of(t)
 	var tsc := StatusComponent.of(t)
-	var def_mult: float = (CombatConstants.BREAK_DEF_MULT if was_broken else 1.0) * (tsc.def_multiplier(c._is_metal(t)) if tsc != null else 1.0)
+	var def_mult: float = (CombatConstants.BREAK_DEF_MULT if was_broken else 1.0) * (tsc.def_multiplier(CombatantStats.is_metal(t)) if tsc != null else 1.0)
 	var pair: Dictionary = DamagePipeline.pick_stats(int(action.get("uses", TechDef.Uses.BEST)), best, tst, def_mult)
 	var ctx := {
 		"atk": pair["atk"], "def": pair["def"],
 		"base": float(action.get("base", 1.0)) * EffectTable.damage_mult(c, action.get("tech", null), int(action.get("boost", 0)), t),
 		"synergy": float(action.get("synergy", 1.0)),
-		"party_synergy": c.party_synergy(), "home_canvas": c._home_canvas(attacker),
-		"boost_level": int(action.get("boost", 0)), "in_field": c._in_divinity_or_tether(attacker),
+		"party_synergy": PartyHit.party_synergy(c), "home_canvas": PartyHit.home_canvas(c, attacker),
+		"boost_level": int(action.get("boost", 0)), "in_field": PartyHit.in_field(attacker),
 		"weakness": weak, "broken": was_broken,
 		"crit": bool(action.get("guaranteed_crit", false)),
 		"perfect": perfect, "falloff_rank": rank, "variance": 1.0,
@@ -82,7 +82,7 @@ static func terms(c: BattleCoordinator, action: Dictionary, attacker: Node, best
 		"astral": tags.has(CombatTags.ASTRAL), "target_hp": tst.hp, "is_boss": tst.kind == "boss",
 		"flicker_bonus": flick,
 	}
-	if tsc != null and tsc.has(&"nulled") and tags.has(CombatTags.ASTRAL) and c._crono_galaxy(attacker):
+	if tsc != null and tsc.has(&"nulled") and tags.has(CombatTags.ASTRAL) and TimeDebtComponent.in_galaxy(attacker):
 		ctx["base"] = float(ctx["base"]) * 1.5
 	null_rule(ctx, tags, tsc)
 	EffectTable.adjust_hit(ctx, tsc, false, ahead)  # The Last Joke's crack, the Gold Leaf washi pocket
@@ -104,7 +104,7 @@ static func infused(action: Dictionary, attacker: Node) -> bool:
 ## crit waits for the beat that earns it: data/effects/effects.json `handler_unbuilt`.)
 static func context(c: BattleCoordinator, action: Dictionary, attacker: Node, best: CombatantStats, t: Node, tags: Array, res: Dictionary, was_broken: bool, rank: int, perfect: bool, flick: bool) -> Dictionary:
 	var ctx := terms(c, action, attacker, best, t, tags, bool(res.get("hit_weakness", false)), was_broken, rank, perfect, flick)
-	ctx["variance"] = c._variance()
+	ctx["variance"] = c.variance()
 	EffectTable.spend_hit(StatusComponent.of(t))
 	if infused(action, attacker):
 		StatusComponent.of(attacker).remove(&"ruin_infused")
@@ -121,7 +121,7 @@ static func estimate(c: BattleCoordinator, action: Dictionary, attacker: Node, b
 	if sh != null and sh.shield_only and not broken:
 		return 0
 	var weak: bool = sh != null and sh.hits_weakness(tags)
-	var perfect: bool = bool(c._perfect_frame_pending.get(attacker, false))
+	var perfect: bool = bool(c.perfect_frame_pending.get(attacker, false))
 	var flick: bool = flicker(attacker)
 	var total: int = 0
 	for i in hits:
@@ -139,3 +139,51 @@ static func null_rule(ctx: Dictionary, tags: Array, tsc: StatusComponent) -> voi
 	ctx["def"] = 0.0
 	ctx["resist"] = 1.0
 	ctx["weakness"] = bool(ctx.get("weakness", false)) and tsc != null and tsc.has(&"nulled_weakness")
+
+
+## The casters' pair synergy (§8.3): Crono with Krona, Crono with Sera as a Dual, the Vaelos child, three
+## universes in a Triple (action_keys multiplies the technique's own synergy by it).
+static func pair_synergy(casters: Array) -> float:
+	var ids: Array[StringName] = []
+	var homes: Dictionary = {}
+	for c in casters:
+		var st := CombatantStats.of(c)
+		ids.append(st.actor_id)
+		homes[st.home_universe] = true
+	var s: float = 1.0
+	if ids.has(&"crono") and ids.has(&"krona"):
+		s *= CombatConstants.SYNERGY_CRONO_KRONA
+	if ids.has(&"crono") and ids.has(&"sera") and casters.size() == 2:
+		s *= CombatConstants.SYNERGY_CRONO_SERA
+	if ids.has(&"vaelos_child"):
+		s *= CombatConstants.SYNERGY_VAELOS_CHILD
+	if casters.size() == 3 and homes.size() == 3:
+		s *= CombatConstants.SYNERGY_THREE_UNIVERSES
+	return s
+
+
+## The home-canvas bonus (§9.1): a party member fighting in its own universe (never Sera, who has none).
+static func home_canvas(c: BattleCoordinator, actor: Node) -> float:
+	var st := CombatantStats.of(actor)
+	if st == null or st.actor_id == &"sera":
+		return 1.0
+	return 1.0 + CombatConstants.HOME_CANVAS_BONUS if st.home_universe == c.universe and st.team == CombatantStats.Team.PARTY else 1.0
+
+
+## The attacker stands in a Divinity Field or a Mycelia tether (the pipeline's in_field term).
+static func in_field(actor: Node) -> bool:
+	var sc := StatusComponent.of(actor)
+	return sc != null and (sc.has(&"tethered") or sc.has(&"divinity"))
+
+
+## The party synergy (§6.2): 1.10 with Sera on the plane or hovering, 0.85 while she is phased, 1.00 without her.
+static func party_synergy(c: BattleCoordinator) -> float:
+	var sera: Node = c.party_unit(&"sera")
+	if sera == null:
+		sera = c.hover_sera
+	if sera == null:
+		return CombatConstants.PARTY_SYNERGY_ABSENT  # 1.00: she is neither active nor hovering (§6.2)
+	var sol := SolidityComponent.of(sera)
+	if sol != null and sol.is_phased():
+		return CombatConstants.PARTY_SYNERGY_PHASED
+	return CombatConstants.PARTY_SYNERGY_SERA

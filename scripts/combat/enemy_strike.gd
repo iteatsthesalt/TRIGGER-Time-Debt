@@ -47,9 +47,9 @@ static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, 
 		var uses: int = int(TechDef.USES_NAMES.get(String(action.get("uses", "BEST")), TechDef.Uses.BEST))
 		var tsc := StatusComponent.of(t)
 		var pair: Dictionary = DamagePipeline.pick_stats(uses, est, tst, (tsc.def_multiplier(false) if tsc != null else 1.0))
-		var variance: float = c._variance()
+		var variance: float = c.variance()
 		if locked:
-			variance = minf(variance, c._variance())
+			variance = minf(variance, c.variance())
 		var ctx := {
 			"atk": pair["atk"], "def": pair["def"], "base": float(action.get("power", 1.0)),
 			"falloff_rank": rank, "variance": variance,
@@ -79,7 +79,7 @@ static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, 
 		total += dealt
 		apply_status(c, action, t, float(r["raw"]))
 		c.strike_resolved.emit(e, t, {"damage": dealt, "tags": tags, "crit": r["crit"]})
-		c._after_damage(t)
+		EnemyTurn.after_damage(c, t)
 	return total
 
 

@@ -81,7 +81,7 @@ static func run(c: BattleCoordinator, name: String, op: Dictionary, ctx: Diction
 		"hurt_allies":
 			var me: Node = ctx["attacker"]
 			for u in c.party:
-				if u != me and c._alive(u) and c.position_of(u).distance_to(c.position_of(me)) <= float(op.get("radius", 2.0)):
+				if u != me and c.alive(u) and c.position_of(u).distance_to(c.position_of(me)) <= float(op.get("radius", 2.0)):
 					var ust := CombatantStats.of(u)
 					var dealt: int = ust.apply_damage(roundi(float(ust.max_hp()) * float(op.get("pct", 0.1))), true)
 					c.strike_resolved.emit(me, u, {"damage": dealt, "friendly": true, "tags": []})
@@ -94,7 +94,7 @@ static func run(c: BattleCoordinator, name: String, op: Dictionary, ctx: Diction
 				var to_c := Vector3(center.x - p.x, 0.0, center.z - p.z)
 				var step: float = minf(float(op.get("m", 1.0)), maxf(0.0, to_c.length() - 0.5))
 				if step > 0.0:
-					c._set_position(u, p + to_c.normalized() * step)
+					c.move_unit(u, p + to_c.normalized() * step)
 		"leap":
 			# Mercy Leap: the flung ally lands 1 m behind the last target along the line.
 			var who: Node = null
@@ -109,7 +109,7 @@ static func run(c: BattleCoordinator, name: String, op: Dictionary, ctx: Diction
 					if c.position_of(t).distance_to(origin) > c.position_of(far).distance_to(origin):
 						far = t
 				var dir := Vector3(c.position_of(far).x - origin.x, 0.0, c.position_of(far).z - origin.z).normalized()
-				c._set_position(who, c.position_of(far) + dir * 1.0)
+				c.move_unit(who, c.position_of(far) + dir * 1.0)
 		"plates":
 			for u in each:
 				var sh3 := ShieldComponent.of(u)
@@ -284,7 +284,7 @@ static func rewind_enemies(c: BattleCoordinator, seconds: float) -> void:
 		c.set_gauge(e, c.get_gauge(e) - seconds * (st.gauge_speed() if st != null else 25.0))
 		var snap: Dictionary = c.turn_snapshots.get(e, {})
 		if snap.has("pos"):
-			c._set_position(e, snap["pos"])
+			c.move_unit(e, snap["pos"])
 		var sc := StatusComponent.of(e)
 		if sc != null:
 			sc.remove(&"invulnerable")  # the Heckler Harlequin's ignored-for-15 s state

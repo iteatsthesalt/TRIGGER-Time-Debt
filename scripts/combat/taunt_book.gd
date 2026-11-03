@@ -57,7 +57,7 @@ func guard_for(c: BattleCoordinator, t: Node) -> Node:
 		return null
 	for g in entries.keys():
 		var e: Dictionary = entries[g]
-		if g == t or float(e.get("ring", 0.0)) <= 0.0 or int(e["turns"]) <= 0 or not c._alive(g) or c._untargetable(g):
+		if g == t or float(e.get("ring", 0.0)) <= 0.0 or int(e["turns"]) <= 0 or not c.alive(g) or c.untargetable(g):
 			continue
 		var d: Vector3 = c.position_of(t) - c.position_of(g)
 		var st := CombatantStats.of(t)

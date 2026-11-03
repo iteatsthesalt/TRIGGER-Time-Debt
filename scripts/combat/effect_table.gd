@@ -288,7 +288,7 @@ static func _holds_one(k: String, v: Variant, ctx: Dictionary, t: Node) -> bool:
 					return true
 			return false
 		"target_metal":
-			return t != null and c._is_metal(t) == bool(v)
+			return t != null and CombatantStats.is_metal(t) == bool(v)
 		"target_boss":
 			return tst != null and (tst.kind == "boss") == bool(v)
 		"target_tag":
@@ -328,7 +328,7 @@ static func _holds_one(k: String, v: Variant, ctx: Dictionary, t: Node) -> bool:
 			if td == null:
 				return not bool(v)
 			var cst := CombatantStats.of(crono)
-			var state: bool = c._crono_galaxy(crono) if k == "crono_galaxy" else td.is_hairline_or_worse(float(cst.hp) / float(maxi(1, cst.base_max_hp)))
+			var state: bool = TimeDebtComponent.in_galaxy(crono) if k == "crono_galaxy" else td.is_hairline_or_worse(float(cst.hp) / float(maxi(1, cst.base_max_hp)))
 			return state == bool(v)
 		"tuned":
 			var stat: Node = c.unit_by_id(&"static")

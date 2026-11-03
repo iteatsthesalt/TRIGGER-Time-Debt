@@ -42,11 +42,11 @@ static func _resolve(c: BattleCoordinator, tech: TechDef, action: Dictionary, ho
 		"boost": int(action.get("boost", 0)), "targets": [], "damage": {}, "raw": {}, "shave": {}, "breaks": [], "heal": {}}
 	match how:
 		"damage":
-			var dmg: Dictionary = c._resolve_action(action)
+			var dmg: Dictionary = StrikeResolution.resolve(c, action)
 			for k in ["targets", "damage", "raw", "shave", "breaks"]:
 				info[k] = dmg[k]
 		"support":
-			var sup: Dictionary = c._resolve_support(action)
+			var sup: Dictionary = StrikeResolution.support(c, action)
 			info["targets"] = sup["targets"]
 			info["heal"] = sup["heal"]
 		_:
@@ -194,7 +194,7 @@ static func units(c: BattleCoordinator, on: String, op: Dictionary, ctx: Diction
 			var u: Node = c.unit_by_id(StringName(on))
 			return [u] if u != null else []
 		"party":
-			return c.party.filter(func(u: Node) -> bool: return c._alive(u))
+			return c.party.filter(func(u: Node) -> bool: return c.alive(u))
 		"enemies":
 			return c.living_enemies()
 		"vaelos":
@@ -204,7 +204,7 @@ static func units(c: BattleCoordinator, on: String, op: Dictionary, ctx: Diction
 			var radius: float = float(op.get("radius", tech.radius * float(action["shape"].get("scale", 1.0)) * float(op.get("aoe", 1.0))))
 			var center: Vector3 = action["aim"]
 			var pool: Array = c.party if on == "allies_in" else c.enemies
-			return pool.filter(func(u: Node) -> bool: return c._alive(u) and c.position_of(u).distance_to(center) <= radius)
+			return pool.filter(func(u: Node) -> bool: return c.alive(u) and c.position_of(u).distance_to(center) <= radius)
 	push_warning("EffectSteps: unknown set %s" % on)
 	return []
 
@@ -224,7 +224,7 @@ static func _raw(c: BattleCoordinator, ctx: Dictionary, u: Node) -> float:
 	var uses: int = int(ctx["action"].get("uses", TechDef.Uses.BEST))
 	var best: CombatantStats = PartyHit.best_caster(ctx["casters"], uses, CombatantStats.of(ctx["attacker"]))
 	var tsc := StatusComponent.of(u)
-	var pair: Dictionary = DamagePipeline.pick_stats(uses, best, CombatantStats.of(u), tsc.def_multiplier(c._is_metal(u)) if tsc != null else 1.0)
+	var pair: Dictionary = DamagePipeline.pick_stats(uses, best, CombatantStats.of(u), tsc.def_multiplier(CombatantStats.is_metal(u)) if tsc != null else 1.0)
 	return maxf(1.0, 0.8 * (float(pair["atk"]) - float(pair["def"]) * 0.5))
 
 

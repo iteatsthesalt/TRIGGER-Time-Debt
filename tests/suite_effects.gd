@@ -230,7 +230,7 @@ func test_prometheus_overload_once_shutdown_and_burn() -> void:
 	check(StatusComponent.of(cassia).has(&"shutdown") and StatusComponent.of(cassia).gauge_multiplier() == 0.0, "Cassia-09 shuts down: her gauge does not fill")
 	check(CombatantStats.of(crono).hp < 100000, "an ally within 2 m takes 10% max HP")
 	check(Flags.is_state(&"Prometheus_Core", &"Burned"), "without Lucca's consent the Core is burned selfishly")
-	c._finish(true, "test")
+	c.finish(true, "test")
 	check(EffectTable.requirements_met(c, cassia, tech), "a new battle may use it again")
 	_restore_flags()
 
@@ -260,9 +260,9 @@ func test_time_mines_blow_when_an_enemy_comes_back_to_its_spot() -> void:
 	check(c.fields.has_kind_at(&"time_mine", Vector3(3, 0, 0)), "a mine at its ghost position")
 	FieldEffects.tick(c, 0.1)
 	check_eq(CombatantStats.of(e).hp, hp0, "standing on its spot never set it off")
-	c._set_position(e, Vector3(6, 0, 0))
+	c.move_unit(e, Vector3(6, 0, 0))
 	FieldEffects.tick(c, 0.1)
-	c._set_position(e, Vector3(3, 0, 0))
+	c.move_unit(e, Vector3(3, 0, 0))
 	FieldEffects.tick(c, 0.1)
 	check(CombatantStats.of(e).hp < hp0, "coming back to the spot detonates the mine (§11.12)")
 	check(not c.fields.has_kind_at(&"time_mine", Vector3(3, 0, 0)), "and the mine is spent")
@@ -306,7 +306,7 @@ func test_ashtear_paradox_galaxy_bonus_and_lucca_schematic() -> void:
 	check_near(EffectTable.damage_mult(c, tech, 0, e), 1.0, 0.0001, "no bonus with Crono whole")
 	var cst := CombatantStats.of(crono)
 	cst.hp = roundi(float(cst.base_max_hp) * 0.2)
-	check(c._crono_galaxy(crono), "Crono in his galaxy state")
+	check(TimeDebtComponent.in_galaxy(crono), "Crono in his galaxy state")
 	check_near(EffectTable.damage_mult(c, tech, 0, e), 1.5, 0.0001, "+50% while his galaxy is open")
 	var action: Dictionary = _action(c, crono, &"ashtear_paradox", Vector3(1, 0, 0), null, 0, [crono, cassia, krona])
 	action["synergy"] = 3.0
@@ -536,9 +536,9 @@ func test_chrono_prism_needs_crono_at_sixty_percent() -> void:
 	var cst := CombatantStats.of(crono)
 	cst.hp = roundi(float(cst.base_max_hp) * 0.5)
 	check(EffectTable.requirements_met(c, vesper, tech), "offered at or below 60%")
-	check(c._actor_knows(vesper, tech), "the coordinator's knows-check offers it then")
+	check(TechAvailability.knows(c, vesper, tech), "the coordinator's knows-check offers it then")
 	cst.hp = cst.base_max_hp
-	check(not c._actor_knows(vesper, tech), "the coordinator's knows-check refuses it too")
+	check(not TechAvailability.knows(c, vesper, tech), "the coordinator's knows-check refuses it too")
 
 
 func test_the_last_joke_cracks_vaelos_for_three_hits() -> void:
@@ -607,26 +607,26 @@ func test_bekkler_guilt_turns_hits_in_its_ring_onto_crono_until_his_next_turn() 
 	var hp := func(u: Node) -> int: return CombatantStats.of(u).hp
 	c.bank.bp = 0
 	var c0: int = hp.call(crono)
-	c._execute_enemy_action(e, jab.merged({"targets": [crono]}))
+	EnemyTurn.execute(c, e, jab.merged({"targets": [crono]}))
 	var direct: int = c0 - int(hp.call(crono))
 	check(direct > 0 and c.bank.bp == 0, "a hit on Crono himself lands on him as aimed, and gives no BP")
 	for i in 3:
 		c0 = hp.call(crono)
 		var m0: int = hp.call(marle)
-		c._execute_enemy_action(e, jab.merged({"targets": [marle]}))
+		EnemyTurn.execute(c, e, jab.merged({"targets": [marle]}))
 		check_eq(int(hp.call(marle)), m0, "hit %d on Marle in the ring does not reach her" % (i + 1))
 		check_near(float(c0 - int(hp.call(crono))), float(direct) * CombatConstants.GUILT_TAKEN, 1.0, "it lands on Crono at 75%")
 	check_eq(c.bank.bp, CombatConstants.GUILT_BP_MAX, "+1 BP for each turned hit, 2 at most")
 	var k0: int = hp.call(krona)
 	c0 = hp.call(crono)
-	c._execute_enemy_action(e, jab.merged({"targets": [krona]}))
+	EnemyTurn.execute(c, e, jab.merged({"targets": [krona]}))
 	check(int(hp.call(krona)) < k0 and int(hp.call(crono)) == c0, "Krona outside the ring takes her own hit")
 	check(_advance_until_actor(c, &"crono") == crono, "Crono's next window")
 	check(c.taunts.has(crono), "the ring stands until his next action")
 	c.cmd_guard(crono)
 	check(not c.taunts.has(crono), "which ends it")
 	var m1: int = hp.call(marle)
-	c._execute_enemy_action(e, jab.merged({"targets": [marle]}))
+	EnemyTurn.execute(c, e, jab.merged({"targets": [marle]}))
 	check(int(hp.call(marle)) < m1, "Marle takes her own hits again")
 
 
@@ -721,7 +721,7 @@ func test_steal_bp_is_the_coordinators_bp_steal() -> void:
 	var c := _battle([crono], [e])
 	c.bank.bp = 3
 	var drain := {"id": "drain", "tags": ["OIL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "steal_bp", "bp_steal": 1, "targets": [crono]}
-	c._execute_enemy_action(e, drain)
+	EnemyTurn.execute(c, e, drain)
 	check_eq(c.bank.bp, 2, "1 BP leaves the pool")
 	check_eq(int(e.get_meta("stolen_bp", 0)), 1, "into its visible counter (§7.5)")
 
@@ -736,18 +736,18 @@ func test_balloon_escape_foils_the_next_theft_and_fire() -> void:
 	c.bank.bp = 3
 	_cast(c, glenn, &"balloon_escape", c.position_of(glenn))
 	var drain := {"id": "drain", "tags": ["OIL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "steal_bp", "bp_steal": 1, "targets": [glenn]}
-	c._execute_enemy_action(e, drain)
+	EnemyTurn.execute(c, e, drain)
 	check_eq(c.bank.bp, 3, "the theft after a Balloon Escape fails: the pool keeps its BP")
 	check_eq(BpTheft.held(e), 0, "and the thief's counter stays empty")
-	c._execute_enemy_action(e, drain)
+	EnemyTurn.execute(c, e, drain)
 	check_eq(c.bank.bp, 2, "only the next one fails: the one after lands")
 	check_eq(BpTheft.held(e), 1, "into its counter")
 	var hp: int = CombatantStats.of(glenn).hp
 	var fire := {"id": "flame", "tags": ["FIRE"], "shape": "SINGLE", "power": 3.0, "hits": 2, "wind_up_s": 0.0, "targets": [glenn]}
-	c._execute_enemy_action(e, fire)
+	EnemyTurn.execute(c, e, fire)
 	check_eq(CombatantStats.of(glenn).hp, hp, "inflated, he squashes out of every [FIRE] hit")
 	var blunt := {"id": "bonk", "tags": ["BLUNT"], "shape": "SINGLE", "power": 3.0, "hits": 1, "wind_up_s": 0.0, "targets": [glenn]}
-	c._execute_enemy_action(e, blunt)
+	EnemyTurn.execute(c, e, blunt)
 	check(CombatantStats.of(glenn).hp < hp, "a hit of another element still lands")
 
 
@@ -760,7 +760,7 @@ func test_a_pending_effect_is_not_offered() -> void:
 	var c := _battle([omega], [e1, e2])
 	var fold: TechDef = Data.techs[&"miura_fold"]
 	check(EffectTable.is_pending(fold.effect) and not TechEffects.HANDLED.has(fold.effect), "Miura Fold is pending, with no handler")
-	check(not c._actor_knows(omega, fold), "so it is never offered")
+	check(not TechAvailability.knows(c, omega, fold), "so it is never offered")
 	check(not CastReach.strikes(fold), "and strikes nothing")
 	var unbuilt: Dictionary = Data.effects.get("handler_unbuilt", {})
 	for id in ["honest_laugh", "balloon_escape", "oil_drinker"]:
@@ -844,7 +844,7 @@ func test_oil_pool_slows_and_blights_the_party_inside() -> void:
 	EnemyEffects.apply(c, leaker, {"effect": "oil_pool", "radius": 3.0, "aim": Vector3(1, 0, 0)}, [])
 	FieldEffects.tick(c, 0.1)
 	check(StatusComponent.of(crono).has(&"mercury_slow"), "Mercury SLOW to anyone standing in it")
-	check(c.oil_blight, "and Oil-Blight on the pool")
+	check(c.bank.oil_blight, "and Oil-Blight on the pool")
 
 
 func test_split_on_half_sheds_its_fawns_once() -> void:

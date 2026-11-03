@@ -220,7 +220,7 @@ func test_check_9_a_broken_kill_stands_eight_seconds_with_the_112_percent_hull()
 	e.shield.force_break(crono)
 	e.stats.apply_damage(999999, true)
 	check(e.statue and e.visible and e.break_hull.visible, "killed while Broken: a statue with its hull up")
-	var cover: Array = c._blockers().filter(func(b: Dictionary) -> bool: return (b["pos"] as Vector3).distance_to(c.position_of(e)) < 0.001)
+	var cover: Array = CastReach.blockers(c).filter(func(b: Dictionary) -> bool: return (b["pos"] as Vector3).distance_to(c.position_of(e)) < 0.001)
 	check_eq(cover.size(), 1, "the statue is LINE_PIERCE cover")
 	check(not cover.is_empty() and absf(float(cover[0]["radius"]) - _hull_radius(e)) < 0.0001, "with the same 112% hull as the body's")
 	_run_battle_time(c, 7.9)
@@ -350,17 +350,17 @@ func test_check_20_mercury_slow_halves_gauge_and_move_and_stacks_to_two() -> voi
 	_start(c, [crono], [e])
 	StatusComponent.of(e).add(&"time_stop", 60.0)
 	check_eq(c.state, BattleCoordinator.State.TICK, "the clock runs")
-	var f0: float = c._fill(crono, 0.1)
+	var f0: float = c.gauge_fill(crono, 0.1)
 	var sc := StatusComponent.of(crono)
 	sc.add(&"mercury_slow", 30.0)
-	check_near(c._fill(crono, 0.1), f0 * 0.5, 0.0001, "one stack halves the gauge fill")
+	check_near(c.gauge_fill(crono, 0.1), f0 * 0.5, 0.0001, "one stack halves the gauge fill")
 	sc.add(&"mercury_slow", 30.0)
 	sc.add(&"mercury_slow", 30.0)
 	check_eq(sc.stacks(&"mercury_slow"), CombatConstants.MERCURY_MAX_STACKS, "three applications stack to 2")
-	check_near(c._fill(crono, 0.1), f0 * 0.5, 0.0001, "and two stacks still halve it, no more")
+	check_near(c.gauge_fill(crono, 0.1), f0 * 0.5, 0.0001, "and two stacks still halve it, no more")
 	var g0: float = c.get_gauge(crono)
 	c.advance(DT)
-	check_near(c.get_gauge(crono) - g0, c._fill(crono, DT), 0.0001, "the timeline fills his gauge at that rate")
+	check_near(c.get_gauge(crono) - g0, c.gauge_fill(crono, DT), 0.0001, "the timeline fills his gauge at that rate")
 	check(_advance_until_window(c) == crono, "Crono's window")
 	var from: Vector3 = c.position_of(crono)
 	c.cmd_move(crono, from + Vector3(0, 0, 9))
@@ -400,8 +400,8 @@ func test_check_22_a_steal_over_many_breaks_is_one_steal() -> void:
 		_tough(crono)
 		_tough(glenn)
 		CombatantStats.of(glenn).mp = 999
-		c._open_window(glenn, false)  # Glenn waits in the Ready Pool
-		c._open_window(crono, false)
+		c.open_window(glenn, false)  # Glenn waits in the Ready Pool
+		c.open_window(crono, false)
 		c.bank.bp = 0
 		for b in bodies:
 			b.set_meta("stolen_bp", held)
@@ -442,8 +442,8 @@ func _preview_parity(boost: int, weak: bool) -> Dictionary:
 		for b in bodies:
 			StatusComponent.of(b).add(&"time_stop", 600.0)
 		for i in range(1, party.size()):
-			c._open_window(party[i], false)  # partners wait in the Ready Pool
-		c._open_window(party[0], false)
+			c.open_window(party[i], false)  # partners wait in the Ready Pool
+		c.open_window(party[0], false)
 		c.bank.bp = 9
 		for u in party:
 			CombatantStats.of(u).mp = 9999
@@ -489,6 +489,36 @@ func test_check_23_every_technique_previews_the_plates_its_cast_leaves() -> void
 			check_eq(str(r["mismatched"]), "[]", "%s: every plate preview equals what the cast leaves (%s)" % [tag, "; ".join(PackedStringArray(r["lines"]))])
 	Flags.from_save(snap)
 	Game.new_game()
+
+
+## Code health F7: the coordinator's underscore members are its own. The rule classes that work on a battle
+## (StrikeResolution, TechCosts, TurnRewind, EnemyTurn, TechAvailability, ActionPreview, PartyActions and the rest)
+## go through its public API, so a rename inside battle_coordinator.gd cannot silently break a caller that only
+## fails when its path runs (the parser does not check a call on a typed receiver's missing method).
+func test_no_script_reaches_into_the_coordinators_private_members() -> void:
+	var src: String = FileAccess.get_file_as_string("res://scripts/combat/battle_coordinator.gd")
+	var privates: Array[String] = []
+	for m in RegEx.create_from_string("(?m)^(?:func|var) (_[a-z_0-9]+)").search_all(src):
+		if m.get_string(1) != "_physics_process":  # the engine's own callback
+			privates.append(m.get_string(1))
+	check(privates.has("_on_unit_defeated") and privates.has("_ko_callables"), "the coordinator's private members were read (%d)" % privates.size())
+	var reach := RegEx.create_from_string("\\.(_[a-z_0-9]+)\\b")
+	var files: Array[String] = []
+	var dirs: Array[String] = ["res://scripts", "res://scenes"]
+	while not dirs.is_empty():
+		var d: String = dirs.pop_back()
+		for sub in DirAccess.get_directories_at(d):
+			dirs.append(d.path_join(sub))
+		for f in DirAccess.get_files_at(d):
+			if f.ends_with(".gd") and f != "battle_coordinator.gd":
+				files.append(d.path_join(f))
+	check(files.size() > 100, "every script was scanned (%d)" % files.size())
+	var found: Array[String] = []
+	for path in files:
+		for m in reach.search_all(FileAccess.get_file_as_string(path)):
+			if privates.has(m.get_string(1)):
+				found.append("%s: .%s" % [path.get_file(), m.get_string(1)])
+	check(found.is_empty(), "no script calls the coordinator's private members: %s" % ", ".join(found))
 
 
 ## CastReach.strikes reads TechEffects.STRIKING for the bespoke handlers: it must name exactly the handlers whose

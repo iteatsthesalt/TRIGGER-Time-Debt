@@ -266,7 +266,7 @@ func test_per_battle_marks_do_not_outlive_their_battle() -> void:
 		c.party_hp_floor = 1
 		var foe: CombatActor = z.enemies[0]
 		check(not crono.has_meta(&"seal_used") and not foe.has_meta(&"repainted") and BpTheft.held(foe) == 0, "fight %d: no mark of an earlier fight is on the bodies" % fight)
-		c.spend_solidity(sera, 200.0)  # every point of solidity and more: a Causal Collapse
+		TechCosts.spend_solidity(c, sera, 200.0)  # every point of solidity and more: a Causal Collapse
 		check(sera.solidity.is_phased(), "fight %d: Sera phases out" % fight)
 		check(_window_for(c, crono), "fight %d: Crono gets a window" % fight)
 		var r: Dictionary = c.cmd_tech(crono, &"time_debt_seal", sera, c.position_of(sera))
@@ -278,7 +278,7 @@ func test_per_battle_marks_do_not_outlive_their_battle() -> void:
 		check_eq(foe.shield.current_shield, plates, "fight %d: the foe repaints a plate" % fight)
 		c.bank.add(2)
 		check_eq(BpTheft.steal(c, foe, 1), 1, "fight %d: and steals a BP into its counter" % fight)
-		c._finish(false, "withdraw")
+		c.finish(false, "withdraw")
 		check(await _await_finished(loc), "fight %d: the withdraw hands back to the field" % fight)
 		check(z.enemies.has(foe) and not foe.has_meta(&"repainted") and BpTheft.held(foe) == 0, "fight %d: the zone's survivor stands again without the fight's repaint or loot" % fight)
 	Game.new_game()
@@ -319,7 +319,7 @@ func test_krona_corruption_persists_through_the_write_back() -> void:
 	check_near(krona.corruption.value, CorruptionComponent.GOURD_SIP, 0.001, "the gourd command adds 5")
 	krona.stats.hp = maxi(1, roundi(float(krona.stats.max_hp()) * 0.2))
 	c.enemy_action_serial += 1
-	c._after_damage(krona)
+	EnemyTurn.after_damage(c, krona)
 	check_near(krona.corruption.value, 2.0 * CorruptionComponent.GOURD_SIP, 0.001, "the automatic sip below 25% adds 5 more")
 	check_near(Game.krona_corruption, 10.0, 0.001, "Game follows it through the battle")
 	c.force_end(true)
@@ -396,7 +396,7 @@ func test_a_ruined_zone_enemy_comes_back_at_its_whole_ceiling() -> void:
 			_actor(loc, &"crono").stats.apply_damage(999999, true)
 			check(await _end(loc, false), "the lost battle hands back to the field")
 		else:
-			c._finish(false, "withdraw")
+			c.finish(false, "withdraw")
 			check(await _await_finished(loc), "the withdraw hands back to the field")
 		check(z.enemies.has(ruined) and is_instance_valid(ruined), "%s: the Ruined enemy stays in the zone" % outcome)
 		check(not ruined.statuses.has(&"ruin"), "%s: its Ruin is gone" % outcome)

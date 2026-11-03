@@ -2,7 +2,7 @@
 ## the guarding allies it covers, and a hit that lands on one while its window is open is a perfect parry
 ## (EnemyStrike). A press covers the guarding allies an enemy wind-up is aimed at; when no wind-up is aimed at a
 ## guard (an untelegraphed strike, or a press with no hit due) it covers every guard, and against U1 ink enemies
-## a window that closes unmet throws the ink blot (BattleCoordinator._tick_ens_rings). An area wind-up covers every
+## a window that closes unmet throws the ink blot (tick). An area wind-up covers every
 ## guard: any of them may stand in it. A press is spent: the same ally cannot arm again for ENS_PARRY_RECOVER_S of
 ## battle time, so holding or hammering the key is never a parry. BattleScene owns one per battle.
 class_name EnsParry
@@ -19,7 +19,7 @@ func press(c: BattleCoordinator) -> Array[Node]:
 	for ally in covered(c):
 		if c.parry_armed.has(ally) or c.battle_time < float(_ready_at.get(ally, -1.0)):
 			continue
-		c.arm_parry(ally)
+		arm(c, ally)
 		if c.parry_armed.has(ally):
 			armed.append(ally)
 			_ready_at[ally] = c.battle_time + CombatConstants.ENS_PARRY_RECOVER_S
@@ -44,3 +44,27 @@ static func covered(c: BattleCoordinator) -> Array[Node]:
 			if guards.has(t) and not aimed.has(t):
 				aimed.append(t as Node)
 	return aimed if not aimed.is_empty() else guards
+
+
+## Arm the Ens Parry for a guarding ally (§4.2): a hit that lands within the window is perfect (EnemyStrike).
+static func arm(c: BattleCoordinator, ally: Node) -> void:
+	var st := CombatantStats.of(ally)
+	if st == null or not st.is_guarding:
+		return
+	c.parry_armed[ally] = float(c.parry_frames) / 60.0
+
+
+## The armed parry windows close on battle time (BattleCoordinator.advance); an unmet one in U1 throws the ink blot.
+## (An Ens ring has no clock: it lasts until the next damaging hit, §12.3; only Crono's debt-null runs 5 s, in his
+## TimeDebtComponent.)
+static func tick(c: BattleCoordinator, dt: float) -> void:
+	for u in c.parry_armed.keys():
+		c.parry_armed[u] = float(c.parry_armed[u]) - dt
+		if float(c.parry_armed[u]) <= 0.0:
+			c.parry_armed.erase(u)
+			var st := CombatantStats.of(u)
+			if st != null and c.universe == 1:
+				var sc := StatusComponent.of(u)
+				if sc != null:
+					sc.add(&"ink_blot", 3.0)
+			c.parry_result.emit(u, false)

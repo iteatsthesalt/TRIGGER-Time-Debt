@@ -139,7 +139,7 @@ static func move_range(u: Node) -> float:
 ## shared plates.
 static func begin_battle(c: BattleCoordinator, config: Dictionary) -> void:
 	var cap: int = RuinRules.battle_cap(c.enemies, config)
-	for u in c._all_units() + c.bench:
+	for u in c.all_units() + c.bench:
 		RuinRules.prepare(u, cap)
 		StatusTicks.watch(c, u)
 	BreakConditions.begin_battle(c)
@@ -156,7 +156,7 @@ static func enemy_added(c: BattleCoordinator, u: Node) -> void:
 
 ## The battle is over: no more ticks, the party's Ruin clears, conditions and shared plates let go.
 static func end_battle(c: BattleCoordinator) -> void:
-	for u in c._all_units() + c.bench:
+	for u in c.all_units() + c.bench:
 		StatusTicks.release(u)
 	for u in c.party + c.bench:
 		RuinRules.clear(u)

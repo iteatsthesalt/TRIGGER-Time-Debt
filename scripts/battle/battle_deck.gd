@@ -60,7 +60,7 @@ static func targets(c: BattleCoordinator, kind: String) -> Array:
 		"spare":
 			return c.targetable_enemies().filter(func(e: Node) -> bool: return c.can_spare(e))
 		"ally":
-			return c.party.filter(func(u: Node) -> bool: return c._alive(u))
+			return c.party.filter(func(u: Node) -> bool: return c.alive(u))
 		"item":
 			return c.party.filter(func(u: Node) -> bool: return CombatantStats.of(u) != null)
 	return c.targetable_enemies()
@@ -87,7 +87,7 @@ static func preview_text(tech: TechDef, target: Node, previews: Dictionary, boos
 static func use_item(c: BattleCoordinator, actor: Node, item: Dictionary, target: Node) -> Dictionary:
 	var id := StringName(String(item.get("id", "")))
 	if int(Game.inventory.get(String(id), 0)) <= 0:
-		return c._fail("none left")
+		return c.fail("none left")
 	var r: Dictionary = c.cmd_item(actor, item, target)
 	if bool(r.get("ok", false)):
 		Game.take_item(id)

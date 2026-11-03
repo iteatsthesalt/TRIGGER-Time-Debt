@@ -60,8 +60,8 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 			if target == null:
 				target = actor
 			actor.set_meta("used_tachyon_this_turn", true)
-			var ok: bool = c.rewind_unit(target)
-			c.crono_pays_for_slip()
+			var ok: bool = TurnRewind.rewind_unit(c, target)
+			TechCosts.crono_pays_for_slip(c)
 			info["targets"] = [target]
 			info["rewound"] = ok
 			c.truth_moment.emit(&"rewind")
@@ -72,13 +72,13 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				var sol := SolidityComponent.of(actor)
 				var per: float = sol.hold_step_seconds if sol != null else CombatConstants.SERA_HOLD_BREAK_EXTENSION_S
 				for i in range(1, steps):
-					c.spend_solidity(actor, CombatConstants.SERA_HOLD_STEP)
+					TechCosts.spend_solidity(c, actor, CombatConstants.SERA_HOLD_STEP)
 				ShieldComponent.of(target).extend_lock(per * steps)
 				info["targets"] = [target]
 				info["extended"] = per * steps
 		&"borrowed_future":
 			actor.set_meta("used_tachyon_this_turn", true)
-			info["duplicate"] = c.borrowed_future(actor)
+			info["duplicate"] = TurnRewind.borrowed_future(c, actor)
 			c.truth_moment.emit(&"borrowed_future")
 		&"fall_break":
 			if target == null:
@@ -171,7 +171,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				crono.set_meta("next_astral_free", true)
 		&"hover_rewind_hp":
 			if target != null:
-				c.rewind_unit(target, true)
+				TurnRewind.rewind_unit(c, target, true)
 				actor.set_meta("used_tachyon_this_turn", true)
 				info["targets"] = [target]
 		&"hover_fast_forward":
@@ -382,7 +382,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 static func _merge_damage(c: BattleCoordinator, info: Dictionary, action: Dictionary, filter: Callable = Callable()) -> Dictionary:
 	if filter.is_valid():
 		action["target_filter"] = filter
-	var dmg: Dictionary = c._resolve_action(action)
+	var dmg: Dictionary = StrikeResolution.resolve(c, action)
 	info["targets"] = dmg["targets"]
 	info["damage"] = dmg["damage"]
 	info["raw"] = dmg["raw"]

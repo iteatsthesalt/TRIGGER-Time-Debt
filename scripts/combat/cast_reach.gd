@@ -49,7 +49,7 @@ static func extra_origins(c: BattleCoordinator, casters: Array) -> Dictionary:
 ## (and the preview leaves its plate alone). An invalid Callable when every caught body is struck.
 static func target_filter(c: BattleCoordinator, tech: TechDef) -> Callable:
 	if tech != null and tech.effect == &"overclocked_short_circuit":
-		return func(t: Node) -> bool: return c._is_metal(t)  # arcs through metal only (§11)
+		return func(t: Node) -> bool: return CombatantStats.is_metal(t)  # arcs through metal only (§11)
 	return Callable()
 
 
@@ -134,4 +134,32 @@ static func _pre(c: BattleCoordinator, tech: TechDef, actor: Node, boost: int, p
 				var n: int = sc.stacks(StringName(String(op.get("status", "")))) if sc != null else 0
 				out["beams"] = int(out["beams"]) + n * int(op.get("beams_per", 1))
 				out["hits"] = int(out["hits"]) + n * int(op.get("hits_per", 0))
+	return out
+
+
+## The bodies a shape can catch on the enemy side: every targetable enemy (TacticalPositioner's candidates).
+static func enemy_bodies(c: BattleCoordinator) -> Array:
+	var out: Array = []
+	for e in c.targetable_enemies():
+		out.append({"node": e, "pos": c.position_of(e), "radius": CombatantStats.of(e).body_radius})
+	return out
+
+
+## The allies an enemy shape can catch (living, targetable); a support aura also reaches a hovering Sera.
+static func party_bodies(c: BattleCoordinator, include_hover: bool = false) -> Array:
+	var out: Array = []
+	for u in c.party:
+		if c.alive(u) and not c.untargetable(u):
+			out.append({"node": u, "pos": c.position_of(u), "radius": CombatantStats.of(u).body_radius})
+	if include_hover and c.hover_sera != null and c.alive(c.hover_sera):
+		out.append({"node": c.hover_sera, "pos": c.position_of(c.hover_sera), "radius": 0.5})
+	return out
+
+
+## Break-locked bodies and statues are cover for LINE_PIERCE (§5.5).
+static func blockers(c: BattleCoordinator) -> Array:
+	var out: Array = []
+	for e in c.enemies:
+		if is_instance_valid(e) and c.is_broken(e) and (c.alive(e) or c.statues.standing(e)):
+			out.append({"pos": c.position_of(e), "radius": CombatantStats.of(e).body_radius * (1.0 + CombatConstants.BREAK_HULL_INFLATION)})
 	return out

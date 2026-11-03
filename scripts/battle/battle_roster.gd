@@ -74,7 +74,7 @@ static func _park(a: CombatActor, parked: bool) -> void:
 
 func can_swap(c: BattleCoordinator) -> bool:
 	for b in bench:
-		if c._alive(b):
+		if c.alive(b):
 			return true
 	return false
 
@@ -85,10 +85,10 @@ func deck_items(c: BattleCoordinator, actor: CombatActor) -> Array:
 	var items: Array = []
 	var koed: Array = []
 	for u in c.party:
-		if u != actor and not c._alive(u) and c.position_of(actor).distance_to(c.position_of(u)) <= SwapRules.KO_REACH_M:
+		if u != actor and not c.alive(u) and c.position_of(actor).distance_to(c.position_of(u)) <= SwapRules.KO_REACH_M:
 			koed.append(u)
 	for b in bench:
-		if not c._alive(b):
+		if not c.alive(b):
 			continue
 		items.append({"label": "%s in for %s" % [b.stats.display_name, actor.stats.display_name], "cmd": "swap_in", "payload": {"incoming": b}})
 		for k in koed:

@@ -551,7 +551,7 @@ func test_un_phasing_and_reviving_return_sera_to_her_debt_opacity() -> void:
 	s.set_porcelain_visuals()
 	# the look reads her phase (CombatActor.apply_body_look, RA-1): a Rewind past 20 phases her, and the
 	# coordinator says so on sera_phase_changed itself
-	c.spend_solidity(s, s.solidity.solidity - 15.0)
+	TechCosts.spend_solidity(c, s, s.solidity.solidity - 15.0)
 	check(s.solidity.is_phased(), "a Rewind past 20 phases her out")
 	check_near(s.sprite.opacity, 0.18, 0.0001, "phased, she reads at 18 %")
 	s.solidity.phased_turns_left = 1

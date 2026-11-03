@@ -206,7 +206,7 @@ func test_ko_swap_from_the_deck_ends_the_turn() -> void:
 	Game.new_game()
 
 
-## COMBAT-21: both swaps end the turn through _finish_turn; hover Sera cannot swap (she is on no party slot); a
+## COMBAT-21: both swaps end the turn through finish_turn; hover Sera cannot swap (she is on no party slot); a
 ## KO'd reserve cannot come in; one move per window.
 func test_swap_rules_and_one_move_per_window() -> void:
 	var c := _coord()
@@ -248,7 +248,7 @@ func test_swap_rules_and_one_move_per_window() -> void:
 	CombatantStats.of(s2).apply_damage(100000, true)
 	check(_advance_until_actor(c2, &"crono") == a2, "Crono's window")
 	check(not bool(c2.cmd_swap_koed(a2, s2, k2)["ok"]), "a KO'd ally 6 m away is out of reach (3 m)")
-	c2._set_position(s2, Vector3(-3, 0, 0))
+	c2.move_unit(s2, Vector3(-3, 0, 0))
 	var r3: Dictionary = c2.cmd_swap_koed(a2, s2, k2)
 	check(bool(r3["ok"]) and c2.party.has(k2), "from within 3 m it works")
 	check(c2.active_actor != a2 and c2.state != BattleCoordinator.State.COMMAND_WAIT, "and ends Crono's window")

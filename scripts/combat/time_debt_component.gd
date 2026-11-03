@@ -140,3 +140,12 @@ static func of(actor: Node) -> TimeDebtComponent:
 	if actor == null:
 		return null
 	return actor.get_node_or_null("TimeDebtComponent") as TimeDebtComponent
+
+
+## Crono's crack shows the galaxy (§10.1: integrity or HP of base between 20 and 1).
+static func in_galaxy(actor: Node) -> bool:
+	var td := TimeDebtComponent.of(actor)
+	var st := CombatantStats.of(actor)
+	if td == null or st == null:
+		return false
+	return td.crack_state(float(st.hp) / float(st.base_max_hp)) == TimeDebtComponent.CrackState.GALAXY

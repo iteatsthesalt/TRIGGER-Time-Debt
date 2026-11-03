@@ -290,7 +290,7 @@ func test_a_spare_in_the_battle_scene_pays_one_light_lean() -> void:
 		var a: Node = _advance_until_window(c)
 		if a == null:
 			break
-		var left: Array = c.enemies.filter(func(e: Node) -> bool: return c._alive(e) and not c.spared.has(e))
+		var left: Array = c.enemies.filter(func(e: Node) -> bool: return c.alive(e) and not c.spared.has(e))
 		var t: Node = left[0]
 		if not c.is_broken(t):
 			ShieldComponent.of(t).force_break(crono)

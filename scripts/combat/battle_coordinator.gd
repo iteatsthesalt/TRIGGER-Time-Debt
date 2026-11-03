@@ -1,6 +1,11 @@
 ## Runs one seamless battle (Combat Laws Bible §3, §4, §5, §6, §7, §16, §18.4).
 ## Owns battle_time, every gauge, the Ready Pool, the shared BoostBank, enemy wind-ups, Break timers,
-## statuses, fields and resolution. Headless-testable: set auto_tick = false and call advance(dt).
+## statuses and fields: the lifecycle, the timeline, the command entry points, the queries and the turn
+## bookkeeping. The rules live in static classes that take it as their first argument and use only its public
+## members (suite_acceptance pins that): PartyActions (Attack, techniques), StrikeResolution, TechCosts,
+## TechAvailability, ActionPreview, TurnRewind (Rewind, Borrowed Future), EnemyTurn, SyncHoldRules, EnsParry,
+## SwapRules, WithdrawRules, StatusRules and the effect classes. Headless-testable: set auto_tick = false and call
+## advance(dt).
 class_name BattleCoordinator
 extends Node
 
@@ -73,8 +78,6 @@ var taunts := TauntBook.new()  # who draws the enemies' attacks, and Bekkler's G
 var parry_armed: Dictionary = {}
 var parry_frames: int = CombatConstants.ENS_PARRY_FRAMES_BASE
 var ens_rings: Dictionary = {}
-var oil_blight_accum: float = 0.0
-var oil_blight: bool = false
 var branch_pending: Dictionary = {}
 var branch_callback: Callable = Callable()
 var last_summary: Dictionary = {}
@@ -86,7 +89,7 @@ var cooldowns := TechCooldowns.new()
 var enemy_action_serial: int = 0
 var _break_callables: Dictionary = {}
 var _ko_callables: Dictionary = {}
-var _perfect_frame_pending: Dictionary = {}
+var perfect_frame_pending: Dictionary = {}
 ## unit -> snapshot {hp, gauge, pos, statuses} taken at its last turn start (Rewind, §3.6).
 var turn_snapshots: Dictionary = {}
 ## unit -> the last action it performed (Borrowed Future's Token Duplicate copies it).
@@ -138,8 +141,6 @@ func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: D
 	statues.clear()
 	fields.clear()
 	battle_time = 0.0
-	oil_blight = false
-	oil_blight_accum = 0.0
 	prometheus_used = false
 	swapped_once = false
 	arena_center = center
@@ -162,15 +163,15 @@ func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: D
 	else:
 		rng.randomize()
 
-	for u in _all_units() + bench:
+	for u in all_units() + bench:
 		BattleMarks.clear(u)  # the bodies outlive a battle: what held for the last one does not hold for this one
 	var advantage: String = String(config.get("advantage", "normal"))
 	for u in party:
-		_init_unit(u, _start_gauge(true, advantage))
+		init_unit(u, _start_gauge(true, advantage))
 	for e in enemies:
-		_init_unit(e, _start_gauge(false, advantage))
+		init_unit(e, _start_gauge(false, advantage))
 	if hover_sera != null and not party.has(hover_sera):
-		_init_unit(hover_sera, _start_gauge(true, advantage))
+		init_unit(hover_sera, _start_gauge(true, advantage))
 	StatusRules.begin_battle(self, config)  # Ruin cap, periodic ticks, break conditions, shared plates
 	RewardResolver.watch(self)  # how each enemy is finished: its lean and its drops at the end
 	bp_changed.emit(bank.bp, bank.max_bp)
@@ -189,7 +190,7 @@ func _start_gauge(is_party: bool, advantage: String) -> float:
 	return rng.randf_range(CombatConstants.ENEMY_START_GAUGE.x, CombatConstants.ENEMY_START_GAUGE.y)
 
 
-func _init_unit(u: Node, gauge: float) -> void:
+func init_unit(u: Node, gauge: float) -> void:
 	gauges[u] = gauge
 	offsets[u] = rng.randf_range(0.0, TAU)
 	hold_time[u] = 0.0
@@ -223,7 +224,7 @@ func _init_unit(u: Node, gauge: float) -> void:
 
 
 ## Ends the battle. A withdraw (reason "withdraw", WithdrawRules) is no defeat: no integrity; `extra` (its point) joins the summary.
-func _finish(victory: bool, reason: String = "", extra: Dictionary = {}) -> void:
+func finish(victory: bool, reason: String = "", extra: Dictionary = {}) -> void:
 	if state == State.VICTORY or state == State.DEFEAT or state == State.IDLE:
 		return
 	state = State.VICTORY if victory else State.DEFEAT
@@ -279,7 +280,7 @@ func add_enemy(u: Node, def: EnemyDef = null) -> void:
 	enemies.append(u)
 	if def != null:
 		enemy_defs[CombatantStats.of(u).actor_id] = def
-	_init_unit(u, rng.randf_range(CombatConstants.ENEMY_START_GAUGE.x, CombatConstants.ENEMY_START_GAUGE.y) * 0.5)
+	init_unit(u, rng.randf_range(CombatConstants.ENEMY_START_GAUGE.x, CombatConstants.ENEMY_START_GAUGE.y) * 0.5)
 	StatusRules.enemy_added(self, u)
 	enemy_added.emit(u)
 
@@ -292,7 +293,7 @@ func request_summon(key: StringName, count: int, near: Node) -> void:
 func force_end(victory: bool, reason: String = "scripted") -> void:
 	if state == State.IDLE or state == State.VICTORY or state == State.DEFEAT:
 		return
-	_finish(victory, reason)
+	finish(victory, reason)
 
 
 # ------------------------------------------------------------------ timeline
@@ -305,11 +306,11 @@ func advance(delta: float) -> void:
 		return
 	battle_time += dt
 	# Timers first (statuses, shields, fields, hazards), then gauges.
-	for u in _all_units():
+	for u in all_units():
 		if not is_instance_valid(u):
 			continue
 		var sh := ShieldComponent.of(u)
-		if sh != null and _alive(u):  # a body that died Broken never recovers: it stands as a statue (§5.4)
+		if sh != null and alive(u):  # a body that died Broken never recovers: it stands as a statue (§5.4)
 			if sh.is_broken:
 				if sh.tick(dt):
 					unit_recovered.emit(u)
@@ -324,14 +325,14 @@ func advance(delta: float) -> void:
 			td.tick(dt)
 	statues.tick(dt)
 	FieldEffects.tick(self, dt)
-	_tick_oil_blight(dt)
-	_tick_ens_rings(dt)
+	bank.tick_oil_blight(dt)
+	EnsParry.tick(self, dt)
 	if state != State.TICK:
 		return
 
 	var any_parked: bool = not ready_pool.is_empty()
-	for u in _all_units():
-		if not _alive(u) or not is_instance_valid(u):
+	for u in all_units():
+		if not alive(u) or not is_instance_valid(u):
 			continue
 		if ready_pool.has(u):
 			hold_time[u] = float(hold_time.get(u, 0.0)) + dt
@@ -344,47 +345,47 @@ func advance(delta: float) -> void:
 			w["left"] = float(w["left"]) - dt
 			if float(w["left"]) <= 0.0:
 				end_wind_up(u)
-				_execute_enemy_action(u, w["action"])
+				EnemyTurn.execute(self, u, w["action"])
 				if state != State.TICK:
 					return
 			continue
 		var sol := SolidityComponent.of(u)
 		if sol != null and sol.is_phased():
 			# Her gauge still fills; each time it would reach the gate a phased turn passes.
-			gauges[u] = float(gauges[u]) + _fill(u, dt)
+			gauges[u] = float(gauges[u]) + gauge_fill(u, dt)
 			if float(gauges[u]) >= CombatConstants.SYNC_HOLD:
 				gauges[u] = 0.0
 				sol.on_phased_turn()
 				if not sol.is_phased():
 					sera_phase_changed.emit(false)
 			continue
-		gauges[u] = float(gauges[u]) + _fill(u, dt)
-	_update_voluntary_windows()
+		gauges[u] = float(gauges[u]) + gauge_fill(u, dt)
+	SyncHoldRules.update_voluntary(self)
 
 	# Enemies at their gate act without freezing anything.
 	var enemy_ready: Array = []
 	for e in enemies:
-		if _alive(e) and float(gauges.get(e, 0.0)) >= CombatConstants.ENEMY_GATE and not wind_ups.has(e):
+		if alive(e) and float(gauges.get(e, 0.0)) >= CombatConstants.ENEMY_GATE and not wind_ups.has(e):
 			enemy_ready.append(e)
 	enemy_ready.sort_custom(func(a: Node, b: Node) -> bool: return float(gauges[a]) > float(gauges[b]))
 	for e in enemy_ready:
-		_begin_enemy_turn(e)
+		EnemyTurn.begin(self, e)
 		if state != State.TICK:
 			return
 
-	var next: Node = _pick_party_at_gate()
+	var next: Node = SyncHoldRules.next_at_gate(self)
 	if next != null:
-		_open_window(next, true)
+		open_window(next, true)
 	else:
 		# A parked ally nobody can relieve gets the floor back without new BP (§3.4, SyncHoldRules).
 		var stranded: Node = SyncHoldRules.stranded(self)
 		if stranded != null:
-			_open_window(stranded, false)
+			open_window(stranded, false)
 	if not any_parked and not ready_pool.is_empty():
 		ready_pool_changed.emit(ready_pool)
 
 
-func _fill(u: Node, dt: float) -> float:
+func gauge_fill(u: Node, dt: float) -> float:
 	var st := CombatantStats.of(u)
 	var speed: float = st.gauge_speed() if st != null else 25.0
 	var drift: float = sin(battle_time + float(offsets.get(u, 0.0))) * CombatConstants.DRIFT_AMPLITUDE
@@ -396,46 +397,11 @@ func _fill(u: Node, dt: float) -> float:
 	return (speed + drift) * dt * mult
 
 
-func _update_voluntary_windows() -> void:
-	# Sera's phase-out counts as voluntary when a party gauge has been parked at 99.0 for 3 s or more.
-	var any_long_hold: bool = false
-	for u in ready_pool:
-		if float(hold_time.get(u, 0.0)) >= CombatConstants.VOLUNTARY_HOLD_S:
-			any_long_hold = true
-	for u in party:
-		var sol := SolidityComponent.of(u)
-		if sol != null:
-			sol.voluntary_window = any_long_hold
-	if hover_sera != null:
-		var sol2 := SolidityComponent.of(hover_sera)
-		if sol2 != null:
-			sol2.voluntary_window = any_long_hold
-
-
-func _pick_party_at_gate() -> Node:
-	var best: Node = null
-	var best_g: float = -INF
-	var pool: Array = party.duplicate()
-	if hover_sera != null and not party.has(hover_sera):
-		pool.append(hover_sera)
-	for u in pool:
-		if not _alive(u) or ready_pool.has(u):
-			continue
-		var sol := SolidityComponent.of(u)
-		if sol != null and sol.is_phased():
-			continue
-		var g: float = float(gauges.get(u, 0.0))
-		if g >= CombatConstants.SYNC_HOLD and g > best_g:
-			best_g = g
-			best = u
-	return best
-
-
-func _open_window(u: Node, grant_bp: bool) -> void:
+func open_window(u: Node, grant_bp: bool) -> void:
 	gauges[u] = CombatConstants.SYNC_HOLD
 	if grant_bp:
 		bank.add(1, true)
-		_snapshot_turn(u)
+		TurnRewind.snapshot(self, u)
 	if not ready_pool.has(u):
 		ready_pool.append(u)
 		hold_time[u] = 0.0
@@ -454,17 +420,17 @@ func _open_window(u: Node, grant_bp: bool) -> void:
 
 ## Wake a parked ally at any time while the timeline runs.
 func request_command(u: Node) -> bool:
-	if state != State.TICK or not ready_pool.has(u) or not _alive(u):
+	if state != State.TICK or not ready_pool.has(u) or not alive(u):
 		return false
-	_open_window(u, false)
+	open_window(u, false)
 	return true
 
 
 # ------------------------------------------------------------------ party commands
 
 func cmd_sync_hold(actor: Node) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
+	if not is_turn(actor):
+		return fail("not this actor's turn")
 	var sc := StatusComponent.of(actor)
 	if sc != null:
 		sc.acting = false  # parked: what lands on it while it waits counts against its next action
@@ -475,10 +441,10 @@ func cmd_sync_hold(actor: Node) -> Dictionary:
 
 
 func cmd_move(actor: Node, to: Vector3) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
+	if not is_turn(actor):
+		return fail("not this actor's turn")
 	if moved_this_window == actor:
-		return _fail("already moved this window")
+		return fail("already moved this window")
 	moved_this_window = actor
 	var from: Vector3 = position_of(actor)
 	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)
@@ -488,121 +454,42 @@ func cmd_move(actor: Node, to: Vector3) -> Dictionary:
 	var half: float = CombatConstants.PLANE_SIZE * 0.5
 	to.x = clampf(to.x, arena_center.x - half, arena_center.x + half)
 	to.z = clampf(to.z, arena_center.z - half, arena_center.z + half)
-	_set_position(actor, to)
+	move_unit(actor, to)
 	return {"ok": true, "position": to}
 
 
 func cmd_guard(actor: Node) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
+	if not is_turn(actor):
+		return fail("not this actor's turn")
 	state = State.EXECUTING
 	var st := CombatantStats.of(actor)
 	st.is_guarding = true
-	_finish_turn(actor, CombatConstants.GUARD_NEXT_GAUGE)
-	_after_party_action({"kind": "guard", "actor": actor})
+	finish_turn(actor, CombatConstants.GUARD_NEXT_GAUGE)
+	after_party_action({"kind": "guard", "actor": actor})
 	return {"ok": true}
 
 
+## Attack (§4.2; PartyActions.attack).
 func cmd_attack(actor: Node, target: Node, boost: int = 0) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
-	if not enemies.has(target) or not _alive(target) or _untargetable(target):
-		return _fail("invalid target")
-	if not bank.can_spend(boost):
-		return _fail("not enough BP")
-	var st := CombatantStats.of(actor)
-	state = State.EXECUTING
-	bank.spend(boost)
-	if boost > 0:
-		boost_used.emit(actor, boost)
-	var action := {
-		"kind": "attack", "attacker": actor, "casters": [actor], "tags": Array(st.weapon_tags),
-		"shape": {"shape": TechDef.Shape.SINGLE, "scale": CombatConstants.BOOST_SCALE[boost]},
-		"hits": maxi(1, st.weapon_hits), "aim": position_of(target), "primary": target,
-	}
-	action.merge(PartyHit.action_keys(self, null, boost, [actor]))  # base 1.0, P.Atk, no synergy (the preview's too)
-	var info: Dictionary = _resolve_action(action)
-	_finish_turn(actor, 0.0)
-	_after_party_action(info)
-	return {"ok": true, "info": info}
+	return PartyActions.attack(self, actor, target, boost)
 
 
-## Use a technique. partners: the Ready Pool allies joining a Dual/Triple (besides the actor). options: the cast's
-## choices, copied into the action (ACTION_OPTIONS: HOLD's "steps", Tune's "mode").
+## Use a technique (PartyActions.tech). partners: the Ready Pool allies joining a Dual/Triple (besides the actor).
+## options: the cast's choices, copied into the action (PartyActions.ACTION_OPTIONS: HOLD's "steps", Tune's "mode").
 func cmd_tech(actor: Node, tech_id: StringName, target: Node, aim: Vector3, boost: int = 0, partners: Array = [], options: Dictionary = {}) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
-	var tech: TechDef = tech_library.get(tech_id, null)
-	if tech == null:
-		return _fail("unknown tech %s" % tech_id)
-	var casters: Array = [actor]
-	for p in partners:
-		if p != actor and not casters.has(p):
-			casters.append(p)
-	var check: Dictionary = _can_cast(actor, tech, casters, boost)
-	if not check["ok"]:
-		return check
-	if tech.target == "enemy" and tech.shape == TechDef.Shape.SINGLE and (target == null or not enemies.has(target) or not _alive(target) or _untargetable(target)):
-		return _fail("invalid target")
-	if tech.target == "ally" and (target == null or not (party.has(target) or target == hover_sera or bench.has(target))):
-		return _fail("invalid ally target")
-	if tech.requires_broken and (target == null or not is_broken(target)):
-		return _fail("%s needs a Broken target" % tech.display_name)  # refused before anything is paid (§10.2)
-	state = State.EXECUTING
-	# Pay costs, then Boost.
-	for c in casters:
-		var csc := StatusComponent.of(c)
-		if csc != null:
-			csc.begin_action()  # a partner's turn is this action too
-		_pay_costs(c, tech)
-		if tech.tags.has(CombatTags.TACHYON):
-			c.set_meta("used_tachyon_this_turn", true)  # no +2 solidity on a TACHYON turn (§10.2)
-	bank.spend(boost)
-	if boost > 0:
-		boost_used.emit(actor, boost)
-	var aim_point: Vector3 = aim
-	if target != null:
-		aim_point = position_of(target)
-	elif tech.shape == TechDef.Shape.SELF_AURA or tech.target == "self":
-		aim_point = position_of(actor)
-	var action := {
-		"kind": "tech", "attacker": actor, "casters": casters, "tags": Array(tech.tags),
-		"shape": {"shape": tech.shape, "radius": CastReach.radius(tech), "length": tech.length, "width": tech.width,
-			"inner_radius": tech.inner_radius, "beams": tech.beams, "scale": tech.shape_scale(boost)},
-		"hits": tech.hit_count, "aim": aim_point, "primary": target, "steps": maxi(1, tech.steps),
-	}
-	action.merge(PartyHit.action_keys(self, tech, boost, casters))  # base, stat, synergy × pair synergy, crit
-	for k in ACTION_OPTIONS:
-		if options.has(k):
-			action[k] = options[k]
-	var info: Dictionary
-	if tech.effect != &"" and TechEffects.handles(tech.effect):
-		info = TechEffects.apply(self, tech, action)
-	elif tech.heal > 0.0 or tech.target in ["ally", "self", "party"]:
-		info = _resolve_support(action)
-	else:
-		info = _resolve_action(action)
-	for c in casters:
-		_finish_turn(c, 0.0)
-		cooldowns.start(c, tech)  # counted from each caster's next action on
-	_after_party_action(info)
-	return {"ok": true, "info": info}
-
-
-## The cast choices cmd_tech copies into the action.
-const ACTION_OPTIONS: Array[String] = ["steps", "mode"]
+	return PartyActions.tech(self, actor, tech_id, target, aim, boost, partners, options)
 
 
 func cmd_item(actor: Node, item: Dictionary, target: Node) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
+	if not is_turn(actor):
+		return fail("not this actor's turn")
 	if not ItemUse.works(self, item, target):  # refused before it leaves the bag (BattleDeck.use_item)
-		return _fail("it would do nothing")
+		return fail("it would do nothing")
 	state = State.EXECUTING
 	var info := {"kind": "item", "actor": actor, "item": item}
 	ItemUse.apply(self, actor, item, target)
-	_finish_turn(actor, 0.0)
-	_after_party_action(info)
+	finish_turn(actor, 0.0)
+	after_party_action(info)
 	return {"ok": true, "info": info}
 
 
@@ -616,21 +503,21 @@ func cmd_swap_koed(actor: Node, koed: Node, incoming: Node) -> Dictionary:
 
 
 func cmd_spare(actor: Node, target: Node) -> Dictionary:
-	if not _is_turn(actor):
-		return _fail("not this actor's turn")
+	if not is_turn(actor):
+		return fail("not this actor's turn")
 	if not can_spare(target):
-		return _fail("cannot spare: must be Broken and at 25% HP or less")
+		return fail("cannot spare: must be Broken and at 25% HP or less")
 	state = State.EXECUTING
 	spared.append(target)
 	end_wind_up(target)  # it leaves the fight (§4.2) and takes any telegraph with it
 	unit_spared.emit(target)
-	_finish_turn(actor, 0.0)
-	_after_party_action({"kind": "spare", "actor": actor, "target": target})
+	finish_turn(actor, 0.0)
+	after_party_action({"kind": "spare", "actor": actor, "target": target})
 	return {"ok": true}
 
 
 func can_spare(target: Node) -> bool:
-	if not enemies.has(target) or not _alive(target) or spared.has(target):
+	if not enemies.has(target) or not alive(target) or spared.has(target):
 		return false
 	var sh := ShieldComponent.of(target)
 	var st := CombatantStats.of(target)
@@ -640,14 +527,6 @@ func can_spare(target: Node) -> bool:
 ## Withdraw (§4.2, §16.5): the fall-back move, the edge and gauge rules and the outcome live in WithdrawRules.
 func cmd_withdraw(actor: Node) -> Dictionary:
 	return WithdrawRules.attempt(self, actor)
-
-
-## Arm the Ens Parry for a guarding ally (§4.2). Perfect if a hit lands within the window.
-func arm_parry(ally: Node) -> void:
-	var st := CombatantStats.of(ally)
-	if st == null or not st.is_guarding:
-		return
-	parry_armed[ally] = float(parry_frames) / 60.0
 
 
 ## The Possibility Branch answer (bosses).
@@ -671,137 +550,23 @@ func open_branch(branch_id: StringName, options: Array, callback: Callable) -> v
 
 # ------------------------------------------------------------------ queries
 
+## The techniques `actor` may use now (TechAvailability).
 func available_techs(actor: Node) -> Array[TechDef]:
-	var out: Array[TechDef] = []
-	var st := CombatantStats.of(actor)
-	if st == null:
-		return out
-	var sc := StatusComponent.of(actor)
-	if sc != null and not sc.can_cast_techs():
-		return out
-	var ready_ids: Array[StringName] = []
-	for u in ready_pool:
-		if _alive(u):
-			ready_ids.append(CombatantStats.of(u).actor_id)
-	if not ready_ids.has(st.actor_id):
-		ready_ids.append(st.actor_id)
-	for id in tech_library.keys():
-		var t: TechDef = tech_library[id]
-		if not t.involves(st.actor_id):
-			continue
-		if not _actor_knows(actor, t):
-			continue
-		if _actor_set_ready(t, ready_ids):
-			out.append(t)
-	return out
-
-
-func _actor_set_ready(t: TechDef, ready_ids: Array[StringName]) -> bool:
-	for s in t.actor_sets():
-		var ok: bool = true
-		for req in (s as Array):
-			if not ready_ids.has(req):
-				ok = false
-				break
-		if ok:
-			# TRUE NULL allies cannot take part in Duals/Triples.
-			if t.is_coop():
-				for req2 in (s as Array):
-					var u: Node = _unit_by_id(req2)
-					if u != null and CombatantStats.of(u).true_null:
-						return false
-			return true
-	return false
+	return TechAvailability.available(self, actor)
 
 
 ## The character knows the tech: unlock check against the kit (delegated to a callable when present).
 var knows_tech: Callable = Callable()
 
 
-func _actor_knows(actor: Node, t: TechDef) -> bool:
-	if cooldowns.left(actor, t.id) > 0 and not (t.recharge_field != &"" and FieldEffects.stands_in(self, actor, t.recharge_field)):
-		return false
-	if (t.tier == TechDef.Tier.ULTIMATE and bank.ultimates_blocked) or not EffectTable.requirements_met(self, actor, t):
-		return false
-	if EffectTable.is_pending(t.effect):
-		return false  # nothing runs it yet (data/effects/effects.json `pending`)
-	if knows_tech.is_valid():
-		return bool(knows_tech.call(actor, t))
-	return true
-
-
+## The Ready Pool allies who would join `actor` in `t` (TechAvailability).
 func partners_for(t: TechDef, actor: Node) -> Array:
-	var out: Array = []
-	var my_id: StringName = CombatantStats.of(actor).actor_id
-	for s in t.actor_sets():
-		if not (s as Array).has(my_id):
-			continue
-		var found: Array = []
-		var ok: bool = true
-		for req in (s as Array):
-			if req == my_id:
-				continue
-			var u: Node = null
-			for r in ready_pool:
-				if CombatantStats.of(r).actor_id == req and _alive(r):
-					u = r
-					break
-			if u == null:
-				ok = false
-				break
-			found.append(u)
-		if ok:
-			return found
-	return out
+	return TechAvailability.partners_for(self, t, actor)
 
 
-## Preview the shave and damage of an action per target (§4.6); what it reaches is CastReach's, as in the resolution.
+## Preview the shave and damage of an action per target (§4.6; ActionPreview).
 func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int, partners: Array = []) -> Dictionary:
-	var st := CombatantStats.of(actor)
-	if not CastReach.strikes(tech):
-		return {}
-	if tech == null:
-		partners = []  # an Attack is the actor's alone (cmd_attack), whatever Dual was picked and backed out of
-	var tags: Array = Array(tech.tags) if tech != null else Array(st.weapon_tags)
-	var hits: int = CastReach.hits(self, tech, actor, boost, partners) if tech != null else maxi(1, st.weapon_hits)
-	var shape: Dictionary = {"shape": TechDef.Shape.SINGLE, "scale": CombatConstants.BOOST_SCALE[boost]}
-	if tech != null:
-		shape = {"shape": tech.shape, "radius": CastReach.radius(tech), "length": tech.length, "width": tech.width, "inner_radius": tech.inner_radius, "beams": CastReach.beams(self, tech, actor, boost, partners), "scale": tech.shape_scale(boost)}
-	var aim_point: Vector3 = position_of(target) if target != null else aim
-	var found: Array = CastReach.caught(self, tech, TacticalPositioner.targets_in_shape(shape, position_of(actor), aim_point, _enemy_candidates(), _blockers(), CastReach.extra_origins(self, [actor] + partners)))
-	var bonus_if_status: Dictionary = TechEffects.bonus_if_status(tech)
-	var casters: Array = [actor]
-	for pa in partners:
-		if pa != actor and not casters.has(pa):
-			casters.append(pa)
-	var keys: Dictionary = PartyHit.action_keys(self, tech, boost, casters)  # the damage keys cmd_tech builds
-	var best: CombatantStats = PartyHit.best_caster(casters, int(keys["uses"]), st)
-	var out: Dictionary = {}
-	for h in found:
-		var e: Node = h["node"]
-		var sh := ShieldComponent.of(e)
-		var t_tags: Array = FieldEffects.hit_tags(self, actor, e, tags)  # caustic floor, white blank (§7.4)
-		var p: Dictionary = {"shave": 0, "breaks": false, "already_broken": false, "after": 0}
-		if sh != null:
-			p = sh.preview_action(t_tags, hits * int(h["hits"]), ShaveBonus.against(self, actor, tech, boost, e, t_tags, bonus_if_status), st.actor_id, ShaveBonus.penalty(actor, t_tags, tech))
-		p["hits"] = hits * int(h["hits"])
-		p["sealed"] = undamageable.has(e)  # a sealed body takes no HP damage; the plates still shave
-		p["damage"] = 0 if p["sealed"] else PartyHit.estimate(self, keys, actor, best, e, t_tags, hits * int(h["hits"]), int(h["rank"]))
-		out[e] = p
-	CastReach.after_plates(self, tech, actor, out, aim_point, boost)  # shave_any, auto_break, a crossing plate
-	return out
-
-
-func party_synergy() -> float:
-	var sera: Node = _unit_by_id(&"sera")
-	if sera == null:
-		sera = hover_sera
-	if sera == null:
-		return CombatConstants.PARTY_SYNERGY_ABSENT  # 1.00: she is neither active nor hovering (§6.2)
-	var sol := SolidityComponent.of(sera)
-	if sol != null and sol.is_phased():
-		return CombatConstants.PARTY_SYNERGY_PHASED
-	return CombatConstants.PARTY_SYNERGY_SERA
+	return ActionPreview.of(self, actor, tech, target, aim, boost, partners)
 
 
 func get_gauge(u: Node) -> float:
@@ -824,7 +589,7 @@ func position_of(u: Node) -> Vector3:
 	return arena_center
 
 
-func _set_position(u: Node, p: Vector3) -> void:
+func move_unit(u: Node, p: Vector3) -> void:
 	if u is Node3D:
 		(u as Node3D).global_position = p
 	else:
@@ -835,7 +600,7 @@ func _set_position(u: Node, p: Vector3) -> void:
 func targetable_party() -> Array:
 	var out: Array = []
 	for u in party:
-		if _alive(u) and not _untargetable(u):
+		if alive(u) and not untargetable(u):
 			out.append(u)
 	return out
 
@@ -843,14 +608,14 @@ func targetable_party() -> Array:
 func living_enemies() -> Array:
 	var out: Array = []
 	for e in enemies:
-		if _alive(e) and not spared.has(e):
+		if alive(e) and not spared.has(e):
 			out.append(e)
 	return out
 
 
 ## The enemies a command can aim at: living and not untargetable (a doll stepped back for its split, a phase-out).
 func targetable_enemies() -> Array:
-	return enemies.filter(func(e: Node) -> bool: return _alive(e) and not _untargetable(e))
+	return enemies.filter(func(e: Node) -> bool: return alive(e) and not untargetable(e))
 
 
 func is_broken(u: Node) -> bool:
@@ -860,13 +625,13 @@ func is_broken(u: Node) -> bool:
 
 func current_taunter(enemy: Node) -> Node:
 	# Father Tank: Lavos-spawn target Crono while Sera is below 40% HP.
-	var sera: Node = _unit_by_id(&"sera")
-	var crono: Node = _unit_by_id(&"crono")
-	if sera != null and crono != null and _alive(crono) and _alive(sera):
+	var sera: Node = party_unit(&"sera")
+	var crono: Node = party_unit(&"crono")
+	if sera != null and crono != null and alive(crono) and alive(sera):
 		var est := CombatantStats.of(enemy)
 		if CombatantStats.of(sera).hp_ratio() < 0.4 and est != null and est.tags.has(&"LAVOS"):
 			return crono
-	return taunts.drawing(_alive)
+	return taunts.drawing(alive)
 
 
 func taunt_strength(t: Node) -> float:
@@ -879,7 +644,12 @@ func add_taunt(t: Node, turns: int, strength: float, extra: Dictionary = {}) -> 
 	taunts.add(t, turns, strength, sc.acting if sc != null else t == active_actor, extra)
 
 
-# ------------------------------------------------------------------ enemy turns
+## The next strike of `actor` lands on a Perfect Frame (§6.4: +15%; washi_hollow_rebirth's 4-frame input, unbuilt).
+func mark_perfect_frame(actor: Node) -> void:
+	perfect_frame_pending[actor] = true
+
+
+# ------------------------------------------------------------------ wind-ups (EnemyTurn plays an enemy's turn)
 
 ## The wind-up of `e` is over (it resolved, or a Break, a KO, a spare, an HZ hit or an effect cancelled it): the
 ## entry goes and its telegraph decal with it. Returns false when `e` was not winding up.
@@ -890,495 +660,9 @@ func end_wind_up(e: Node) -> bool:
 	return true
 
 
-func _begin_enemy_turn(e: Node) -> void:
-	var def: EnemyDef = enemy_defs.get(CombatantStats.of(e).actor_id, null)
-	_snapshot_turn(e)
-	var action: Dictionary = EnemyBrain.choose(self, e, def, rng)
-	gauges[e] = 0.0
-	turn_counts[e] = int(turn_counts.get(e, 0)) + 1
-	var sc := StatusComponent.of(e)
-	if sc != null:
-		sc.on_turn_taken()
-	enemy_action_started.emit(e, action)
-	var wind: float = float(action.get("wind_up_s", 0.0))
-	if sc != null:
-		wind += sc.hitch_seconds(bool(action.get("stepped", false)))  # Knock-Static as it was when chosen
-	if wind > 0.0:
-		wind_ups[e] = {"action": action, "left": wind, "total": wind}
-		telegraph_started.emit(e, action)
-		return
-	_execute_enemy_action(e, action)
-
-
-func _execute_enemy_action(e: Node, action: Dictionary) -> void:
-	if not _alive(e):
-		return
-	var prev: int = state
-	state = State.EXECUTING
-	enemy_action_serial += 1
-	var est := CombatantStats.of(e)
-	var targets: Array = action.get("targets", [])
-	targets = targets.filter(func(t: Node) -> bool: return _alive(t) and not _untargetable(t))
-	if targets.is_empty():
-		targets = targetable_party()
-	var shape_name: String = String(action.get("shape", "SINGLE"))
-	var shape_id: int = int(TechDef.SHAPE_NAMES.get(shape_name, TechDef.Shape.SINGLE))
-	var aim: Vector3 = action.get("aim", position_of(targets[0]) if not targets.is_empty() else arena_center)
-	var hit_list: Array = []
-	if shape_id == TechDef.Shape.SINGLE or bool(action.get("turned", false)):  # GUILTY: one of its own allies
-		if not targets.is_empty():
-			hit_list = [{"node": targets[0], "hits": 1, "rank": 0}]
-	else:
-		var params := {"shape": shape_id, "radius": float(action.get("radius", 1.0)), "length": float(action.get("length", 0.0)), "width": float(action.get("width", 1.2)), "scale": 1.0}
-		hit_list = TacticalPositioner.targets_in_shape(params, position_of(e), aim, _party_candidates(), _blockers())
-	var info := {"kind": "enemy", "attacker": e, "action": action, "targets": [], "damage": {}}
-	if float(action.get("heal", 0.0)) > 0.0:
-		var amt: int = DamagePipeline.compute_heal(est.e_atk, float(action["heal"]), 0)
-		var healed: int = est.heal(amt)
-		heal_resolved.emit(e, e, healed)
-	BpTheft.steal(self, e, int(action.get("bp_steal", 0)))  # into its visible counter; a Balloon Escape foils one
-	for h in hit_list:
-		var landing: Array = taunts.landing(self, h["node"])  # Bekkler's Guilt: a hit on an ally in its ring lands on Crono
-		var t: Node = landing[0]
-		if not info["targets"].has(t):
-			info["targets"].append(t)
-		info["damage"][t] = int(info["damage"].get(t, 0)) + EnemyStrike.resolve(self, e, t, action, int(h["hits"]), int(h["rank"]), float(landing[1]))
-	if String(action.get("effect", "")) != "":
-		EnemyEffects.apply(self, e, action, hit_list)
-	action_executed.emit(info)
-	if state == State.EXECUTING:
-		state = prev if prev != State.EXECUTING else State.TICK
-	_check_end()
-
-
-## Passives that fire when a party member is hurt: Krona's gourd, the wrist-seam check.
-func _after_damage(t: Node) -> void:
-	var st := CombatantStats.of(t)
-	if st == null or not st.is_alive():
-		return
-	if st.actor_id == &"krona" and st.hp_ratio() < 0.25 and int(t.get_meta("sipped_action", -1)) != enemy_action_serial:
-		t.set_meta("sipped_action", enemy_action_serial)  # once per enemy action against her (DECISIONS)
-		st.heal(roundi(float(st.max_hp()) * 0.20))
-		CorruptionComponent.add_to(t, CorruptionComponent.GOURD_SIP)
-		battle_message.emit("Krona drinks from the gourd.")
-	if st.actor_id == &"crono" and _crono_galaxy(t) and not t.get_meta("concerned_fired", false):
-		t.set_meta("concerned_fired", true)
-		var sc := StatusComponent.of(t)
-		if sc != null:
-			sc.add(&"concerned_target", -1.0, -1)
-		truth_moment.emit(&"galaxy_reveal")
-
-
-# ------------------------------------------------------------------ party resolution
-
-func _resolve_action(action: Dictionary) -> Dictionary:
-	var attacker: Node = action["attacker"]
-	var tech: TechDef = action.get("tech", null)
-	var boost: int = int(action.get("boost", 0))
-	var tags: Array = action["tags"]
-	var casters: Array = action.get("casters", [attacker])
-	var shape: Dictionary = action["shape"]
-	var aim: Vector3 = action["aim"]
-	var extra: Dictionary = CastReach.extra_origins(self, casters)
-	var found: Array
-	if int(shape["shape"]) == TechDef.Shape.SINGLE:
-		var primary: Node = action.get("primary", null)
-		found = [{"node": primary, "hits": 1, "rank": 0}] if primary != null else []
-	else:
-		found = TacticalPositioner.targets_in_shape(shape, position_of(attacker), aim, _enemy_candidates(), _blockers(), extra)
-	var info := {"kind": action["kind"], "attacker": attacker, "casters": casters, "tech": tech, "boost": boost, "targets": [], "damage": {}, "raw": {}, "shave": {}, "breaks": [], "tags": tags}
-	var a_stats := CombatantStats.of(attacker)
-	var best_caster: CombatantStats = PartyHit.best_caster(casters, int(action.get("uses", TechDef.Uses.BEST)), a_stats)  # §8.7
-	var perfect: bool = bool(_perfect_frame_pending.get(attacker, false))
-	_perfect_frame_pending.erase(attacker)
-	var hits_per: int = int(action.get("hits", 1))
-	var flicker: bool = PartyHit.flicker(attacker)
-	var filter: Callable = action.get("target_filter", Callable())
-	var a_sc := StatusComponent.of(attacker)
-	var push_per_hit: float = float(action.get("gauge_push_per_hit", 0.0))
-	var bonus_if_status: Dictionary = action.get("bonus_if_status", {})
-	for h in found:
-		var t: Node = h["node"]
-		if t == null or not _alive(t):
-			continue
-		if filter.is_valid() and not bool(filter.call(t)):
-			continue
-		info["targets"].append(t)
-		var tst := CombatantStats.of(t)
-		var sh := ShieldComponent.of(t)
-		var t_tags: Array = FieldEffects.hit_tags(self, attacker, t, tags)  # caustic floor, white blank (§7.4)
-		var penalty: int = ShaveBonus.penalty(attacker, t_tags, tech)
-		var total: int = 0
-		var shaved: int = 0
-		var bonus_left: int = ShaveBonus.against(self, attacker, tech, boost, t, t_tags, bonus_if_status)
-		var n_hits: int = hits_per * maxi(1, int(h["hits"]))
-		for i in n_hits:
-			if not tst.is_alive():
-				break
-			if not StatusRules.hit_lands(self, a_sc):  # BLIND and its kin (§12.2): a miss shaves nothing
-				strike_resolved.emit(attacker, t, {"damage": 0, "evaded": true, "missed": true, "tags": t_tags})
-				continue
-			var res := {"shaved": 0, "hit_weakness": false, "caused_break": false, "matched": false}
-			var was_broken: bool = sh != null and sh.is_broken
-			if sh != null:
-				res = sh.apply_strike(t_tags, bonus_left, attacker, a_stats.actor_id, penalty)
-				shaved += int(res["shaved"])
-				if res["matched"]:
-					bonus_left = 0
-				if res["caused_break"]:
-					info["breaks"].append(t)
-					last_break_signature = sh.break_signature
-			# §6.4 / §5.4: damage is applied before the shave, so the strike that lands the Break is
-			# resolved against the unbroken target (full DEF, no crit); the strikes after it see it Broken.
-			var broken_now: bool = sh != null and sh.is_broken
-			if sh != null and sh.shield_only and not was_broken:
-				strike_resolved.emit(attacker, t, {"damage": 0, "shield_only": true, "shave": res["shaved"], "tags": t_tags})
-				continue
-			var ctx: Dictionary = PartyHit.context(self, action, attacker, best_caster, t, t_tags, res, was_broken, int(h["rank"]), perfect, flicker)
-			ctx["taken_mult"] = float(ctx["taken_mult"]) * FieldEffects.on_party_strike(self, t, t_tags)  # confetti, mercury pool
-			var r: Dictionary = DamagePipeline.compute_hit(ctx)
-			info["raw"][t] = float(r["raw"])  # one hit's raw damage on it: a DoT's tick base (§6.3, EffectSteps)
-			var dmg: int = int(r["damage"])
-			var dealt: int
-			if bool(r["absorbed"]):
-				dealt = -tst.heal(dmg)
-			elif undamageable.has(t):
-				dealt = 0
-			else:
-				dealt = tst.apply_damage(dmg, true)
-			total += maxi(0, dealt)
-			if float(r["gauge_push"]) > 0.0 and not broken_now:
-				gauges[t] = maxf(0.0, float(gauges.get(t, 0.0)) - float(r["gauge_push"]))
-			if push_per_hit > 0.0 and not broken_now:
-				gauges[t] = maxf(0.0, float(gauges.get(t, 0.0)) - push_per_hit)
-			if t_tags.has(CombatTags.TACHYON) and rng.randf() < 0.25 and not broken_now:
-				gauges[t] = maxf(0.0, float(gauges.get(t, 0.0)) - 10.0)
-			if t_tags.has(CombatTags.HZ) and wind_ups.has(t) and rng.randf() < 0.15:
-				end_wind_up(t)
-			strike_resolved.emit(attacker, t, {"damage": dealt, "shave": res["shaved"], "weakness": res["hit_weakness"], "break": res["caused_break"], "crit": r["crit"], "tags": t_tags, "absorbed": r["absorbed"], "sealed": not bool(r["absorbed"]) and undamageable.has(t)})
-		info["damage"][t] = total
-		info["shave"][t] = shaved
-		# Boost Lv2 adds the technique's debuff (§7.2); a plain Attack scales power and shape only (§4.2), and a
-		# white blank erases the hit's tags and with them its debuff (§7.4).
-		if boost >= 2 and tech != null and tst.is_alive() and (tags.is_empty() or not t_tags.is_empty()):
-			StatusRules.lv2_debuff(self, tech, tags, t)
-	ens_rings.erase(attacker)
-	_canvas_clash(tags, aim, shape, attacker)
-	ResidualFields.leave(self, action, found)  # after the clash, so a NULL blank does not erase its own residual
-	if token_duplicate_active != attacker:
-		last_actions[attacker] = action.duplicate()
-	action_executed.emit(info)
-	return info
-
-
-func _resolve_support(action: Dictionary) -> Dictionary:
-	var attacker: Node = action["attacker"]
-	var tech: TechDef = action["tech"]
-	var boost: int = int(action.get("boost", 0))
-	var casters: Array = action.get("casters", [attacker])
-	var a_stats := CombatantStats.of(attacker)
-	var targets: Array = []
-	match tech.target:
-		"self":
-			targets = [attacker]
-		"party":
-			targets = party.filter(func(u: Node) -> bool: return _alive(u))
-		"ally":
-			if action.get("primary", null) != null:
-				targets = [action["primary"]]
-		_:
-			var shape: Dictionary = action["shape"]
-			if int(shape["shape"]) == TechDef.Shape.SELF_AURA or int(shape["shape"]) == TechDef.Shape.CIRCLE:
-				for h in TacticalPositioner.targets_in_shape(shape, position_of(attacker), action["aim"], _party_candidates(true)):
-					targets.append(h["node"])
-			elif action.get("primary", null) != null:
-				targets = [action["primary"]]
-	var info := {"kind": "support", "attacker": attacker, "casters": casters, "tech": tech, "boost": boost, "targets": targets, "heal": {}}
-	for t in targets:
-		var tst := CombatantStats.of(t)
-		if tst == null:
-			continue
-		if tech.heal > 0.0:
-			var tsc := StatusComponent.of(t)
-			var mult: float = tsc.healing_multiplier() if tsc != null else 1.0  # Corroded, Concerned (§12.3)
-			var amt: int = DamagePipeline.compute_heal(a_stats.e_atk, tech.heal, boost, mult)
-			var healed: int = 0
-			if tst.is_alive():
-				healed = tst.heal(amt)
-			info["heal"][t] = healed
-			heal_resolved.emit(attacker, t, healed)
-		if tech.lv2_debuff != &"" and boost >= 2:
-			var tsc2 := StatusComponent.of(t)
-			if tsc2 != null:
-				tsc2.add(tech.lv2_debuff, -1.0, 2)
-	action_executed.emit(info)
-	return info
-
-
-func _pair_synergy(casters: Array) -> float:
-	var ids: Array[StringName] = []
-	var homes: Dictionary = {}
-	for c in casters:
-		var st := CombatantStats.of(c)
-		ids.append(st.actor_id)
-		homes[st.home_universe] = true
-	var s: float = 1.0
-	if ids.has(&"crono") and ids.has(&"krona"):
-		s *= CombatConstants.SYNERGY_CRONO_KRONA
-	if ids.has(&"crono") and ids.has(&"sera") and casters.size() == 2:
-		s *= CombatConstants.SYNERGY_CRONO_SERA
-	if ids.has(&"vaelos_child"):
-		s *= CombatConstants.SYNERGY_VAELOS_CHILD
-	if casters.size() == 3 and homes.size() == 3:
-		s *= CombatConstants.SYNERGY_THREE_UNIVERSES
-	return s
-
-
-func _crono_galaxy(actor: Node) -> bool:
-	var td := TimeDebtComponent.of(actor)
-	var st := CombatantStats.of(actor)
-	if td == null or st == null:
-		return false
-	return td.crack_state(float(st.hp) / float(st.base_max_hp)) == TimeDebtComponent.CrackState.GALAXY
-
-
-func _home_canvas(actor: Node) -> float:
-	var st := CombatantStats.of(actor)
-	if st == null or st.actor_id == &"sera":
-		return 1.0
-	return 1.0 + CombatConstants.HOME_CANVAS_BONUS if st.home_universe == universe and st.team == CombatantStats.Team.PARTY else 1.0
-
-
-func _in_divinity_or_tether(actor: Node) -> bool:
-	var sc := StatusComponent.of(actor)
-	return sc != null and (sc.has(&"tethered") or sc.has(&"divinity"))
-
-
-func _is_metal(u: Node) -> bool:
-	var st := CombatantStats.of(u)
-	return st != null and (st.tags.has(&"FERRO") or st.tags.has(&"GUN") or bool(u.get_meta("is_metal", false)))
-
-
-## Elemental Canvas Clash: ASTRAL burns ink pools to golden watercolour; RUIN turns paper to ash (§9.6).
-func _canvas_clash(tags: Array, aim: Vector3, shape: Dictionary, attacker: Node) -> void:
-	var radius: float = float(shape.get("radius", 1.5)) * float(shape.get("scale", 1.0))
-	if int(shape["shape"]) == TechDef.Shape.SINGLE:
-		radius = 1.5
-	var center: Vector3 = aim
-	if int(shape["shape"]) == TechDef.Shape.SELF_AURA:
-		center = position_of(attacker)
-	if tags.has(CombatTags.ASTRAL):
-		var n: int = fields.convert(&"ink_pool", &"golden_patch", center, radius, -1.0)
-		if n > 0:
-			battle_message.emit("Astral light burns the ink to gold.")
-		fields.convert(&"vhs_fog", &"cleared", center, 3.0, 10.0)
-	if tags.has(CombatTags.RUIN):
-		fields.convert(&"paper", &"ash_field", center, radius, -1.0)
-	if tags.has(CombatTags.MYCELIA):
-		fields.convert(&"ash_field", &"spore_mat", center, radius, -1.0)
-		fields.convert(&"oil", &"spore_mat", center, radius, -1.0)
-	if tags.has(CombatTags.NULL):
-		fields.blank(center, radius, 8.0)
-
-
-## Snapshot a unit's state at the start of its turn (for Rewind).
-func _snapshot_turn(u: Node) -> void:
-	var st := CombatantStats.of(u)
-	var sc := StatusComponent.of(u)
-	turn_snapshots[u] = {
-		"hp": st.hp if st != null else 0,
-		"gauge": float(gauges.get(u, 0.0)),
-		"pos": position_of(u),
-		"statuses": sc.ids() if sc != null else [],
-		"ruin": RuinRules.stacks(u),
-	}
-
-
-## Restore a unit to its last turn start: HP, gauge, position, statuses gained since (§3.6). Ruin gained since
-## thaws through RuinRules (Crono's component and its mirror alike) before the HP, so the ceiling is back first.
-func rewind_unit(u: Node, hp_only: bool = false) -> bool:
-	if not turn_snapshots.has(u):
-		return false
-	var snap: Dictionary = turn_snapshots[u]
-	var st := CombatantStats.of(u)
-	var sc := StatusComponent.of(u)
-	if not hp_only:
-		RuinRules.rewind_to(u, int(snap.get("ruin", RuinRules.stacks(u))))
-		if sc != null:
-			for id in sc.ids():
-				if id != &"ruin" and not (snap["statuses"] as Array).has(id):
-					sc.remove(id)
-	if st != null:
-		if st.hp <= 0 and int(snap["hp"]) > 0:
-			st.revive(0.01)
-			unit_revived.emit(u)
-		st.hp = clampi(int(snap["hp"]), 0, st.max_hp())
-		st.hp_changed.emit(st.hp, st.max_hp())
-	if hp_only:
-		return true
-	if not ready_pool.has(u):
-		gauges[u] = float(snap["gauge"])
-	_set_position(u, snap["pos"])
-	return true
-
-
-## Every ally gauge −30%, then the ally nearest a full gauge takes a free second turn that copies
-## its last action exactly (§3.6, §10.2). Returns the duplicated ally, or null.
-func borrowed_future(sera: Node) -> Node:
-	var best: Node = null
-	var best_g: float = -INF
-	for u in party:
-		if u == sera or not _alive(u):
-			continue
-		var g: float = float(gauges.get(u, 0.0))
-		if g > best_g:
-			best_g = g
-			best = u
-	for u in party:
-		if u == sera:
-			continue
-		gauges[u] = maxf(0.0, float(gauges.get(u, 0.0)) - CombatConstants.GAUGE_MAX * CombatConstants.BORROWED_FUTURE_GAUGE_PUSH)
-	if best == null:
-		return null
-	if last_actions.has(best):
-		var copy: Dictionary = (last_actions[best] as Dictionary).duplicate()
-		copy["boost"] = int(copy.get("boost", 0))
-		copy["duplicate"] = true
-		token_duplicate_active = best
-		var prev_var: float = fixed_variance
-		if prev_var <= 0.0:
-			fixed_variance = 1.0
-		_resolve_action(copy)
-		fixed_variance = prev_var
-		token_duplicate_active = null
-		truth_moment.emit(&"token_duplicate")
-	else:
-		gauges[best] = CombatConstants.SYNC_HOLD
-	return best
-
-
-# ------------------------------------------------------------------ costs
-
-func _can_cast(actor: Node, tech: TechDef, casters: Array, boost: int) -> Dictionary:
-	if not available_techs(actor).has(tech):
-		return _fail("tech not available")
-	if boost < tech.min_boost:
-		return _fail("needs Boost Lv%d" % tech.min_boost)
-	if not bank.can_spend(boost):
-		return _fail("not enough BP")
-	var needed: int = tech.actor_count_expected()
-	if tech.tier != TechDef.Tier.ULTIMATE and casters.size() != needed:
-		return _fail("needs %d actors" % needed)
-	for c in casters:
-		if c != actor and not ready_pool.has(c):
-			return _fail("partner not in the Ready Pool")
-		var st := CombatantStats.of(c)
-		var cost: Dictionary = tech.cost_for(st.actor_id)
-		var mp: int = int(cost.get("mp", 0))
-		if mp > 0 and not st.can_pay_mp(mp):
-			return _fail("%s lacks MP" % st.actor_id)
-		var sc := StatusComponent.of(c)
-		if sc != null and sc.has(&"grief") and float(st.mp) < float(st.max_mp) * 0.5 and boost > 1:
-			return _fail("Grief: cannot spend more than 1 BP")
-		if c != actor and cooldowns.left(c, tech.id) > 0:
-			return _fail("%s: %s is recharging" % [st.actor_id, tech.display_name])
-		if cost.has("bp_all") and bank.bp < int(cost["bp_all"]):
-			return _fail("needs %d BP" % int(cost["bp_all"]))
-	return {"ok": true}
-
-
-func _pay_costs(c: Node, tech: TechDef) -> void:
-	var st := CombatantStats.of(c)
-	var cost: Dictionary = tech.cost_for(st.actor_id)
-	var mp: int = int(cost.get("mp", 0))
-	if mp > 0:
-		var sc := StatusComponent.of(c)
-		if sc != null and sc.has(&"ash_feeder") and tech.tags.has(CombatTags.RUIN):
-			mp = roundi(float(mp) * 0.8)
-		st.spend_mp(mp)
-	var td := TimeDebtComponent.of(c)
-	if td != null:
-		var strain: float = float(cost.get("strain_pct", 0.0)) / 100.0
-		if strain > 0.0 and c.get_meta("next_astral_free", false):
-			c.remove_meta("next_astral_free")
-			strain = 0.0
-		if strain > 0.0:
-			var sc2 := StatusComponent.of(c)
-			if sc2 != null and sc2.has(&"core_lattice"):
-				strain *= 0.5
-			if sc2 != null and sc2.has(&"guilt_halo"):
-				strain *= 0.5
-			if c.has_meta("fall_break"):
-				strain *= 0.5
-				c.remove_meta("fall_break")
-			if FieldEffects.free_strain_cast(self, c):  # a golden patch or a watercolour puddle (§7.4, §9.6)
-				strain = 0.0
-			td.pay_battle_strain(strain)
-			st.clamp_to_ceiling()
-		var camp: float = float(cost.get("camp_strain_pct", 0.0)) / 100.0
-		if camp > 0.0:
-			td.pay_camp_strain(camp)
-			st.clamp_to_ceiling()
-		var integ: float = float(cost.get("integrity", 0.0))
-		if integ > 0.0:
-			td.pay_integrity(integ)
-			st.clamp_to_ceiling()
-	var sol := SolidityComponent.of(c)
-	if sol != null:
-		var pct: float = float(cost.get("solidity_pct", 0.0))
-		if pct > 0.0:
-			if tech.id == &"borrowed_future" and sol.solidity < 50.0:
-				pct += 10.0
-			if c.has_meta("fall_break"):
-				pct *= 0.5
-				c.remove_meta("fall_break")
-			spend_solidity(c, pct)
-	if cost.has("bp_all"):
-		bank.spend_all()
-	if cost.has("hp_to_one"):
-		st.apply_self_cost(st.hp - 1)
-		var sc3 := StatusComponent.of(c)
-		if sc3 != null:
-			sc3.add(&"fragile", -1.0, 2)
-
-
-## Spend Sera's solidity; a hairline Crono pays 5% max HP per Rewind/slip; overflow lands on Crono.
-func spend_solidity(sera: Node, pct: float) -> Dictionary:
-	var sol := SolidityComponent.of(sera)
-	if sol == null:
-		return {}
-	var was_phased: bool = sol.is_phased()
-	sera.set_meta("last_solidity_cost", pct)  # Time Debt Seal refunds it
-	var r: Dictionary = sol.spend(pct)
-	if float(r["overflow"]) > 0.0:
-		var crono: Node = _unit_by_id(&"crono")
-		var td := TimeDebtComponent.of(crono)
-		if td != null:
-			td.pay_battle_strain(float(r["overflow"]) / 100.0)
-			CombatantStats.of(crono).clamp_to_ceiling()
-	if not was_phased and sol.is_phased():
-		sera_phase_changed.emit(true)
-		truth_moment.emit(&"phase_out")
-	return r
-
-
-## Every Sera Rewind or Chronoslip costs a hairline-or-worse Crono 5% of his max HP (cannot KO).
-func crono_pays_for_slip() -> void:
-	var crono: Node = _unit_by_id(&"crono")
-	if crono == null:
-		return
-	var td := TimeDebtComponent.of(crono)
-	var st := CombatantStats.of(crono)
-	if td == null or st == null:
-		return
-	if td.is_hairline_or_worse(float(st.hp) / float(st.base_max_hp)):
-		st.apply_self_cost(roundi(float(st.max_hp()) * CombatConstants.CRONO_HAIRLINE_REWIND_HP))
-		strike_resolved.emit(crono, crono, {"damage": 0, "slip_tax": true, "tags": []})
-
-
 # ------------------------------------------------------------------ turn bookkeeping
 
-func _finish_turn(actor: Node, next_gauge: float) -> void:
+func finish_turn(actor: Node, next_gauge: float) -> void:
 	gauges[actor] = next_gauge
 	ready_pool.erase(actor)
 	hold_time[actor] = 0.0
@@ -1389,7 +673,7 @@ func _finish_turn(actor: Node, next_gauge: float) -> void:
 	if sc != null:
 		sc.on_turn_taken()
 	var ended: Dictionary = taunts.on_turn_taken(actor)
-	if ended.has("payoff") and _alive(actor):  # Shogun's Command held: every ally's next hit ignores DEF (§11)
+	if ended.has("payoff") and alive(actor):  # Shogun's Command held: every ally's next hit ignores DEF (§11)
 		for u in party:
 			StatusRules.apply(self, u, StringName(String(ended["payoff"])))
 	cooldowns.on_turn_taken(actor)
@@ -1402,35 +686,35 @@ func _finish_turn(actor: Node, next_gauge: float) -> void:
 	ready_pool_changed.emit(ready_pool)
 
 
-func _after_party_action(_info: Dictionary) -> void:
+func after_party_action(_info: Dictionary) -> void:
 	for u in ready_pool.duplicate():
-		if not _alive(u):
+		if not alive(u):
 			ready_pool.erase(u)
-	if _check_end():
+	if check_end():
 		return
 	# A parked ally gets the floor back after any party action (no deadlock).
 	if not ready_pool.is_empty():
 		var u: Node = ready_pool[0]
-		_open_window(u, false)
+		open_window(u, false)
 		return
 	state = State.TICK
 
 
-func _check_end() -> bool:
+func check_end() -> bool:
 	if state == State.VICTORY or state == State.DEFEAT or state == State.IDLE:
 		return true
 	if living_enemies().is_empty():
-		_finish(true, "victory")
+		finish(true, "victory")
 		return true
 	var standing: bool = false
 	for u in party:
-		if _alive(u):
+		if alive(u):
 			var sol := SolidityComponent.of(u)
 			if sol != null and sol.is_phased():
 				continue
 			standing = true
 	if not standing:
-		_finish(false, "defeat")
+		finish(false, "defeat")
 		return true
 	return false
 
@@ -1464,54 +748,17 @@ func _on_unit_defeated(unit: Node) -> void:
 			battle_message.emit("The Prometheus Core fires.")
 
 
-# ------------------------------------------------------------------ fields, blights, rings
-
-func _tick_oil_blight(dt: float) -> void:
-	if not oil_blight:
-		return
-	oil_blight_accum += dt
-	while oil_blight_accum >= CombatConstants.OIL_BLIGHT_PERIOD_S:
-		oil_blight_accum -= CombatConstants.OIL_BLIGHT_PERIOD_S
-		bank.drain(1)
-
-
-func set_oil_blight(on: bool) -> void:
-	oil_blight = on
-	bank.ultimates_blocked = on
-	if not on:
-		oil_blight_accum = 0.0
-
-
-## The armed parry windows close on battle time. (An Ens ring has no clock: it lasts until the next damaging
-## hit, §12.3; only Crono's debt-null runs 5 s, in his TimeDebtComponent.)
-func _tick_ens_rings(dt: float) -> void:
-	for u in parry_armed.keys():
-		parry_armed[u] = float(parry_armed[u]) - dt
-		if float(parry_armed[u]) <= 0.0:
-			parry_armed.erase(u)
-			var st := CombatantStats.of(u)
-			if st != null and universe == 1:
-				var sc := StatusComponent.of(u)
-				if sc != null:
-					sc.add(&"ink_blot", 3.0)
-			parry_result.emit(u, false)
-
-
-func mark_perfect_frame(actor: Node) -> void:
-	_perfect_frame_pending[actor] = true
-
-
 # ------------------------------------------------------------------ helpers
 
-func _is_turn(actor: Node) -> bool:
+func is_turn(actor: Node) -> bool:
 	return state == State.COMMAND_WAIT and actor == active_actor
 
 
-func _fail(reason: String) -> Dictionary:
+func fail(reason: String) -> Dictionary:
 	return {"ok": false, "error": reason}
 
 
-func _all_units() -> Array:
+func all_units() -> Array:
 	var all: Array = []
 	all.append_array(party)
 	all.append_array(enemies)
@@ -1520,14 +767,14 @@ func _all_units() -> Array:
 	return all
 
 
-func _alive(u: Node) -> bool:
+func alive(u: Node) -> bool:
 	if not is_instance_valid(u):
 		return false
 	var st := CombatantStats.of(u)
 	return st != null and st.is_alive() and not spared.has(u)
 
 
-func _untargetable(u: Node) -> bool:
+func untargetable(u: Node) -> bool:
 	if FieldEffects.pins_target(self, u):
 		return false  # nothing inside a static field can be untargetable (§7.4)
 	var sc := StatusComponent.of(u)
@@ -1537,7 +784,7 @@ func _untargetable(u: Node) -> bool:
 	return sol != null and sol.is_phased()
 
 
-func _unit_by_id(id: StringName) -> Node:
+func party_unit(id: StringName) -> Node:
 	for u in party:
 		var st := CombatantStats.of(u)
 		if st != null and st.actor_id == id:
@@ -1548,7 +795,7 @@ func _unit_by_id(id: StringName) -> Node:
 
 
 func unit_by_id(id: StringName) -> Node:
-	var u: Node = _unit_by_id(id)
+	var u: Node = party_unit(id)
 	if u != null:
 		return u
 	for e in enemies:
@@ -1558,33 +805,7 @@ func unit_by_id(id: StringName) -> Node:
 	return null
 
 
-func _enemy_candidates() -> Array:
-	var out: Array = []
-	for e in targetable_enemies():
-		out.append({"node": e, "pos": position_of(e), "radius": CombatantStats.of(e).body_radius})
-	return out
-
-
-func _party_candidates(include_hover: bool = false) -> Array:
-	var out: Array = []
-	for u in party:
-		if _alive(u) and not _untargetable(u):
-			out.append({"node": u, "pos": position_of(u), "radius": CombatantStats.of(u).body_radius})
-	if include_hover and hover_sera != null and _alive(hover_sera):
-		out.append({"node": hover_sera, "pos": position_of(hover_sera), "radius": 0.5})
-	return out
-
-
-## Break-locked bodies and statues are cover for LINE_PIERCE (§5.5).
-func _blockers() -> Array:
-	var out: Array = []
-	for e in enemies:
-		if is_instance_valid(e) and is_broken(e) and (_alive(e) or statues.standing(e)):
-			out.append({"pos": position_of(e), "radius": CombatantStats.of(e).body_radius * (1.0 + CombatConstants.BREAK_HULL_INFLATION)})
-	return out
-
-
-func _variance() -> float:
+func variance() -> float:
 	if fixed_variance > 0.0:
 		return fixed_variance
 	return rng.randf_range(CombatConstants.VARIANCE_MIN, CombatConstants.VARIANCE_MAX)

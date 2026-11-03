@@ -249,3 +249,9 @@ static func of(actor: Node) -> CombatantStats:
 	if actor is CombatantStats:
 		return actor as CombatantStats
 	return actor.get_node_or_null("CombatantStats") as CombatantStats
+
+
+## Mechanical (§11, §13): FERRO or GUN, or made metal by its definition.
+static func is_metal(u: Node) -> bool:
+	var st := CombatantStats.of(u)
+	return st != null and (st.tags.has(&"FERRO") or st.tags.has(&"GUN") or bool(u.get_meta("is_metal", false)))

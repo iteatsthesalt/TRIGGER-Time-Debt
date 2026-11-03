@@ -123,7 +123,7 @@ static func pick_effect(c: BattleCoordinator, actor: Node, targetable: Array) ->
 
 ## The unit an EFFECT_USES condition picks, or null.
 static func effect_target(c: BattleCoordinator, use: String, targetable: Array) -> Node:
-	var pool: Array = targetable if use in ["unbroken", "broken"] else c.party.filter(func(u: Node) -> bool: return c._alive(u))
+	var pool: Array = targetable if use in ["unbroken", "broken"] else c.party.filter(func(u: Node) -> bool: return c.alive(u))
 	for u in pool:
 		var st := CombatantStats.of(u)
 		var ok: bool = false

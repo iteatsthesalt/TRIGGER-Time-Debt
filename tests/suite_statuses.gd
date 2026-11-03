@@ -33,7 +33,7 @@ func _strike(id: String, rule: String, extra: Dictionary = {}) -> Dictionary:
 func _act(c: BattleCoordinator, e: Node) -> Dictionary:
 	var def: EnemyDef = c.enemy_defs.get(CombatantStats.of(e).actor_id, null)
 	var action: Dictionary = EnemyBrain.choose(c, e, def, c.rng)
-	c._execute_enemy_action(e, action)
+	EnemyTurn.execute(c, e, action)
 	return action
 
 
@@ -129,7 +129,7 @@ func test_rewind_takes_back_the_ruin_gained_since_for_crono_and_an_ally_alike() 
 	check_eq(RuinRules.stacks(krona), 0, "Krona's Ruin gained since is taken back")
 	check_eq(kst.max_hp(), k_max, "her ceiling with it")
 	check_eq(kst.hp, k_hp, "and her HP is her turn start's, not clamped to the Ruined ceiling")
-	check(c.rewind_unit(crono), "the same Rewind on Crono")
+	check(TurnRewind.rewind_unit(c, crono), "the same Rewind on Crono")
 	check_eq(td.ruin_stacks, 0, "his TimeDebtComponent's stack is taken back")
 	check(not StatusComponent.of(crono).has(&"ruin"), "and so is its mirror")
 	check_eq(cst.max_hp(), c_max, "his ceiling is whole again")
@@ -195,7 +195,7 @@ func test_a_jammed_enemy_whose_actions_all_wind_up_attacks_plainly() -> void:
 		check_near(float(a["wind_up_s"]), 0.0, 0.0001, "with no wind-up")
 	check(Array(EnemyBrain.choose(c, e, def, c.rng)["tags"]).has(&"PIERCING"), "with its weapon tags")
 	c.gauges[e] = 100.0
-	c._begin_enemy_turn(e)
+	EnemyTurn.begin(c, e)
 	check(not c.wind_ups.has(e), "the coordinator starts no telegraph for a Jammed body")
 
 
@@ -246,12 +246,12 @@ func test_knock_static_hitches_two_actions_a_boss_one() -> void:
 		var out: Array = []
 		for i in turns:
 			c.gauges[e] = CombatConstants.GAUGE_MAX
-			c._begin_enemy_turn(e)  # the brain chooses, the turn counts its statuses down, the wind-up starts
+			EnemyTurn.begin(c, e)  # the brain chooses, the turn counts its statuses down, the wind-up starts
 			out.append(float(c.wind_ups[e]["total"]) if c.wind_ups.has(e) else 0.0)
 			if c.wind_ups.has(e):  # it lands as the clock lands it: the wind-up ends (end_wind_up), then the action
 				var landing: Dictionary = c.wind_ups[e]["action"]
 				check(c.end_wind_up(e) and not c.wind_ups.has(e), "the wind-up ends through end_wind_up")
-				c._execute_enemy_action(e, landing)
+				EnemyTurn.execute(c, e, landing)
 		return out
 	StatusRules.apply(c, grunt, &"knock_static", -1.0, 2)
 	check_eq(str(hitches.call(grunt, 3)), str([0.5, 0.5, 0.0]), "a 2-turn Knock-Static hitches the enemy's next two actions 0.5 s")
@@ -430,7 +430,7 @@ func _hit_crono(extra: Dictionary, variance: float, seed_v: int = 7) -> int:
 	action.merge(extra, true)
 	c.rng.seed = 4242
 	var before: int = CombatantStats.of(crono).hp
-	c._execute_enemy_action(e, action)
+	EnemyTurn.execute(c, e, action)
 	var dealt: int = before - CombatantStats.of(crono).hp
 	c.force_end(true)
 	return dealt
@@ -497,7 +497,7 @@ func test_guilty_turns_half_its_attacks_on_its_own_allies() -> void:
 		action = EnemyBrain.choose(c, e, def, c.rng)
 	var mate_hp: int = CombatantStats.of(mate).hp
 	var crono_hp: int = CombatantStats.of(crono).hp
-	c._execute_enemy_action(e, action)
+	EnemyTurn.execute(c, e, action)
 	check(CombatantStats.of(mate).hp < mate_hp, "the turned attack hurts its ally")
 	check_eq(CombatantStats.of(crono).hp, crono_hp, "and not the party")
 
@@ -754,7 +754,7 @@ func test_an_enemy_dot_ticks_at_fifteen_percent_of_the_hits_raw_damage() -> void
 	var pair: Dictionary = DamagePipeline.pick_stats(TechDef.Uses.BEST, CombatantStats.of(e), kst, StatusComponent.of(krona).def_multiplier(false))
 	var raw: float = maxf(1.0, 0.8 * (float(pair["atk"]) - float(pair["def"]) * 0.5))
 	var hp0: int = kst.hp
-	c._execute_enemy_action(e, _strike("oil_weep", "krona", {"power": 2.0, "status": "oil_dot", "status_seconds": 6.0, "targets": [krona]}))
+	EnemyTurn.execute(c, e, _strike("oil_weep", "krona", {"power": 2.0, "status": "oil_dot", "status_seconds": 6.0, "targets": [krona]}))
 	var dealt: int = hp0 - kst.hp
 	var tick: int = int(StatusComponent.of(krona).data(&"oil_dot").get("tick", 0))
 	check(dealt > 0 and StatusComponent.of(krona).has(&"oil_dot"), "the hit lands and lays its oil")

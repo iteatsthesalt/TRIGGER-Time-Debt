@@ -279,7 +279,7 @@ func test_breaking_strike_uses_pre_break_defence() -> void:
 	_advance_until_window(c)
 	var a := CombatantStats.of(crono)
 	var t := CombatantStats.of(e)
-	var ctx := {"atk": a.p_atk, "def": t.p_def, "base": 1.0, "party_synergy": c.party_synergy(), "home_canvas": c._home_canvas(crono), "weakness": true, "variance": 1.0}
+	var ctx := {"atk": a.p_atk, "def": t.p_def, "base": 1.0, "party_synergy": PartyHit.party_synergy(c), "home_canvas": PartyHit.home_canvas(c, crono), "weakness": true, "variance": 1.0}
 	var first: int = int(DamagePipeline.compute_hit(ctx)["damage"])
 	ctx["def"] = t.p_def * CombatConstants.BREAK_DEF_MULT
 	ctx["broken"] = true
@@ -305,7 +305,7 @@ func test_breaking_strike_uses_pre_break_defence() -> void:
 	c2.bank.bp = 5
 	var a2 := CombatantStats.of(crono2)
 	var t2 := CombatantStats.of(mite)
-	var ex2 := {"atk": (a2.p_atk + a2.e_atk) * 0.5, "def": (t2.p_def + t2.e_def) * 0.5, "base": 1.4, "party_synergy": c2.party_synergy(), "home_canvas": c2._home_canvas(crono2), "boost_level": 3, "weakness": true, "astral": true, "target_hp": t2.hp, "variance": 1.0}
+	var ex2 := {"atk": (a2.p_atk + a2.e_atk) * 0.5, "def": (t2.p_def + t2.e_def) * 0.5, "base": 1.4, "party_synergy": PartyHit.party_synergy(c2), "home_canvas": PartyHit.home_canvas(c2, crono2), "boost_level": 3, "weakness": true, "astral": true, "target_hp": t2.hp, "variance": 1.0}
 	var want: int = int(DamagePipeline.compute_hit(ex2)["damage"])
 	var r: Dictionary = c2.cmd_tech(crono2, &"astral_slash", mite, Vector3.ZERO, 3)
 	check(ShieldComponent.of(mite).is_broken, "1 match + Lv3 bonus Breaks")
@@ -498,7 +498,7 @@ func test_sera_overflow_to_crono() -> void:
 	var sol := SolidityComponent.of(sera)
 	sol.set_solidity(0.0)
 	var td := TimeDebtComponent.of(crono)
-	c.spend_solidity(sera, 10.0)
+	TechCosts.spend_solidity(c, sera, 10.0)
 	check_near(td.battle_strain, 0.10, 0.001, "Crono pays Sera's overflow 1:1 as Battle Strain")
 
 
@@ -644,7 +644,7 @@ func test_battle_roster_bench_and_hover() -> void:
 	var sera := _party_member(&"sera", 10, Vector3(-9, 0, 2))
 	var e := _enemy(&"x", 10, Vector3(3, 0, 0), 30, ["FIRE"], {"hp": 100000})
 	_start(c, [crono], [e], {"bench": [krona], "hover_sera": sera})
-	check_near(c.party_synergy(), 1.10, 0.001, "1.10 with Sera hovering (§6.2)")
+	check_near(PartyHit.party_synergy(c), 1.10, 0.001, "1.10 with Sera hovering (§6.2)")
 	var a: Node = _advance_until_actor(c, &"crono")
 	check(a == crono, "Crono's window")
 	var bp: int = c.bank.bp
@@ -761,7 +761,7 @@ func test_coordinator_phase_out_two_turns_and_synergy() -> void:
 	var sera := _party_member(&"sera", 10, Vector3(-3, 0, 0))
 	var e := _enemy(&"x", 10, Vector3(3, 0, 0), 30, ["FIRE"], {"hp": 100000})
 	_start(c, [crono, sera], [e])
-	check_near(c.party_synergy(), 1.10, 0.001, "1.10 with Sera")
+	check_near(PartyHit.party_synergy(c), 1.10, 0.001, "1.10 with Sera")
 	var sol := SolidityComponent.of(sera)
 	sol.set_solidity(42.0)
 	var s: Node = _advance_until_actor(c, &"sera")
@@ -770,7 +770,7 @@ func test_coordinator_phase_out_two_turns_and_synergy() -> void:
 	c.sera_phase_changed.connect(func(p: bool) -> void: phased_signal.append(p))
 	c.cmd_tech(sera, &"rewind", e, Vector3.ZERO, 0)
 	check(sol.is_phased(), "crossing 40 phases her out")
-	check_near(c.party_synergy(), 0.85, 0.001, "synergy 0.85 while phased")
+	check_near(PartyHit.party_synergy(c), 0.85, 0.001, "synergy 0.85 while phased")
 	check(not phased_signal.is_empty() and phased_signal[0] == true, "signal emitted")
 	check(not c.targetable_party().has(sera), "untargetable while phased")
 	# Advance: her gauge fills twice; she gets no window in between.
@@ -786,7 +786,7 @@ func test_coordinator_phase_out_two_turns_and_synergy() -> void:
 		t += 0.5
 	check_eq(windows_for_sera, 0, "no window for exactly 2 of her turns")
 	check(not sol.is_phased(), "she returns")
-	check_near(c.party_synergy(), 1.10, 0.001, "synergy back to 1.10")
+	check_near(PartyHit.party_synergy(c), 1.10, 0.001, "synergy back to 1.10")
 
 
 func test_coordinator_guard_parry_and_ens_ring() -> void:
@@ -797,7 +797,7 @@ func test_coordinator_guard_parry_and_ens_ring() -> void:
 	_advance_until_window(c)
 	c.cmd_guard(crono)
 	check_near(c.get_gauge(crono), 20.0, 0.001, "Guard: next gauge starts at 20")
-	c.arm_parry(crono)
+	EnsParry.arm(c, crono)
 	var results: Array = []
 	c.parry_result.connect(func(_a: Node, perfect: bool) -> void: results.append(perfect))
 	var hp0: int = CombatantStats.of(crono).hp
@@ -807,7 +807,7 @@ func test_coordinator_guard_parry_and_ens_ring() -> void:
 		t += 1.0 / 60.0
 		if c.state == BattleCoordinator.State.COMMAND_WAIT:
 			c.cmd_guard(crono)
-			c.arm_parry(crono)
+			EnsParry.arm(c, crono)
 	check(not results.is_empty(), "a parry resolved")
 	# A hit that lands while the window is armed is a perfect parry: keep it armed until the enemy's hit lands.
 	results.clear()
@@ -817,7 +817,7 @@ func test_coordinator_guard_parry_and_ens_ring() -> void:
 		if c.state == BattleCoordinator.State.COMMAND_WAIT:
 			c.cmd_guard(crono)
 		if not c.parry_armed.has(crono):
-			c.arm_parry(crono)
+			EnsParry.arm(c, crono)
 		hp_at_hit = CombatantStats.of(crono).hp
 		c.advance(1.0 / 60.0)
 		t += 1.0 / 60.0
@@ -967,7 +967,7 @@ func test_coordinator_oil_blight_drains_pool() -> void:
 	var e := _enemy(&"x", 5, Vector3(3, 0, 0), 2, ["ICE"], {"hp": 5000})
 	_start(c, [crono], [e])
 	c.bank.bp = 4
-	c.set_oil_blight(true)
+	c.bank.set_oil_blight(true)
 	check(c.bank.ultimates_blocked, "Ultimates blocked under Oil-Blight")
 	var t: float = 0.0
 	while t < 15.5:

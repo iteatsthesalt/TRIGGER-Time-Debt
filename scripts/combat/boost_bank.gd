@@ -11,8 +11,13 @@ var max_spend: int = CombatConstants.MAX_SPEND
 var gain_locked: bool = false
 ## Oil-Blight and the blackened Laurel block Ultimates.
 var ultimates_blocked: bool = false
+## Oil-Blight (§7.4): the pool drains 1 BP every OIL_BLIGHT_PERIOD_S of battle time and ultimates are blocked.
+var oil_blight: bool = false
+var oil_blight_accum: float = 0.0
 ## Carnival of Souls may exceed the cap by one until the next ally turn ends.
 var overflow_allowance: int = 0
+## Turn ends the allowance survives (the casters' own, then the next ally's): Carnival of Souls sets it.
+var overflow_turns: int = 0
 ## The revive core owes this many BP (it fires with an empty pool).
 var owed: int = 0
 
@@ -21,7 +26,10 @@ func begin_battle() -> void:
 	bp = CombatConstants.START_BP
 	gain_locked = false
 	ultimates_blocked = false
+	oil_blight = false
+	oil_blight_accum = 0.0
 	overflow_allowance = 0
+	overflow_turns = 0
 	owed = 0
 	changed.emit(bp, max_bp)
 
@@ -80,7 +88,29 @@ func charge_or_owe(n: int) -> void:
 
 
 func clamp_overflow() -> void:
+	if overflow_turns > 1:
+		overflow_turns -= 1
+		return
+	overflow_turns = 0
 	overflow_allowance = 0
 	if bp > max_bp:
 		bp = max_bp
 		changed.emit(bp, max_bp)
+
+
+## Oil-Blight on or off: it blocks the ultimates while it lasts.
+func set_oil_blight(on: bool) -> void:
+	oil_blight = on
+	ultimates_blocked = on
+	if not on:
+		oil_blight_accum = 0.0
+
+
+## The battle clock ran `dt` (BattleCoordinator.advance): an Oil-Blight drains its BP.
+func tick_oil_blight(dt: float) -> void:
+	if not oil_blight:
+		return
+	oil_blight_accum += dt
+	while oil_blight_accum >= CombatConstants.OIL_BLIGHT_PERIOD_S:
+		oil_blight_accum -= CombatConstants.OIL_BLIGHT_PERIOD_S
+		drain(1)

@@ -98,6 +98,18 @@ const BLIND_ACCURACY := -0.30
 const GRIEF_MP := 2
 const GRIEF_PERIOD_S := 10.0
 const GRIEF_MAX_STACKS := 3
+const LAUGH_TRACK_MP := 1
+## DoTs tick at 15% of one hit's raw damage (§6.3); regen heals 2% max HP per tick unless it carries its own.
+const DOT_TICK_FRACTION := 0.15
+const REGEN_PCT := 0.02
+## Lv2 debuffs (§7.3): Refracted splits 20% of the bearer's damage away; GUILTY turns 50% of its attacks.
+const REFRACTED_SPLIT := 0.20
+const GUILTY_REDIRECT := 0.5
+## Taunts (§11): Bekkler's Guilt turns hits on allies in its ring onto Crono at 75%, +1 BP each (2 at most);
+## Shogun's Command binds 60% of the attacks to Krona.
+const GUILT_TAKEN := 0.75
+const GUILT_BP_MAX := 2
+const SHOGUN_TAUNT := 0.6
 const DIVINITY_PERIOD_S := 5.0
 const DIVINITY_CAP := 0.20
 const DIVINITY_RUIN_THAW := 0.01
@@ -116,6 +128,9 @@ const ENS_PARRY_FRAMES_BASE := 4
 const ENS_PARRY_FRAMES_TAUGHT := 6
 const ENS_PARRY_FRAMES_DOJO := 8
 const ENS_RING_DEBT_NULL_S := 5.0
+## A parry press is spent: that ally's next press arms nothing for this long (battle seconds), so a held or
+## hammered key is never a parry (EnsParry).
+const ENS_PARRY_RECOVER_S := 0.5
 const GUARD_DAMAGE_MULT := 0.5
 const GUARD_NEXT_GAUGE := 20.0
 const SWAP_GAUGE := 50.0

@@ -160,7 +160,7 @@
       "who": "narrator"
     },
     {
-      "sfx": "ui/gramophone_needle"
+      "sfx": "ui/cursor"
     },
     {
       "end": true
@@ -783,7 +783,7 @@
       "label": "done"
     },
     {
-      "caption": "[Memory echoes now leak near the lab: Moss-Mice, Bekkler Fragments, an Ashen Echo. They rescale when you return.]"
+      "caption": "[Memory echoes now leak near the lab: Moss-Mice, Bekkler Fragments, an Ashen Echo of Krona by the hearth and a Ferro-Drone at the workbench. They rescale when you return.]"
     },
     {
       "end": true
@@ -862,7 +862,7 @@
       "who": "glenn"
     },
     {
-      "set_flag": "Glenn_Duals_Offered"
+      "set_flag": "Glenn_Duals:Granted"
     },
     {
       "caption": "[Glenn offers training: Ashen Bash (Crono + Glenn) and Mercy Leap (Sera + Glenn) will be taught in time.]"
@@ -882,7 +882,7 @@
       "who": "glenn"
     },
     {
-      "set_flag": "Glenn_Duals_Refused"
+      "set_flag": "Glenn_Duals:Refused"
     },
     {
       "caption": "[Glenn withholds his Dual Techs until the Bekkler doll is repaired in U5.]"
@@ -894,7 +894,7 @@
   "ch1_glenn_after": [
     {
       "if": {
-        "flag": "Glenn_Duals_Refused"
+        "flag": "Glenn_Duals:Refused"
       },
       "then": "r",
       "else": "o"
@@ -975,10 +975,7 @@
           "text": "[Hold the wrist out to her]",
           "set": {
             "flag": "Crono_Confession",
-            "state": "Told",
-            "affinity": {
-              "light": 10
-            }
+            "state": "Told"
           },
           "goto": "tell"
         },
@@ -986,10 +983,7 @@
           "text": "[Pull the sleeve down]",
           "set": {
             "flag": "Crono_Confession",
-            "state": "Hidden",
-            "affinity": {
-              "dark": 10
-            }
+            "state": "Hidden"
           },
           "goto": "hide"
         }
@@ -1057,6 +1051,25 @@
     },
     {
       "call": "leave_for_fair"
+    },
+    {
+      "if": {
+        "flag": "Ch1_Fair_Left"
+      },
+      "then": "gone",
+      "else": "unbuilt"
+    },
+    {
+      "label": "unbuilt"
+    },
+    {
+      "caption": "[Leene Square is not built yet: Chapter 1 pauses here. The hub stays open, and Robo will sound the Fair call again when the square opens.]"
+    },
+    {
+      "end": true
+    },
+    {
+      "label": "gone"
     },
     {
       "end": true

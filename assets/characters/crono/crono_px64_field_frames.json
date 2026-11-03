@@ -1,0 +1,35 @@
+{
+ "cell": 96,
+ "rows": [
+  "s",
+  "w",
+  "e",
+  "n",
+  "sw",
+  "se",
+  "nw",
+  "ne"
+ ],
+ "mirror_w": false,
+ "fps": 60.0,
+ "height_px": 61,
+ "height_m": 1.78,
+ "source": {
+  "pixellab_character": "ca2300bc-7592-4606-8973-32b9bc00056b",
+  "canvas": "u0"
+ },
+ "anims": {
+  "idle": {
+   "col": 0,
+   "count": 4,
+   "fps": 5,
+   "loop": true
+  },
+  "walk": {
+   "col": 4,
+   "count": 6,
+   "fps": 10,
+   "loop": true
+  }
+ }
+}

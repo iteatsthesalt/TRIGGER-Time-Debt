@@ -10,6 +10,8 @@ var backdrop: TextureRect
 var subtitle: Label
 var _busy: bool = false
 
+const FLOW_SPEEDS: Array[float] = [0.75, 1.0, 1.25]
+
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -56,7 +58,7 @@ func _ready() -> void:
 	add_child(menu)
 	_build_menu()
 	var foot := Label.new()
-	foot.text = "a sequel to Chrono Trigger  ·  Godot 4.7  ·  arrows / Enter"
+	foot.text = "Godot 4.7  ·  arrows / Enter"
 	foot.add_theme_font_size_override("font_size", 7)
 	foot.add_theme_color_override("font_color", Color(0.9, 0.86, 0.78, 0.7))
 	foot.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
@@ -71,7 +73,8 @@ func _build_menu() -> void:
 		l.queue_free()
 	items.clear()
 	var entries: Array[String] = ["New Game"]
-	if Saves.exists(0):
+	# a corrupt, unreadable or newer-format autosave reads as no save: no Continue row that would do nothing
+	if Saves.status(0) == Saves.LOADABLE:
 		var p: Dictionary = Saves.peek(0)
 		var g: Dictionary = p.get("game", {})
 		entries.append("Continue  —  Ch.%d  ·  integrity %d%%" % [int(g.get("chapter", 0)), roundi(float(g.get("crono_integrity", 100.0)))])
@@ -114,12 +117,12 @@ func _choose() -> void:
 	Audio.play_sfx("ui/confirm")
 	if text.begins_with("New Game"):
 		_busy = true
-		Game.new_game()
-		Flags.reset_cycle()
+		Game.new_game()  # it owns the cycle reset (cycle 1, or New Game+'s bias)
 		Router.go(&"guardia_kitchen", &"start", 1.0)
 	elif text.begins_with("Continue"):
 		_busy = true
-		if Saves.load(0):
+		# a save whose location is not built (or not registered) would leave the title dead: stay usable instead
+		if Saves.load(0) and Router.has_location(Game.location):
 			Router.go(Game.location, Game.spawn_point, 0.8)
 		else:
 			_busy = false
@@ -133,9 +136,15 @@ func _toggle_options() -> void:
 	# A compact options list: cycles the accessibility settings most players need first.
 	var flicker: bool = bool(Game.settings.get("reduced_flicker", false))
 	Game.set_setting("reduced_flicker", not flicker)
+	# battle flow steps through Combat Laws 3.7's three paces: 0.75x, 1.0x, 1.25x
 	var speed: float = float(Game.settings.get("flow_speed", 1.0))
-	Game.set_setting("flow_speed", 0.8 if speed >= 1.0 else 1.0)
-	subtitle.text = "Time Debt   ·   reduced flicker %s, battle flow ×%.1f" % ["on" if not flicker else "off", float(Game.settings.get("flow_speed", 1.0))]
+	var next: float = FLOW_SPEEDS[0]
+	for v in FLOW_SPEEDS:
+		if v > speed + 0.001:
+			next = v
+			break
+	Game.set_setting("flow_speed", next)
+	subtitle.text = "Time Debt   ·   reduced flicker %s, battle flow ×%.2f" % ["on" if not flicker else "off", next]
 
 
 func _process(delta: float) -> void:

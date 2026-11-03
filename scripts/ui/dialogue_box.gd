@@ -24,6 +24,9 @@ var _wait_advance: bool = false
 var _choice_index: int = -1
 var _choice_buttons: Array[Button] = []
 var _vaelos_style: bool = false
+## Bumped by every say(), choose() and hide_box(): an auto-advance or auto-pick timer armed for an earlier
+## line carries its number and does nothing once another line is up.
+var _line: int = 0
 
 
 func _ready() -> void:
@@ -169,25 +172,51 @@ func say(who: String, text: String, expression: String = "neutral", style: Strin
 	text_label.visible_characters = 0
 	_typing = true
 	_wait_advance = true
+	_line += 1
 	if auto_advance > 0.0:
 		# Probes and smoke runs: very short auto-advance means instant text.
 		var t: float = auto_advance + (float(text.length()) / TYPE_CPS if auto_advance >= 0.5 else 0.0)
 		if auto_advance < 0.5:
 			text_label.visible_characters = -1
 			_typing = false
-		get_tree().create_timer(t).timeout.connect(func() -> void:
-			if _wait_advance:
-				_wait_advance = false
-				prompt_arrow.visible = false
-				advanced.emit())
+		get_tree().create_timer(t).timeout.connect(_auto_advance.bind(_line))
 	await advanced
 
 
+## The auto-advance timer of line `line`: advances only if that line is still the one waiting.
+func _auto_advance(line: int) -> void:
+	if line != _line or not _wait_advance:
+		return
+	_wait_advance = false
+	prompt_arrow.visible = false
+	advanced.emit()
+
+
+## A caption alone (no line up yet, e.g. a script's first command) shows the box without its panel, so the caption
+## is drawn and no stale line comes back with it.
 func caption(text: String, seconds: float) -> void:
+	if not visible:
+		panel.visible = false
+		prompt_arrow.visible = false
+		visible = true
 	caption_label.text = text
 	caption_label.visible = true
 	await get_tree().create_timer(seconds).timeout
 	caption_label.visible = false
+
+
+## A line or a choice is up and waits for the player.
+func awaiting_input() -> bool:
+	return _wait_advance or not _choice_buttons.is_empty()
+
+
+## The screen is fading out (Router.fading_out): a line the player has already read leaves with the scene; a line
+## still waiting for confirm, and a caption, stay (they are drawn over the black).
+func clear_read_line() -> void:
+	if awaiting_input():
+		return
+	panel.visible = false
+	prompt_arrow.visible = false
 
 
 ## Show options and return the chosen index.
@@ -215,8 +244,9 @@ func choose(who: String, prompt: String, options: Array, auto: int = -1) -> int:
 		choice_box.add_child(b)
 		_choice_buttons.append(b)
 	_set_choice(0)
+	_line += 1
 	if auto >= 0:
-		get_tree().create_timer(0.05).timeout.connect(func() -> void: _pick(clampi(auto, 0, options.size() - 1)))
+		get_tree().create_timer(0.05).timeout.connect(_auto_pick.bind(_line, clampi(auto, 0, options.size() - 1)))
 	var idx: int = await chosen
 	_clear_choices()
 	return idx
@@ -237,6 +267,12 @@ func _pick(i: int) -> void:
 	chosen.emit(i)
 
 
+## The auto-pick timer of choice `line` (probes): picks only while that choice is still open.
+func _auto_pick(line: int, i: int) -> void:
+	if line == _line:
+		_pick(i)
+
+
 func _clear_choices() -> void:
 	for b in _choice_buttons:
 		b.queue_free()
@@ -249,3 +285,4 @@ func hide_box() -> void:
 	_clear_choices()
 	_typing = false
 	_wait_advance = false
+	_line += 1

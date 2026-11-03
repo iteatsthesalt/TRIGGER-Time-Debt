@@ -1,12 +1,14 @@
 ## Cast lineup: every generated character sheet standing on a lit stage, one row per character,
 ## eight facings each (s, sw, w, nw, n, ne, e, se), playing the animation named by --anim= (default walk).
 ## Used for art review captures: tools/capture/render.sh test_lineup lineup 40 -- --ids=crono,sera --anim=walk [--tier=action] [--variant=u1]
+## [--opacity=0.45] (every sprite through the fade pass, as a Rewind ghost or a phased Sera draws).
 extends Node3D
 
 var ids: Array[String] = ["crono"]
 var anim: StringName = &"walk"
 var tier: StringName = &"field"
 var variant: StringName = &""
+var opacity: float = 1.0
 var rig: HD2DCameraRig
 var world: HD2DWorld
 var _sprites: Array[ActorSprite] = []
@@ -26,12 +28,14 @@ func _ready() -> void:
 			tier = StringName(arg.trim_prefix("--tier="))
 		elif arg.begins_with("--variant="):
 			variant = StringName(arg.trim_prefix("--variant="))
+		elif arg.begins_with("--opacity="):
+			opacity = clampf(float(arg.trim_prefix("--opacity=")), 0.0, 1.0)
 	world = HD2DWorld.new()
 	world.name = "World"
 	add_child(world)
 	HD2DWorld.add_three_point_lights(self)
-	var stone := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.9, 0.9, 0.9), true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.95, 0.95, 0.95), true)
+	var stone := SceneKit.named("castle_flagstone", 0.95, Color(0.9, 0.9, 0.9))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.95, 0.95, 0.95))
 	SceneKit.floor_plane(self, Vector2(30, 30), Vector3.ZERO, stone)
 	SceneKit.box(self, Vector3(30, 5, 0.6), Vector3(0, 2.5, -4.0 - float(ids.size()) * 1.4), wall, "BackWall")
 	var centre := Node3D.new()
@@ -50,6 +54,7 @@ func _ready() -> void:
 			SpriteLibrary.apply(s, id, 60.0, tier, variant)
 			s.set_facing(_facings[f])
 			s.play(anim)
+			s.set_opacity(opacity)
 			_sprites.append(s)
 	centre.position = Vector3(0, 0, 0)
 	rig = HD2DCameraRig.new()

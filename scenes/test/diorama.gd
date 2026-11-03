@@ -37,9 +37,9 @@ func _ready() -> void:
 
 
 func _build_room() -> void:
-	var stone := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.9, 0.9, 0.9), true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.95, 0.95, 0.95), true)
-	var wood := SceneKit.material("res://assets/textures/wood_albedo.png", "res://assets/textures/wood_normal.png", 0.85, Color.WHITE, true)
+	var stone := SceneKit.named("castle_flagstone", 0.95, Color(0.9, 0.9, 0.9))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.95, 0.95, 0.95))
+	var wood := SceneKit.named("oak_plank", 0.85, Color.WHITE)
 	SceneKit.floor_plane(self, Vector2(16, 16), Vector3.ZERO, stone)
 	# Back wall and left wall, 4 m tall, with a window opening in the back wall.
 	SceneKit.box(self, Vector3(16, 4.5, 0.6), Vector3(0, 2.25, -6.3), wall, "BackWall")

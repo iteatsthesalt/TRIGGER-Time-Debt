@@ -1,6 +1,11 @@
 ## Runs story scripts: arrays of command dictionaries from data/dialogue/*.json (or built in code).
 ## Autoload name: Story. The current location scene provides actors and markers through
 ## get_actor(id) and get_marker(name); everything else is handled here.
+##
+## Every command runs in three steps, so keys may be combined on one line: first the state side effects
+## (set_flag, give_item, counter, ...), then the scene actions (move, face, fade, music, call, battle, go, ...),
+## then the one verb that shows or steers (say, caption, choice; wait; goto, if, end). A `wait` that is a
+## bool belongs to `move`; a `fade` that is a number belongs to `stop_music`.
 extends Node
 
 signal script_started(id: StringName)
@@ -9,6 +14,12 @@ signal line_shown(who: String, text: String)
 signal choice_made(index: int, option: Dictionary)
 signal battle_requested(encounter_id: StringName, context: Dictionary)
 signal camera_requested(mode: String, focus: Node)
+
+## The dialogue history keeps the last lines only (a long session would otherwise hold every line ever shown).
+const HISTORY_MAX := 200
+## The dialogue box's CanvasLayer: above the Router's transition fade (Router.FADE_LAYER), so a line or a caption
+## shown on a black screen is drawn over the black, never under it (a held opening black, a time-skip caption).
+const LAYER := 110
 
 var running: bool = false
 var current_id: StringName = &""
@@ -19,8 +30,13 @@ var battle_result: Dictionary = {}
 var auto_advance_s: float = -1.0
 var auto_choice: int = -1
 var skip_waits: bool = false
+## The last `go` the Router refused (unknown location or a transition already running); &"" when none.
+var last_refused_go: StringName = &""
 var _battle_waiting: bool = false
+## How many scripts are running (a phase beat runs nested inside the one waiting on its battle), and the depth of
+## the script whose `battle` command is waiting: while that script is the innermost, the battle has the player.
 var _depth: int = 0
+var _battle_depth: int = 0
 var _in_run_cmd: bool = false
 var _history: Array[Dictionary] = []
 var _vars: Dictionary = {}
@@ -28,15 +44,41 @@ var _vars: Dictionary = {}
 
 func _ready() -> void:
 	layer = CanvasLayer.new()
-	layer.layer = 50
+	layer.layer = LAYER
 	add_child(layer)
 	box = DialogueBox.new()
 	box.visible = false
 	layer.add_child(box)
+	Game.new_game_started.connect(reset)
+	# the box is above the fade: a line already read must not stay up while the screen goes black
+	Router.fading_out.connect(box.clear_read_line)
 
 
 func is_running() -> bool:
 	return running
+
+
+## True while a script steers the screen: one is running and it is not merely waiting on the battle it started
+## (its `battle` command). A story battle takes the player's input; a phase beat nested in it does not.
+func blocks_battle_input() -> bool:
+	return running and not (_battle_waiting and _depth == _battle_depth)
+
+
+## A new game: script variables and the line history start empty.
+func reset() -> void:
+	_vars.clear()
+	_history.clear()
+	last_refused_go = &""
+
+
+## Script variables travel with the save (Saves writes them under "story").
+func to_save() -> Dictionary:
+	return {"vars": _vars.duplicate(true)}
+
+
+func from_save(d: Dictionary) -> void:
+	_vars = d.get("vars", {}).duplicate(true) if d.get("vars", {}) is Dictionary else {}
+	_history.clear()
 
 
 ## Run a script by id (from Data.dialogue) or an inline array of commands. A script may start while
@@ -52,8 +94,9 @@ func run(id: StringName, inline: Array = []) -> void:
 	var nested: bool = running
 	var outer_id: StringName = current_id
 	var outer_waiting: bool = _battle_waiting
-	_depth += 1
+	var outer_battle_depth: int = _battle_depth
 	running = true
+	_depth += 1
 	current_id = id
 	script_started.emit(id)
 	var labels: Dictionary = {}
@@ -75,49 +118,47 @@ func run(id: StringName, inline: Array = []) -> void:
 			else:
 				push_warning("Story: unknown label %s" % jump)
 	box.hide_box()
-	_depth -= 1
 	script_finished.emit(id)
+	_depth -= 1
 	if nested:
 		current_id = outer_id
 		_battle_waiting = outer_waiting
+		_battle_depth = outer_battle_depth
 	else:
 		running = false
+		_depth = 0
 		current_id = &""
 
 
+## One command: side effects, then scene actions, then the verb. Returns a label to jump to, "__end__" or "".
 func _exec(cmd: Dictionary) -> String:
-	if cmd.has("label"):
-		return ""
+	_apply_side_effects(cmd)
+	var jump: String = await _apply_actions(cmd)
+	if jump != "":
+		return jump
+	return await _exec_verb(cmd)
+
+
+## say / caption / choice show something; wait sleeps; goto / if / end steer. A choice's option may jump.
+func _exec_verb(cmd: Dictionary) -> String:
 	if cmd.has("say"):
 		var who: String = String(cmd.get("who", ""))
 		var text: String = _substitute(String(cmd["say"]))
 		if cmd.has("voice"):
 			Audio.play_voice(who, String(cmd["voice"]))
 		line_shown.emit(who, text)
-		_history.append({"who": who, "text": text})
+		_push_history(who, text)
 		await box.say(who, text, String(cmd.get("portrait", "neutral")), String(cmd.get("style", "")), auto_advance_s)
-		return ""
-	if cmd.has("caption"):
+	elif cmd.has("caption"):
 		if bool(Game.settings.get("captions", true)):
 			await box.caption(String(cmd["caption"]), auto_advance_s if auto_advance_s > 0.0 else 1.2)
-		return ""
-	if cmd.has("choice"):
-		var options: Array = cmd["choice"]
-		var visible: Array = []
-		for o in options:
-			if o.has("if") and not _test(o["if"]):
-				continue
-			visible.append(o)
-		var idx: int = await box.choose(String(cmd.get("who", "")), String(cmd.get("prompt", "")), visible, auto_choice)
-		idx = clampi(idx, 0, maxi(0, visible.size() - 1))
-		if visible.is_empty():
-			return ""
-		var picked: Dictionary = visible[idx]
-		choice_made.emit(idx, picked)
-		_apply_side_effects(picked)
-		if picked.has("goto"):
-			return String(picked["goto"])
-		return ""
+	elif cmd.has("choice"):
+		var picked: String = await _choose(cmd)
+		if picked != "":
+			return picked
+	if cmd.has("wait") and (cmd["wait"] is float or cmd["wait"] is int):
+		if not skip_waits:
+			await get_tree().create_timer(float(cmd["wait"])).timeout
 	if cmd.has("goto"):
 		return String(cmd["goto"])
 	if cmd.has("if"):
@@ -126,17 +167,36 @@ func _exec(cmd: Dictionary) -> String:
 		return String(cmd.get("else", ""))
 	if cmd.has("end"):
 		return "__end__"
-	if cmd.has("wait"):
-		if not skip_waits:
-			await get_tree().create_timer(float(cmd["wait"])).timeout
+	return ""
+
+
+## Offer the options whose `if` holds. Returns the picked option's goto label, or "".
+func _choose(cmd: Dictionary) -> String:
+	var options: Array = cmd["choice"]
+	var visible: Array = []
+	for o in options:
+		if o.has("if") and not _test(o["if"]):
+			continue
+		visible.append(o)
+	if visible.is_empty():
+		push_warning("Story: every option of a choice in %s is hidden; skipping it" % current_id)
 		return ""
-	_apply_side_effects(cmd)
+	var idx: int = await box.choose(String(cmd.get("who", "")), String(cmd.get("prompt", "")), visible, auto_choice)
+	idx = clampi(idx, 0, visible.size() - 1)
+	var picked: Dictionary = visible[idx]
+	choice_made.emit(idx, picked)
+	_apply_side_effects(picked)
+	if picked.has("goto"):
+		return String(picked["goto"])
+	return ""
+
+
+## The scene actions. Returns a label only from `battle` (on_win / on_lose) and `go` (ends the script).
+func _apply_actions(cmd: Dictionary) -> String:
 	if cmd.has("move"):
 		await _move_actor(String(cmd["move"]), cmd)
 	if cmd.has("face"):
-		var a: Node = _actor(String(cmd["face"]))
-		if a != null and a.has_method("face"):
-			a.call("face", String(cmd.get("dir", "s")))
+		_face_actor(String(cmd["face"]), cmd)
 	if cmd.has("anim"):
 		var a2: Node = _actor(String(cmd["anim"]))
 		if a2 != null and a2.has_method("play_anim"):
@@ -144,25 +204,31 @@ func _exec(cmd: Dictionary) -> String:
 	if cmd.has("show") or cmd.has("hide"):
 		var a3: Node = _actor(String(cmd.get("show", cmd.get("hide", ""))))
 		if a3 != null:
+			if cmd.has("show") and cmd.has("at"):
+				_place(a3, _marker(String(cmd["at"])))
 			a3.set("visible", cmd.has("show"))
 	if cmd.has("teleport"):
-		var a4: Node = _actor(String(cmd["teleport"]))
-		var p: Variant = _marker(String(cmd.get("to", "")))
-		if a4 != null and p != null and a4 is Node3D:
-			(a4 as Node3D).global_position = p
+		_place(_actor(String(cmd["teleport"])), _marker(String(cmd.get("to", ""))))
 	if cmd.has("camera"):
-		camera_requested.emit(String(cmd["camera"]), _actor(String(cmd.get("focus", ""))))
+		camera_requested.emit(String(cmd["camera"]), _focus_node(String(cmd.get("focus", ""))))
 	if cmd.has("universe"):
-		Universe.set_universe(int(cmd["universe"]), bool(cmd.get("instant", false)))
+		var from_u: int = Universe.target
+		var to_u: int = int(cmd["universe"])
+		Universe.set_universe(to_u, bool(cmd.get("instant", false)))
+		if bool(cmd.get("jump", false)):
+			GateJump.charge(from_u, to_u, get_tree().current_scene)
 	if cmd.has("music"):
-		Audio.play_music(StringName(String(cmd["music"])))
+		if String(cmd["music"]) == "stop":
+			Audio.stop_music(float(cmd.get("fade", 1.0)))
+		else:
+			Audio.play_music(StringName(String(cmd["music"])))
 	if cmd.has("stop_music"):
 		Audio.stop_music(float(cmd.get("fade", 1.0)))
 	if cmd.has("sfx"):
 		Audio.play_sfx(String(cmd["sfx"]))
 	if cmd.has("ambience"):
 		Audio.play_ambience(StringName(String(cmd["ambience"])))
-	if cmd.has("fade"):
+	if cmd.has("fade") and cmd["fade"] is String:
 		if String(cmd["fade"]) == "out":
 			await Router.fade_out(float(cmd.get("s", 0.5)))
 		else:
@@ -182,12 +248,13 @@ func _exec(cmd: Dictionary) -> String:
 	if cmd.has("call"):
 		var scene2: Node = get_tree().current_scene
 		if scene2 != null and scene2.has_method(String(cmd["call"])):
-			var r: Variant = scene2.callv(String(cmd["call"]), cmd.get("args", []))
-			if r is Signal:
-				await r
+			# await is transparent here: a coroutine (GDScriptFunctionState) or a Signal is waited for,
+			# a plain return value comes back at once.
+			await scene2.callv(String(cmd["call"]), cmd.get("args", []))
 	if cmd.has("battle"):
 		battle_result = {}
 		_battle_waiting = true
+		_battle_depth = _depth
 		battle_requested.emit(StringName(String(cmd["battle"])), cmd)
 		while _battle_waiting:
 			await get_tree().process_frame
@@ -196,7 +263,11 @@ func _exec(cmd: Dictionary) -> String:
 		if cmd.has("on_lose") and not bool(battle_result.get("victory", true)):
 			return String(cmd["on_lose"])
 	if cmd.has("go"):
-		await Router.go(StringName(String(cmd["go"])), StringName(String(cmd.get("spawn", "start"))))
+		var dest: StringName = StringName(String(cmd["go"]))
+		var ok: bool = await Router.go(dest, StringName(String(cmd.get("spawn", "start"))))
+		if not ok:
+			last_refused_go = dest
+			push_warning("Story: %s asked to go to %s and the Router refused (unknown location or a transition already running)" % [current_id, dest])
 		return "__end__" if bool(cmd.get("end_after", true)) else ""
 	return ""
 
@@ -211,7 +282,8 @@ func _apply_side_effects(cmd: Dictionary) -> void:
 		var s: Dictionary = cmd["set"]
 		Flags.set_flag(StringName(String(s.get("flag", ""))), StringName(String(s.get("state", "set"))), s.get("affinity", {}))
 	if cmd.has("set_flag"):
-		Flags.set_flag(StringName(String(cmd["set_flag"])), StringName(String(cmd.get("state", "set"))), cmd.get("affinity", {}))
+		var pair: PackedStringArray = _flag_pair(String(cmd["set_flag"]), String(cmd.get("state", "")))
+		Flags.set_flag(StringName(pair[0]), StringName(pair[1] if pair[1] != "" else "set"), cmd.get("affinity", {}))
 	if cmd.has("affinity") and not cmd.has("set") and not cmd.has("set_flag"):
 		var a: Dictionary = cmd["affinity"]
 		Flags.add_affinity(int(a.get("light", 0)), int(a.get("dark", 0)), int(a.get("prismatic", 0)))
@@ -221,12 +293,13 @@ func _apply_side_effects(cmd: Dictionary) -> void:
 		Flags.add_counter(StringName(String(cmd["counter"])), int(cmd.get("add", 1)))
 	if cmd.has("var"):
 		_vars[String(cmd["var"])] = cmd.get("value", true)
+	# the item catalogue's kind decides where it goes (Game.grant); the verb is the fallback for an unlisted id
 	if cmd.has("give_item"):
-		Game.add_item(StringName(String(cmd["give_item"])), int(cmd.get("n", 1)))
+		Game.grant(StringName(String(cmd["give_item"])), int(cmd.get("n", 1)), &"consumable")
 	if cmd.has("key_item"):
-		Game.add_key_item(StringName(String(cmd["key_item"])))
+		Game.grant(StringName(String(cmd["key_item"])), 1, &"key")
 	if cmd.has("relic"):
-		Game.add_relic(StringName(String(cmd["relic"])))
+		Game.grant(StringName(String(cmd["relic"])), 1, &"relic")
 	if cmd.has("integrity"):
 		Game.set_integrity(Game.crono_integrity + float(cmd["integrity"]))
 	if cmd.has("set_integrity"):
@@ -255,13 +328,23 @@ func _apply_side_effects(cmd: Dictionary) -> void:
 		Saves.save(int(cmd["save"]))
 
 
+## "Name:State" (the README form, the same one boot.gd reads from --flag=) or "Name" plus a separate state.
+## An explicit state wins over the colon; the result is [name, state] with state "" when neither gives one.
+func _flag_pair(id: String, state: String) -> PackedStringArray:
+	return FlagRef.with_state(id, state)  # an explicit `state` wins over the part after the colon
+
+
 func _test(cond: Dictionary) -> bool:
 	if cond.has("flag"):
-		if cond.has("state"):
-			return Flags.is_state(StringName(String(cond["flag"])), StringName(String(cond["state"])))
-		return Flags.has(StringName(String(cond["flag"])))
+		var pair: PackedStringArray = _flag_pair(String(cond["flag"]), String(cond.get("state", "")))
+		if pair[1] != "":
+			return Flags.is_state(StringName(pair[0]), StringName(pair[1]))
+		return Flags.has(StringName(pair[0]))
 	if cond.has("not_flag"):
-		return not Flags.has(StringName(String(cond["not_flag"])))
+		var pair2: PackedStringArray = _flag_pair(String(cond["not_flag"]), String(cond.get("state", "")))
+		if pair2[1] != "":
+			return not Flags.is_state(StringName(pair2[0]), StringName(pair2[1]))
+		return not Flags.has(StringName(pair2[0]))
 	if cond.has("light_min"):
 		return Flags.light >= int(cond["light_min"])
 	if cond.has("dark_min"):
@@ -291,6 +374,12 @@ func _substitute(text: String) -> String:
 	return text.replace("{integrity}", str(roundi(Game.crono_integrity))).replace("{debt}", str(roundi(Game.sera_debt)))
 
 
+func _push_history(who: String, text: String) -> void:
+	_history.append({"who": who, "text": text})
+	while _history.size() > HISTORY_MAX:
+		_history.pop_front()
+
+
 func _actor(id: String) -> Node:
 	if id == "":
 		return null
@@ -309,6 +398,49 @@ func _marker(name: String) -> Variant:
 	return null
 
 
+## A camera focus: an actor by id, else the marker node of that name (the location keeps them in `markers`).
+func _focus_node(name: String) -> Node:
+	var a: Node = _actor(name)
+	if a != null or name == "":
+		return a
+	var scene: Node = get_tree().current_scene
+	if scene == null:
+		return null
+	var markers: Variant = scene.get("markers")
+	if markers is Dictionary and (markers as Dictionary).has(StringName(name)):
+		var m: Variant = (markers as Dictionary)[StringName(name)]
+		return m if m is Node else null
+	return null
+
+
+## A point in the scene: an actor's position by id, else a marker's position by name, else null.
+func _point(name: String) -> Variant:
+	var a: Node = _actor(name)
+	if a is Node3D:
+		return (a as Node3D).global_position
+	return _marker(name)
+
+
+func _place(a: Node, p: Variant) -> void:
+	if a is Node3D and p is Vector3:
+		(a as Node3D).global_position = p
+		(a as Node3D).reset_physics_interpolation()
+
+
+## `face` with `dir` (s/n/e/w) or with `to` (an actor id or a marker name the actor turns toward).
+func _face_actor(id: String, cmd: Dictionary) -> void:
+	var a: Node = _actor(id)
+	if a == null:
+		return
+	if cmd.has("to") and a.has_method("face_toward"):
+		var p: Variant = _point(String(cmd["to"]))
+		if p is Vector3:
+			a.call("face_toward", p)
+			return
+	if a.has_method("face"):
+		a.call("face", String(cmd.get("dir", "s")))
+
+
 func _move_actor(id: String, cmd: Dictionary) -> void:
 	var a: Node = _actor(id)
 	var p: Variant = _marker(String(cmd.get("to", "")))
@@ -321,6 +453,7 @@ func _move_actor(id: String, cmd: Dictionary) -> void:
 			a.call("walk_to", p, float(cmd.get("speed", 2.5)))
 	elif a is Node3D:
 		(a as Node3D).global_position = p
+		(a as Node3D).reset_physics_interpolation()
 
 
 func history() -> Array[Dictionary]:

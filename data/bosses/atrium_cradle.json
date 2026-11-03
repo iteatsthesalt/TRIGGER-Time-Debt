@@ -333,9 +333,7 @@
    "notes": "Vaelos: —you remember how to catch—"
   }
  ],
- "drops": [
-  "tungsten_wire_loom_bracer"
- ],
+ "drops": [],
  "flags": {
   "Prologue_Fall": [
    "Teach_Her_To_Land",
@@ -345,7 +343,7 @@
    "set"
   ]
  },
- "notes": "Prologue boss. Lv 3, HP 2,400. The house trying to keep its dolls safe. Party: Crono, Sera, Marle (guest). Plates in this fight are keyed to their own material: a [SWORD] plate falls to [SWORD] hits, a [LIGHT] plate to [LIGHT] hits (Marle's Ward). The tag of the plate that falls last is the Break Signature. Top-level tags are inferred (R-66Y frame, light-casting ring); the bible gives no tag column for this boss. HP windows per phase are not given and are split evenly. Drop: Tungsten Wire Loom Bracer (Break damage bonus after a shield Break). RETUNED (docs/DECISIONS.md): Lv 2, HP 1,200, powers softened — the bible's Lv 3 / 2,400 made the fight ~140 hits for a Lv 1–3 party and three-shot Crono.",
+ "notes": "Prologue boss. Lv 3, HP 2,400. The house trying to keep its dolls safe. Party: Crono, Sera, Marle (guest). Plates in this fight are keyed to their own material: a [SWORD] plate falls to [SWORD] hits, a [LIGHT] plate to [LIGHT] hits (Marle's Ward). The tag of the plate that falls last is the Break Signature. Top-level tags are inferred (R-66Y frame, light-casting ring); the bible gives no tag column for this boss. HP windows per phase are not given and are split evenly. Drop: Tungsten Wire Loom Bracer (Break damage bonus after a shield Break). RETUNED (docs/DECISIONS.md): Lv 2, HP 1,200, powers softened — the bible's Lv 3 / 2,400 made the fight ~140 hits for a Lv 1–3 party and three-shot Crono. Drops are empty on purpose: prologue_cradle_defeat hands out the Tungsten Wire Loom Bracer (Story Bible beat), so a KO drop would grant it twice.",
  "max_adds": 2,
  "xp": 90
 }

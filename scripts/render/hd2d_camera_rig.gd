@@ -1,5 +1,7 @@
 ## The HD-2D camera rig (Reference Bible §2.3; Combat Laws §17.1): a tilted follow camera at FOV 32°,
 ## lerping to 24° with depth of field on truth moments, 35° pitch in battle. Reads Game settings.
+## The explore pitch is the scene's exported value (Location.camera_pitch; 30° by default, the same
+## number as the breakdown's camera row) and is restored after every battle.
 class_name HD2DCameraRig
 extends Node3D
 
@@ -19,7 +21,8 @@ var _battle_focus: Variant = null
 var _shake: float = 0.0
 var _fov_tween: Tween
 var _pitch_target: float = 30.0
-var _yaw: float = 0.0
+var _explore_pitch: float = 30.0
+var _in_battle: bool = false
 
 
 func _ready() -> void:
@@ -36,6 +39,7 @@ func _ready() -> void:
 		attrs.dof_blur_far_enabled = false
 		attrs.dof_blur_near_enabled = false
 		camera.attributes = attrs
+	_explore_pitch = pitch_degrees
 	_pitch_target = pitch_degrees
 	snap()
 
@@ -64,7 +68,9 @@ func desired_focus() -> Vector3:
 	if _battle_focus != null:
 		p = _battle_focus
 	elif is_instance_valid(target):
-		p = target.global_position
+		# The interpolated transform: with physics interpolation on, a body moved in the physics tick is
+		# drawn between ticks, and the camera must follow the drawn position or the sprite jitters.
+		p = target.get_global_transform_interpolated().origin if target.is_inside_tree() else target.global_position
 	return clamp_to_bounds(p)
 
 
@@ -76,10 +82,10 @@ func clamp_to_bounds(p: Vector3) -> Vector3:
 	return p
 
 
+## The camera sits south of the focus (+z), `pitch_degrees` above it; the view never yaws.
 func camera_offset() -> Vector3:
 	var pitch := deg_to_rad(pitch_degrees)
-	var off := Vector3(0.0, sin(pitch), cos(pitch)) * distance
-	return off.rotated(Vector3.UP, deg_to_rad(_yaw))
+	return Vector3(0.0, sin(pitch), cos(pitch)) * distance
 
 
 func _apply() -> void:
@@ -93,6 +99,9 @@ func _apply() -> void:
 	camera.look_at(look_at_point, Vector3.UP)
 	var attrs := camera.attributes as CameraAttributesPractical
 	if attrs and truth:
+		# §2.3's "DOF far 12.0": the far blur ramps over 12 m from 6 m behind the focus, so the subject stays
+		# sharp at any rig distance; the near blur starts 2 m in front of it. Godot 4 has one blur amount for
+		# both (set_truth), so the bible's near value (CombatConstants.DOF_NEAR) has no separate setting.
 		attrs.dof_blur_far_distance = distance + CombatConstants.DOF_FAR * 0.5
 		attrs.dof_blur_far_transition = CombatConstants.DOF_FAR
 		attrs.dof_blur_near_distance = maxf(0.1, distance - 2.0)
@@ -123,13 +132,26 @@ func set_truth(on: bool) -> void:
 
 func enter_battle(center: Vector3) -> void:
 	_battle_focus = center
+	_in_battle = true
 	_pitch_target = battle_pitch_degrees
 
 
+## Back to the scene's own explore pitch (the exported value, not a literal).
 func exit_battle() -> void:
 	_battle_focus = null
-	_pitch_target = (pitch_degrees if _pitch_target == pitch_degrees else 30.0)
-	_pitch_target = 30.0
+	_in_battle = false
+	_pitch_target = _explore_pitch
+
+
+## Change the explore pitch at runtime (the exported value is read once, in _ready).
+func set_explore_pitch(degrees: float) -> void:
+	_explore_pitch = degrees
+	if not _in_battle:
+		_pitch_target = degrees
+
+
+func explore_pitch() -> float:
+	return _explore_pitch
 
 
 func shake(amount: float) -> void:

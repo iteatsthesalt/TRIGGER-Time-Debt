@@ -1,0 +1,19 @@
+{
+ "group_id": "",
+ "export_version": "object",
+ "states": [
+  {
+   "character": {
+    "id": "c0a7f865-79c2-4c18-998a-37db24f483d0",
+    "name": ""
+   },
+   "folder": "",
+   "frames": {
+    "rotations": {
+     "south": "rotations/unknown.png"
+    },
+    "animations": {}
+   }
+  }
+ ]
+}

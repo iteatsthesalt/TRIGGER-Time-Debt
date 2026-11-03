@@ -22,6 +22,8 @@ var brain: StringName = &"default"
 var break_effect: StringName = &""
 var drops: Array = []
 var sprite: StringName = &""
+## An asset folder name for a delivered stand-in whose folder matches neither key nor sprite (assets/bosses/weaver).
+var art: StringName = &""
 var size: float = 1.0
 var body_radius: float = 0.5
 var fps: float = 60.0
@@ -59,6 +61,7 @@ static func from_dict(d: Dictionary) -> EnemyDef:
 	e.break_effect = StringName(String(d.get("break_effect", "")))
 	e.drops = d.get("drops", [])
 	e.sprite = StringName(String(d.get("sprite", "")))
+	e.art = StringName(String(d.get("art", "")))
 	e.size = float(d.get("size", 1.0))
 	e.body_radius = float(d.get("body_radius", 0.5))
 	e.fps = float(d.get("fps", 60.0))
@@ -97,4 +100,10 @@ func validation_errors() -> PackedStringArray:
 				errors.append("%s: action %s has unknown tag %s" % [key, a.get("id", "?"), tg])
 	if shield < 0:
 		errors.append("%s: negative shield" % key)
+	if not keyed_plates.is_empty():  # the component plays the keyed weights, so `shield` must say the same
+		var total: int = 0
+		for kp in keyed_plates:
+			total += int((kp as Dictionary).get("weight", 1)) if kp is Dictionary else 1
+		if total != shield:
+			errors.append("%s: shield %d but its keyed plates weigh %d" % [key, shield, total])
 	return errors

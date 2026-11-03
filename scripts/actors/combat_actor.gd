@@ -3,11 +3,20 @@
 class_name CombatActor
 extends CharacterBody3D
 
+## A scripted walk ended (arrived, or resolved where the body stands: ScriptedWalk).
 signal arrived
 signal hurt(amount: int)
 
 const WALK_SPEED := 3.6
 const RUN_SPEED := 5.6
+const GRAVITY := 20.0
+const ARRIVE_M := 0.12
+## Sera's look (Story Bible §4.2 "Look", Chapter 1 beat 2): her body thins by this much opacity per point
+## of Translucency Debt (55, the field cap, leaves her at ~0.73); _set_debt_visuals.
+const DEBT_OPACITY_PER_POINT := 0.005
+## A phased Sera (Combat Laws §10.2, untargetable) reads as a gold ghost at 18 %: apply_body_look.
+const PHASED_OPACITY := 0.18
+const PHASED_TINT := Color(1.0, 0.85, 0.5)
 
 @export var actor_id: StringName = &""
 @export var is_party: bool = false
@@ -17,6 +26,7 @@ var statuses: StatusComponent
 var shield: ShieldComponent
 var time_debt: TimeDebtComponent
 var solidity: SolidityComponent
+var corruption: CorruptionComponent
 var sprite: ActorSprite
 var nav: NavigationAgent3D
 var break_hull: Area3D
@@ -26,11 +36,15 @@ var home_universe: int = 0
 var canvas_fps: float = 60.0
 var height_m: float = 1.7
 var frozen: bool = false
-var _walk_target: Variant = null
-var _walk_speed: float = WALK_SPEED
-var _walk_done: bool = true
-var _statue_left: float = 0.0
+## Killed while Broken: a gold statue until the coordinator's StatueTimers shatter it (§5.4).
+var statue: bool = false
+var _walk: ScriptedWalk = null
+var _stepped_frame: int = -10
 var _label: Label3D
+var _fade: Tween
+## The NavigationAgent's avoidance as a Break found it (held while Broken): on_recover() and restore_body() hand it back.
+var _avoid_held: bool = false
+var _avoid_before_break: bool = false
 
 
 func _ready() -> void:
@@ -54,7 +68,7 @@ func _make_break_hull() -> void:
 	break_hull.collision_layer = 16
 	break_hull.collision_mask = 0
 	break_hull.monitoring = false
-	break_hull.monitorable = true
+	break_hull.monitorable = false  # terrain only while Broken or a statue (_set_hull)
 	var cs := CollisionShape3D.new()
 	var cyl := CylinderShape3D.new()
 	cyl.radius = (stats.body_radius if stats else 0.5) * (1.0 + CombatConstants.BREAK_HULL_INFLATION)
@@ -67,44 +81,59 @@ func _make_break_hull() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _walk != null:
+		var v: Vector3 = _walk.step(global_position, delta)  # a frozen walker makes no headway and resolves
+		if _walk.done():
+			_end_walk()
+		elif not frozen:
+			step(v, delta)
 	if frozen:
 		velocity = Vector3.ZERO
 		return
-	if _walk_target != null:
-		var to: Vector3 = _walk_target
-		var flat := Vector3(to.x - global_position.x, 0.0, to.z - global_position.z)
-		if flat.length() < 0.12:
-			velocity = Vector3.ZERO
-			_walk_target = null
-			_walk_done = true
-			if sprite:
-				sprite.update_from_velocity(Vector3.ZERO)
-			arrived.emit()
-		else:
-			velocity = flat.normalized() * _walk_speed
-			if not is_on_floor():
-				velocity.y -= 20.0 * delta
-			move_and_slide()
-			if sprite:
-				sprite.update_from_velocity(velocity)
-		return
-	if not is_on_floor():
-		velocity.y -= 20.0 * delta
+	# Nobody else moves this body: it falls on its own. A mover that stepped it this tick or the last owns
+	# the fall, so gravity is applied once per tick (PlayerController, PartyFollow and EncounterZone step it).
+	if _walk == null and not is_on_floor() and Engine.get_physics_frames() - _stepped_frame > 1:
+		velocity.y -= GRAVITY * delta
 		move_and_slide()
-	if _statue_left > 0.0:
-		_statue_left -= delta
-		if _statue_left <= 0.0:
-			visible = false
 
 
-## Scripted walk (Story commands, battle repositioning). Awaitable.
+## Move this body for one physics tick: `horizontal` (x/z) as its walking velocity, gravity while it is off
+## the floor, one move_and_slide, the sprite turned to match. Every mover goes through here.
+func step(horizontal: Vector3, delta: float) -> void:
+	velocity.x = horizontal.x
+	velocity.z = horizontal.z
+	if is_on_floor():
+		velocity.y = 0.0
+	else:
+		velocity.y -= GRAVITY * delta
+	move_and_slide()
+	_stepped_frame = Engine.get_physics_frames()
+	if sprite:
+		sprite.update_from_velocity(velocity)
+
+
+## Scripted walk (Story commands, cutscenes). Awaitable, and it always resolves: on arrival, or where the body
+## stands once it stops making headway (a prop in the way, a frozen body) or runs out of time (ScriptedWalk).
 func walk_to(target: Vector3, speed: float = WALK_SPEED) -> void:
-	_walk_target = target
-	_walk_speed = speed
-	_walk_done = false
+	var walk := ScriptedWalk.new(global_position, target, speed, ARRIVE_M)
+	_walk = walk
 	frozen = false
-	while not _walk_done and is_inside_tree():
+	while not walk.done() and _walk == walk and is_inside_tree():
 		await get_tree().physics_frame
+
+
+func is_walking() -> bool:
+	return _walk != null
+
+
+func _end_walk() -> void:
+	if _walk.result != ScriptedWalk.ARRIVED:
+		push_warning("%s: walk to %s %s at %s" % [name, str(_walk.target), _walk.result, str(global_position)])
+	_walk = null
+	velocity = Vector3(0.0, velocity.y, 0.0)
+	if sprite:
+		sprite.update_from_velocity(Vector3.ZERO)
+	arrived.emit()
 
 
 func face(dir: String) -> void:
@@ -143,10 +172,11 @@ func on_break() -> void:
 	frozen = true
 	velocity = Vector3.ZERO
 	if nav:
+		if not _avoid_held:
+			_avoid_before_break = nav.avoidance_enabled
+			_avoid_held = true
 		nav.avoidance_enabled = false
-	if break_hull:
-		break_hull.monitorable = true
-		break_hull.visible = true
+	_set_hull(true)
 	if sprite:
 		sprite.play(&"break")
 		sprite.set_tint(Color(1.0, 0.92, 0.6))
@@ -154,35 +184,83 @@ func on_break() -> void:
 
 func on_recover() -> void:
 	frozen = false
-	if nav:
-		nav.avoidance_enabled = true
-	if break_hull:
-		break_hull.visible = false
+	_restore_avoidance()
+	_set_hull(false)
 	if sprite:
 		sprite.set_tint(Color.WHITE)
 		sprite.play(&"idle")
 
 
-## Killed while Broken: stays as a gold statue for 8 s (§5.4).
+## Killed while Broken: a gold statue that keeps the inflated hull and stays terrain for 8 s of battle time
+## (§5.4); the coordinator's StatueTimers counts them and calls shatter().
 func become_statue() -> void:
 	frozen = true
-	_statue_left = CombatConstants.BROKEN_STATUE_S
+	statue = true
+	_set_hull(true)
 	if sprite:
 		sprite.set_tint(Color(1.0, 0.85, 0.4))
 		sprite.play(&"break")
+
+
+## The statue's 8 s are up: it shatters in gold and the body is gone from the field (§5.4).
+func shatter() -> void:
+	statue = false
+	_set_hull(false)
+	var parent := get_parent() as Node3D
+	if visible and parent != null:
+		BattleFx.gold_shatter(parent, global_position + Vector3(0.0, height_m * 0.5, 0.0))
+	visible = false
 
 
 func die() -> void:
 	if sprite:
 		sprite.play(&"death")
 	frozen = true
-	var tw := create_tween()
-	tw.tween_interval(0.9)
-	tw.tween_property(sprite, "transparency", 1.0, 0.5)
-	tw.tween_callback(func() -> void: visible = false)
+	_fade = create_tween()
+	_fade.tween_interval(0.9)
+	_fade.tween_property(sprite, "transparency", 1.0, 0.5)
+	_fade.tween_callback(func() -> void: visible = false)
 
 
+## Undo die(), become_statue() and on_break() on the body once a battle is over (BattleAftermath) or when a
+## fallen ally is revived mid-battle (die()'s fade is stopped): standing, visible, in its standing look
+## (apply_body_look: a Sera revived while still phased stays phased), the Break hull down and free to walk.
+## HP and shields are the caller's.
+func restore_body() -> void:
+	if _fade != null and _fade.is_valid():
+		_fade.kill()
+	_fade = null
+	statue = false
+	visible = true
+	frozen = false
+	velocity = Vector3.ZERO
+	_restore_avoidance()
+	_set_hull(false)
+	if sprite:
+		sprite.transparency = 0.0
+		apply_body_look()
+		sprite.play(&"idle")
+
+
+## The Break hull (§5.4's inflated terrain) up or down: shown and detectable on layer 5 together.
+func _set_hull(up: bool) -> void:
+	if break_hull:
+		break_hull.visible = up
+		break_hull.monitorable = up
+
+
+func _restore_avoidance() -> void:
+	if nav and _avoid_held:
+		nav.avoidance_enabled = _avoid_before_break
+	_avoid_held = false
+
+
+## The porcelain a body shows: Crono's crack states from his integrity and HP (Combat Laws §10.1), Sera's
+## from her Translucency Debt (_set_debt_visuals). Other bodies show none.
 func set_porcelain_visuals() -> void:
+	if sprite != null and solidity != null:
+		_set_debt_visuals()
+		return
 	if time_debt == null or sprite == null or stats == null:
 		return
 	var state: int = time_debt.crack_state(float(stats.hp) / float(maxi(1, stats.base_max_hp)))
@@ -195,6 +273,44 @@ func set_porcelain_visuals() -> void:
 		TimeDebtComponent.CrackState.FLATLINE:
 			amount = 1.0
 	sprite.set_porcelain(state + 1 if state > 0 else 1, amount, float(Flags.counter(&"kintsugi_repairs")) * 0.1)
+
+
+## Sera pays with herself (Story Bible §4.2 "Look", Chapter 1 beat 2): pristine at 0 Debt; from the first
+## point the crack shows as the hairline state and spreads with the Debt (0.2 + Debt/100), and her body thins
+## by DEBT_OPACITY_PER_POINT per point. The shader has no mask that keeps the veins under her left eye yet,
+## so they run where the crack noise peaks (QUESTIONS_FOR_NICH).
+func _set_debt_visuals() -> void:
+	var debt: float = solidity.debt
+	if debt <= 0.0:
+		sprite.set_porcelain(1, 0.0)
+	else:
+		sprite.set_porcelain(2, clampf(0.2 + debt / 100.0, 0.2, 1.0))
+	apply_body_look(false)
+
+
+## How solid the body stands when nothing else fades it: 1.0, and for Sera 1.0 - Debt * DEBT_OPACITY_PER_POINT
+## (never below 0.5). Un-phasing and a revive return her here, not to fully solid.
+func body_opacity() -> float:
+	if solidity == null:
+		return 1.0
+	return clampf(1.0 - solidity.debt * DEBT_OPACITY_PER_POINT, 0.5, 1.0)
+
+
+## The one owner of the body's standing opacity and tint (a Break, a statue, die()'s fade and a scene's own
+## tint aside): while Sera is phased (SolidityComponent.is_phased) she is a PHASED_OPACITY ghost in PHASED_TINT
+## whatever redraws her (a hit, a DoT tick, a revive), otherwise the body stands at body_opacity(). `untint`
+## also clears the tint of a body that is not phased (un-phase, restore_body, a battle's end); a Debt redraw
+## (set_porcelain_visuals) passes false, so a cutscene's grey tint survives it.
+func apply_body_look(untint: bool = true) -> void:
+	if sprite == null:
+		return
+	if solidity != null and solidity.is_phased():
+		sprite.set_opacity(PHASED_OPACITY)
+		sprite.set_tint(PHASED_TINT)
+		return
+	sprite.set_opacity(body_opacity())
+	if untint:
+		sprite.set_tint(Color.WHITE)
 
 
 # ------------------------------------------------------------------ factories
@@ -240,6 +356,11 @@ static func create_party_member(id: StringName, level: int = -1) -> CombatActor:
 		if Game.hold_upgraded:
 			a.solidity.hold_step_seconds = CombatConstants.SERA_HOLD_BREAK_EXTENSION_UPGRADED_S
 		a.add_child(a.solidity)
+	if id == &"krona":
+		a.corruption = CorruptionComponent.new()
+		a.corruption.name = "CorruptionComponent"
+		a.corruption.value = Game.krona_corruption
+		a.add_child(a.corruption)
 	a.stats.reset_vitals()
 	var ratio: float = float(Game.roster.get(id, {}).get("hp_ratio", 1.0))
 	a.stats.hp = maxi(1, roundi(float(a.stats.max_hp()) * ratio))
@@ -247,8 +368,8 @@ static func create_party_member(id: StringName, level: int = -1) -> CombatActor:
 	a.sprite.name = "Sprite"
 	a.add_child(a.sprite)
 	SpriteLibrary.apply(a.sprite, String(k.get("sprite", id)), a.canvas_fps)
-	if id == &"sera":
-		a.sprite.position.y = 4.0 / 64.0
+	a.sprite.position.y = float(k.get("y_offset", 0.0))  # metres the sprite floats (Sera: 0.0625)
+	a.set_porcelain_visuals()  # every spawn (field, cast, a battle reserve) wears its Debt and cracks from the start
 	return a
 
 

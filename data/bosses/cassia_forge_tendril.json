@@ -31,5 +31,5 @@
   "branches": [],
   "drops": ["assembled_seed"],
   "flags": {"Seed_of_Doan": ["Grown"]},
-  "notes": "Seed Assembly crafting boss (Chapter 15 side quest, Klein workbench, U2 clay canvas). Lv 60, HP 120,000. Two Marrow-Umbilical Twins (E80) and the Forge Tendril itself. Linking the assembled Seed to Seed_of_Doan=Grown is an assumption (the Combat Laws do not name the flag)."
+  "notes": "Seed Assembly crafting boss (Chapter 15 side quest, Klein workbench, U2 clay canvas). Lv 60, HP 120,000. Two Marrow-Umbilical Twins (E80) and the Forge Tendril itself. Linking the assembled Seed to Seed_of_Doan:Grown is an assumption (the Combat Laws do not name the flag)."
 }

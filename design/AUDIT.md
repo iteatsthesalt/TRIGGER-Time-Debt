@@ -14,6 +14,9 @@ Audited 2026-10-29. Every source was read, compared and merged into the Story, C
 | Combined Master Bible (V2 merge) | 11 pp | Conflict register C1–C18 | Every conflict settled below |
 | Story Bible v0.1 | 1 p | Confirmation-process stub | Facts kept |
 | Chrono Apocrypha — Agent Production Bible | 45 pp | Earlier build-agent bible | Facts kept |
+| Chrono-Style Recreation Breakdown (Nich, Nov 1 2026) | PDF, ~1,800 lines of text | Art direction for an HD-2D take on the 16-bit style: 64 px three-head sprites, one locked palette, SNES-density world, engine settings, PixelLab workflow, originality rules | Adopted as the art direction on 2026-11-02 (DECISIONS "Direction"); its text is `STYLE_BREAKDOWN_2026-11-01.md` |
+| Hybrid HD-2D Combat Architecture (uploaded 2026-11-02) | ~580 lines | The architecture note the Combat Laws grew from: in-place diorama lock, Action Gate with Sync Hold, compound tag shaving, Break-locked geometry, pooled Boost | Reference only, kept as `COMBAT_ARCHITECTURE_HYBRID.md`; scored against the build in the 2026-11-02 audit (ARCH rows) |
+| Chrono Apocrypha — Master Design Bible (uploaded 2026-11-02) | ~490 lines | An earlier master bible: the Time Debt premise, aged cast, nine playables, canvases, open zones, the Possibilities Engine | Compared in the 2026-11-02 audit (APOC rows); every difference is settled there or in the Story Bible |
 
 The 12 plates (FINAL and V2 hold the same 12 images) are in `images/plates/`.
 
@@ -50,6 +53,8 @@ The 12 plates (FINAL and V2 hold the same 12 images) are in `images/plates/`.
 | 27 | U1's bosses | "Ashen Daimyo" vs "Shogun Ashinaga"; the Furnace's boss unnamed | Lord Ashinaga is the Ashen Daimyo of Goyama Castle. The Weeping Shogun, an ink-and-clockwork Amalgam Spawn, guards the Mammon Furnace |
 | 28 | U4's glass boss | V2: Arch-Curator Glass Variant / Glass Matriarch. FINAL: the Arch-Curator Echo | The Arch-Curator Echo is the U4 mid-boss. The Glass Matriarch, Schala's Reflection, is an optional fight in the Dreaming Moon's chamber |
 | 29 | Ending 5 | Porcelain stress at 100, no confession, Grief embraced | The same, plus at least one Atrium Siege lived through, since the despair route is the one where Crono's integrity hits 0% |
+| 30 | Static's sex | Chrono Apocrypha: a 14-year-old girl with the Pupa larva wired to her spine. FINAL and the catalog image: a boy | He, per the FINAL bible and the catalog image (the age is row 12); the Story Bible, the Reference briefs and the text layer all say "he" |
+| 31 | The Seed of Doan's origin | Chrono Apocrypha's U2 zone table: found frozen in amber on an Arris Dome side path in Chapter 3, opening a "Possibility Branch 2B" that no source defines. FINAL: the pot in the Atrium from Chapter 1 | The Chapter 1 Atrium pot (flag Seed_of_Doan); the Arris Dome condensation is its first watering (Story 11.I). Story 3.5's "side path holds the Seed frozen in amber" and Reference 5.7.7's "Possibility Branch 2B" caption are read that way; 2B is not a branch of this game |
 
 ## Where each bible records its own choices
 

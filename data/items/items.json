@@ -3,6 +3,7 @@
   {
    "id": "tonic",
    "name": "Tonic",
+   "kind": "consumable",
    "heal_pct": 0.3,
    "price": 10,
    "text": "Restores 30% HP."
@@ -10,6 +11,7 @@
   {
    "id": "mid_tonic",
    "name": "Mid Tonic",
+   "kind": "consumable",
    "heal_pct": 0.6,
    "price": 40,
    "text": "Restores 60% HP."
@@ -17,6 +19,7 @@
   {
    "id": "ether",
    "name": "Ether",
+   "kind": "consumable",
    "mp": 20,
    "price": 30,
    "text": "Restores 20 MP."
@@ -24,6 +27,7 @@
   {
    "id": "revive",
    "name": "Revive",
+   "kind": "consumable",
    "revive_pct": 0.3,
    "price": 80,
    "text": "Brings a fallen ally back at 30% HP."
@@ -31,6 +35,7 @@
   {
    "id": "cobalt_wash",
    "name": "Cobalt Wash",
+   "kind": "consumable",
    "cleanse": true,
    "price": 25,
    "text": "Cures the ink blot and reveals washi paths."
@@ -38,23 +43,202 @@
   {
    "id": "time_atom",
    "name": "Time Atom",
+   "kind": "consumable",
    "integrity": 0.5,
    "price": 0,
-   "text": "+0.5 integrity for Crono."
+   "text": "+0.5 integrity for Crono. Dropped by Atom-Eaters (Combat Laws 13.10)."
+  },
+  {
+   "id": "matriarch_seed",
+   "name": "Matriarch Seed",
+   "kind": "consumable",
+   "thaw_ruin": 1,
+   "price": 0,
+   "text": "The Mycelia Matriarch's seed: thaws one Ruin stack per use (three in all). Combat Laws 12, 14.6."
+  },
+  {
+   "id": "gold_bundle",
+   "name": "Kintsugi Gold Bundle",
+   "kind": "consumable",
+   "erosion_pct": -10,
+   "price": 0,
+   "text": "-10% glaze erosion at a lotus pond (U7 field use; the erosion system is not built yet). Combat Laws 13.9 E74."
   },
   {
    "id": "tungsten_scrap",
    "name": "Tungsten Bracer Scrap",
-   "crafting": true,
+   "kind": "material",
    "price": 0,
    "text": "A scrap from a Porcelain Shardling."
   },
   {
    "id": "thoracic_ring_part",
    "name": "Thoracic Ring",
+   "kind": "material",
+   "text": "The 999 Shard Doll's turning ring, ripped out for parts. The masks wept."
+  },
+  {
+   "id": "gold_leaf_memory_flake",
+   "name": "Gold-Leaf Memory Flake",
+   "kind": "material",
+   "text": "Left by the Tanaka family when the house burned three cycles; with the cobalt pigment it makes Crono's Gold Leaf repair in U7."
+  },
+  {
+   "id": "gold_leaf_flake",
+   "name": "Gold Leaf Flake",
+   "kind": "material",
+   "text": "Dropped by a Broken Bekkler Doll Failed (Combat Laws 13.10 E77)."
+  },
+  {
+   "id": "charred_laurel_fragment",
+   "name": "Charred Laurel Fragment",
+   "kind": "material",
+   "text": "A sprig of Cyrus's crest from the Prop Chest Mimic (Combat Laws 13.7 E60)."
+  },
+  {
+   "id": "ferro_capacitor",
+   "name": "Ferro Capacitor",
+   "kind": "material",
+   "text": "Salvage from the Bike Bros (U2)."
+  },
+  {
+   "id": "batteries",
+   "name": "Batteries",
+   "kind": "material",
+   "text": "Static leaves them for the white-ear children (Combat Laws 13.8 E65)."
+  },
+  {
+   "id": "conductivity_gel",
+   "name": "Conductivity Gel",
+   "kind": "material",
+   "text": "Dropped by the RAM Fixer Twins (Combat Laws 13.8 E66)."
+  },
+  {
+   "id": "kirie_scales",
+   "name": "Kirie Scale",
+   "kind": "counter",
+   "counter": "kirie_scales",
+   "text": "Torn kimono silk in gold leaf; a hundred reveal Kami-Ori's seventh arm (Story 9.3, Ending 8)."
+  },
+  {
+   "id": "bekkler_doll_small",
+   "name": "Small Bekkler Doll",
    "kind": "key",
-   "crafting": true,
-   "description": "The 999 Shard Doll's turning ring, ripped out for parts. The masks wept."
+   "text": "From Lucca's workbench shelf; opens the training doll's Amber Rift."
+  },
+  {
+   "id": "epoch_gauntlet",
+   "name": "Epoch Gauntlet",
+   "kind": "key",
+   "text": "Glenn's gift in Guardia's courtyard."
+  },
+  {
+   "id": "cobalt_nodachi",
+   "name": "Cobalt Nodachi (pigment)",
+   "kind": "key",
+   "text": "The vault's cobalt pigment and the Founder's blade (Story 2.7); forged into Krona's weapon in Chapter 3."
+  },
+  {
+   "id": "prop_hammer",
+   "name": "Prop Hammer",
+   "kind": "key",
+   "text": "Dropped by Strongman Dummies; Glenn learns it, and it lowers Cyrus on the Mercy road."
+  },
+  {
+   "id": "red_bike_chain",
+   "name": "Red Bike Chain",
+   "kind": "key",
+   "text": "Dropped by the Oil-Fire Bike Bro (Combat Laws 13.8 E69)."
+  },
+  {
+   "id": "gramophone_record_crono_lullaby",
+   "name": "Gramophone Record (Crono's Lullaby)",
+   "kind": "key",
+   "text": "Dropped by the Paradox Curator Choir (U8)."
+  },
+  {
+   "id": "assembled_seed",
+   "name": "Assembled Seed",
+   "kind": "key",
+   "text": "The Seed assembled at the Klein workbench; it sprouts at 432 Hz (Combat Laws 14.13)."
+  },
+  {
+   "id": "torso_heart_9999",
+   "name": "Torso Heart 9999",
+   "kind": "key",
+   "text": "R-66Y's upgraded heart; the Golden Light siege uses it (Combat Laws 14.13)."
+  },
+  {
+   "id": "chrono_prism_fragment",
+   "name": "Chrono Prism Fragment",
+   "kind": "key",
+   "text": "From the Shadow Weaver of the Drowned Cathedral (U4)."
+  },
+  {
+   "id": "tungsten_wire_loom_bracer",
+   "name": "Tungsten Wire Loom Bracer",
+   "kind": "relic",
+   "text": "+10% damage to a target in the first 3 s after its Break (Combat Laws 11.14)."
+  },
+  {
+   "id": "vaelos_tooth",
+   "name": "Vaelos Tooth",
+   "kind": "relic",
+   "text": "Whispers in the clean young Crono voice; +5% ASTRAL damage vs Lavos-spawn (Combat Laws 11.14)."
+  },
+  {
+   "id": "lavos_fibre_wrap",
+   "name": "Lavos Fibre Wrap",
+   "kind": "relic",
+   "text": "Fibre torn from Goyama's Daimyo; strengthens Krona's Defiled Masamune."
+  },
+  {
+   "id": "long_pull",
+   "name": "Long Pull",
+   "kind": "relic",
+   "text": "From R-66Y (Story 3.6)."
+  },
+  {
+   "id": "grief_filter",
+   "name": "Grief Filter",
+   "kind": "relic",
+   "text": "Immunity to MP drain (Grief) in the Geno-Foundry; later, halves Grief everywhere (Combat Laws 11.14)."
+  },
+  {
+   "id": "syringe_heart_key",
+   "name": "Syringe Heart Key",
+   "kind": "relic",
+   "text": "From R-66Y; it later opens the true Lavos in U0's endgame (Story 3.6)."
+  },
+  {
+   "id": "charred_laurel",
+   "name": "Charred Laurel",
+   "kind": "relic",
+   "text": "Cyrus's helm crest. Pristine: Sera slips without an anchor in burn zones. Blackened: -1 BP per 15 s in U6, unlocks Prop Cannon (Combat Laws 11.14)."
+  },
+  {
+   "id": "bubble_lens",
+   "name": "Bubble Lens",
+   "kind": "relic",
+   "text": "U4 traversal without the drown timer; defeats the cathedral adds (Combat Laws 11.14)."
+  },
+  {
+   "id": "vapor_memory_core_fragment",
+   "name": "Vapor Memory Core",
+   "kind": "relic",
+   "text": "1% of Crono's vaporized atoms, cached by the U6 net; required for the Vaelos re-parenting ending (Combat Laws 11.14)."
+  },
+  {
+   "id": "kintsugi_brush",
+   "name": "Kintsugi Brush",
+   "kind": "relic",
+   "text": "Kintsugi repairs restore 50% more integrity (Combat Laws 11.14)."
+  },
+  {
+   "id": "null_shield",
+   "name": "Null Shield",
+   "kind": "relic",
+   "text": "The Final Dojo's Faceless gift: an ally may give up vulnerabilities and resistances for a flat 20% reduction (Combat Laws 9.5)."
   }
  ]
 }

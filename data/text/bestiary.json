@@ -1,0 +1,680 @@
+{
+  "dust_mote_cluster": {
+    "name": "Dust Mote Cluster",
+    "entry": "Kitchen dust has learned the circle Papa makes with his spoon. It keeps stirring after the bowl is gone. Apparently breakfast isn't finished with us.",
+    "weak_hint": "Those shutters could give the circle a little fresh persuasion.",
+    "break_line": "Breakfast can stop chasing us now."
+  },
+  "porcelain_shardling": {
+    "name": "Porcelain Shardling",
+    "entry": "A chip from Papa's wrist has borrowed his stance. It keeps practising the little shoulder shift, as if looking busy will stop us noticing.",
+    "weak_hint": "A touch of hearth heat can reach through that borrowed pose.",
+    "break_line": "It even stops like him."
+  },
+  "ashen_spoon": {
+    "name": "Ashen Spoon",
+    "entry": "An ink-brush creature slipped into breakfast from somewhere colder. It keeps stirring with nothing warm to serve. I'd send it back to the kitchen, but we're already there.",
+    "weak_hint": "Thaw the outer layer first; the wet stroke underneath needs a sharp edge.",
+    "break_line": "The spoon has finally put itself down."
+  },
+  "vaelos_echo": {
+    "name": "Vaelos Echo",
+    "entry": "The shadow at our kitchen table is learning the spoon. My hands reach it when everyone else's pass through. I wish that felt more like an advantage.",
+    "weak_hint": "Leave this one to me; I can catch yesterday by the wrist.",
+    "break_line": "Stop borrowing his chair."
+  },
+  "trance_bellkeeper": {
+    "name": "Trance Bellkeeper",
+    "entry": "An Atrium echo walks its route and rings us all a little slower. It seems to be keeping an appointment nobody remembers. Very determined to make us late for it, though.",
+    "weak_hint": "A hammer can answer a bell without learning the tune.",
+    "break_line": "The bell's stopped pulling him around."
+  },
+  "gato_ruin": {
+    "name": "Gato-Ruin Porcelain",
+    "entry": "Someone gave a training robot a porcelain body and forgot to end the lesson. The serial on its chest bothers me more than the fists.",
+    "weak_hint": "The chest takes a hammer's answer rather badly.",
+    "break_line": "Lesson paused. Keep your fists to yourself."
+  },
+  "debtling": {
+    "name": "Debtling",
+    "entry": "Tiny Bekkler doll heads pick their way through Papa's fading footprints. They feed on what it costs him to walk. He doesn't even get to leave crumbs anymore.",
+    "weak_hint": "A little of Papa's sky can catch what follows his steps.",
+    "break_line": "No nibbling while he's resting."
+  },
+  "moss_mouse": {
+    "name": "Moss-Mouse",
+    "entry": "The training room remembered a mouse and gave it damp moss for a coat. It has taken the invitation to bite very seriously.",
+    "weak_hint": "A little hearth heat gets through that damp coat.",
+    "break_line": "Stay there, little teeth."
+  },
+  "bekkler_fragment": {
+    "name": "Bekkler Fragment",
+    "entry": "A loose doll piece bounced here from a fair that won't end. It stretches as though the rest of the act might be just beyond its reach.",
+    "weak_hint": "Pin its next second before trying to cut its next stretch.",
+    "break_line": "Caught between bounces. Finally."
+  },
+  "ashen_echo_krona": {
+    "name": "Ashen Echo of Krona",
+    "entry": "The dummy let out a woman made of dry brushstrokes. She leaves the shrine door burning and enough ash for a second doorstep.",
+    "weak_hint": "Papa's little stars can put gold where her black strokes were.",
+    "break_line": "The brush stopped. Keep clear of the ash."
+  },
+  "ferro_drone_09": {
+    "name": "Ferro-Drone 09 Prototype",
+    "entry": "A gramophone and a mercury shoulder are walking before they've agreed on who they'll be. The horn is doing all the introductions.",
+    "weak_hint": "Its metal shell has a very ordinary problem with a sharp edge.",
+    "break_line": "Well, the introductions got quieter."
+  },
+  "ashen_ashigaru": {
+    "name": "Ashen Ashigaru",
+    "entry": "A foot soldier wears paper over the war that hasn't ended. He repaints the armour when it gives way. I don't think the fresh coat is for us.",
+    "weak_hint": "Scorch the fresh coat before he finds his brush.",
+    "break_line": "The paint's running. There's someone under it."
+  },
+  "porcelain_captain": {
+    "name": "Ashen Ashigaru - Porcelain Captain",
+    "entry": "The captain keeps his soldiers in a line while clear oil runs from his blue eyes. He still knows where everyone should stand. Nobody seems to have asked where he'd like to go.",
+    "weak_hint": "A keen edge can part the captain's armour as neatly as his formation.",
+    "break_line": "There's a sky under his face."
+  },
+  "ink_calligrapher": {
+    "name": "Ink Calligrapher",
+    "entry": "He writes orders into the air, and the strokes stay sharp after his hand moves on. I'd complain about his handwriting from farther away.",
+    "weak_hint": "A clean cut can interrupt a very long sentence.",
+    "break_line": "His sentence stopped. The wet edges haven't."
+  },
+  "gourd_bloated_heimin": {
+    "name": "Gourd-Bloated Heimin",
+    "entry": "A townsman drank from the vein that keeps Krona standing. He carries the answer in his swollen gourd. It doesn't look like the answer he wanted.",
+    "weak_hint": "A prism shows where the oil has made him brittle.",
+    "break_line": "Krona, he couldn't hold it either."
+  },
+  "surrender_petition_yokai": {
+    "name": "Surrender Petition Yokai",
+    "entry": "Someone folded the Shogun's petitions until they could move. Now the requests for surrender make their own demands, mostly with paper cuts.",
+    "weak_hint": "Stain it first; blank paper dodges even a candle.",
+    "break_line": "For once, a petition has stopped demanding things."
+  },
+  "crimson_banner_samurai": {
+    "name": "Crimson Banner Samurai",
+    "entry": "An ash-ronin has made a shrine out of his stance. He holds it long enough for us to learn, then expects us to survive the lesson.",
+    "weak_hint": "A prism can find the brittle places beneath that excellent posture.",
+    "break_line": "He can keep the pose. We'll take the opening."
+  },
+  "omen_crow": {
+    "name": "Omen Crow (VHS)",
+    "entry": "A crow with porcelain feather-tips circles where our arms can't reach. Its dive brings a picture full of static and a grief I can't quite translate.",
+    "weak_hint": "Meet the dive with a gust of its own.",
+    "break_line": "Wings wide. We have a crossing."
+  },
+  "imp_crackle_sumi": {
+    "name": "Imp-Crackle Sumi",
+    "entry": "These little ink imps swarm like somebody shook a loaded brush. Even after they're gone, the last strokes keep tripping their friends.",
+    "weak_hint": "They crackle bravely for creatures that scorch so easily.",
+    "break_line": "The whole blot stopped wriggling."
+  },
+  "slag_mite": {
+    "name": "Slag-Mite",
+    "entry": "A metal scavenger darts between the television shrines, gathering what the foundry leaves behind. It doesn't care whether the scraps were sacred. Honestly, that seems sensible.",
+    "weak_hint": "Cassia's pull can make the scrap come to us.",
+    "break_line": "Amber in the spill. Cassia, look."
+  },
+  "cassia_pattern_patrol_unit": {
+    "name": "Cassia-Pattern Patrol Unit",
+    "entry": "The spider has Cassia's chassis pattern, but nobody in the horn is asking permission. It patrols with a mouthful of static and a bellyful of mercury.",
+    "weak_hint": "Cassia knows how to tug at joints built like her own.",
+    "break_line": "Even stopped, the horn keeps trying."
+  },
+  "bike_bros": {
+    "name": "Bike Bros (Daltonized)",
+    "entry": "Johnny's kin are still racing the Spine-Highway. Something got into the engines and the riders, and now even their skids look trapped.",
+    "weak_hint": "Cold can spoil that magnificent slide.",
+    "break_line": "Nice skid. We'll keep it there."
+  },
+  "porcelain_choir": {
+    "name": "Porcelain Choir",
+    "entry": "People were put into these masks and told that lasting was enough. Their hymn is Mama's lullaby running the wrong way. I can hear how tired they are.",
+    "weak_hint": "Bring Cassia; only then can Papa's stars loosen their hold.",
+    "break_line": "A little quiet. They needed that."
+  },
+  "porcelain_knight_squire": {
+    "name": "Porcelain Knight Squire",
+    "entry": "One cracked squire keeps putting his shield between us and the leaking machines. Whatever the foundry did to him, it left that much of his training alone.",
+    "weak_hint": "A hammer doesn't need to get around a shield wall.",
+    "break_line": "He's kneeling. Give him that much room."
+  },
+  "mercury_leaker": {
+    "name": "Mercury Leaker",
+    "entry": "Something meant to hold mercury has become very bad at holding mercury. Its whole belly sloshes, and the floor pays for every step.",
+    "weak_hint": "Winter would stop that sloshing.",
+    "break_line": "Feet out of the puddle, please."
+  },
+  "press_golem": {
+    "name": "Foundry Drone - Press Golem",
+    "entry": "A walking press brings the foundry's work to anything that didn't fit on the belt. It is slow, heavy, and very certain we need flattening.",
+    "weak_hint": "Let Cassia argue with the magnets.",
+    "break_line": "Press stopped. Mind what it spilled."
+  },
+  "loom_bracer_rook": {
+    "name": "Loom-Bracer Rook",
+    "entry": "A loom's tungsten wire has become a very long arm. The Rook uses it to drag us against bodies we've already stopped. Apparently we arranged its furniture for it.",
+    "weak_hint": "A sharp edge can shorten that very long reach.",
+    "break_line": "No pulling us into the furniture now."
+  },
+  "marrow_umbilical": {
+    "name": "Marrow-Umbilical",
+    "entry": "A living supply line keeps feeding plates back to the curator. It has no interest in the fight, only in making sure he can keep having it.",
+    "weak_hint": "Cutting is simple; letting Krona's corrosion run back up the line is costly.",
+    "break_line": "The feed stopped. Watch the other lines."
+  },
+  "nestling": {
+    "name": "Nestling",
+    "entry": "The canopy has a small feathered thief. It snatches from the same pool that keeps our tethers alive. I suppose shared means everyone, including the beak.",
+    "weak_hint": "A magnetic tug can interrupt that little swoop.",
+    "break_line": "There's a route in those feathers."
+  },
+  "moon_egg": {
+    "name": "Moon Egg",
+    "entry": "An egg waits under the Moon's protection, humming without trying to hurt us. Whatever is inside has not yet decided what kind of neighbour to be. We could give it the chance.",
+    "weak_hint": "Let Papa's stars open the shell, then give the little hum some room.",
+    "break_line": "Open enough. We can leave it breathing."
+  },
+  "eden_wisp": {
+    "name": "Eden Wisp",
+    "entry": "Porcelain pollen floats through Eden, patching everyone we have just managed to dent. Something so small has taken on a very large nursing shift.",
+    "weak_hint": "Borrow a second from its next little repair.",
+    "break_line": "The nurse gets a moment off."
+  },
+  "bramble_rex_saurian": {
+    "name": "Bramble-Rex Saurian",
+    "entry": "A bristling saurian charges like the forest owes it a clear path. When it misses us, a tree answers instead. I feel bad for the tree.",
+    "weak_hint": "Eden missed its winter; this charge is overdue for one.",
+    "break_line": "Good. Let's be somewhere else when it starts again."
+  },
+  "gene_scribe": {
+    "name": "Gene Scribe",
+    "entry": "A keeper of living records has found mammals walking through its finished history. It keeps writing us out. I admire the penmanship less at ankle height.",
+    "weak_hint": "Its lovely pages still curl at a candle's touch.",
+    "break_line": "A blank line. I might put my name there."
+  },
+  "synod_acolyte": {
+    "name": "Synod Acolyte",
+    "entry": "A young servant of the Synod holds moonlight over the wounded. From here, we're the things interrupting a prayer that works.",
+    "weak_hint": "Papa's own stars can upset that borrowed moonshine.",
+    "break_line": "The prayer paused. Keep your voice down."
+  },
+  "porcelain_raptor": {
+    "name": "Porcelain Raptor",
+    "entry": "In this forest, even the leaves wear porcelain masks. The hunter borrows their disguise and waits for us to trust the scenery. I'm becoming difficult to take on walks.",
+    "weak_hint": "Shake it out of the leaves with a tether or mercury pulse; then let the magnets find it.",
+    "break_line": "Found you. Stay found for a moment."
+  },
+  "unfallen_pupa": {
+    "name": "Unfallen Pupa",
+    "entry": "This little spawn comes from the Moon that never struck the ground. It floats without threatening us. For once, we could try the same.",
+    "weak_hint": "It shrinks from a hearth's glow, but it has given us no reason to test that.",
+    "break_line": "It's frightened now. We can stop here."
+  },
+  "crown_saurian": {
+    "name": "Crown Saurian",
+    "entry": "A hunter above the canopy has decided the ground is somebody else's problem. Its wings keep every ordinary answer below it. We are going to have to be less ordinary.",
+    "weak_hint": "Give its wings a tether to argue with before trying anything else.",
+    "break_line": "Welcome to the floor. Carefully."
+  },
+  "lichen_colony": {
+    "name": "Lichen Colony",
+    "entry": "Three bodies pass their hurts along one living tether. They make a very convincing show of burning when we rush them. I think the forest is telling us to slow down.",
+    "weak_hint": "All three bodies are touchy about a prism's glare.",
+    "break_line": "One voice paused. The tether is still there."
+  },
+  "glass_mnemos": {
+    "name": "Glass-Mnemos",
+    "entry": "Someone's memory has set hard enough to cut us. It keeps flashing the same moment, as if we're the ones who forgot our lines.",
+    "weak_hint": "A magnetic pull can unsettle what remembering has fixed in place.",
+    "break_line": "The memory moved. I hope that helps."
+  },
+  "vitrified_choir": {
+    "name": "Vitrified Choir",
+    "entry": "A citizen of Zeal is still kneeling where the sea became glass. Its hymn stops anyone trying to polish nearby. Apparently there is a wrong way to help.",
+    "weak_hint": "That glass has lasted centuries; a hammer asks a shorter question.",
+    "break_line": "You can rest between verses."
+  },
+  "cathedral_choir_jelly": {
+    "name": "Cathedral Choir Jelly",
+    "entry": "A bell drifts inside this little singer, ringing grief through the glass. The cathedral seems to have taught even its jellyfish the hymns. Nobody offered them a quieter part.",
+    "weak_hint": "That bell has a thin rim for a keen edge to find.",
+    "break_line": "One bell quiet. Listen for the others."
+  },
+  "jellyfish_lantern": {
+    "name": "Jellyfish Lantern",
+    "entry": "A living lamp is doing a whole window's work down here. The cat plays in its coloured patches. Please don't mistake breathing room for spare parts.",
+    "weak_hint": "A clean edge can stop the sting; polishing afterward leaves us something to breathe.",
+    "break_line": "Keep the glow. We need the glow."
+  },
+  "anemone_scribe": {
+    "name": "Anemone Scribe",
+    "entry": "This anemone writes in a script that wriggles away from an ordinary reading. I can hear its rhythm, but the meaning is keeping its tentacles to itself.",
+    "weak_hint": "Perhaps a trickster could read between those lines.",
+    "break_line": "Even the handwriting has gone still."
+  },
+  "zealot_chandelier": {
+    "name": "Zealot Chandelier",
+    "entry": "A hanging knot of glass and lead keeps raining its devotion onto us. Some part of the cathedral apparently mistook worship for a load-bearing job.",
+    "weak_hint": "Let little roots work into the seams the polish can't reach.",
+    "break_line": "Everyone out from under the devotion."
+  },
+  "lead_lector": {
+    "name": "Lead Lector",
+    "entry": "The lector puts lead between us and the beams, changing the colour of every answer. It seems determined to keep the cathedral's argument in its own words.",
+    "weak_hint": "The azure pane gives its sermon a welcome chill.",
+    "break_line": "Sermon paused. Watch where the beams land."
+  },
+  "ruin_eel": {
+    "name": "Ruin Eel (Grief)",
+    "entry": "A long eel draws an oily line through the cathedral's stillness. The trail makes every next step harder, which feels rather personal.",
+    "weak_hint": "A stray spark can catch what keeps slipping past.",
+    "break_line": "The eel stopped. Its bad mood is still on the floor."
+  },
+  "enlightened_zealian": {
+    "name": "Enlightened Zealian (Porcelain Ghost)",
+    "entry": "A porcelain ghost recites the kingdom that used to fit around it. It sounds less interested in winning than in finding someone who still knows the names.",
+    "weak_hint": "A travelling star can reach beneath that floating veil.",
+    "break_line": "There are stars behind the lecture."
+  },
+  "vaelos_siphon_tubule": {
+    "name": "Vaelos Siphon Tubule",
+    "entry": "A little feeding tube runs from the cathedral's theft into something with a bigger appetite. It keeps mending the tendrils. Somebody taught it to care in entirely the wrong direction.",
+    "weak_hint": "A magnetic tug can undo this small, persistent kindness.",
+    "break_line": "No more feeding through this one for now."
+  },
+  "mammon_conduit": {
+    "name": "Mammon Conduit",
+    "entry": "A piece of the Mammon Machine kept working after the rest became a ruin. It pulls at the space inside Papa's chest. I would like it to find another hobby.",
+    "weak_hint": "A star can answer the hunger in that old intake.",
+    "break_line": "Papa, step back while it's quiet."
+  },
+  "mammon_siphon_tendril": {
+    "name": "Mammon Siphon Tendril",
+    "entry": "These paired tendrils turn stolen warmth into a note I feel behind my ribs. They belong to the pipework behind the Rose. It is a horrible place to discover an instrument.",
+    "weak_hint": "The Rose must focus the beam, or Papa must bring his own stars.",
+    "break_line": "There's something small in the break. Don't lose it."
+  },
+  "ash_cotton_swirl": {
+    "name": "Ash-Cotton Swirl",
+    "entry": "Fairground cotton has forgotten the sugar and kept the sticking. It clings to Papa as though he ought to carry the whole midway home.",
+    "weak_hint": "A keen edge can part what the candy floss refuses to let go.",
+    "break_line": "Don't step in the encore."
+  },
+  "popcorn_husk": {
+    "name": "Popcorn Husk",
+    "entry": "Something that belonged in a snack bowl has learned to throw itself at us. It keeps popping long after the warm part should be over.",
+    "weak_hint": "Cassia can pull this little performance apart.",
+    "break_line": "Snack time is briefly suspended."
+  },
+  "charred_juggler": {
+    "name": "Charred Juggler",
+    "entry": "The juggler keeps the burning things moving and its real face out of view. I know that trick, except my ghosts usually give me away.",
+    "weak_hint": "A prism can catch the face the act keeps hiding.",
+    "break_line": "There you are, behind the act."
+  },
+  "strongman_dummy": {
+    "name": "Strongman Dummy",
+    "entry": "The stage's strongest man is a dummy full of air. He steals our momentum before the first punch, then makes a very large production of having muscles.",
+    "weak_hint": "His impressive shoulders still hang from threads a sharp edge can reach.",
+    "break_line": "Hold the flex. It's your best work."
+  },
+  "time_smoke_stringer": {
+    "name": "Time-Smoke Stringer",
+    "entry": "Smoke has learned to hold puppet strings. It keeps pulling the same little scene into place, even while the stage comes apart.",
+    "weak_hint": "Cut the strings, but count them; the stage is held together by those, too.",
+    "break_line": "A thread stopped pulling. Watch your footing."
+  },
+  "ticket_golem_barker": {
+    "name": "Ticket-Golem Barker",
+    "entry": "The barker guards an admission ticket as though the whole fair depends on it. His voice keeps asking us to spend what the music has already taken.",
+    "weak_hint": "Cassia's pull can tear the stubborn ticket; my missing seconds can reach the rest.",
+    "break_line": "That's enough selling us our own applause."
+  },
+  "laugh_track_choir": {
+    "name": "Laugh-Track Choir",
+    "entry": "The crowd's laughter has become a choir with one shared breath. I can't tell which mouth wanted to stop first.",
+    "weak_hint": "Let spores settle over the mouths that never get to close.",
+    "break_line": "They've stopped laughing. We can stop pretending."
+  },
+  "heckler_harlequin": {
+    "name": "Heckler Harlequin",
+    "entry": "The heckler grows more solid each time he robs us. Ignoring him only makes him worse, which is an extremely unfair rule for hecklers.",
+    "weak_hint": "Glenn can catch him with an honest trick, provided he hasn't stolen from him first.",
+    "break_line": "The laugh track ran out of him."
+  },
+  "jester_box": {
+    "name": "Prop Chest Mimic - Jester Box",
+    "entry": "A prop chest has decided the joke works better if it opens itself. Three spring puppets keep the lid's promises. Even the chickens are in on it.",
+    "weak_hint": "Cut the three spring puppets before trying to scorch the box.",
+    "break_line": "Box open. Nobody applaud the chickens."
+  },
+  "slag_rat_courier": {
+    "name": "Slag-Rat Courier",
+    "entry": "The laundry wires have a courier small enough to pass for a rat. It takes our momentum and runs. Static keeps an eye on the batteries.",
+    "weak_hint": "A sharp edge can interrupt the wire route without racing along it.",
+    "break_line": "Delivery delayed. Check the batteries."
+  },
+  "ram_fixer_twins": {
+    "name": "RAM Fixer Twins",
+    "entry": "Two repairers share a ribbon of oden steam and refuse to leave each other broken. Each patches the other when we finally stop one. Touching, and very inconvenient.",
+    "weak_hint": "Let Static catch both in the same humming instant; leave one standing and it starts the repairs.",
+    "break_line": "One paused. Don't give the other time to mend."
+  },
+  "pachinko_ice": {
+    "name": "Pachinko ICE",
+    "entry": "The district's answer to being spotted has a Gatling ring and a chest full of borrowed machinery. Its masks are clay under the neon. Even here, the old sorrow gets through.",
+    "weak_hint": "Let Static tune for what has died; that's where the hidden core answers.",
+    "break_line": "Oil behind the neon. I was hoping to be wrong."
+  },
+  "white_ear_child_echo": {
+    "name": "White-Ear Child Echo",
+    "entry": "These are the children the screens held before Static. I hear them when the picture goes blind. They have been waiting longer than any child should.",
+    "weak_hint": "Static must tune for a voice; only then can a prism find them in the snow.",
+    "break_line": "We hear you. You can pause."
+  },
+  "oil_fire_bike_bro": {
+    "name": "Oil-Fire Bike Bro",
+    "entry": "A rider skids across the wet street with burning oil in his wake. He keeps making circles of heat in a city that won't dry.",
+    "weak_hint": "Let the spores take hold where the burning tyres pass.",
+    "break_line": "Parked, at last. Stay outside the oil."
+  },
+  "hiss_larva_drone": {
+    "name": "Hiss Larva Drone",
+    "entry": "A little larval drone shelters beside the televisions. It grows braver as the screens feed it, then tries to hold everyone else's world still.",
+    "weak_hint": "Static can bury its circles under the channel between channels.",
+    "break_line": "The picture's holding without us in it."
+  },
+  "marrow_lantern": {
+    "name": "Marrow Lantern",
+    "entry": "A rib lantern holds a memory instead of oil. Papa's cracks wake it, and Mama is there in the glow. I wasn't expecting home to hang this high.",
+    "weak_hint": "To loosen this one, leave a blank where its glow was.",
+    "break_line": "It's gone. Keep what it showed us."
+  },
+  "washi_hollow_monk": {
+    "name": "Washi-Hollow Monk",
+    "entry": "A paper monk walks with its inside facing out. Strike the wrong fold and it turns its blank back on us. I can't decide whether that's defence or manners.",
+    "weak_hint": "A little new growth suits those folds; if it turns, watch the gold mark.",
+    "break_line": "There's a way through the prayer."
+  },
+  "vertebray": {
+    "name": "Vertebray",
+    "entry": "A stag of seven vertebrae carries a different world's skull at each joint. It charges as if seven forests were all somewhere behind us. Watch the gold dust before it moves.",
+    "weak_hint": "Let living roots catch the old bones, rather than asking the empty space to stop them.",
+    "break_line": "A bridge, for now. Step gently."
+  },
+  "vertebray_fawn": {
+    "name": "Vertebray Fawn",
+    "entry": "The great stag sheds this little fawn and another when its strength begins to go. It arrives already charging, without a quiet moment to work out where its legs belong.",
+    "weak_hint": "The smaller bones still answer to the same living roots.",
+    "break_line": "Easy, little one. Nobody needs that much running."
+  },
+  "ink_eater": {
+    "name": "Ink-Eater",
+    "entry": "The blank page has acquired a very hungry smudge. It spreads in little jerks until even our eyes feel painted over.",
+    "weak_hint": "The page is blank enough; bring a star, not more erasure.",
+    "break_line": "A blot we can finally walk around."
+  },
+  "kirie_keeper": {
+    "name": "Kirie Keeper",
+    "entry": "The keeper wraps the white in fine cut paper and sets two monks between us and its work. It keeps repairing the edges. I understand wanting something here to stay whole.",
+    "weak_hint": "Unfold the two monks first; the keeper's fine edges don't like a prism.",
+    "break_line": "One layer down. It's keeping another."
+  },
+  "atom_eater": {
+    "name": "Atom-Eater",
+    "entry": "Porcelain crabs pick through loose pieces of Papa as though he were a tide pool. They're only feeding. I'm finding it hard to be fair about that.",
+    "weak_hint": "Show those little shells a prism; they aren't as seamless as they look.",
+    "break_line": "That's his. Let go."
+  },
+  "bekkler_doll_failed": {
+    "name": "Bekkler Doll Failed (Type-C)",
+    "entry": "The label says this copy failed. It hums through an open galaxy and walks in two worlds at once. I'd like the label to explain what it expected.",
+    "weak_hint": "Answer the cracked hum with a clear, ringing note.",
+    "break_line": "You don't have to keep the smile on."
+  },
+  "lavic_filament_guardian": {
+    "name": "Lavic Filament Guardian",
+    "entry": "The Heart made itself a guardian from muscle fibre and tungsten thread. To it, we're the things that got inside. I suppose every locked door has its side.",
+    "weak_hint": "A circle reaches its guard; a straight-through strike severs the thread that keeps calling crabs.",
+    "break_line": "It's holding still enough to stand on."
+  },
+  "paradox_curator_choir": {
+    "name": "Paradox Curator Choir",
+    "entry": "A piece of R-66Y keeps turning, though its ring has lost half its hurry. The masks cannot settle on one kind of tear. I know the feeling.",
+    "weak_hint": "Catch the slow ring between seconds instead of chasing its barrels.",
+    "break_line": "Blue and black. It remembers both."
+  },
+  "marrow_umbilical_twin": {
+    "name": "Marrow-Umbilical Twin",
+    "entry": "The forge's forgotten irrigation still knows how to look after its other half. Each twin feeds the one we just stopped. Somebody built care into this furnace, however badly the rest turned out.",
+    "weak_hint": "Hold both twins between seconds together, or neither gives us a clean opening.",
+    "break_line": "One held. Now catch the other."
+  },
+  "memory_of_stirring": {
+    "name": "Dust Mote Cluster - Memory of Stirring",
+    "entry": "The debt has borrowed the way Papa stirs porridge. These motes keep tracing a morning we can't step back into. Apparently even breakfast can send a reminder.",
+    "weak_hint": "The old circles still can't hold against an open shutter.",
+    "break_line": "Seven stirs was enough. You can stop."
+  },
+  "cronos_denial": {
+    "name": "Porcelain Shardling - Crono's Denial",
+    "entry": "The debt has made a little Papa from the cracks he tried to hide. It copies that careful posture, the one that keeps his wrist turned away.",
+    "weak_hint": "Let dawn find what the sleeve was hiding.",
+    "break_line": "You can lower your arm, Papa. That's only the echo."
+  },
+  "seras_first_slip": {
+    "name": "Ashen Spoon - Sera's First Slip",
+    "entry": "This echo has kept the moment my hand slipped through breakfast. Papa still reaches for it. I wish the memory would let his wrist rest.",
+    "weak_hint": "Warm the frozen layer, then cut and turn the moment back.",
+    "break_line": "It's an echo, Dad. Let this bowl go."
+  },
+  "ledger_wisp": {
+    "name": "Ledger Wisp",
+    "entry": "A choice we made has become a sheet of paper with a very long memory. It charges Papa for looking. I thought reading was supposed to be the inexpensive part.",
+    "weak_hint": "A few spores can loosen even a very firmly filed decision.",
+    "break_line": "A butterfly. Much better use of the page."
+  },
+  "arris_echo": {
+    "name": "Arris Echo (Incinerated variant)",
+    "entry": "The Dome's page remembers how the singing ended. Now its hymn comes back as the sound of masks shattering. We don't get to call that a bad recording.",
+    "weak_hint": "Try growing something over the old wound; more heat would only repeat it.",
+    "break_line": "I heard it. I won't call it music."
+  },
+  "arris_echo_sleeping": {
+    "name": "Arris Echo (Sleeping variant)",
+    "entry": "This page kept the choir's lullaby instead of its last scream. It still sings backwards. I can sit with a memory that needs translating.",
+    "weak_hint": "A clear answering note can settle this old song.",
+    "break_line": "Back to sleep. We'll keep the page."
+  },
+  "arch_curator_echo": {
+    "name": "Arch-Curator Echo",
+    "entry": "The cathedral has built its own curator out of masks and organ pipes. The noise spilling out belongs to another world. Some collections really ought to be returned.",
+    "weak_hint": "Krona's corrosion can loosen the lead; Papa's stars must wait until the chest is exposed.",
+    "break_line": "Three masks down. Those prayers can go somewhere now."
+  },
+  "ash_loom_marionette": {
+    "name": "Ash-Loom Marionette",
+    "entry": "Cyrus isn't the one pulling these costumes. The ash left behind learned his hands. It keeps dressing an empty stage for an audience that already left.",
+    "weak_hint": "Follow the yellow, red, then blue threads; a clean cut can bring the heart within reach.",
+    "break_line": "Hold that swing. There's the heart thread."
+  },
+  "ash_ringmaster": {
+    "name": "Ash Ringmaster",
+    "entry": "A ringmaster's burned coat has found enough ash to stand up again. He guards the Big Top by taking the very thing we need to get past him. Excellent business, awful welcome.",
+    "weak_hint": "A clean blade can open that coat; Glenn's trick must be honest to count.",
+    "break_line": "Glenn, the whip's stopped. Empty his counter."
+  },
+  "atrium_cradle": {
+    "name": "Atrium Cradle - Proto Arch-Curator (R-66Y frame)",
+    "entry": "Our house has decided the safest family is one that never reaches the door. Its brass frame folds around us like an enormous cradle. I think we've outgrown it.",
+    "weak_hint": "Read the plate before answering; this lock wants its own mark back.",
+    "break_line": "A little room to move. Don't close us in again."
+  },
+  "azar": {
+    "name": "Azar - Divinity Warden",
+    "entry": "Azar carries her world's records on her shoulders and a piece of its Moon in her beak. She wants our cracks preserved. I'd rather she let Xyloph's eggs finish becoming something.",
+    "weak_hint": "Papa's stars can unsettle her Moon; if it turns red, leave the last rewind to me.",
+    "break_line": "Her halo paused. Let us breathe."
+  },
+  "bloom_matriarch": {
+    "name": "Bloom Matriarch - Negotiation, Not Combat",
+    "entry": "The forest's first memories have gathered under a woman's canopy. She remembers every time someone came to take. She wants proof that we can join without eating the whole world.",
+    "weak_hint": "Keep the tether, match her breathing, and offer a memory of mercy instead of a wound.",
+    "break_line": "She heard us. Keep listening."
+  },
+  "cassia_forge_tendril": {
+    "name": "Cassia-09 Forge Tendril",
+    "entry": "The old forge still pulls like everything near it must become fuel. Cassia is trying to give those hands a different job: helping a seed drink.",
+    "weak_hint": "Catch both irrigation twins at once; only then can Papa's stars reach the forge.",
+    "break_line": "The opening's there. Pour while the twins hold."
+  },
+  "chrono_ledger": {
+    "name": "The Chrono Ledger Composite",
+    "entry": "Every promise written on a doll's warranty has come back with a body. The Ledger wants a price for letting us stay. I would rather it learned our names.",
+    "weak_hint": "Papa's star-trail reaches the first wall; don't assume every page wants the same answer.",
+    "break_line": "One page open. Check who's on the next."
+  },
+  "cronos_reflection": {
+    "name": "Crono's Reflection",
+    "entry": "The museum has borrowed Papa's outline and filled it with every face he wouldn't show us. It wants him perfectly kept. There isn't room for a daughter in that display.",
+    "weak_hint": "Read each lock in order; the last one only opens when we stop striking.",
+    "break_line": "One layer, Papa. Please look beneath it."
+  },
+  "cyrus": {
+    "name": "Cyrus the Marionettist",
+    "entry": "Cyrus survived long enough to turn courage into a show nobody can leave. He keeps Glenn dancing so the crowd won't look up. I think his hands hurt, too.",
+    "weak_hint": "A sharp edge has to follow his coloured threads before it can reach his heart.",
+    "break_line": "There you are. Hold him, not the performance."
+  },
+  "cyrus_encore": {
+    "name": "Cyrus the Marionettist - Encore",
+    "entry": "Bekkler kept the strings, and Vaelos found another use for them. Now Cyrus wears a machine's body to give Glenn his old orders again. Glenn has grown since the first show.",
+    "weak_hint": "The first curtain yields to a blade; the last won't move for anything but the truth.",
+    "break_line": "The mask cracked. Glenn, keep your own face."
+  },
+  "empress_vaelos": {
+    "name": "Empress Vaelos",
+    "entry": "Vaelos made a crown from the things we were willing to spend. Now she wears the nursery as a throne. I'd like to say nobody taught her this.",
+    "weak_hint": "Her first cracks have to be invited: look up and hold the gaze before reaching for them.",
+    "break_line": "She can crack. Don't mistake that for permission to take."
+  },
+  "glass_matriarch": {
+    "name": "Glass Matriarch - Schala's Reflection",
+    "entry": "A glass curator wears Schala's reflection over a store of prayers. It stands between us and the sleeping Moon. Even a dream has acquired a guard down here.",
+    "weak_hint": "Let a prism answer the masks before the chest changes the question.",
+    "break_line": "One prayer out of its frame."
+  },
+  "goyama_ashen_daimyo": {
+    "name": "Goyama Ashen Daimyo",
+    "entry": "Lord Ashinaga used to rule the pigment; now the burning floors hold him in place. He writes surrender orders instead of standing up. The castle is still obeying.",
+    "weak_hint": "Send my needle through the wall lantern's coloured haze; the final seal needs both in one strike.",
+    "break_line": "Krona, that's your name under the white."
+  },
+  "guardian_triad": {
+    "name": "Golden Light - The Guardian Triad (Debt Echoes, Robo Heart, Vaelos Final Kintsugi)",
+    "entry": "The tower's old debt has followed us into the rebuilt home. Robo is trying to keep the doors standing while Vaelos mends one little doll. Nobody gets to call the heart a target.",
+    "weak_hint": "Guard the heart; when Vaelos takes his turn, a prism can reach past his gold.",
+    "break_line": "An old hurt paused. Keep the heart covered."
+  },
+  "isolator": {
+    "name": "Juvenile Lavos Matriarch - Isolator",
+    "entry": "She has a whole city's screens and Static's birth tape, and still can't work out how to let him go. I recognise the problem. I object to the cables.",
+    "weak_hint": "Static must tune beneath her throat's hum before my needle can find the opening.",
+    "break_line": "The screens changed. Static, stay with us."
+  },
+  "kami_ori": {
+    "name": "Kami-Ori",
+    "entry": "The mother who caught me at four has folded herself around a cradle for longer than I can imagine. She offers to take our flaws. I remember how gently those hands held me.",
+    "weak_hint": "Begin with an offering hand; a prism can find a crease that the mask refuses to show.",
+    "break_line": "One hand lowered. You can leave us the others."
+  },
+  "krona_duel": {
+    "name": "Krona, Barren Heir - Bamboo Grove duel",
+    "entry": "Krona is the answer this world made when a good sacrifice failed. She drank from the vein and kept her people standing. Now she's checking whether Papa will make the same mistake.",
+    "weak_hint": "Papa's stars leave gold where her brushwork was; meet her there.",
+    "break_line": "That's a pause, Papa, not a finishing stroke."
+  },
+  "leviathan_low_tide": {
+    "name": "Leviathan of Low Tide",
+    "entry": "The drowned nave has become something that can bite back. We were walking through its ribs a moment ago. I would have knocked if it had left us a door.",
+    "weak_hint": "Before the glass shatters, a stray spark can make the whole nave listen.",
+    "break_line": "The nave stopped moving. Check above us."
+  },
+  "mycelia_matriarch": {
+    "name": "Mycelia Matriarch",
+    "entry": "A spore mother has rooted herself into the river that carries Eden's life. Her walls keep us from her, and her raptors make the point again. We are guests behaving very badly.",
+    "weak_hint": "Hearth heat opens the first roots; the gold within asks for three colours in one touch.",
+    "break_line": "She's still. We don't have to make that forever."
+  },
+  "omega_final_dojo": {
+    "name": "Omega-Spekkio - The Final Dojo",
+    "entry": "Master has had a very long time to make a very small mat difficult. He folds himself into whatever lesson we still need. Today, apparently, the lesson is waiting.",
+    "weak_hint": "Hold your turn before aiming a sharp point at the crane's folds.",
+    "break_line": "Was that patient enough, Master?"
+  },
+  "omega_final_void": {
+    "name": "Omega-Spekkio - Final Void",
+    "entry": "Master has folded away so much that only the falling gold tells me where he isn't. He offers to leave us without a single flaw. I keep wondering what else won't be left.",
+    "weak_hint": "There is no crack to find; my erasing hand must leave a temporary one.",
+    "break_line": "A made-up flaw still gave us a moment."
+  },
+  "porcelain_weaver": {
+    "name": "The Porcelain Weaver - Mother of Threads",
+    "entry": "Cassia's hands are moving to orders that aren't hers. The amber in her chest is carrying a voice we need to keep. Whoever is pulling the antennae has forgotten to ask.",
+    "weak_hint": "Aim the keen edge at her back's antennae, never at the amber.",
+    "break_line": "Cassia, a little slack. Can you hear me?"
+  },
+  "r66y": {
+    "name": "R-66Y, the Arch-Curator",
+    "entry": "R-66Y tried to keep a dying future by putting its people inside masks. Now he wants my heart to hold the hive together. I don't think he remembers how to ask for help.",
+    "weak_hint": "His grafts can corrode; the feeding lines answer Krona by sending the hurt back.",
+    "break_line": "Papa, his chest flickered like yours."
+  },
+  "r66y_residual_sorrow": {
+    "name": "R-66Y Residual Sorrow + Torso Heart",
+    "entry": "R-66Y's old sorrow has followed us back to the tower. Robo wants a heart strong enough to shelter us. We have to help without mistaking the sorrow for him.",
+    "weak_hint": "Watch the sliding masks rather than the enormous number; Papa's stars can reach what's real.",
+    "break_line": "A real opening, under all that noise."
+  },
+  "schala_shadow_weaver": {
+    "name": "Schala - Shadow Weaver",
+    "entry": "Schala has spent centuries keeping her reflection ready for a world that will not return. The Rose has become her loom. I wish somebody had offered her a chair without a task attached.",
+    "weak_hint": "At first, scratch the portrait; at the loom, put Papa's stars through a prism.",
+    "break_line": "She's spilled colours. Mind the blue."
+  },
+  "shard_doll_999": {
+    "name": "Training Dummy Prime - The 999 Shard Doll",
+    "entry": "An old Bekkler doll has been fitted with spider legs and a very serious lesson plan. It wants us to read the shield instead of being frightened by it. The giggle is less reassuring.",
+    "weak_hint": "The first lesson yields to a keen edge; the hidden answer pulls like a magnet.",
+    "break_line": "That counted. Better than making a loud noise."
+  },
+  "shogun_memory_flame": {
+    "name": "Shogun's Memory Flame",
+    "entry": "Something on the burned wall remembers being warm and has confused that with burning. As it weakens, it calls more soldiers. I don't think they can fetch what it's lost.",
+    "weak_hint": "Try giving the wall the rain it has been waiting for.",
+    "break_line": "A pause in the heat. Look at the wall."
+  },
+  "vaelos": {
+    "name": "Vaelos - The Other Father",
+    "entry": "Vaelos grew from the pieces of Papa's first life that nobody brought home. He wants to make a house where nothing can leave or hurt. He is still mending my doll instead of asking me.",
+    "weak_hint": "While he mends, only my rewind and Papa's dash get through; we both pay for the opening.",
+    "break_line": "Look at me, not the doll."
+  },
+  "vaelos_child_lullaby": {
+    "name": "Vaelos Child - Lullaby",
+    "entry": "The sovereign's mask won't stay on this small face. He used to reach for whole worlds; now he's trying to carry a bowl. I can work with a bowl.",
+    "weak_hint": "Start with a gentle bit of Papa's sky; the lesson is to settle him, not hurt him.",
+    "break_line": "One lesson at a time. I'm here."
+  },
+  "weeping_shogun": {
+    "name": "The Weeping Shogun - Amalgam Spawn",
+    "entry": "An ink spawn and a clockwork centipede have been made to share a body. Neither half can keep the other's pace. From this cage, I can hear both trying.",
+    "weak_hint": "Warm the first black strokes with Papa's stars; when the clay takes over, let Krona corrode it.",
+    "break_line": "The ink stopped. That other half hasn't agreed yet."
+  }
+}

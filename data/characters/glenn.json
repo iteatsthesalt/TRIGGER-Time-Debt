@@ -11,7 +11,7 @@
     {"id": "honest_laugh", "unlock": {"on_join": true}},
     {"id": "prop_hammer", "unlock": {"drop": "strongman_dummy"}},
     {"id": "guile_elastic", "unlock": {"level": 46}},
-    {"id": "prop_cannon", "unlock": {"flag": "Cyrus_Left_Hanging"}},
+    {"id": "prop_cannon", "unlock": {"flag": "Cyrus:Left_Hanging"}},
     {"id": "the_last_joke", "unlock": {"chapter": 9}},
     {"id": "masque_feint", "unlock": {"on_join": true}},
     {"id": "guilt_halo", "unlock": {"on_join": true}},
@@ -22,7 +22,7 @@
     {"id": "delta_storm", "unlock": {"on_join": true}},
     {"id": "carnival_of_souls", "unlock": {"on_join": true}},
     {"id": "chrono_laugh", "unlock": {"flag": "Re_String"}},
-    {"id": "washi_hollow_rebirth", "unlock": {"flag": "Kami_Ori_Wounds_Kept"}}
+    {"id": "washi_hollow_rebirth", "unlock": {"flag": "Kami_Ori:Wounds_Kept"}}
   ],
   "passives": ["punchline", "accordion_dodge", "low_hp_tell"]
 }

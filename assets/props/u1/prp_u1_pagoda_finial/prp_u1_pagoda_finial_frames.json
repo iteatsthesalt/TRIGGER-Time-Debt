@@ -1,0 +1,27 @@
+{
+ "cell": 128,
+ "rows": [
+  "s"
+ ],
+ "mirror_w": false,
+ "fps": 24.0,
+ "height_px": 98,
+ "width_px": 83,
+ "height_m": 1.2,
+ "source": {
+  "pixellab_object": "cb738aec-e6ce-4975-8e02-8d9a8964f131",
+  "canvas": "u1",
+  "rotations": [
+   "south"
+  ],
+  "clips": {}
+ },
+ "anims": {
+  "idle": {
+   "col": 0,
+   "count": 1,
+   "fps": 1.0,
+   "loop": true
+  }
+ }
+}

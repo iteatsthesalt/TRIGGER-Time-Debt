@@ -15,7 +15,7 @@
   "immune": [],
   "arena_hazards": ["falling_floor_phase_3", "gauges_frozen_at_99_0_phase_3"],
   "adds": [],
-  "requires": "Sera_First_Voluntary=set (sera_phase_out_voluntary_count >= 1 before Chapter 9) and Sera_Phase=Voluntary_40",
+  "requires": "Sera_First_Voluntary:set (sera_phase_out_voluntary_count >= 1 before Chapter 9) and Sera_Phase:Voluntary_40",
   "phases": [
     {"id": "warranty_wall", "name": "Filament Guardian: The Warranty Wall", "hp_from": 1.0, "hp_to": 0.75, "level_band": [81, 84],
      "shield": {"shield": 24, "weak": ["SWORD", "ASTRAL"], "resist": ["VOLT", "STATIC"], "keyed_plates": [], "regenerating": false, "refill_once": false},

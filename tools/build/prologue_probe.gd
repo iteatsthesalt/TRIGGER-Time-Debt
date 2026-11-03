@@ -1,6 +1,7 @@
 ## Headless Prologue playthrough: boots into the kitchen with a fresh game, lets the opening scripts
 ## auto-advance, opens the gate, walks into the hall to start the Cradle, autobattles it, then takes
-## the exit to the courtyard and on to the Atrium. Prints PROBE lines; exits with 1 on a stall.
+## the exit to the courtyard and on to the Atrium. Prints PROBE lines and ends with `PROBE_END ok=<bool>`;
+## exits with 1 on a stall or a timeout.
 ##   godot --headless --path . --script res://tools/build/prologue_probe.gd -- --autobattle
 extends SceneTree
 
@@ -22,6 +23,8 @@ func _initialize() -> void:
 
 
 func _boot() -> void:
+	# the probe plays the real scenes, which autosave: keep it out of the player's slots and settings (Saves)
+	root.get_node("Saves").set("suspended", true)
 	var packed: PackedScene = load("res://scenes/boot/boot.tscn")
 	var node: Node = packed.instantiate()
 	root.add_child(node)
@@ -33,7 +36,6 @@ func _boot() -> void:
 	R = root.get_node("Router")
 	SV = root.get_node("Saves")
 	G.call("new_game")
-	F.call("reset_cycle")
 	S.set("auto_advance_s", 0.05)
 	S.set("auto_choice", 0)
 	S.set("skip_waits", true)
@@ -76,7 +78,12 @@ func _run() -> void:
 	_stage = "opening"
 	await _wait_frames(5)
 	var kitchen: Node = _loc()
-	print("PROBE location=%s" % str(kitchen.name if kitchen else null))
+	# the kitchen holds the screen black for the wake (the Router leaves the fade to it): 1.00 here
+	var black: float = float((R.get("fade") as ColorRect).color.a)
+	print("PROBE location=%s opening_black=%.2f" % [str(kitchen.name if kitchen else null), black])
+	if black < 0.99:
+		print("PROBE FAIL the kitchen's opening is not held black (%.2f): the Router faded in over the wake" % black)
+		_fail = true
 	if not await _wait_until(func() -> bool: return _cp() == &"prologue_breakfast_done", 6000, "breakfast"):
 		return _end()
 	print("PROBE breakfast done: party=%s integrity=%.0f flags=%s" % [str(G.get("active_party")), float(G.get("crono_integrity")), str(F.get("flags").keys())])
@@ -93,7 +100,8 @@ func _run() -> void:
 	leader.global_position = Vector3(2.0, 0.05, 0.0)
 	kitchen.call("place_party", &"gate")
 	await _wait_frames(5)
-	leader.call("walk_to", Vector3(7.0, 0.0, 0.0), 6.0)
+	# the Cradle waits at the pantry mouth (the hall's tutorial zones lie clear of the path there)
+	leader.call("walk_to", (kitchen.call("get_marker", &"cradle") as Vector3) + Vector3(0.0, 0.0, 1.0), 6.0)
 	var waited: int = 0
 	while _cp() != &"prologue_cradle_done" and waited < 30000:
 		await process_frame
@@ -129,7 +137,7 @@ func _run() -> void:
 	print("PROBE in atrium: chapter=%d checkpoint=%s" % [int(G.get("chapter")), String(_cp())])
 	if not await _wait_until(func() -> bool: return F.call("has", &"Ch1_Arrived") and not S.call("is_running"), 3000, "ch1 arrival"):
 		return _end()
-	print("PROBE ch1 arrival done; save exists=%s" % str(SV.call("exists", 0)))
+	print("PROBE ch1 arrival done; autosave=%s (scratch slot)" % str(SV.call("status", 0)))
 	_end()
 
 
@@ -143,8 +151,12 @@ func _process(_delta: float) -> bool:
 		return false
 	_frame += 1
 	if _finished:
+		quit(1 if _fail else 0)
 		return true
 	if _frame > 60000:
 		print("PROBE timeout at stage %s" % _stage)
+		_fail = true
+		_end()
+		quit(1)
 		return true
 	return false

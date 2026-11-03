@@ -3,8 +3,9 @@
 
 // The canvas stack (Reference Bible §1.7, §2.2): paper multiply → grade → edge/quantisation → VHS.
 // One shader, two dispatches: mode 0 copies the colour buffer to a scratch image, mode 1 reads the
-// scratch and writes the graded result back. Per-universe parameters are blended by the
-// UniverseSwitcher weights so a Chronoslip is a continuous 0.8 s slide between looks.
+// scratch and writes the graded result back. Per-universe parameters are blended by the UniverseSwitcher's
+// stage weights (§2.4): the paper fields by the paper weights, the rest by the grade weights, and the
+// canvas rate is the rate of the universe holding the most frame-rate weight (it snaps, never blends).
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -18,11 +19,15 @@ layout(push_constant, std430) uniform PC {
 	float mode;
 } pc;
 
-// params layout: [0] reduced_flicker, [1] debt (paper show-through), [2] vaelos_near, [3] global strength,
-// [4..13] weights for U0..U9, then per universe 16 floats from index 16 + u*16:
+// params layout (CanvasStackEffect.pack_params): [0] reduced_flicker, [1] debt (paper show-through),
+// [2] vaelos_near, [3] global strength, [4..13] grade weights U0..U9, [14..23] paper weights,
+// [24..33] frame-rate weights, then per universe 16 floats from index 40 + u*16:
 //   0 sat, 1 paper_r, 2 paper_g, 3 paper_b, 4 paper_amt, 5 gold, 6 edge, 7 vhs,
 //   8 posterize_levels, 9 ink, 10 edge_r, 11 edge_g, 12 edge_b, 13 scanline, 14 chroma_px, 15 fps
-const int U_BASE = 16;
+const int W_GRADE = 4;
+const int W_PAPER = 14;
+const int W_FPS = 24;
+const int U_BASE = 40;
 const int U_STRIDE = 16;
 
 float hash12(vec2 p) {
@@ -45,21 +50,39 @@ float vnoise(vec2 p) {
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
 
 // The colour buffer is linear HDR before tonemapping; grade in a display-like space so the
-// paper, ink and posterise thresholds mean what they say, then return to linear.
+// paper, ink and posterise thresholds mean what they say, then return to linear. The grade sees the
+// picture up to linear 1.0 (which round-trips exactly); what lies above it (embers, galaxy cracks, neon)
+// is carried past the grade and added back, so the Environment's glow still finds it above its threshold.
 vec3 to_display(vec3 c) { return pow(c / (c + vec3(1.0)) * 1.9, vec3(1.0 / 2.2)); }
 vec3 to_linear(vec3 d) { vec3 t = pow(clamp(d, vec3(0.0), vec3(0.999)), vec3(2.2)) / 1.9; return t / max(vec3(1e-4), vec3(1.0) - t); }
 
-vec3 load(ivec2 p) {
+vec3 load_hdr(ivec2 p) {
 	p = clamp(p, ivec2(0), ivec2(pc.size) - 1);
-	return to_display(imageLoad(src, p).rgb);
+	return imageLoad(src, p).rgb;
 }
 
-float blended(int field) {
+vec3 load(ivec2 p) {
+	return to_display(clamp(load_hdr(p), vec3(0.0), vec3(1.0)));
+}
+
+float blended_by(int set_at, int field) {
 	float s = 0.0;
 	for (int u = 0; u < 10; u++) {
-		s += params.data[4 + u] * params.data[U_BASE + u * U_STRIDE + field];
+		s += params.data[set_at + u] * params.data[U_BASE + u * U_STRIDE + field];
 	}
 	return s;
+}
+
+float blended(int field) { return blended_by(W_GRADE, field); }
+float paper_field(int field) { return blended_by(W_PAPER, field); }
+
+// The canvas rate: the rate of the universe holding the most frame-rate weight.
+float canvas_fps() {
+	int best = 0;
+	for (int u = 1; u < 10; u++) {
+		if (params.data[W_FPS + u] > params.data[W_FPS + best]) { best = u; }
+	}
+	return max(1.0, params.data[U_BASE + best * U_STRIDE + 15]);
 }
 
 void main() {
@@ -73,8 +96,8 @@ void main() {
 	float debt = params.data[1];
 	float strength = params.data[3];
 	float sat = blended(0);
-	vec3 paper_tint = vec3(blended(1), blended(2), blended(3));
-	float paper_amt = blended(4);
+	vec3 paper_tint = vec3(paper_field(1), paper_field(2), paper_field(3));
+	float paper_amt = paper_field(4);
 	float gold = blended(5);
 	float edge_amt = blended(6);
 	float vhs = blended(7);
@@ -83,7 +106,7 @@ void main() {
 	vec3 edge_col = vec3(blended(10), blended(11), blended(12));
 	float scan = blended(13);
 	float chroma_px = blended(14);
-	float fps = max(1.0, blended(15));
+	float fps = canvas_fps();
 	float qt = floor(pc.time * fps) / fps;
 	if (reduced > 0.5) { qt = floor(pc.time * 2.0) / 2.0; }
 
@@ -97,6 +120,8 @@ void main() {
 	}
 	ivec2 sp = px + ivec2(int(slip), 0);
 	vec3 col = load(sp);
+	vec3 hdr = load_hdr(sp);
+	vec3 excess = max(hdr - vec3(1.0), vec3(0.0));
 	if (chroma_px > 0.01) {
 		int off = int(round(chroma_px * vhs));
 		col.r = load(sp + ivec2(off, 0)).r;
@@ -107,8 +132,8 @@ void main() {
 	float grain = vnoise(vec2(px) * 0.11) * 0.6 + vnoise(vec2(px) * 0.37) * 0.4;
 	vec3 paper = paper_tint * (0.90 + 0.20 * grain);
 	float show = clamp(paper_amt + debt * 0.35, 0.0, 1.0);
-	// Paper texture over light: the grain lifts highlights slightly and darkens the valleys.
-	col = mix(col, col * (paper / max(vec3(0.05), paper_tint)) * paper_tint * 1.04, show * 0.6);
+	// Paper texture over light: the tinted grain lifts highlights slightly and darkens the valleys.
+	col = mix(col, col * paper * 1.04, show * 0.6);
 	// Debt washes the picture toward the paper itself (U0 diluting as the Debt grows).
 	col = mix(col, paper * (0.6 + 0.6 * luma(col)), debt * 0.3);
 
@@ -161,13 +186,16 @@ void main() {
 	// 4. VHS, CRT and vignette.
 	if (vhs > 0.01) {
 		float line = step(0.5, fract(float(px.y) / 3.0 + 0.01));
-		col *= 1.0 - scan * vhs * (1.0 - line) * 0.4;
+		float dim = 1.0 - scan * vhs * (1.0 - line) * 0.4;
+		col *= dim;
 		if (reduced < 0.5) {
 			float noise = (hash12(vec2(px) + vec2(qt * 13.0)) - 0.5) * 0.08 * vhs;
 			col += noise;
 		}
 		vec2 d = uv - 0.5;
-		col *= 1.0 - dot(d, d) * 0.6 * vhs;
+		float vignette = 1.0 - dot(d, d) * 0.6 * vhs;
+		col *= vignette;
+		excess *= dim * vignette;  // the scanlines and the vignette cut the glow's source too
 	}
 
 	// Vaelos near: watercolour bleeds into whatever canvas is showing (contamination as horror).
@@ -178,5 +206,5 @@ void main() {
 	}
 
 	vec3 original = imageLoad(src, px).rgb;
-	imageStore(dst, px, vec4(mix(original, to_linear(col), strength), 1.0));
+	imageStore(dst, px, vec4(mix(original, to_linear(col) + excess, strength), 1.0));
 }

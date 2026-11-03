@@ -21,6 +21,6 @@
      "notes": "Post-game Codex Auditor for the Arris_Dome flag (Incinerated route). Its hymn is the shattering scream from the Incinerated route; Grief-Resonance in a 6 m ring. A Sleeping-route player meets arris_echo_sleeping instead."},
     {"id": "E85_sleeping", "key": "arris_echo_sleeping", "name": "Arris Echo (Sleeping variant)", "universe": 9, "level": 82, "kind": "regular", "shield": 14, "tags": ["FERRO", "FIRE", "SOUND"], "weak": ["SOUND", "ASTRAL"], "resist": ["FIRE"], "lean": "L", "sprite": "enm_pg_arris_echo", "fps": 12, "body_radius": 0.6, "is_metal": true,
      "actions": [{"id": "backwards_lullaby", "name": "Backwards Lullaby", "tags": ["SOUND"], "shape": "CIRCLE", "radius": 6.0, "power": 0.5, "hits": 1, "effect": "grief", "target": "weakest"}],
-     "notes": "Post-game Codex Auditor for the Arris_Dome=Sleeping route: same plates as the Incinerated variant, weak [SOUND][ASTRAL], and it sleeps when Broken (a Broken Sleeping Echo counts as spared)."}
+     "notes": "Post-game Codex Auditor for the Arris_Dome:Sleeping route: same plates as the Incinerated variant, weak [SOUND][ASTRAL], and it sleeps when Broken (a Broken Sleeping Echo counts as spared)."}
   ]
 }

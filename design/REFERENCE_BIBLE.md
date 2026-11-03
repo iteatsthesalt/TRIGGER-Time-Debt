@@ -115,7 +115,7 @@ This is one of three bibles. The Story Bible holds the plot, cast and endings; t
 - [10. Production references](#10-production-references)
   - [10.1 Engine and project](#101-engine-and-project)
   - [10.2 Asset pipeline](#102-asset-pipeline)
-  - [10.3 The prototype under `prototype/`](#103-the-prototype-under-prototype)
+  - [10.3 The earlier combat prototype](#103-the-earlier-combat-prototype)
   - [10.4 Accessibility](#104-accessibility)
   - [10.5 Performance at 60 fps](#105-performance-at-60-fps)
 - [11. Asset manifest](#11-asset-manifest)
@@ -214,7 +214,7 @@ The briefs and the manifest refer to these codes.
 
 | Code | What | Format and contents |
 |---|---|---|
-| CHR-F | Character field sheet | 128 cells. Rows are directions S, W, E, N (rows = directions and columns = frames, as the prototype's `ActorSprite` reads them). Columns: idle 4, walk 4–8 (per character, §4), run 6, interact 3, emote 4. Transparent PNG with optional `_n` normal and `_m` mask sheets |
+| CHR-F | Character field sheet | 128 cells. Rows are directions S, W, E, N (rows = directions and columns = frames, as `scripts/actors/actor_sprite.gd` reads them). Columns: idle 4, walk 4–8 (per character, §4), run 6, interact 3, emote 4. Transparent PNG with optional `_n` normal and `_m` mask sheets |
 | CHR-B | Character battle sheet | 128 or 256 cells, rows S, W, E, N. Columns: ready 4, run 6, attack 6, tech charge 4 (loop), release 6, hurt 3, KO or shutdown 6, revive or boot 5, victory 6, then the signature columns listed in §4. Mirror E→W only for symmetric characters |
 | CHR-D | State sheet | The low-HP and story states drawn as their own rows (Crono 100/60/20/0%, Vesper's Fractured Lens, Pierrot-Glenn's cracked paint, Static's tuned and BLIND looks) |
 | PRT | Portrait | 512 × 512 bust in the character's canvas. Eight expressions: neutral, sad, angry, surprised, smile, hurt, special A, special B |
@@ -308,7 +308,7 @@ Canvas notes for Route A:
 - **U1 ink** frames get a 1–3 px dry-brush edge. Erode the alpha with a noise mask before the palette pass so edges break up instead of dithering.
 - **U5 boil:** export each drawing twice with the outline jittered by 1 px. The material alternates the two at the canvas rate.
 - **Masks (`_m`):** R = crack or emission, G = rim, B = gold leaf or kintsugi. The porcelain and gold materials read them.
-- **Godot-side generation:** `prototype/tools/sprites/make_placeholders.gd` shows how to write labelled sheets from a headless Godot script with `Image.create` and `save_png`. Use it for placeholders and quick blockouts.
+- **Godot-side generation:** `tools/art/spritegen.py` (specs in `tools/art/characters.py`) writes the labelled placeholder sheets; the combat prototype's `tools/sprites/make_placeholders.gd` (github.com/iteatsthesalt/Trigger @ `aea60a2`) does the same from a headless Godot script with `Image.create` and `save_png`. Use them for placeholders and quick blockouts.
 
 ### 1.6 Route B: Blender headless
 
@@ -319,7 +319,7 @@ blender -b --factory-startup -P tools/blender/build_<kit>.py -- assets/environme
 blender -b source_art/characters/crono/crono.blend -P tools/blender/bake_sprite.py -- --id crono --cell 128 --fps 60
 ```
 
-`prototype/tools/blender/build_truce_pier.py` is a complete example of a kit script. It accumulates meshes, assigns materials and calls `bpy.ops.export_scene.gltf(filepath=out, export_format="GLB")`.
+`tools/blender/build_truce_pier.py` (kept from the combat prototype, Trigger @ `aea60a2`) is a complete example of a kit script. It accumulates meshes, assigns materials and calls `bpy.ops.export_scene.gltf(filepath=out, export_format="GLB")`.
 
 This sprite-bake script renders every action in four directions at the canvas rate:
 
@@ -436,7 +436,7 @@ void main() {
 
 Attach the layers to a `Compositor` resource on the WorldEnvironment (or the Camera3D). During a universe change, tween the weights (§2.4).
 
-Material shaders, one file each in `shaders/`: `sprite_canvas.gdshader` (billboard quad, nearest sampling, normal and mask sheets, quantised drift), `porcelain.gdshader` (§2.5), `ground_triplanar.gdshader`, `ink_bleed_decal.gdshader` (decals grow and feather over 2 s through an absorb mask), `caustics.gdshader` (U4 light through glass masks onto the floor at 15 fps), `clay_thumbprint.gdshader`, `cel_4step.gdshader`, `gold_leaf_kirie.gdshader`, `rubber_hose_boil.gdshader` and the prototype's `aoe_floor_ring.gdshader` for telegraphs.
+Material shaders, one file each in `shaders/`: `sprite_canvas.gdshader` (billboard quad, nearest sampling, normal and mask sheets, quantised drift), `porcelain.gdshader` (§2.5), `ground_triplanar.gdshader`, `ink_bleed_decal.gdshader` (decals grow and feather over 2 s through an absorb mask), `caustics.gdshader` (U4 light through glass masks onto the floor at 15 fps), `clay_thumbprint.gdshader`, `cel_4step.gdshader`, `gold_leaf_kirie.gdshader`, `rubber_hose_boil.gdshader` and `aoe_floor_ring.gdshader` for telegraphs (in the repository, used by `scripts/battle/battle_scene.gd`).
 
 Sprites that need normals or masks are drawn on a quad with this material instead of a plain AnimatedSprite3D. A script on the quad sets `frame_rect` from the SpriteFrames table:
 
@@ -532,9 +532,9 @@ func _initialize() -> void:
 	quit()
 ```
 
-- `prototype/tools/build_samples.gd` builds a whole sandbox scene this way.
+- The headless probes in `tools/build/*_probe.gd` and the test scenes under `scenes/test/` build and drive scenes this way (the combat prototype's `tools/build_samples.gd`, Trigger @ `aea60a2`, built a whole sandbox scene the same way).
 - Each location gets its WorldEnvironment preset (`environments/env_u0.tres` … `env_u8.tres`), a NavigationRegion3D baked from the floor, encounter zones and the battle PlaneMesh.
-- Build SpriteFrames from sheets in the same way as `prototype/scripts/actors/actor_sprite.gd`. Change `FRAME_SIZE` to the cell, set each animation's speed to the canvas drawing rate, and pass a per-frame duration for holds (`SpriteFrames.add_frame(anim, texture, duration)`).
+- Build SpriteFrames from sheets in the same way as `scripts/actors/actor_sprite.gd` (`SpriteLibrary` resolves the sheet and its frames table; the cell is read from the sheet height). Set each animation's speed to the canvas drawing rate, and pass a per-frame duration for holds (`SpriteFrames.add_frame(anim, texture, duration)`).
 - 3D bodies on stepped canvases (the clay bosses) use `AnimationMixer.callback_mode_process = ANIMATION_CALLBACK_MODE_PROCESS_MANUAL` and call `advance(1.0 / fps)` from a timer at the canvas rate.
 
 ### 1.10 Route F: procedural and synthesised audio
@@ -2712,27 +2712,11 @@ gdlint scripts tests tools                                          # pip instal
 5. **Checks as headless tests:** palette compliance per canvas (§1.13), frame counts and SpriteFrames speeds against the canvas table (§3.1), file naming against the manifest IDs (§11), loudness of every audio file. A failing check names the asset and the rule.
 6. **Commit and push** after each batch. Update `PROGRESS.md` with what was made and what is next.
 
-### 10.3 The prototype under `prototype/`
+### 10.3 The earlier combat prototype
 
-`prototype/` is a working Godot 4.7 combat core built before these bibles. Reuse anything in it.
+The combat core was prototyped before these bibles in the private repository github.com/iteatsthesalt/Trigger; the reference state is commit `aea60a2` (2026-10-26; a timeline with Action Gate and Sync Hold, Boost, per-strike Shield/Break, analytic AoE geometry, an HD-2D camera rig, sheet-driven sprites, a telegraph shader, a battle HUD skeleton and 237 headless checks). A byte-identical snapshot lived under `prototype/` in this repository until 2026-11-02 and was removed: Godot ignored it, its seven global class names duplicated live scripts, and nothing in the game loaded it.
 
-| Piece | Where | Use it for |
-|---|---|---|
-| Combat core | `scripts/combat/` (timeline, ShieldComponent, BoostComponent, TechResource, TacticalPositioner3D, HybridBattleCoordinator) | The base of the battle system |
-| HD-2D camera rig | `scripts/camera/hd2d_camera_rig.gd` | Tilted follow camera with map bounds and a DOF focus band; add the 32°→24° truth lerp |
-| Sprite actor | `scripts/actors/actor_sprite.gd` | SpriteFrames from sheets (rows = directions); change `FRAME_SIZE` to 128 and speeds to canvas rates |
-| Placeholder sheets | `tools/sprites/make_placeholders.gd` | Labelled placeholder sheets from a headless script |
-| Blender kit | `tools/blender/build_truce_pier.py` → `assets/models/truce_pier.glb` | A complete deterministic kit script with `*-col` collision |
-| Telegraph shader | `shaders/aoe_floor_ring.gdshader` | Circle, line and cone decals pulsing cyan→orange with an inward scan |
-| HUD | `scripts/ui/` (timeline HUD, shield plates, AoE visualiser, victory screen) | The battle HUD skeleton |
-| Tests | `tests/run_tests.gd` (237 headless checks), `scenes/combat_sandbox.tscn` (auto-plays a battle) | Regression safety while porting |
-
-```bash
-godot --headless --path prototype --import
-godot --headless --path prototype --script res://tests/run_tests.gd   # "237 passed, 0 failed"
-```
-
-The prototype's numbers follow an older design (per-character BP, a shave cap, BREAK as a lost turn). The Combat Laws Bible has the current rules: a shared BP pool, Sync Hold at 99.0, BREAK as DEF −50% with every hit critical, and recovery after 3.0 s at 18 per second.
+Its systems were re-implemented under the Combat Laws Bible in this repository, and that is where the pieces now live: the combat core in `scripts/combat/` (BattleCoordinator, ShieldComponent, BoostBank, TacticalPositioner, TechDef, the damage pipeline), the camera rig in `scripts/render/hd2d_camera_rig.gd`, the sprite actor in `scripts/actors/actor_sprite.gd` with `SpriteLibrary`, the telegraph shader `shaders/aoe_floor_ring.gdshader`, the battle HUD in `scripts/ui/`, the placeholder generators in `tools/art/`, the Blender kit example `tools/blender/build_truce_pier.py` (§1.6) and the headless suite `tests/run_tests.gd`. The prototype's numbers followed an older design (per-character BP, a shave cap, BREAK as a lost turn); [Combat Laws 18.6](COMBAT_LAWS_BIBLE.md) lists which of its rules were deliberately replaced (a shared BP pool, Sync Hold at 99.0, BREAK as DEF −50% with every hit critical, recovery after 3.0 s at 18 per second), and `docs/reports/prototype_combat_audit.md` keeps the bugs it found in the source architecture documents.
 
 ### 10.4 Accessibility
 

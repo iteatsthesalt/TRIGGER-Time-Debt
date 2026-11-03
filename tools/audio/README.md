@@ -23,7 +23,9 @@ MIDI SoundFont (`/usr/share/sounds/sf2/FluidR3_GM.sf2`, or set `TTD_SF2`).
 The build prints, for every file, duration, channels, peak dBFS and integrated loudness
 (ITU-R BS.1770 K-weighting with gating) and writes `audio/AUDIO_MANIFEST.json`. It exits non-zero
 if a music mix is more than 1.5 LU from −20 LUFS, an SFX peak is off −1 dBFS, or a file is over
-6 MB or 2:30.
+6 MB or 2:30. The manifest keeps the verdict per group (`problems_by_group`, `checked_groups`): a partial
+build replaces only the groups it measured, and `problems` is the list over music and SFX once both were
+checked, `null` otherwise. `--refresh-manifest` evaluates nothing, so it writes `problems: null`.
 
 ## Layout
 
@@ -61,7 +63,9 @@ Godot import values. `godot_import.py` (run by `build_all.py`) writes a `.import
 OGG and WAV so Godot imports music and beds with `loop = true`, `loop_offset` at the end of the
 intro and bpm / beat_count / bar_beats set (Godot then loops at the beat count and folds the tail
 into the loop start), stings with `loop = false`, SFX as QOA with trim on, and the status loops,
-galaxy hums and telegraph loop with loop mode Forward. Verified against Godot 4.7.2 headless.
+galaxy hums and telegraph loop with loop mode Forward. Which SFX loop comes from one place: the
+`loop=True` of `write_sfx` in `sfx/families.py`, carried by each manifest row's `loop` flag. Verified against
+Godot 4.7.2 headless.
 
 ## Music
 

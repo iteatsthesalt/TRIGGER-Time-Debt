@@ -35,10 +35,17 @@ var uses: int = Uses.BEST
 ## actor_id -> {mp, strain_pct, camp_strain_pct, integrity, solidity_pct, bp_all, hp_to_one}
 var costs: Dictionary = {}
 var lv2_debuff: StringName = &""
+## The residual field a Boost Lv4 leaves (default: the element's, §7.4) and the one a technique's own row
+## says Lv3 already leaves (Astral Slash's puddle, Ferro Graviton's mercury pool, Prism Refraction's caustic
+## floor, §11; DECISIONS "Lv3 fields"). Both are BattleFields kinds.
 var lv4_field: StringName = &""
+var lv3_field: StringName = &""
 var flat_shave_bonus: int = 0
 var wind_up_s: float = 0.0
+## The bible's Unlock column, for reference and lint; what Game evaluates is the actor's kit entry
+## (data/characters, KitUnlocks), which may be later (on_join for the chapter the actor joins in).
 var unlock: Dictionary = {}
+## Flag references ("Name:State", FlagRef) that must hold for the tech to be offered.
 var requires_flags: Array[StringName] = []
 var effect: StringName = &""
 ## enemy | ally | self | party | point | any
@@ -47,6 +54,14 @@ var heal: float = 0.0
 var is_attack: bool = true
 var min_boost: int = 0
 var cooldown_turns: int = 0
+## A field that recharges this technique's cooldown while the caster stands in it (Mercury Pulse: amber_pool).
+var recharge_field: StringName = &""
+## HOLD and its kin act only on a Broken target (§10.2): cmd_tech refuses anything else before costs are paid.
+var requires_broken: bool = false
+## Steps of a stepped technique (HOLD: +lock per 5% solidity step); a cast may ask for more (cmd_tech options).
+var steps: int = 1
+## Every hit is critical (Triangulation, §6.2).
+var guaranteed_crit: bool = false
 var notes: String = ""
 var raw: Dictionary = {}
 
@@ -73,6 +88,7 @@ static func from_dict(d: Dictionary) -> TechDef:
 	t.costs = d.get("costs", {})
 	t.lv2_debuff = StringName(String(d.get("lv2_debuff", "")))
 	t.lv4_field = StringName(String(d.get("lv4_field", "")))
+	t.lv3_field = StringName(String(d.get("lv3_field", "")))
 	t.flat_shave_bonus = int(d.get("flat_shave_bonus", 0))
 	t.wind_up_s = float(d.get("wind_up_s", 0.0))
 	t.unlock = d.get("unlock", {})
@@ -83,6 +99,10 @@ static func from_dict(d: Dictionary) -> TechDef:
 	t.is_attack = bool(d.get("is_attack", t.heal <= 0.0 and t.target in ["enemy", "point", "any"]))
 	t.min_boost = int(d.get("min_boost", 0))
 	t.cooldown_turns = int(d.get("cooldown_turns", 0))
+	t.recharge_field = StringName(String(d.get("recharge_field", "")))
+	t.requires_broken = bool(d.get("requires_broken", false))
+	t.steps = int(d.get("steps", 1))
+	t.guaranteed_crit = bool(d.get("guaranteed_crit", false))
 	t.notes = String(d.get("notes", ""))
 	return t
 
@@ -157,16 +177,24 @@ func validation_errors() -> PackedStringArray:
 			errors.append("%s: unknown tag %s" % [id, tg])
 	if hit_count < 1:
 		errors.append("%s: hits must be >= 1" % id)
-	if shape in [Shape.CIRCLE, Shape.SELF_AURA, Shape.CAGE] and radius <= 0.0:
+	if shape in [Shape.CIRCLE, Shape.SELF_AURA, Shape.CAGE] and (radius <= 0.0 or not raw.has("radius")):  # radius defaults to 1.0
 		errors.append("%s: shape needs a radius" % id)
 	if shape in [Shape.LINE_PIERCE, Shape.CONE, Shape.CROSS] and length <= 0.0:
 		errors.append("%s: shape needs a length" % id)
 	if shape == Shape.SPLIT_CONE and beams <= 0:
 		errors.append("%s: split cone needs beams" % id)
+	for f in [lv3_field, lv4_field, recharge_field]:
+		if f != &"" and not BattleFields.KINDS.has(f):
+			errors.append("%s: unknown field kind %s" % [id, f])
+	if steps < 1:
+		errors.append("%s: steps must be >= 1" % id)
 	return errors
 
 
-## Two techniques may not share tags, shape and radius (§17.5).
+## Two techniques may not share tags, shape and radius (§17.5, §18.2), with the casters and the effect in the key:
+## the bible's own tables give several same-caster pairs one tag set and one size (Mycelia Tether and
+## Photosynthetic Burst, the three NULL commands, Sera's SINGLE [TACHYON] commands) and tell them apart by what
+## they do (DECISIONS "Technique signature").
 func signature() -> String:
 	var sorted_tags: Array = tags.duplicate()
 	sorted_tags.sort()

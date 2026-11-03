@@ -1,9 +1,17 @@
 {
  "_readme": [
-  "Every PixelLab asset imported into the game: asset key -> PixelLab id, kind, import date and the settings",
+  "Every PixelLab asset imported into the game: record key -> PixelLab id, kind, import date and the settings",
   "the sheet was built with. Written by tools/art/import_pixellab.py; rebuild any entry with",
   "python3 tools/art/import_pixellab.py <pixellab_id> <key>. Nich's picks in the Character Creator are",
-  "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted."
+  "matched by the PixelLab name recorded here. Nothing in the PixelLab library is ever deleted.",
+  "kind character: key <id>[_<variant>]_<tier> (tier map/field/action/portrait, variant a canvas u0-u8 or a",
+  "state such as debt20, px64), path assets/<group>/<id>/, cell, height_px = height_m, anims {name: frames},",
+  "missing = directions filled by mirroring or rotation, history = earlier PixelLab ids for the same key.",
+  "kind object (a prop, docs/ART_PIPELINE.md section 6): key = the prp_u<n>_ key from data/props/props.json,",
+  "tier/variant empty, universe, request = the Linear issue (TRI-nn) or ASSET_REQUESTS entry it fulfils, path",
+  "assets/props/u<n>/<key>/, width_px, rows = the direction rows drawn, rotations = the PixelLab rotations",
+  "delivered, anims {name: frames} (a single clip is the looping idle; the drawn rotation is the still column).",
+  "Items whose PixelLab name starts with TEST or REJECTED are never imported (the importer refuses them)."
  ],
  "crono_field": {
   "pixellab_id": "8d699d00-eb9f-4da7-a408-a1f70039fa1c",
@@ -116,6 +124,1395 @@
   "cell": 128,
   "anims": {
    "idle": 1
+  },
+  "missing": [],
+  "history": []
+ },
+ "prp_u0_hearth": {
+  "pixellab_id": "89ddf903-c7ce-454c-8f1f-d74854fe290b",
+  "pixellab_name": "TRIGGER Hearth field v1",
+  "id": "prp_u0_hearth",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-57",
+  "path": "assets/props/u0/prp_u0_hearth",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.9,
+  "height_px": 103,
+  "width_px": 91,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 5,
+   "still": 1
+  },
+  "history": []
+ },
+ "prp_u1_leene_bell_guillotine": {
+  "pixellab_id": "d58bc077-79db-4bdc-8036-9e30871b9470",
+  "pixellab_name": "TRIGGER Leene Bell Guillotine field v2",
+  "id": "prp_u1_leene_bell_guillotine",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-31",
+  "path": "assets/props/u1/prp_u1_leene_bell_guillotine",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 4.5,
+  "height_px": 244,
+  "width_px": 132,
+  "cell": 256,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_sera_cage": {
+  "pixellab_id": "46a70648-787c-4315-a783-f5fe6c3238e3",
+  "pixellab_name": "TRIGGER Sera Cage field v1",
+  "id": "prp_u1_sera_cage",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-32",
+  "path": "assets/props/u1/prp_u1_sera_cage",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 2.6,
+  "height_px": 187,
+  "width_px": 83,
+  "cell": 224,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 5,
+   "still": 1
+  },
+  "history": []
+ },
+ "prp_u1_clay_gear": {
+  "pixellab_id": "fae1201e-2d55-4c39-b63e-f38befce3e33",
+  "pixellab_name": "TRIGGER Clay Gear field v1",
+  "id": "prp_u1_clay_gear",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-33",
+  "path": "assets/props/u1/prp_u1_clay_gear",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 4.0,
+  "height_px": 185,
+  "width_px": 235,
+  "cell": 256,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 5,
+   "still": 1
+  },
+  "history": []
+ },
+ "prp_u1_torii": {
+  "pixellab_id": "37ea4f86-3834-4a4a-b64c-37b0168ec25f",
+  "pixellab_name": "TRIGGER Torii field v1",
+  "id": "prp_u1_torii",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-34",
+  "path": "assets/props/u1/prp_u1_torii",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 4.0,
+  "height_px": 158,
+  "width_px": 166,
+  "cell": 192,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_petitions_banners_scrolls": {
+  "pixellab_id": "2104cb75-dabf-430f-a0fb-5b53470e776f",
+  "pixellab_name": "TRIGGER Petitions Banners scrolls field v1",
+  "id": "prp_u1_petitions_banners_scrolls",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-35",
+  "path": "assets/props/u1/prp_u1_petitions_banners_scrolls",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 0.5,
+  "height_px": 70,
+  "width_px": 82,
+  "cell": 96,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_petitions_banners_war_banner": {
+  "pixellab_id": "2db8eba7-f567-4d87-99ea-4092115b9e5f",
+  "pixellab_name": "TRIGGER Petitions Banners war_banner field v1",
+  "id": "prp_u1_petitions_banners_war_banner",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-36",
+  "path": "assets/props/u1/prp_u1_petitions_banners_war_banner",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 2.6,
+  "height_px": 107,
+  "width_px": 42,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_petitions_banners_lantern": {
+  "pixellab_id": "c0a7f865-79c2-4c18-998a-37db24f483d0",
+  "pixellab_name": "TRIGGER Petitions Banners lantern field v1",
+  "id": "prp_u1_petitions_banners_lantern",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-37",
+  "path": "assets/props/u1/prp_u1_petitions_banners_lantern",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 0.9,
+  "height_px": 97,
+  "width_px": 59,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_sake_gourd": {
+  "pixellab_id": "acb8217f-21ee-43b0-a015-07632309455f",
+  "pixellab_name": "TRIGGER Sake Gourd field v1",
+  "id": "prp_u1_sake_gourd",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-38",
+  "path": "assets/props/u1/prp_u1_sake_gourd",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 0.35,
+  "height_px": 49,
+  "width_px": 34,
+  "cell": 64,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_vault_blade_stand": {
+  "pixellab_id": "446ce3e9-1e32-46a2-a7a2-694c3efd6f38",
+  "pixellab_name": "TRIGGER Vault Blade Stand field v1",
+  "id": "prp_u1_vault_blade_stand",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-39",
+  "path": "assets/props/u1/prp_u1_vault_blade_stand",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 0.6,
+  "height_px": 50,
+  "width_px": 121,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_dojo_set_tatami": {
+  "pixellab_id": "5d748077-ebb5-4acf-9f16-69c768ae1b5c",
+  "pixellab_name": "TRIGGER Dojo Set tatami field v1",
+  "id": "prp_u1_dojo_set_tatami",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-40",
+  "path": "assets/props/u1/prp_u1_dojo_set_tatami",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 0.9,
+  "height_px": 79,
+  "width_px": 100,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_dojo_set_weapon_rack": {
+  "pixellab_id": "e6a1b202-c0cc-44a9-b252-664036456b49",
+  "pixellab_name": "TRIGGER Dojo Set weapon_rack field v1",
+  "id": "prp_u1_dojo_set_weapon_rack",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-41",
+  "path": "assets/props/u1/prp_u1_dojo_set_weapon_rack",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 1.6,
+  "height_px": 105,
+  "width_px": 77,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_dojo_set_cushion": {
+  "pixellab_id": "1e8c4a44-dd17-4861-8fa5-9f3578dac56a",
+  "pixellab_name": "TRIGGER Dojo Set cushion field v1",
+  "id": "prp_u1_dojo_set_cushion",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-42",
+  "path": "assets/props/u1/prp_u1_dojo_set_cushion",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 0.4,
+  "height_px": 63,
+  "width_px": 90,
+  "cell": 96,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_dojo_set_rusted_katana": {
+  "pixellab_id": "4ad20c87-a860-4885-8688-19fdfc2603ed",
+  "pixellab_name": "TRIGGER Dojo Set rusted_katana field v1",
+  "id": "prp_u1_dojo_set_rusted_katana",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-43",
+  "path": "assets/props/u1/prp_u1_dojo_set_rusted_katana",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 1.1,
+  "height_px": 118,
+  "width_px": 72,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_street_set_door_painted": {
+  "pixellab_id": "73021fa1-ab77-4ace-90d0-4faee358c50a",
+  "pixellab_name": "TRIGGER Street Set door_painted field v1",
+  "id": "prp_u1_street_set_door_painted",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-44",
+  "path": "assets/props/u1/prp_u1_street_set_door_painted",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 2.0,
+  "height_px": 101,
+  "width_px": 72,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_street_set_door_peeled": {
+  "pixellab_id": "b7df11ac-89ee-425e-8e5d-ea37a2fd331c",
+  "pixellab_name": "TRIGGER Street Set door_peeled field v1",
+  "id": "prp_u1_street_set_door_peeled",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-45",
+  "path": "assets/props/u1/prp_u1_street_set_door_peeled",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 2.0,
+  "height_px": 97,
+  "width_px": 75,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_street_set_paint_bucket": {
+  "pixellab_id": "a797c0e3-aead-4453-90c0-836fa6187ec7",
+  "pixellab_name": "TRIGGER Street Set paint_bucket field v1",
+  "id": "prp_u1_street_set_paint_bucket",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-46",
+  "path": "assets/props/u1/prp_u1_street_set_paint_bucket",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 0.5,
+  "height_px": 97,
+  "width_px": 65,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_street_set_ladder": {
+  "pixellab_id": "29e31e3c-ff78-49c2-bf8b-f36efbd39ccb",
+  "pixellab_name": "TRIGGER Street Set ladder field v1",
+  "id": "prp_u1_street_set_ladder",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-47",
+  "path": "assets/props/u1/prp_u1_street_set_ladder",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 2.4,
+  "height_px": 103,
+  "width_px": 52,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_street_set_stone_lantern": {
+  "pixellab_id": "b9ba3dea-85a3-47ca-b5f5-bc6f87c1de13",
+  "pixellab_name": "TRIGGER Street Set stone_lantern field v1",
+  "id": "prp_u1_street_set_stone_lantern",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-48",
+  "path": "assets/props/u1/prp_u1_street_set_stone_lantern",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 1.6,
+  "height_px": 101,
+  "width_px": 63,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_street_set_roof_tiles": {
+  "pixellab_id": "058b2f90-6626-46f3-abbc-10f998d0c17e",
+  "pixellab_name": "TRIGGER Street Set roof_tiles field v1",
+  "id": "prp_u1_street_set_roof_tiles",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-49",
+  "path": "assets/props/u1/prp_u1_street_set_roof_tiles",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 0.7,
+  "height_px": 84,
+  "width_px": 92,
+  "cell": 96,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u1_pagoda_finial": {
+  "pixellab_id": "cb738aec-e6ce-4975-8e02-8d9a8964f131",
+  "pixellab_name": "TRIGGER Pagoda Finial field v1",
+  "id": "prp_u1_pagoda_finial",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 1,
+  "request": "TRI-50",
+  "path": "assets/props/u1/prp_u1_pagoda_finial",
+  "imported": "2026-11-02",
+  "canvas": "u1",
+  "fps": 24.0,
+  "height_m": 1.2,
+  "height_px": 98,
+  "width_px": 83,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_porridge_pot": {
+  "pixellab_id": "3eb122dc-c46c-48a3-9408-23a43655b4bc",
+  "pixellab_name": "TRIGGER Porridge Pot field v2",
+  "id": "prp_u0_porridge_pot",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-51",
+  "path": "assets/props/u0/prp_u0_porridge_pot",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 0.9,
+  "height_px": 111,
+  "width_px": 67,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_counter_bowls": {
+  "pixellab_id": "1bfc9189-c11d-4dc4-a3d8-d329858da146",
+  "pixellab_name": "TRIGGER Counter Bowls field v1",
+  "id": "prp_u0_counter_bowls",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-52",
+  "path": "assets/props/u0/prp_u0_counter_bowls",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.1,
+  "height_px": 62,
+  "width_px": 85,
+  "cell": 96,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_oak_table": {
+  "pixellab_id": "b4f8b062-9d67-4b00-9b4f-6d1c5a64cf15",
+  "pixellab_name": "TRIGGER Oak Table field v1",
+  "id": "prp_u0_oak_table",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-53",
+  "path": "assets/props/u0/prp_u0_oak_table",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.2,
+  "height_px": 69,
+  "width_px": 98,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_ink_stool": {
+  "pixellab_id": "6112a4dd-aa92-40cb-948f-1db480d3304d",
+  "pixellab_name": "TRIGGER Ink Stool field v1",
+  "id": "prp_u0_ink_stool",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-54",
+  "path": "assets/props/u0/prp_u0_ink_stool",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 0.6,
+  "height_px": 78,
+  "width_px": 69,
+  "cell": 96,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_speaking_tube": {
+  "pixellab_id": "538e8657-1d67-4d7e-b01b-cec3a9852885",
+  "pixellab_name": "TRIGGER Speaking Tube field v1",
+  "id": "prp_u0_speaking_tube",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-55",
+  "path": "assets/props/u0/prp_u0_speaking_tube",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.6,
+  "height_px": 108,
+  "width_px": 44,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_pot_shelf": {
+  "pixellab_id": "7e896fe4-6207-4742-bfe1-c2890f367924",
+  "pixellab_name": "TRIGGER Pot Shelf field v2",
+  "id": "prp_u0_pot_shelf",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-56",
+  "path": "assets/props/u0/prp_u0_pot_shelf",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.0,
+  "height_px": 72,
+  "width_px": 110,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_stained_glass_panel": {
+  "pixellab_id": "ee86cc0c-e8e6-433c-89fb-7d66ee592da3",
+  "pixellab_name": "TRIGGER Stained Glass Panel field v1",
+  "id": "prp_u0_stained_glass_panel",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-58",
+  "path": "assets/props/u0/prp_u0_stained_glass_panel",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 3.0,
+  "height_px": 158,
+  "width_px": 63,
+  "cell": 192,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_stone_well": {
+  "pixellab_id": "3c966da7-03f4-4854-9552-282af352a642",
+  "pixellab_name": "TRIGGER Stone Well field v1",
+  "id": "prp_u0_stone_well",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-59",
+  "path": "assets/props/u0/prp_u0_stone_well",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 2.0,
+  "height_px": 89,
+  "width_px": 71,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_hand_cart": {
+  "pixellab_id": "5b91d919-d2f4-4c90-948f-54e852acfc9b",
+  "pixellab_name": "TRIGGER Hand Cart field v1",
+  "id": "prp_u0_hand_cart",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-60",
+  "path": "assets/props/u0/prp_u0_hand_cart",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.5,
+  "height_px": 94,
+  "width_px": 81,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_moss_flower_bed": {
+  "pixellab_id": "27a25879-3dce-4a3a-a98e-94428abc74e4",
+  "pixellab_name": "TRIGGER Moss Flower Bed field v1",
+  "id": "prp_u0_moss_flower_bed",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-61",
+  "path": "assets/props/u0/prp_u0_moss_flower_bed",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 0.9,
+  "height_px": 71,
+  "width_px": 92,
+  "cell": 96,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_portcullis": {
+  "pixellab_id": "3c15ff79-7782-4a48-a430-60f96e279541",
+  "pixellab_name": "TRIGGER Portcullis field v1",
+  "id": "prp_u0_portcullis",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-62",
+  "path": "assets/props/u0/prp_u0_portcullis",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 4.0,
+  "height_px": 102,
+  "width_px": 109,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_clock_pillar_face": {
+  "pixellab_id": "b1b65e83-ec91-41ab-9da8-166875efb2cc",
+  "pixellab_name": "TRIGGER Clock Pillar Face field v2",
+  "id": "prp_u0_clock_pillar_face",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-63",
+  "path": "assets/props/u0/prp_u0_clock_pillar_face",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 9.0,
+  "height_px": 180,
+  "width_px": 83,
+  "cell": 192,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_brass_gate_arch": {
+  "pixellab_id": "a96a4b60-1eed-4f09-a2e8-589a545071ca",
+  "pixellab_name": "TRIGGER Brass Gate Arch field v1",
+  "id": "prp_u0_brass_gate_arch",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-64",
+  "path": "assets/props/u0/prp_u0_brass_gate_arch",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 3.8,
+  "height_px": 190,
+  "width_px": 149,
+  "cell": 224,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_seed_of_doan_pot": {
+  "pixellab_id": "1869f296-e811-42bf-be15-f9e61f285261",
+  "pixellab_name": "TRIGGER Seed of Doan Pot field v2",
+  "id": "prp_u0_seed_of_doan_pot",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-65",
+  "path": "assets/props/u0/prp_u0_seed_of_doan_pot",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.1,
+  "height_px": 90,
+  "width_px": 78,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_gramophone_workbench": {
+  "pixellab_id": "6857fb3f-eba7-4e12-ad4d-54f842529b06",
+  "pixellab_name": "TRIGGER Gramophone Workbench field v1",
+  "id": "prp_u0_gramophone_workbench",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-66",
+  "path": "assets/props/u0/prp_u0_gramophone_workbench",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.5,
+  "height_px": 88,
+  "width_px": 79,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_bekkler_doll": {
+  "pixellab_id": "c862ecdb-89a9-45eb-980c-c13c7da1a7ca",
+  "pixellab_name": "TRIGGER Bekkler Doll field v1",
+  "id": "prp_u0_bekkler_doll",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-67",
+  "path": "assets/props/u0/prp_u0_bekkler_doll",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 0.45,
+  "height_px": 90,
+  "width_px": 66,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_dummy_plinth": {
+  "pixellab_id": "bbb6b5f2-1163-4c8d-b670-4f25c9fe0b13",
+  "pixellab_name": "TRIGGER Dummy Plinth field v1",
+  "id": "prp_u0_dummy_plinth",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-68",
+  "path": "assets/props/u0/prp_u0_dummy_plinth",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 0.8,
+  "height_px": 43,
+  "width_px": 57,
+  "cell": 64,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_pool_rim": {
+  "pixellab_id": "2b28c782-27dc-4c9f-a259-dae956ee5c3f",
+  "pixellab_name": "TRIGGER Pool Rim field v1",
+  "id": "prp_u0_pool_rim",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-69",
+  "path": "assets/props/u0/prp_u0_pool_rim",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.0,
+  "height_px": 52,
+  "width_px": 109,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_loft_ladder": {
+  "pixellab_id": "5c82b89e-ec1d-48ec-a2d9-a55252f8f208",
+  "pixellab_name": "TRIGGER Loft Ladder field v1",
+  "id": "prp_u0_loft_ladder",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-70",
+  "path": "assets/props/u0/prp_u0_loft_ladder",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 2.4,
+  "height_px": 117,
+  "width_px": 55,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_robo_rest_alcove": {
+  "pixellab_id": "13d9167d-fa81-4657-a20b-f34fb7363f27",
+  "pixellab_name": "TRIGGER Robo Rest Alcove field v1",
+  "id": "prp_u0_robo_rest_alcove",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-71",
+  "path": "assets/props/u0/prp_u0_robo_rest_alcove",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 2.8,
+  "height_px": 106,
+  "width_px": 99,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_bekkler_tent": {
+  "pixellab_id": "41966135-0fe8-4735-88f5-0d8792402f68",
+  "pixellab_name": "TRIGGER Bekkler Tent field v1",
+  "id": "prp_u0_bekkler_tent",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-73",
+  "path": "assets/props/u0/prp_u0_bekkler_tent",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 3.4,
+  "height_px": 167,
+  "width_px": 140,
+  "cell": 192,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_telepods": {
+  "pixellab_id": "4b72d8ff-bea4-41d0-bc00-f12274179e1b",
+  "pixellab_name": "TRIGGER Telepods field v1",
+  "id": "prp_u0_telepods",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-74",
+  "path": "assets/props/u0/prp_u0_telepods",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.9,
+  "height_px": 115,
+  "width_px": 200,
+  "cell": 224,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_leene_bell": {
+  "pixellab_id": "1aafb3c2-d678-4872-99ce-f3ce593d1336",
+  "pixellab_name": "TRIGGER Leene Bell field v1",
+  "id": "prp_u0_leene_bell",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-75",
+  "path": "assets/props/u0/prp_u0_leene_bell",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 2.8,
+  "height_px": 119,
+  "width_px": 79,
+  "cell": 160,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_robos_ribbon": {
+  "pixellab_id": "8eff6e4f-6f0c-4ace-bfea-722d35448693",
+  "pixellab_name": "TRIGGER Robos Ribbon 128 field v1",
+  "id": "prp_u0_robos_ribbon",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-76",
+  "path": "assets/props/u0/prp_u0_robos_ribbon",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 0.3,
+  "height_px": 74,
+  "width_px": 75,
+  "cell": 96,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u0_doan_tree_stages": {
+  "pixellab_id": "0aad5a7e-5316-422b-9817-34ec0df50985",
+  "pixellab_name": "TRIGGER Doan Tree seed field v1",
+  "id": "prp_u0_doan_tree_stages",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 0,
+  "request": "TRI-77",
+  "path": "assets/props/u0/prp_u0_doan_tree_stages",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 0.5,
+  "height_px": 64,
+  "width_px": 71,
+  "cell": 96,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "prp_u2_seed_of_doan": {
+  "pixellab_id": "c4f7051a-c770-4278-b743-4420a83ea924",
+  "pixellab_name": "TRIGGER Seed of Doan field v1",
+  "id": "prp_u2_seed_of_doan",
+  "tier": "",
+  "variant": "",
+  "kind": "object",
+  "group": "props",
+  "universe": 2,
+  "request": "TRI-78",
+  "path": "assets/props/u2/prp_u2_seed_of_doan",
+  "imported": "2026-11-02",
+  "canvas": "u2",
+  "fps": 12.0,
+  "height_m": 0.5,
+  "height_px": 88,
+  "width_px": 68,
+  "cell": 128,
+  "rows": [
+   "s"
+  ],
+  "rotations": [
+   "south"
+  ],
+  "anims": {
+   "idle": 1
+  },
+  "history": []
+ },
+ "crono_px64_field": {
+  "pixellab_id": "ca2300bc-7592-4606-8973-32b9bc00056b",
+  "pixellab_name": "TRIGGER Crono px64 field v1",
+  "id": "crono",
+  "tier": "field",
+  "variant": "px64",
+  "kind": "character",
+  "group": "characters",
+  "request": "",
+  "path": "assets/characters/crono",
+  "imported": "2026-11-02",
+  "canvas": "u0",
+  "fps": 60.0,
+  "height_m": 1.78,
+  "height_px": 61,
+  "cell": 96,
+  "anims": {
+   "idle": 4,
+   "walk": 6
   },
   "missing": [],
   "history": []

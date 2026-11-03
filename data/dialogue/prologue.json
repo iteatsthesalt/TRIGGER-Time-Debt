@@ -412,6 +412,10 @@
       "caption": "[TIME DEBT. Its cost is maximum HP he cannot heal.]"
     },
     {
+      "learn": "time_debt_seal",
+      "who": "crono"
+    },
+    {
       "say": "Robo. The door.",
       "who": "marle"
     },

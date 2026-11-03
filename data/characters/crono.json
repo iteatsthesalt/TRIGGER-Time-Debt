@@ -10,9 +10,10 @@
     {"id": "astral_slash", "unlock": {"chapter": 1}},
     {"id": "bekkler_guilt", "unlock": {"flag": "The_Bowl_Still_Whole"}},
     {"id": "astral_field", "unlock": {"chapter": 3}},
+    {"id": "overclocked_short_circuit", "unlock": {"chapter": 3}},
     {"id": "luminaire", "unlock": {"level": 35}},
     {"id": "unborrowed_time", "unlock": {"level": 78}},
-    {"id": "null_erasure", "unlock": {"flag": "Dark_40"}},
+    {"id": "null_erasure", "unlock": {"dark_min": 40}},
     {"id": "null_crono", "unlock": {"chapter": 8}}
   ],
   "passives": ["father_tank", "trauma_silence", "porcelain_audit"]

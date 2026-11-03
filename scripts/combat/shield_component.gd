@@ -1,5 +1,8 @@
 ## Shield plates, weaknesses and BREAK, evaluated one strike at a time (Combat Laws Bible §5).
 ## Timers run on battle time: the coordinator calls tick(dt) only while gauges fill.
+## §5.7 rules: Refills once (consume_refill, read by a boss's "break" gate), Break-immune until
+## (break_condition, armed by BreakConditions), Shared (shared_group, linked by link_shared: one plate count
+## across several bodies; every body shows it, Breaks with it and recovers with it).
 class_name ShieldComponent
 extends Node
 
@@ -22,16 +25,24 @@ signal plate_fell(index: int)
 @export var belief_number: int = 0
 ## Regenerating: after 3.0 s without a shave the unbroken shield refills at 18%/s.
 @export var regenerating: bool = false
-## Refills once: the first Break of the phase refills instead of ending the phase.
+## Refills once: the first Break of the phase refills instead of ending the phase (consume_refill).
 @export var refill_once: bool = false
 ## Shield-only: takes no HP damage until Broken.
 @export var shield_only: bool = false
-## Break-immune-until: the coordinator sets break_allowed; at 0 the Break waits.
+## Break-immune-until: with a condition the Break waits at 0 until break_check (BreakConditions) holds.
 @export var break_condition: StringName = &""
 ## Only hits from this actor id can shave (Vaelos Echo: Sera only). Empty = anyone.
 @export var only_hit_by: StringName = &""
+## Shared plates (§5.7): bodies of one group share the first body's plate count (link_shared).
+@export var shared_group: StringName = &""
 ## A shield owned by another component (shared plates, §5.7).
 var shared_owner: ShieldComponent = null
+## The bodies sharing this shield's plates (on the owner).
+var _members: Array[ShieldComponent] = []
+## Bumped by configure(): a status's undo of a strip only applies to the plates it stripped.
+var config_serial: int = 0
+## Evaluates break_condition while break_allowed is false (BreakConditions.arm).
+var break_check: Callable = Callable()
 
 var current_shield: int = -1
 var temp_plates: int = 0
@@ -169,8 +180,9 @@ func hits_weakness(attack_tags: Array) -> bool:
 
 ## Pure preview of a whole action: total shave and whether it Breaks (§4.6).
 ## Mirrors apply_strike exactly: the Lv3 bonus lands on the first matching strike.
-func preview_action(attack_tags: Array, strikes: int, bonus: int, attacker_id: StringName = &"") -> Dictionary:
-	var owner_comp: ShieldComponent = shared_owner if shared_owner != null else self
+## `penalty` is taken off every matching strike (BLIND ranged hits, Sticky Ash: ShaveBonus.penalty).
+func preview_action(attack_tags: Array, strikes: int, bonus: int, attacker_id: StringName = &"", penalty: int = 0) -> Dictionary:
+	var owner_comp: ShieldComponent = _owner()
 	if owner_comp.current_shield < 0:
 		owner_comp.reset_shields()
 	if owner_comp.is_broken:
@@ -182,7 +194,7 @@ func preview_action(attack_tags: Array, strikes: int, bonus: int, attacker_id: S
 	var bonus_left: int = bonus
 	var temp: int = owner_comp.temp_plates
 	for i in strikes:
-		var r: Dictionary = owner_comp._simulate_strike(sim, attack_tags, bonus_left, temp)
+		var r: Dictionary = owner_comp._simulate_strike(sim, attack_tags, bonus_left, temp, penalty)
 		temp = int(r["temp_after"])
 		total += int(r["shaved"])
 		if r["matched"]:
@@ -190,7 +202,7 @@ func preview_action(attack_tags: Array, strikes: int, bonus: int, attacker_id: S
 		if int(sim["current"]) <= 0:
 			break
 	var after: int = int(sim["current"])
-	return {"shave": total, "breaks": after <= 0 and owner_comp.break_allowed, "already_broken": false, "after": after}
+	return {"shave": total, "breaks": after <= 0 and owner_comp.can_break_now(), "already_broken": false, "after": after}
 
 
 func _snapshot() -> Dictionary:
@@ -198,7 +210,7 @@ func _snapshot() -> Dictionary:
 
 
 ## Shared logic of preview and apply. `sim` holds current/plate_index/plate_weight_left.
-func _simulate_strike(sim: Dictionary, attack_tags: Array, bonus: int, temp: int) -> Dictionary:
+func _simulate_strike(sim: Dictionary, attack_tags: Array, bonus: int, temp: int, penalty: int = 0) -> Dictionary:
 	var out := {"shaved": 0, "matched": false, "temp_after": temp}
 	var matches: int = 0
 	if uses_keyed_plates():
@@ -219,7 +231,9 @@ func _simulate_strike(sim: Dictionary, attack_tags: Array, bonus: int, temp: int
 		if matches == 0:
 			return out
 	out["matched"] = true
-	var shave: int = matches + maxi(0, bonus)
+	var shave: int = matches + maxi(0, bonus) - maxi(0, penalty)
+	if shave <= 0:
+		return out
 	# Temporary plates fall first and never Break on their own.
 	if temp > 0:
 		var t: int = mini(temp, shave)
@@ -258,9 +272,12 @@ func _simulate_strike(sim: Dictionary, attack_tags: Array, bonus: int, temp: int
 
 ## Evaluates ONE strike. bonus is the flat bonus still owed this action (0 after it lands).
 ## Returns {shaved, hit_weakness, caused_break, matched, chipped_belief}.
-func apply_strike(attack_tags: Array, bonus: int, attacker: Node, attacker_id: StringName = &"") -> Dictionary:
-	if shared_owner != null:
-		return shared_owner.apply_strike(attack_tags, bonus, attacker, attacker_id)
+func apply_strike(attack_tags: Array, bonus: int, attacker: Node, attacker_id: StringName = &"", penalty: int = 0) -> Dictionary:
+	var owner_comp: ShieldComponent = _owner()
+	if owner_comp != self:
+		for m in owner_comp._group():
+			m._reveal(attack_tags)
+		return owner_comp.apply_strike(attack_tags, bonus, attacker, attacker_id, penalty)
 	if current_shield < 0:
 		reset_shields()
 	var result := {"shaved": 0, "hit_weakness": false, "caused_break": false, "matched": false, "chipped_belief": false}
@@ -271,7 +288,7 @@ func apply_strike(attack_tags: Array, bonus: int, attacker: Node, attacker_id: S
 	if only_hit_by != &"" and attacker_id != only_hit_by:
 		return result
 	var sim: Dictionary = _snapshot()
-	var r: Dictionary = _simulate_strike(sim, attack_tags, bonus, temp_plates)
+	var r: Dictionary = _simulate_strike(sim, attack_tags, bonus, temp_plates, penalty)
 	temp_plates = int(r["temp_after"])
 	if not r["matched"]:
 		if belief_number > 0:
@@ -291,12 +308,26 @@ func apply_strike(attack_tags: Array, bonus: int, attacker: Node, attacker_id: S
 		if uses_keyed_plates():
 			plate_fell.emit(plate_index)
 	if current_shield <= 0:
-		if break_allowed:
+		if can_break_now():
 			_do_break(attacker, attack_tags)
 			result["caused_break"] = true
 		else:
 			pending_break = true
+			break_signature = CombatTags.to_names(attack_tags)
 	return result
+
+
+## May the Break land now? break_allowed, or the armed condition holds (BreakConditions).
+func can_break_now() -> bool:
+	return break_allowed or (break_check.is_valid() and bool(break_check.call()))
+
+
+## Refills once (§5.7): true for the first Break of the phase, which then rebuilds instead of ending it.
+func consume_refill() -> bool:
+	if refill_once and not refill_used:
+		refill_used = true
+		return true
+	return false
 
 
 func _do_break(breaker: Node, attack_tags: Array) -> void:
@@ -314,7 +345,7 @@ func _do_break(breaker: Node, attack_tags: Array) -> void:
 
 ## Called by the coordinator when a break condition becomes true while the shield sits at 0.
 func try_release_pending_break(breaker: Node) -> bool:
-	if pending_break and break_allowed and not is_broken:
+	if pending_break and can_break_now() and not is_broken:
 		_do_break(breaker, break_signature)
 		return true
 	return false
@@ -322,6 +353,9 @@ func try_release_pending_break(breaker: Node) -> bool:
 
 ## Force a Break (Salvage rip, scripted beats).
 func force_break(breaker: Node, tags: Array = []) -> void:
+	if _owner() != self:
+		_owner().force_break(breaker, tags)
+		return
 	if is_broken:
 		return
 	current_shield = 0
@@ -329,8 +363,13 @@ func force_break(breaker: Node, tags: Array = []) -> void:
 	_do_break(breaker, tags)
 
 
-## Sera's HOLD and other extensions add lock time (§5.4).
+## Sera's HOLD and other extensions add lock time (§5.4); shared plates lock every body alike.
 func extend_lock(seconds: float) -> void:
+	for m in _owner()._group():
+		m._extend_own(seconds)
+
+
+func _extend_own(seconds: float) -> void:
 	if is_broken:
 		lock_left += seconds
 	else:
@@ -345,6 +384,16 @@ func delay_rebuild(seconds: float) -> void:
 ## Advance battle time. Returns true when the Break ended this tick.
 func tick(dt: float) -> bool:
 	if dt <= 0.0:
+		return false
+	var owner_comp: ShieldComponent = _owner()
+	if owner_comp != self:
+		if owner_comp._driver() == self:
+			owner_comp.tick(dt)  # the owner's body is down: the first living member keeps its plates running
+			owner_comp.tick_resume(dt)
+		if not is_broken:
+			return false  # a member's count is the owner's (no regen of its own)
+	if pending_break and not is_broken and can_break_now():
+		_do_break(null, break_signature)  # the condition came true while the plates sat at 0
 		return false
 	if is_broken:
 		if lock_left > 0.0:
@@ -426,10 +475,106 @@ func configure(cfg: Dictionary) -> void:
 	refill_once = bool(cfg.get("refill_once", false))
 	shield_only = bool(cfg.get("shield_only", false))
 	break_condition = StringName(String(cfg.get("break_condition", "")))
+	break_allowed = break_condition == &""
 	only_hit_by = StringName(String(cfg.get("only_hit_by", "")))
+	shared_group = StringName(String(cfg.get("shared_group", "")))
 	refill_used = false
+	config_serial += 1
 	revealed.clear()
 	reset_shields()
+
+
+# ---------------------------------------------------------------- shared plates (§5.7)
+
+## Link every group of bodies with the same shared_group: the first body's shield holds the count.
+static func link_shared(bodies: Array) -> void:
+	var owners: Dictionary = {}
+	for b in bodies:
+		var sh := of(b) if is_instance_valid(b) else null
+		if sh == null or sh.shared_group == &"":
+			continue
+		if not owners.has(sh.shared_group):
+			owners[sh.shared_group] = sh
+			sh.unshare()
+		elif sh.shared_owner != owners[sh.shared_group]:
+			sh.share_with(owners[sh.shared_group])
+
+
+static func unlink_shared(bodies: Array) -> void:
+	for b in bodies:
+		var sh := of(b) if is_instance_valid(b) else null
+		if sh != null:
+			sh.unshare()
+
+
+## This body now shows, shaves and Breaks with `owner_comp`'s plates.
+func share_with(owner_comp: ShieldComponent) -> void:
+	unshare()
+	if owner_comp == null or owner_comp == self:
+		return
+	shared_owner = owner_comp
+	owner_comp._members.append(self)
+	owner_comp.shield_changed.connect(_on_owner_shield)
+	owner_comp.broken.connect(_on_owner_broken)
+	current_shield = owner_comp.current_shield
+	shield_changed.emit(current_shield, max_total())
+
+
+func unshare() -> void:
+	if shared_owner == null:
+		return
+	if is_instance_valid(shared_owner):
+		shared_owner._members.erase(self)
+		if shared_owner.shield_changed.is_connected(_on_owner_shield):
+			shared_owner.shield_changed.disconnect(_on_owner_shield)
+		if shared_owner.broken.is_connected(_on_owner_broken):
+			shared_owner.broken.disconnect(_on_owner_broken)
+	shared_owner = null
+
+
+## The shield that holds this body's count (itself unless shared).
+func _owner() -> ShieldComponent:
+	if shared_owner != null and not is_instance_valid(shared_owner):
+		shared_owner = null
+	return shared_owner if shared_owner != null else self
+
+
+## The owner and every member.
+func _group() -> Array[ShieldComponent]:
+	var out: Array[ShieldComponent] = [self]
+	for m in _members:
+		if is_instance_valid(m):
+			out.append(m)
+	return out
+
+
+## Who ticks the owner's plates: nobody while its own body stands (the coordinator does), else the first
+## member whose body does.
+func _driver() -> ShieldComponent:
+	if _body_alive(self):
+		return null
+	for m in _members:
+		if is_instance_valid(m) and _body_alive(m):
+			return m
+	return null
+
+
+static func _body_alive(sh: ShieldComponent) -> bool:
+	var st := CombatantStats.of(sh.get_parent()) if sh.get_parent() != null else null
+	return st == null or st.is_alive()
+
+
+func _on_owner_shield(current: int, _max_value: int) -> void:
+	if not is_broken:
+		current_shield = current
+		shield_changed.emit(current_shield, max_total())
+
+
+func _on_owner_broken(breaker: Node) -> void:
+	if not is_broken and is_instance_valid(shared_owner):
+		current_shield = 0
+		shield_changed.emit(current_shield, max_total())
+		_do_break(breaker, shared_owner.break_signature)
 
 
 static func of(actor: Node) -> ShieldComponent:

@@ -10,6 +10,10 @@ var _last: Vector3 = Vector3.INF
 var paused: bool = false
 
 
+func _ready() -> void:
+	process_physics_priority = -1  # step the followers before their own CombatActor tick (gravity once per tick)
+
+
 func set_party(lead: CombatActor, others: Array) -> void:
 	leader = lead
 	followers.clear()
@@ -22,7 +26,7 @@ func set_party(lead: CombatActor, others: Array) -> void:
 			_crumbs.append(leader.global_position)
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if paused or leader == null or not is_instance_valid(leader):
 		return
 	var p: Vector3 = leader.global_position
@@ -33,24 +37,14 @@ func _physics_process(_delta: float) -> void:
 			_crumbs.resize(96)
 	for i in followers.size():
 		var f: CombatActor = followers[i]
-		if not is_instance_valid(f) or f.frozen:
+		if not is_instance_valid(f) or f.frozen or f.is_walking():  # a scripted walk owns the body
 			continue
 		var want: Vector3 = _point_behind(spacing * float(i + 1))
 		var flat := Vector3(want.x - f.global_position.x, 0.0, want.z - f.global_position.z)
+		var v := Vector3.ZERO
 		if flat.length() > 0.2:
-			var spd: float = clampf(flat.length() * 4.0, 1.5, CombatActor.RUN_SPEED)
-			f.velocity.x = flat.normalized().x * spd
-			f.velocity.z = flat.normalized().z * spd
-		else:
-			f.velocity.x = 0.0
-			f.velocity.z = 0.0
-		if not f.is_on_floor():
-			f.velocity.y -= 20.0 * _delta
-		else:
-			f.velocity.y = 0.0
-		f.move_and_slide()
-		if f.sprite:
-			f.sprite.update_from_velocity(f.velocity)
+			v = flat.normalized() * clampf(flat.length() * 4.0, 1.5, CombatActor.RUN_SPEED)
+		f.step(v, delta)
 
 
 func _point_behind(distance: float) -> Vector3:

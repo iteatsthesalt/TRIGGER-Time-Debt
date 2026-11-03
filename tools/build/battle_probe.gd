@@ -1,7 +1,11 @@
 ## Headless battle probe: boots the game into a location (default test_arena) with the given user args,
 ## then prints battle state every --every=N frames and the summary when the battle ends. Exits after
-## --frames=N or when the boss battle finishes.
-##   godot --headless --path . --script res://tools/build/battle_probe.gd -- --scene=test_arena --autobattle --boss=atrium_cradle --party=crono,sera,marle
+## --frames=N or when the battle finishes, with the verdict `PROBE_END ok=<battle seen and won>` (exit code 1
+## when it is false: no battle started, the party fell, or the frame budget ran out first).
+##   godot --headless --path . --script res://tools/build/battle_probe.gd -- --scene=test_arena --autobattle --boss=atrium_cradle --party=crono,sera,marle --level=4
+## A debug start learns the kit of its chapter (BootArgs): the Prologue kit without --chapter, so a Chapter 1+
+## boss needs --chapter=<n> to be fought with its chapter's kit; --level applies to every party member, the
+## guests included. The probe prints each party member's level and known techs as the battle starts.
 extends SceneTree
 
 var frames_total: int = 6000
@@ -11,20 +15,23 @@ var _frame: int = 0
 var _started: bool = false
 var _battle_seen: bool = false
 var _done: bool = false
+var _victory: bool = false
 
 
 func _initialize() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--frames="):
-			frames_total = int(arg.trim_prefix("--frames="))
+			frames_total = maxi(1, int(arg.trim_prefix("--frames=")))
 		elif arg.begins_with("--every="):
-			every = int(arg.trim_prefix("--every="))
+			every = maxi(1, int(arg.trim_prefix("--every=")))
 		elif arg.begins_with("--scene="):
 			scene_id = arg.trim_prefix("--scene=")
 	_boot.call_deferred()
 
 
 func _boot() -> void:
+	# the probe plays the real scenes, which autosave: keep it out of the player's slots and settings (Saves)
+	root.get_node("Saves").set("suspended", true)
 	var packed: PackedScene = load("res://scenes/boot/boot.tscn")
 	var node: Node = packed.instantiate()
 	root.add_child(node)
@@ -40,9 +47,11 @@ func _boot() -> void:
 	if loc != null and loc.has_signal("battle_finished"):
 		loc.connect("battle_started", func() -> void:
 			_battle_seen = true
-			print("PROBE battle started"))
+			print("PROBE battle started")
+			_report_party())
 		loc.connect("battle_finished", func(victory: bool) -> void:
 			print("PROBE battle finished victory=%s" % str(victory))
+			_victory = victory
 			_done = true)
 
 
@@ -54,9 +63,22 @@ func _process(_delta: float) -> bool:
 		_report()
 	if _frame >= frames_total or _done:
 		_report()
-		print("PROBE_END frames=%d battle_seen=%s done=%s" % [_frame, str(_battle_seen), str(_done)])
+		var ok: bool = _battle_seen and _done and _victory
+		if not _done:
+			print("PROBE FAIL the battle did not finish within %d frames" % frames_total)
+		print("PROBE_END ok=%s frames=%d battle_seen=%s done=%s victory=%s" % [str(ok), _frame, str(_battle_seen), str(_done), str(_victory)])
+		quit(0 if ok else 1)
 		return true
 	return false
+
+
+## Who fights, at what level, with which techs (Game.roster): what a difficulty reading is taken against.
+func _report_party() -> void:
+	var game: Node = root.get_node("Game")
+	var roster: Dictionary = game.get("roster")
+	for id in game.get("active_party"):
+		var row: Dictionary = roster.get(id, {})
+		print("PROBE party %s lv=%d techs=%s" % [String(id), int(row.get("level", 0)), str(row.get("known_techs", []))])
 
 
 func _report() -> void:

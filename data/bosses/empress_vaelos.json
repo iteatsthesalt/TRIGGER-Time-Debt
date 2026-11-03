@@ -15,7 +15,7 @@
   "immune": [],
   "arena_hazards": ["predator_field_heals_enemies_only", "mammon_conduit_shattered_crono_at_centre_5m_minus_3pct_glaze_per_8s_and_temp_shields", "sera_rewind_costs_15pct", "sera_phase_out_at_20pct_instead_of_40"],
   "adds": [
-    {"key": "washi_hollow_monk", "count": 2, "phase": "ruthless_audit", "trigger": "Goyama=Incinerated ledger page"},
+    {"key": "washi_hollow_monk", "count": 2, "phase": "ruthless_audit", "trigger": "Goyama:Incinerated ledger page"},
     {"key": "audit_ledger_add", "count": 1, "phase": "ruthless_audit", "def": {"shield": 4, "tags": ["PAPER", "RUIN"], "weak": [], "notes": "A 4-plate add counted inside the phase's 8."}},
     {"key": "throne_arm", "count": 6, "phase": "coronation_throne", "def": {"tags": ["NULL", "RUIN"], "weak": [], "notes": "Six arms each hold a corrupted object (black apple, fang, iron lotus, Gatling barrel, burning ledger, pointing mudra); each grants her one action type; Breaking an arm's object removes that action for the rest of the fight. Plates not given."}}
   ],
@@ -37,10 +37,10 @@
      "tags": ["NULL", "RUIN", "ASTRAL", "DIVINE", "PAPER"],
      "actions": [
        {"id": "ledger_strike", "name": "Ledger Strike", "tags": ["NULL", "RUIN"], "shape": "SINGLE", "power": 1.3, "hits": 1, "target": "nearest", "weight": 2},
-       {"id": "ash_aoe", "name": "Goyama's Page (ash)", "tags": ["ASH", "RUIN"], "shape": "CIRCLE", "radius": 3.5, "power": 1.2, "hits": 1, "wind_up_s": 1.5, "target": "weakest", "weight": 1, "requires": "Goyama=Incinerated"},
-       {"id": "summon_monks", "name": "Goyama's Page (monks)", "tags": ["ASH"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:washi_hollow_monk", "target": "weakest", "weight": 1, "requires": "Goyama=Incinerated"},
-       {"id": "gatling_ring", "name": "R-66Y's Page (Gatling ring)", "tags": ["GUN", "FERRO"], "shape": "LINE_PIERCE", "length": 5.5, "width": 1.0, "power": 1.3, "hits": 1, "wind_up_s": 1.0, "target": "random", "weight": 1, "requires": "R66Y=Salvaged"},
-       {"id": "predator_field", "name": "Azar's Page (Predator Field)", "tags": ["DIVINE", "RUIN"], "shape": "BATTLEFIELD", "power": 0.5, "hits": 1, "target": "all", "weight": 1, "requires": "Azar=Predator"}
+       {"id": "ash_aoe", "name": "Goyama's Page (ash)", "tags": ["ASH", "RUIN"], "shape": "CIRCLE", "radius": 3.5, "power": 1.2, "hits": 1, "wind_up_s": 1.5, "target": "weakest", "weight": 1, "requires": "Goyama:Incinerated"},
+       {"id": "summon_monks", "name": "Goyama's Page (monks)", "tags": ["ASH"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "summon:washi_hollow_monk", "target": "weakest", "weight": 1, "requires": "Goyama:Incinerated"},
+       {"id": "gatling_ring", "name": "R-66Y's Page (Gatling ring)", "tags": ["GUN", "FERRO"], "shape": "LINE_PIERCE", "length": 5.5, "width": 1.0, "power": 1.3, "hits": 1, "wind_up_s": 1.0, "target": "random", "weight": 1, "requires": "R66Y:Salvaged"},
+       {"id": "predator_field", "name": "Azar's Page (Predator Field)", "tags": ["DIVINE", "RUIN"], "shape": "BATTLEFIELD", "power": 0.5, "hits": 1, "target": "all", "weight": 1, "requires": "Azar:Predator"}
      ],
      "mechanics": ["12_plate_audit_ledger_she_shaves_down_to_8_on_entry_plus_a_4_plate_add_counted_inside_the_8", "all_tags_resisted_at_first", "ledger_flips_a_page_for_each_ruthless_flag_goyama_incinerated_ash_aoe_3_5_summons_washi_hollow_monks", "r66y_salvaged_rotating_gatling_ring_line_pierce_rail_5_5_long_cone_2_8_1_3x_dodged_with_perfect_frame_input_on_4_frame_hold", "azar_predator_predator_field", "at_50pct_of_phase_sera_choice_gate_become_warden_or_phase_out", "black_oil_armor_every_shave_minus_1_with_goyama_incinerated_plus_r66y_salvaged_plus_azar_predator"],
      "on_enter": "She opens Marle's ledger and its pages flip, one for each ruthless flag.",
@@ -91,5 +91,5 @@
   ],
   "drops": [],
   "flags": {},
-  "notes": "Ending 2 — Empress Heir (Chapter 11). Lv 84, HP 190,000. 32 plates distributed 8/8/8/8 across four phases, rebuilding 18%/s after 3 s. Tags [NULL][RUIN][ASTRAL][DIVINE]. She starts with every weakness erased ([WEAKNESSES ERASED]); weaknesses must be created. Crono is fully shattered at the centre of the arena as a Mammon Conduit hazard. Flag effects read: Goyama=Incinerated + R66Y=Salvaged + Azar=Predator -> Black Oil Armor (every shave -1); Sera Warden -> [DIVINE] permanent weakness after Phase 2; Marle's Queen Sacrifice accepted -> she loses her [RUIN] resist for 15 s after each Break."
+  "notes": "Ending 2 — Empress Heir (Chapter 11). Lv 84, HP 190,000. 32 plates distributed 8/8/8/8 across four phases, rebuilding 18%/s after 3 s. Tags [NULL][RUIN][ASTRAL][DIVINE]. She starts with every weakness erased ([WEAKNESSES ERASED]); weaknesses must be created. Crono is fully shattered at the centre of the arena as a Mammon Conduit hazard. Flag effects read: Goyama:Incinerated + R66Y:Salvaged + Azar:Predator -> Black Oil Armor (every shave -1); Sera Warden -> [DIVINE] permanent weakness after Phase 2; Marle's Queen Sacrifice accepted -> she loses her [RUIN] resist for 15 s after each Break."
 }

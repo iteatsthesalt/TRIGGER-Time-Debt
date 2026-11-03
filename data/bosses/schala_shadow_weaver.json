@@ -50,7 +50,7 @@
      "on_enter": "",
      "on_break": "The mask falls, she is crying; the Break renders the unified 60 fps gold (Vaelos's dream of one perfect timeline, rejected).",
      "notes": "Shield 20 with two Breaks (at 10 plates and at 0): written as shield 10 with refill_once. Tags [NULL][VITREOUS][ASTRAL]. Weak: a hit carrying both [VITREOUS] and [ASTRAL] (the weak list cannot express 'both'; a single-tag hit must not shave)."},
-    {"id": "mercy", "name": "Mercy (conditional)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "scripted", "requires": "Light was kept (Central_Eye=Broken route)",
+    {"id": "mercy", "name": "Mercy (conditional)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "scripted", "requires": "Light was kept (Central_Eye:Broken route)",
      "shield": {"shield": 0, "weak": [], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["VITREOUS"],
      "actions": [],

@@ -6,6 +6,6 @@
     {"id": "shoguns_command", "name": "Shogun's Command", "tier": "single", "actors": ["krona"], "tags": ["RUIN", "TAUNT"], "shape": "SELF_AURA", "radius": 6.0, "target": "self", "effect": "shoguns_command", "costs": {"krona": {"mp": 6}}, "unlock": {"chapter": 2}},
     {"id": "oil_drinker", "name": "Oil-Drinker", "tier": "single", "actors": ["krona"], "tags": ["RUIN", "DARK", "AURA"], "shape": "PARTY", "target": "party", "effect": "oil_drinker", "costs": {}, "unlock": {"chapter": 2}},
     {"id": "crimson_seppuku", "name": "Crimson Seppuku That Failed", "tier": "ultimate", "actors": ["krona"], "tags": ["RUIN", "DARK", "ASH"], "shape": "SELF_AURA", "radius": 6.0, "hits": 1, "power": 3.0, "uses": "ELEMENTAL", "effect": "crimson_seppuku", "costs": {"krona": {"hp_to_one": true}}, "unlock": {"level": 18}},
-    {"id": "cobalt_nodachi", "name": "Cobalt Nodachi", "tier": "single", "actors": ["krona"], "tags": ["RUIN", "SWORD", "COBALT"], "shape": "LINE_PIERCE", "length": 20.0, "width": 1.5, "hits": 1, "power": 3.8, "uses": "PHYSICAL", "wind_up_s": 2.0, "effect": "cobalt_nodachi", "costs": {"krona": {"mp": 14}}, "unlock": {"flag": "Cobalt_Nodachi_Taken"}}
+    {"id": "cobalt_nodachi", "name": "Cobalt Nodachi", "tier": "single", "actors": ["krona"], "tags": ["RUIN", "SWORD", "COBALT"], "shape": "LINE_PIERCE", "length": 20.0, "width": 1.5, "hits": 1, "power": 3.8, "uses": "PHYSICAL", "wind_up_s": 2.0, "effect": "cobalt_nodachi", "costs": {"krona": {"mp": 14}}, "unlock": {"flag": "Masamune:Reforged"}}
   ]
 }

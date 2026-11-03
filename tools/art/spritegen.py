@@ -6,7 +6,11 @@ joints, the rig is painted at 4× the cell size with a two-tone cel shade from a
 box-reduced to the cell, palette-snapped, inner-lined and packed into a sheet whose rows are directions
 S, W, E, N and whose columns follow SpriteLibrary.DEFAULT_TABLE. Deterministic.
 
-Usage: python3 tools/art/spritegen.py crono [sera marle ...]   (ids from tools/art/characters.py)
+Usage: python3 tools/art/spritegen.py [--force] [crono sera ...]   (ids from tools/art/characters.py)
+
+These are placeholders. The generator never overwrites a sheet the PixelLab import owns (a stem recorded in
+data/art/pixellab_assets.json, or a `<id>_field_frames.json` table the importer wrote): such ids are refused
+and listed unless --force says the operator means it (DECISIONS "All current art is placeholder").
 """
 import json
 import math
@@ -18,6 +22,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 sys.path.insert(0, os.path.dirname(__file__))
 from pixel import hexes, to_palette, inner_line, pack, desaturate, value_noise  # noqa: E402
+from delivered import delivered_owner  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SS = 4  # supersample factor
@@ -794,12 +799,26 @@ def generate(spec, out_dir, cell=128):
     return sheet
 
 
-if __name__ == "__main__":
+def main(argv):
     from characters import CHARACTERS  # noqa: E402
-    ids = sys.argv[1:] or list(CHARACTERS.keys())
+    force = "--force" in argv
+    named = [a for a in argv if not a.startswith("--")]
+    ids = named or list(CHARACTERS.keys())
+    refused = []
     for cid in ids:
         spec = CHARACTERS[cid]
         group = spec.get("group", "characters")
         out = os.path.join(ROOT, "assets", group, cid)
+        owner = delivered_owner(cid, out)
+        if owner and not force:
+            refused.append(cid)
+            print(f"{cid}: refused, {owner}; the placeholder would overwrite it (--force if you mean it)")
+            continue
         sheet = generate(spec, out)
         print(f"{cid}: {sheet.size[0]}x{sheet.size[1]} -> {out}")
+    # an id asked for by name and refused is an error; the default run just lists the delivered ones
+    return 1 if named and refused else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

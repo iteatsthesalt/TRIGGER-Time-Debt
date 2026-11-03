@@ -1,0 +1,22 @@
+{
+  "_doc": "Story Bible 7.1: the conditions each ending's gesture needs at the Heart (EndingRules). Bounds are inclusive integers (Dark < 40 is dark_max 39); flags / not_flags use the FlagRef spelling (Name, Name:State) and must name defined flags; counters are Flags counters with their minimum; rifts is the minimum Amber Rift count.",
+  "endings": [
+    {"id": 1, "name": "Golden Light", "plays_in": "U0, the Atrium rebuilt", "light_min": 90, "dark_max": 39,
+     "flags": ["R66Y:Rewound", "Prologue_Fall:Teach_Her_To_Land", "Kami_Ori:Wounds_Kept"], "counters": {"kintsugi_repairs": 3}},
+    {"id": 2, "name": "Empress Heir", "plays_in": "U7, the Bone-Tree corrupted", "dark_min": 90, "light_max": 39,
+     "flags": ["R66Y:Salvaged", "Arris_Dome:Incinerated", "Azar:Predator"]},
+    {"id": 3, "name": "Vaelos Child", "plays_in": "U7 as a playground", "prismatic_min": 45, "light_min": 45, "dark_min": 45, "rifts": 3,
+     "flags": ["The_Bowl_Still_Whole", "Spoon_Taught", "Kami_Ori:Paradox_Child", "Vaelos_Father:Both"]},
+    {"id": 4, "name": "Borrowed Future (True)", "plays_in": "U9, the Borrowed Future", "light_min": 90, "dark_min": 90, "prismatic_min": 45,
+     "flags": ["Sera_Phase:Voluntary_40", "Sera_First_Voluntary", "Native_Duplicate_Given", "Crono_Porcelain:Kintsugi_Pris", "Arris_Dome:Sleeping",
+               "R66Y:Rewound", "Seed_of_Doan:Grown", "Kami_Ori:Wounds_Kept", "Crono_Entered_Heart_At_20"]},
+    {"id": 5, "name": "Porcelain Silence", "plays_in": "The Atrium as a museum", "dark_min": 90, "light_max": 39, "prismatic_max": 44,
+     "flags": ["Porcelain_Stress_Held_100", "Grief_Embraced"], "not_flags": ["Bekkler_Confessed", "Cassia_Mended_Crono"], "counters": {"Atrium_Siege": 1}},
+    {"id": 6, "name": "Mycelia Bloom", "plays_in": "The Atrium's heart, then everywhere", "light_min": 60, "dark_max": 39, "prismatic_min": 60, "prismatic_max": 75,
+     "flags": ["Arris_Dome:Sleeping", "R66Y:Rewound", "Azar:Scholar", "Moon:Sleep", "Seed_of_Doan:Grown", "Seed_of_Doan_Full", "Mycelia_Tether_Mastery"]},
+    {"id": 7, "name": "Ashen Jester", "plays_in": "The carnival beneath the Atrium", "light_min": 90, "dark_min": 90,
+     "flags": ["Glenn_Arm:HoseArm_Accepted", "Bekkler_Doll_Repaired", "Carnival_Completed", "Laugh_Track_Resisted", "Thread_Cutting_Mastery"]},
+    {"id": 8, "name": "Null Erasure", "plays_in": "U9, the White Atrium Void", "light_max": 9, "dark_max": 0, "prismatic_max": 19,
+     "flags": ["Seventh_Arm_Defeated", "Blank_Slate_Used", "Codex_True_Null"], "counters": {"null_mastery": 10, "kirie_scales": 100}}
+  ]
+}

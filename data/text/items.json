@@ -1,0 +1,187 @@
+{
+  "tonic": {
+    "description": "Restores some of an ally's HP.",
+    "flavor": "A mouthful, then someone checks the wrist again.",
+    "found": "Carried at the journey's beginning."
+  },
+  "mid_tonic": {
+    "description": "Restores more of an ally's HP than a Tonic.",
+    "flavor": "Enough to stand; not an excuse to keep standing.",
+    "found": "Acquisition source not yet recorded."
+  },
+  "ether": {
+    "description": "Restores an ally's MP.",
+    "flavor": "For the kind of tired a bottle can reach.",
+    "found": "Carried at the journey's beginning."
+  },
+  "revive": {
+    "description": "Revives a fallen ally with part of their HP restored.",
+    "flavor": "Save the lecture until they're sitting up.",
+    "found": "Acquisition source not yet recorded."
+  },
+  "cobalt_wash": {
+    "description": "Clears Ink Blot, reveals hidden washi paths and paints untouchable paper foes.",
+    "flavor": "Blue admits what white paint keeps denying.",
+    "found": "Acquisition source not yet recorded."
+  },
+  "time_atom": {
+    "description": "Repairs a small amount of Crono's porcelain integrity.",
+    "flavor": "A speck of time that can still be given back.",
+    "found": "From Atom-Eaters in Vaelos Heart."
+  },
+  "tungsten_scrap": {
+    "description": "Provides tungsten bracer material for crafting.",
+    "flavor": "Lucca kept jars for this sort of almost-nothing.",
+    "found": "Dropped by broken Porcelain Shardlings."
+  },
+  "thoracic_ring_part": {
+    "description": "Provides a salvaged component for a later arm cannon.",
+    "flavor": "The masks still count it as theirs.",
+    "found": "Salvage the Atrium's Shard Doll."
+  },
+  "bekkler_doll_small": {
+    "description": "Unlocks the training doll's Amber Rift and the choice to keep a vial when sealing Krona's vein.",
+    "flavor": "At six, she picked the prize with Papa's hair.",
+    "found": "Lucca's workbench shelf, Atrium Horologe."
+  },
+  "gold_leaf_memory_flake": {
+    "description": "Combines with Cobalt Nodachi pigment for Crono's Gold Leaf repair in the Bone-Tree.",
+    "flavor": "The hearth went cold; the shape of home didn't.",
+    "found": "Tanaka hearth, after three burnings."
+  },
+  "vaelos_tooth": {
+    "description": "Increases Astral damage against Lavos-spawn.",
+    "flavor": "A clean young voice from a mouth that isn't there.",
+    "found": "Dropped by Goyama's defeated Daimyo."
+  },
+  "lavos_fibre_wrap": {
+    "description": "Strengthens Krona's Defiled Masamune with fibre torn from the Daimyo.",
+    "flavor": "Strong binding. Keep eyes on blade.",
+    "found": "Tear fibre from Goyama's Daimyo."
+  },
+  "cobalt_nodachi": {
+    "description": "Unlocks Krona's cobalt strike, reveals hidden Chronoslips and opens a portal back to U1.",
+    "flavor": "One sunrise sharpened into something she can carry.",
+    "found": "The vault beneath Goyama Castle."
+  },
+  "tungsten_wire_loom_bracer": {
+    "description": "Increases damage dealt just after an enemy is Broken.",
+    "flavor": "It came loose when the house finally unclenched.",
+    "found": "Reward for defeating Atrium Cradle."
+  },
+  "epoch_gauntlet": {
+    "description": "Can be overcharged to unleash an Astral burst.",
+    "flavor": "The wing-core flies no farther than his wrist now.",
+    "found": "Glenn's gift in Guardia's courtyard."
+  },
+  "matriarch_seed": {
+    "description": "Thaws one Ruin stack from an ally; a seed has three uses.",
+    "flavor": "She gives it only when left broken and unburned.",
+    "found": "Left by the Mycelia Matriarch."
+  },
+  "gold_bundle": {
+    "description": "Eases Crono's glaze erosion when used at a lotus pond.",
+    "flavor": "Gold folded small enough to carry home.",
+    "found": "Dropped by Kirie Keepers in U7."
+  },
+  "gold_leaf_flake": {
+    "description": "Provides gold leaf for kintsugi work.",
+    "flavor": "It settles like a number on the HP bar.",
+    "found": "Dropped by broken Bekkler Doll Failed."
+  },
+  "charred_laurel_fragment": {
+    "description": "Provides a sprig of Cyrus's crest toward the Charred Laurel.",
+    "flavor": "The corn at the Sweetcorn Pope's stall tastes of it.",
+    "found": "Inside the Prop Chest Mimic."
+  },
+  "ferro_capacitor": {
+    "description": "Provides a magnetic component for Cassia-09's workbench.",
+    "flavor": "Still warm from a race nobody won.",
+    "found": "Dropped by the Bike Bros."
+  },
+  "batteries": {
+    "description": "Provides spare power cells for antennas and radios.",
+    "flavor": "Static leaves them where the children will find them.",
+    "found": "Dropped by Slag-Rat Couriers."
+  },
+  "conductivity_gel": {
+    "description": "Provides a conductive paste for wiring and repairs.",
+    "flavor": "It smells of oden steam and ozone.",
+    "found": "Dropped by the RAM Fixer Twins."
+  },
+  "kirie_scales": {
+    "description": "Counts toward the hundred scales that reveal Kami-Ori's seventh arm.",
+    "flavor": "Torn kimono silk that still remembers being worn.",
+    "found": "Kirie Keepers and Bone-Tree shrines."
+  },
+  "prop_hammer": {
+    "description": "Lets Glenn learn the Prop Hammer and works the lever above Cyrus's stage.",
+    "flavor": "Painted to look heavy; it is heavier than it looks.",
+    "found": "Dropped by Strongman Dummies."
+  },
+  "red_bike_chain": {
+    "description": "Restores part of the Red Bike's drive.",
+    "flavor": "Oil-fire still ticks between the links.",
+    "found": "Dropped by the Oil-Fire Bike Bro."
+  },
+  "gramophone_record_crono_lullaby": {
+    "description": "Plays the lullaby Crono once hummed to a doll.",
+    "flavor": "The groove is cut in a voice that never aged.",
+    "found": "Dropped by the Paradox Curator Choir."
+  },
+  "assembled_seed": {
+    "description": "Plants the Seed of Doan so it can grow.",
+    "flavor": "It hums at the pitch of an unbroken egg.",
+    "found": "Assembled at Lucca's Klein workbench."
+  },
+  "torso_heart_9999": {
+    "description": "Lets R-66Y's upgraded heart hold the Atrium in the siege.",
+    "flavor": "He asked to become the tower, and meant it.",
+    "found": "Earned from R-66Y's Residual Sorrow."
+  },
+  "chrono_prism_fragment": {
+    "description": "Provides a shard of the cathedral's prism for Vesper's light.",
+    "flavor": "Seven colours, and one of them is grief.",
+    "found": "Left by the Shadow Weaver."
+  },
+  "long_pull": {
+    "description": "A relic of R-66Y's long reach.",
+    "flavor": "The arm remembers every rescue it was too slow for.",
+    "found": "Dropped by R-66Y."
+  },
+  "grief_filter": {
+    "description": "Blocks Grief's MP drain in the Geno-Foundry, and later halves Grief everywhere.",
+    "flavor": "A mask that weeps so its wearer does not have to.",
+    "found": "Dropped by R-66Y."
+  },
+  "syringe_heart_key": {
+    "description": "Opens the way to the true Lavos in U0's endgame.",
+    "flavor": "Every syringe in the foundry is dated; this one is not.",
+    "found": "Dropped by R-66Y."
+  },
+  "charred_laurel": {
+    "description": "Pristine, it lets Sera slip without an anchor in burn zones; blackened, it drains BP in U6 and unlocks Prop Cannon.",
+    "flavor": "Funny is cracked window light gets in.",
+    "found": "Given or taken from Cyrus."
+  },
+  "bubble_lens": {
+    "description": "Lets the party cross U4 without the drowning timer and defeats the cathedral adds.",
+    "flavor": "A breath held in glass for whoever needs it.",
+    "found": "Dropped by the Arch-Curator Echo."
+  },
+  "vapor_memory_core_fragment": {
+    "description": "Holds a sliver of Crono's vaporized atoms for the re-parenting ending.",
+    "flavor": "The net kept what the rain took.",
+    "found": "From the Juvenile Matriarch's lullaby."
+  },
+  "kintsugi_brush": {
+    "description": "Makes every kintsugi repair restore more integrity.",
+    "flavor": "The bristles are his; the gold is borrowed.",
+    "found": "Dropped by Vaelos."
+  },
+  "null_shield": {
+    "description": "Lets an ally trade every weakness and resistance for a flat reduction to all damage.",
+    "flavor": "The Faceless teaches that no face is still a face.",
+    "found": "The Final Dojo's Faceless gift."
+  }
+}

@@ -1,5 +1,7 @@
 ## Builds the one WorldEnvironment + Compositor every scene shares (Reference Bible §2.2–2.3) and
-## keeps the CanvasStackEffect fed with the UniverseSwitcher's weights and the Debt.
+## keeps the CanvasStackEffect fed with the UniverseSwitcher's stage weights and the Debt.
+## Two readings of §2.3 (DECISIONS, Rendering): the glow row's "mix blend 0.35" is glow_bloom 0.35 under the
+## soft-light blend, and SDFGI stays off (§10.5's low-end setting) until it is judged on a GPU capture.
 class_name HD2DWorld
 extends WorldEnvironment
 
@@ -20,13 +22,13 @@ static func make_environment(universe_id: int = 0) -> Environment:
 	env.glow_enabled = true
 	env.glow_intensity = 1.15
 	env.glow_strength = 0.85
-	env.glow_bloom = 0.35
+	env.glow_bloom = 0.35  # §2.3 "mix blend 0.35", read as the bloom share under the soft-light blend
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
-	env.glow_hdr_threshold = 0.9
+	env.glow_hdr_threshold = 0.9  # the canvas stack carries HDR above 1.0 through to here (canvas_stack.glsl)
 	env.ssao_enabled = true
 	env.ssao_radius = 1.2
 	env.ssao_intensity = 1.6
-	env.sdfgi_enabled = false
+	env.sdfgi_enabled = false  # §2.3 asks for SDFGI at 0.2; off (§10.5's low-end setting) until a quality option exists
 	env.fog_enabled = false
 	env.volumetric_fog_enabled = false
 	_tint_for(env, universe_id)
@@ -73,7 +75,7 @@ func _ready() -> void:
 	effects.append(canvas_stack)
 	compositor.compositor_effects = effects
 	if is_instance_valid(Universe):
-		canvas_stack.weights = Universe.weights.duplicate()
+		_on_weights(Universe.weights)
 		Universe.weights_changed.connect(_on_weights)
 	if is_instance_valid(Game):
 		_on_integrity(Game.crono_integrity)
@@ -84,9 +86,12 @@ func _ready() -> void:
 
 func _on_weights(w: PackedFloat32Array) -> void:
 	canvas_stack.weights = _with_leaks(w)
+	canvas_stack.paper_weights = _with_leaks(Universe.paper_weights)
+	# Leaks never move the canvas rate: U0 stays home and props keep their source rate inside the hub (§2.4).
+	canvas_stack.fps_weights = Universe.fps_weights.duplicate()
 
 
-## Hub leaks (§2.4): another universe bleeds into the current grade without changing the universe.
+## Hub leaks (§2.4): another universe bleeds into the current grade and paper without changing the universe.
 var _leaks: Dictionary = {}
 
 
@@ -96,7 +101,7 @@ func set_leak(universe_id: int, amount: float) -> void:
 	else:
 		_leaks[universe_id] = clampf(amount, 0.0, 1.0)
 	if is_instance_valid(Universe):
-		canvas_stack.weights = _with_leaks(Universe.weights)
+		_on_weights(Universe.weights)
 
 
 func _with_leaks(w: PackedFloat32Array) -> PackedFloat32Array:

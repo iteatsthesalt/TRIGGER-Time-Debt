@@ -8,6 +8,9 @@ const MUSIC_DIR := "res://audio/music"
 const SFX_DIR := "res://audio/sfx"
 const AMB_DIR := "res://audio/ambience"
 const VO_DIR := "res://audio/vo"
+## The stems play_music loads beside <id>.ogg, as <id>__<stem>.ogg. DialogueCheck.music_exists and lint_data.py
+## read this list, so a track shipped only as an unlisted stem is reported, not played as silence.
+const MUSIC_STEMS: Array[String] = ["box", "piano", "strings", "hiss", "bass", "drums", "lead", "pad", "quartet", "crackle", "wind", "tick"]
 
 var rtpc: Dictionary = {
 	"porcelain_stress": 0.0, "vhs_tracking": 0.0, "mycelia_shared": 12.0, "bp_stolen": 0.0, "shave_bonus": 0.0,
@@ -19,7 +22,6 @@ var _ambience_player: AudioStreamPlayer
 var _sfx_pool: Array[AudioStreamPlayer] = []
 var _vo_player: AudioStreamPlayer
 var _stream_cache: Dictionary = {}
-var _music_fade: Tween
 var _lowpass: AudioEffectLowPassFilter
 var _pitch: AudioEffectPitchShift
 var _master_set: bool = false
@@ -41,6 +43,9 @@ func _ready() -> void:
 	if is_instance_valid(Game):
 		Game.settings_changed.connect(_apply_volumes)
 		_apply_volumes()
+		# porcelain_stress follows Crono's integrity: 0 at 100%, 100 at the flatline (Combat Laws §16.3, §17.3)
+		Game.integrity_changed.connect(_on_integrity)
+		_on_integrity(Game.crono_integrity)
 
 
 func _setup_buses() -> void:
@@ -95,7 +100,7 @@ func play_music(track_id: StringName, fade_s: float = 1.5, stems: Array = []) ->
 	var paths: Array[String] = []
 	if stems.is_empty():
 		paths.append("%s/%s.ogg" % [MUSIC_DIR, track_id])
-		for stem in ["box", "piano", "strings", "hiss", "bass", "drums", "lead", "pad", "quartet", "crackle", "wind", "tick"]:
+		for stem in MUSIC_STEMS:
 			var p: String = "%s/%s__%s.ogg" % [MUSIC_DIR, track_id, stem]
 			if ResourceLoader.exists(p):
 				paths.append(p)
@@ -181,6 +186,26 @@ func _find_sfx(id: String) -> AudioStream:
 	return _load(variants[randi() % variants.size()])
 
 
+## A music sting (victory, defeat, overcap): audio/music/mus_stings_<id>.ogg, played once on the Music
+## bus beside the current track rather than through play_music, so the field music can follow it.
+func play_sting(id: String, volume_db: float = 0.0) -> void:
+	var stream: AudioStream = find_sting(id)
+	if stream == null:
+		push_warning("Audio: no sting %s under %s" % [id, MUSIC_DIR])
+		return
+	var p := AudioStreamPlayer.new()
+	p.bus = &"Music"
+	p.stream = stream
+	p.volume_db = volume_db
+	p.finished.connect(p.queue_free)
+	add_child(p)
+	p.play()
+
+
+func find_sting(id: String) -> AudioStream:
+	return _load("%s/mus_stings_%s.ogg" % [MUSIC_DIR, id])
+
+
 func play_voice(speaker: String, line_id: String) -> void:
 	var stream: AudioStream = _load("%s/%s/%s.ogg" % [VO_DIR, speaker, line_id])
 	if stream == null:
@@ -198,6 +223,10 @@ func set_rtpc(name: String, value: float) -> void:
 				_lowpass.cutoff_hz = lerpf(20000.0, 2500.0, clampf(value / 100.0, 0.0, 1.0))
 		"camera_fov":
 			pass
+
+
+func _on_integrity(value: float) -> void:
+	set_rtpc("porcelain_stress", clampf(100.0 - value, 0.0, 100.0))
 
 
 func get_rtpc(name: String) -> float:

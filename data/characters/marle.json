@@ -7,6 +7,6 @@
     {"id": "light_bolt", "unlock": {"chapter": 0}},
     {"id": "ward", "unlock": {"chapter": 0}},
     {"id": "vitreous_arrow", "unlock": {"chapter": 10}},
-    {"id": "porcelain_promise", "unlock": {"flag": "Act1_Done"}}
+    {"id": "porcelain_promise", "unlock": {"chapter": 2}}
   ]
 }

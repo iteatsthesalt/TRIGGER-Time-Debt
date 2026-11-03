@@ -16,6 +16,8 @@ var plane_mat: ShaderMaterial
 var party: Array[CombatActor] = []
 var enemies: Array[CombatActor] = []
 var center: Vector3
+## The side of the centre the party stands on (PartyPlacement): +Z, toward the camera, unless the ground says no.
+var party_side: Vector3 = Vector3(0, 0, 1)
 var mode: int = Mode.NONE
 var actor: CombatActor
 var current_tech: TechDef
@@ -29,11 +31,15 @@ var telegraphs: Dictionary = {}
 var preview_mesh: MeshInstance3D
 var config: Dictionary = {}
 var _ended: bool = false
-var _flash: ColorRect
 var boss: BossController
+var roster := BattleRoster.new()
 var input_blocked: bool = false
+## The parry input's presses this battle (Ens Parry, §4.2).
+var ens_parry := EnsParry.new()
+## Counts the decision windows offered: a command that opens the next one itself (a parked ally gets the floor
+## back at once) leaves that window's deck open.
+var _window_serial: int = 0
 static var _plane_shader: Shader
-static var _aoe_shader: Shader
 
 
 func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, camera_rig: HD2DCameraRig) -> void:
@@ -79,7 +85,7 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 	coordinator.telegraph_ended.connect(_on_telegraph_ended)
 	coordinator.enemy_action_started.connect(_on_enemy_action)
 	coordinator.battle_message.connect(hud.show_message)
-	coordinator.truth_moment.connect(_on_truth)
+	coordinator.truth_moment.connect(BattleFx.truth_moment.bind(self))
 	coordinator.battle_ended.connect(_on_battle_ended)
 	coordinator.boost_used.connect(_on_boost_used)
 	coordinator.sera_phase_changed.connect(_on_sera_phase)
@@ -89,17 +95,16 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 	if music != "":
 		Audio.play_music(StringName(music), 0.6)
 	Audio.play_sfx("time/gate_open_u%d" % universe)
-	var bench: Array = []
-	var hover: Node = null
+	roster.build(self, party, center)
 	var start_cfg := {
 		"advantage": String(cfg.get("advantage", "normal")), "universe": universe, "boss": bool(cfg.get("boss", false)),
-		"techs": Data.techs, "enemy_defs": defs, "bench": bench, "hover_sera": hover,
+		"techs": Data.techs, "enemy_defs": defs, "bench": roster.bench, "hover_sera": roster.hover,
 		"prometheus": Game.prometheus_core, "parry_frames": Game.parry_frames, "max_bp": Game.max_bp, "max_spend": Game.max_spend,
-		"sera_present": Game.sera_in_story != "absent",
+		"story": bool(cfg.get("story", false)), "ground": cfg.get("ground"),  # party synergy reads who is on the plane (BattleRoster)
 	}
-	hud.register_units(party, enemies, hover)
+	hud.register_units(party, enemies, roster.hover)
 	for e in enemies:
-		e.face_toward(center + Vector3(0, 0, 4))
+		e.face_toward(center + party_side * 4.0)
 	coordinator.flow_speed = float(Game.settings.get("flow_speed", 1.0))
 	coordinator.start_battle(party, enemies, center, start_cfg)
 	for e in enemies:
@@ -120,8 +125,8 @@ func _knows_tech(a: Node, t: TechDef) -> bool:
 		return false
 	if not Game.knows_tech(st.actor_id, t.id):
 		return false
-	for f in t.requires_flags:
-		if not Flags.has(f):
+	for f in t.requires_flags:  # "Name:State" flag references (FlagRef)
+		if not Flags.holds(String(f)):
 			return false
 	return true
 
@@ -139,8 +144,8 @@ func _build_plane() -> void:
 	plane_mat = ShaderMaterial.new()
 	plane_mat.shader = _plane_shader
 	plane_mat.set_shader_parameter("reveal", 0.0)
-	var g: Dictionary = Universe.grade(universe)
-	plane_mat.set_shader_parameter("tint", g.get("paper", Color(0.96, 0.93, 0.86)))
+	plane_mat.set_shader_parameter("tint", CanvasStackEffect.paper_of(universe))  # the one grade table
+	plane_mat.render_priority = BattleFx.PLANE_RENDER_PRIORITY  # under every sprite, a faded one included
 	plane.material_override = plane_mat
 	plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	plane.position = center + Vector3(0, 0.03, 0)
@@ -157,37 +162,17 @@ func _build_plane() -> void:
 	add_child(preview_mesh)
 
 
+## The enemies pushed apart, the party fanned out on ground it can stand on (PartyPlacement).
 func _place_party() -> void:
-	# Enemies keep their positions but never overlap (min 1.3 m apart).
-	for i in enemies.size():
-		for j in range(i):
-			var a: CombatActor = enemies[i]
-			var b: CombatActor = enemies[j]
-			var d: Vector3 = a.global_position - b.global_position
-			d.y = 0.0
-			if d.length() < 1.3:
-				var push: Vector3 = (d.normalized() if d.length() > 0.01 else Vector3(1, 0, 0)) * (1.3 - d.length()) * 0.5
-				a.global_position += push
-				b.global_position -= push
-	# Party on the near side (toward the camera, +Z), fanned; enemies keep their positions.
-	var n: int = party.size()
-	for i in n:
-		var mid: float = float(n - 1) * 0.5
-		var angle: float = PI * 0.5 + (float(i) - mid) * 0.5
-		var anchor: Vector3 = center + Vector3(cos(angle), 0.0, sin(angle)) * 4.5
-		anchor.y = party[i].global_position.y
-		party[i].global_position = anchor
-		party[i].frozen = false
-		party[i].velocity = Vector3.ZERO
-		party[i].sprite.update_from_velocity(Vector3.ZERO)
-		party[i].face_toward(center + Vector3(0, 0, -5))
-		party[i].sprite.play(&"ready")
+	PartyPlacement.spread_enemies(enemies)
+	party_side = PartyPlacement.place(party, center, config.get("ground") as WalkableGround)
 
 
 # ------------------------------------------------------------------ commands
 
 func _on_command_requested(a: Node) -> void:
 	actor = a as CombatActor
+	_window_serial += 1
 	boost = 0
 	partners.clear()
 	current_tech = null
@@ -201,21 +186,7 @@ func _on_command_requested(a: Node) -> void:
 
 func _open_main_deck() -> void:
 	mode = Mode.DECK
-	var items: Array = [{"label": "Attack", "cmd": "attack"}]
-	var techs: Array[TechDef] = coordinator.available_techs(actor)
-	items.append({"label": "Tech", "cmd": "techs", "enabled": not techs.is_empty()})
-	items.append({"label": "Guard", "cmd": "guard"})
-	items.append({"label": "Sync Hold", "cmd": "sync"})
-	items.append({"label": "Item", "cmd": "items", "enabled": not Game.inventory.is_empty()})
-	var spareable: bool = false
-	for e in coordinator.living_enemies():
-		if coordinator.can_spare(e):
-			spareable = true
-	items.append({"label": "Spare", "cmd": "spare", "enabled": spareable})
-	if boss != null and boss.is_sealed() and actor.time_debt != null:
-		items.append({"label": "Pay Time Debt (5%% integrity, now %d)" % roundi(Game.crono_integrity), "cmd": "pay_debt"})
-	if not coordinator.is_boss_battle:
-		items.append({"label": "Withdraw", "cmd": "withdraw"})
+	var items: Array = roster.hover_deck(coordinator, actor) if actor == roster.hover else BattleDeck.main_items(self, actor)
 	hud.open_deck(actor.stats.display_name, items)
 
 
@@ -223,9 +194,11 @@ func _on_deck_command(cmd: String, payload: Dictionary) -> void:
 	match cmd:
 		"attack":
 			current_tech = null
-			_begin_targeting(coordinator.living_enemies())
+			partners.clear()  # a Dual picked and backed out of leaves no partner on a plain Attack
+			_begin_targeting(BattleDeck.targets(coordinator, "attack"))
 		"techs":
-			_open_tech_deck()
+			mode = Mode.TECHS
+			hud.open_deck("Techs", BattleDeck.tech_items(coordinator, actor))
 		"tech":
 			current_tech = payload["tech"]
 			partners = coordinator.partners_for(current_tech, actor) if current_tech.is_coop() else []
@@ -234,95 +207,48 @@ func _on_deck_command(cmd: String, payload: Dictionary) -> void:
 					hud.close_deck()
 					_execute_tech(null)
 				"ally":
-					_begin_targeting(coordinator.party.filter(func(u: Node) -> bool: return coordinator._alive(u)))
+					_begin_targeting(BattleDeck.targets(coordinator, "ally"))
 				_:
 					if current_tech.shape == TechDef.Shape.SELF_AURA:
 						hud.close_deck()
 						_execute_tech(null)
 					else:
-						_begin_targeting(coordinator.living_enemies())
+						_begin_targeting(BattleDeck.targets(coordinator, "enemy"))
 		"guard":
-			hud.close_deck()
-			coordinator.cmd_guard(actor)
-			_after_command()
+			_run(coordinator.cmd_guard.bind(actor))
 		"sync":
-			hud.close_deck()
-			coordinator.cmd_sync_hold(actor)
-			_after_command()
+			_run(coordinator.cmd_sync_hold.bind(actor))
 		"items":
-			_open_item_deck()
+			mode = Mode.ITEMS
+			hud.open_deck("Items", BattleDeck.item_items())
+		"swap":
+			mode = Mode.SWAP
+			hud.open_deck("Swap", roster.deck_items(coordinator, actor))
+		"swap_in":
+			_run(roster.perform.bind(self, actor, payload))
 		"item":
 			current_tech = null
 			set_meta("item", payload["item"])
-			_begin_targeting(coordinator.party.filter(func(u: Node) -> bool: return CombatantStats.of(u) != null))
+			_begin_targeting(BattleDeck.targets(coordinator, "item"))
 		"spare":
-			var sp: Array = coordinator.living_enemies().filter(func(e: Node) -> bool: return coordinator.can_spare(e))
 			set_meta("spare", true)
-			_begin_targeting(sp)
+			_begin_targeting(BattleDeck.targets(coordinator, "spare"))
 		"withdraw":
-			hud.close_deck()
-			var r: Dictionary = coordinator.cmd_withdraw(actor)
-			if not bool(r.get("ok", false)):
-				hud.show_message(String(r.get("error", "")))
-				_open_main_deck()
-			else:
-				_after_command()
+			_run(coordinator.cmd_withdraw.bind(actor))
 		"pay_debt":
-			# The first permanent cost (Prologue): 5% of Crono's ceiling opens the Dollhouse Seal. A free action.
+			# The first permanent cost (Prologue): integrity opens the Dollhouse Seal. A free action.
 			hud.close_deck()
-			actor.time_debt.pay_integrity(5.0)
-			Game.set_integrity(actor.time_debt.integrity)
-			actor.set_porcelain_visuals()
-			if boss != null:
-				boss.set_sealed(false)
-			Flags.add_counter(&"debts_paid", 1)
-			Audio.play_sfx("porcelain/crack_small")
-			hud.spawn_number(actor.global_position, "−5% ceiling", Color(0.8, 0.85, 1.0), true)
-			hud.show_message("Paid. The Seal opens by exactly as much as he gives it.")
-			if Flags.has(&"The_Bowl_Still_Whole"):
-				_gold_shatter(actor.global_position)
-			_open_main_deck()
+			SealPayment.pay(self, actor)
+			if not auto:
+				_open_main_deck()
 		"back":
 			_open_main_deck()
-
-
-func _open_tech_deck() -> void:
-	mode = Mode.TECHS
-	var items: Array = []
-	for t in coordinator.available_techs(actor):
-		var cost: Dictionary = t.cost_for(actor.stats.actor_id)
-		var cost_txt: String = ""
-		if cost.has("mp"):
-			cost_txt = "%d MP" % int(cost["mp"])
-		elif cost.has("strain_pct"):
-			cost_txt = "%s%% ceiling" % str(cost["strain_pct"])
-		elif cost.has("solidity_pct"):
-			cost_txt = "%s%% solidity" % str(cost["solidity_pct"])
-		var prefix: String = ""
-		if t.tier == TechDef.Tier.DUAL:
-			prefix = "[Dual] "
-		elif t.tier == TechDef.Tier.TRIPLE:
-			prefix = "[Triple] "
-		items.append({"label": "%s%s  %s" % [prefix, t.display_name, cost_txt], "cmd": "tech", "payload": {"tech": t}})
-	items.append({"label": "Back", "cmd": "back"})
-	hud.open_deck("Techs", items)
-
-
-func _open_item_deck() -> void:
-	mode = Mode.ITEMS
-	var items: Array = []
-	for id in Game.inventory.keys():
-		var def: Dictionary = Data.items.get(StringName(id), {})
-		if def.is_empty() or def.has("crafting"):
-			continue
-		items.append({"label": "%s ×%d" % [String(def.get("name", id)), int(Game.inventory[id])], "cmd": "item", "payload": {"item": def}})
-	items.append({"label": "Back", "cmd": "back"})
-	hud.open_deck("Items", items)
 
 
 func _begin_targeting(candidates: Array) -> void:
 	target_list = candidates
 	if target_list.is_empty():
+		_clear_aim()
 		hud.show_message("No target")
 		_open_main_deck()
 		return
@@ -352,19 +278,12 @@ func _refresh_preview() -> void:
 		hud.set_preview(text)
 		hud.update_plates({}, _party_blind(), t)
 		return
-	var previews: Dictionary = coordinator.preview(actor, current_tech, t, coordinator.position_of(t), boost)
-	var total_dmg: int = 0
-	var hits: int = 0
-	for e in previews.keys():
-		total_dmg += int(previews[e]["damage"])
-		hits += int(previews[e]["hits"])
-	var name: String = current_tech.display_name if current_tech != null else "Attack"
-	text = "%s  →  %s   %d target%s, %d hit%s, ~%d dmg   [R/T: Boost Lv%d]" % [name, CombatantStats.of(t).display_name, previews.size(), "s" if previews.size() != 1 else "", hits, "s" if hits != 1 else "", total_dmg, boost]
-	hud.set_preview(text)
+	var previews: Dictionary = coordinator.preview(actor, current_tech, t, coordinator.position_of(t), boost, partners)
+	hud.set_preview(BattleDeck.preview_text(current_tech, t, previews, boost))
 	hud.update_plates(previews, _party_blind(), t)
 	# Shape outline on the plane.
 	if current_tech != null and current_tech.shape != TechDef.Shape.SINGLE and current_tech.shape != TechDef.Shape.PARTY:
-		var params := {"shape": current_tech.shape, "radius": current_tech.radius, "length": current_tech.length, "width": current_tech.width, "scale": current_tech.shape_scale(boost)}
+		var params := {"shape": current_tech.shape, "radius": CastReach.radius(current_tech), "length": current_tech.length, "width": current_tech.width, "scale": current_tech.shape_scale(boost)}
 		var pts: PackedVector3Array = TacticalPositioner.preview_points(params, actor.global_position, coordinator.position_of(t))
 		if pts.size() >= 2:
 			im.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
@@ -381,46 +300,64 @@ func _party_blind() -> bool:
 	return false
 
 
-func _confirm_target() -> void:
-	var t: Node = _current_target()
+## Leave the aim: the item/spare marks, the shape outline and the preview line go.
+func _clear_aim() -> void:
+	for m in [&"item", &"spare"]:
+		if has_meta(m):
+			remove_meta(m)
 	hud.set_targeting(false)
 	(preview_mesh.mesh as ImmediateMesh).clear_surfaces()
-	if has_meta("spare"):
-		remove_meta("spare")
-		coordinator.cmd_spare(actor, t)
-		_after_command()
-		return
-	if has_meta("item"):
-		var item: Dictionary = get_meta("item")
-		remove_meta("item")
-		if Game.take_item(StringName(String(item["id"]))):
-			coordinator.cmd_item(actor, item, t)
-		_after_command()
-		return
-	if current_tech == null:
-		coordinator.cmd_attack(actor, t, boost)
-		_after_command()
-		return
-	_execute_tech(t)
+
+
+func _confirm_target() -> void:
+	var t: Node = _current_target()
+	var item: Dictionary = get_meta("item", {})
+	var spare: bool = has_meta("spare")
+	_clear_aim()
+	if spare:
+		_run(coordinator.cmd_spare.bind(actor, t))
+	elif not item.is_empty():
+		_run(BattleDeck.use_item.bind(coordinator, actor, item, t))
+	elif current_tech == null:
+		_run(coordinator.cmd_attack.bind(actor, t, boost))
+	else:
+		_execute_tech(t)
 
 
 func _execute_tech(t: Node) -> void:
 	var aim: Vector3 = coordinator.position_of(t) if t != null else actor.global_position
-	actor.sprite.play(&"attack", &"ready")
-	var r: Dictionary = coordinator.cmd_tech(actor, current_tech.id, t, aim, boost, partners)
-	if not bool(r.get("ok", false)):
-		hud.show_message(String(r.get("error", "rejected")))
-		_open_main_deck()
-		return
-	Audio.play_sfx("magic/%s_contact" % String(current_tech.element_tag()).to_lower())
-	_after_command()
+	var tech: TechDef = current_tech
+	var who: CombatActor = actor
+	var serial: int = _window_serial
+	var r: Dictionary = coordinator.cmd_tech(actor, tech.id, t, aim, boost, partners)
+	if bool(r.get("ok", false)):
+		who.sprite.play(&"attack", &"ready")
+		if tech.element_tag() != &"":
+			Audio.play_sfx("magic/%s_contact" % String(tech.element_tag()).to_lower())
+	_after_command(r, serial)
 
 
-func _after_command() -> void:
-	mode = Mode.NONE
-	hud.close_deck()
+## Run one party command and settle the deck on its verdict.
+func _run(command: Callable) -> void:
+	var serial: int = _window_serial
+	_after_command(command.call(), serial)
+
+
+## A refused command says why and reopens this actor's deck (the window is still open); an accepted one closes
+## the deck, unless the command itself opened the next window (`serial` moved on), whose deck is already up.
+func _after_command(r: Dictionary, serial: int) -> void:
 	hud.set_targeting(false)
 	hud.update_plates({}, _party_blind(), null)
+	if bool(r.get("ok", false)):
+		if serial == _window_serial:
+			mode = Mode.NONE
+			hud.close_deck()
+	elif not _ended and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and coordinator.active_actor == actor:
+		hud.show_message(String(r.get("error", "rejected")))
+		_open_main_deck()
+	else:
+		mode = Mode.NONE
+		hud.close_deck()
 
 
 ## Mid-battle story beats close the deck and swallow input; when they end the open window is re-offered.
@@ -435,28 +372,32 @@ func set_input_blocked(on: bool) -> void:
 		_on_command_requested(coordinator.active_actor)
 
 
+## A summon cast by a regular enemy, capped by that enemy's own `max_adds` (EnemySpawner); the boss's own
+## summons are its controller's (its file defines the adds and its director may take them over).
 func _on_summon_requested(key: StringName, count: int, near: Node) -> void:
-	if boss != null:
-		return  # the boss controller places its own adds
-	var edef: EnemyDef = Data.enemy(key)
-	if edef == null:
+	if boss != null and (near == null or near == boss.actor):
 		return
-	for k in count:
-		var a: CombatActor = CombatActor.create_enemy(edef, -1, "_sum%d" % (randi() % 10000))
-		get_parent().add_child(a)
-		var base: Vector3 = coordinator.position_of(near) if near != null else center
-		var ang: float = randf() * TAU
-		a.global_position = base + Vector3(cos(ang), 0.0, sin(ang)) * (1.6 + 0.4 * float(k))
-		enemies.append(a)
-		coordinator.add_enemy(a, edef)
-		hud.register_enemy(a)
+	var edef: EnemyDef = Data.enemy(key)
+	if edef != null:
+		EnemySpawner.spawn(self, edef, near, count, EnemySpawner.cap_of(near))
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _ended or coordinator == null or coordinator.state != BattleCoordinator.State.COMMAND_WAIT or auto or input_blocked or Story.is_running():
+	if _ended or coordinator == null or auto or input_blocked or Story.blocks_battle_input():
+		return
+	if coordinator.state == BattleCoordinator.State.TICK:
+		# Parry arms the guarding allies a hit is coming for (EnsParry). A parked ally may leave the Ready Pool at
+		# any time (§3.4): confirm wakes the first one.
+		if event.is_action_pressed("parry") and not coordinator.paused:
+			ens_parry.press(coordinator)
+			get_viewport().set_input_as_handled()
+		elif not coordinator.ready_pool.is_empty() and event.is_action_pressed("confirm") and coordinator.request_command(coordinator.ready_pool[0]):
+			get_viewport().set_input_as_handled()
+		return
+	if coordinator.state != BattleCoordinator.State.COMMAND_WAIT:
 		return
 	match mode:
-		Mode.DECK, Mode.TECHS, Mode.ITEMS:
+		Mode.DECK, Mode.TECHS, Mode.ITEMS, Mode.SWAP:
 			if event.is_action_pressed("move_up"):
 				hud.deck_move(-1)
 			elif event.is_action_pressed("move_down"):
@@ -488,12 +429,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			elif event.is_action_pressed("confirm"):
 				_confirm_target()
 			elif event.is_action_pressed("cancel"):
-				if has_meta("item"):
-					remove_meta("item")
-				if has_meta("spare"):
-					remove_meta("spare")
-				hud.set_targeting(false)
-				(preview_mesh.mesh as ImmediateMesh).clear_surfaces()
+				_clear_aim()
 				_open_main_deck()
 			else:
 				return
@@ -503,8 +439,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if _ended or coordinator == null:
 		return
-	if mode != Mode.TARGET:
-		hud.update_plates({}, _party_blind(), null)
+	hud.refresh_plates(_party_blind())
+	# A window with no deck up (a path that closed it and opened nothing) gets its deck back: never a soft-lock.
+	if not auto and mode == Mode.NONE and not input_blocked and not coordinator.paused and coordinator.active_actor != null \
+			and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and not Story.blocks_battle_input():
+		_on_command_requested(coordinator.active_actor)
 	for e in telegraphs.keys():
 		if not coordinator.wind_ups.has(e):
 			continue
@@ -514,82 +453,7 @@ func _process(delta: float) -> void:
 	if auto and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and actor != null and not input_blocked and not coordinator.paused:
 		auto_timer -= delta
 		if auto_timer <= 0.0:
-			_auto_act()
-
-
-func _auto_act() -> void:
-	var living: Array = coordinator.living_enemies()
-	if living.is_empty():
-		return
-	if boss != null and boss.is_sealed() and actor.time_debt != null:
-		_on_deck_command("pay_debt", {})
-		return
-	auto_timer = 0.15
-	var targetable: Array = living.filter(func(e: Node) -> bool: return not coordinator._untargetable(e))
-	if targetable.is_empty():
-		coordinator.cmd_guard(actor)
-		return
-	# heal when someone is low and a healing item is on hand
-	var low: Node = null
-	for u in coordinator.party:
-		var st := CombatantStats.of(u)
-		if st != null and st.is_alive() and st.hp_ratio() < 0.35:
-			low = u
-	if low != null and int(Game.inventory.get(&"tonic", 0)) > 0 and randf() < 0.7:
-		if Game.take_item(&"tonic"):
-			coordinator.cmd_item(actor, Data.items[&"tonic"], low)
-			return
-	# focus fire: unbroken targets first, lowest plates first
-	targetable.sort_custom(func(a: Node, b: Node) -> bool:
-		var sa := ShieldComponent.of(a)
-		var sb := ShieldComponent.of(b)
-		var ka: int = (1000 if sa != null and sa.is_broken else 0) + (sa.current_shield if sa != null else 0)
-		var kb: int = (1000 if sb != null and sb.is_broken else 0) + (sb.current_shield if sb != null else 0)
-		return ka < kb)
-	var t: Node = targetable[0] if randf() < 0.8 else targetable[randi() % targetable.size()]
-	var techs: Array[TechDef] = coordinator.available_techs(actor).filter(func(x: TechDef) -> bool: return x.is_attack and x.target in ["enemy", "point"] and x.effect == &"")
-	var b: int = mini(coordinator.bank.bp, randi() % 3)
-	if not techs.is_empty() and randf() < 0.6:
-		var tech: TechDef = _auto_pick_tech(techs, targetable)
-		var r: Dictionary = coordinator.cmd_tech(actor, tech.id, t, coordinator.position_of(t), b, coordinator.partners_for(tech, actor))
-		if bool(r.get("ok", false)):
-			actor.sprite.play(&"attack", &"ready")
-			return
-	actor.sprite.play(&"attack", &"ready")
-	var r2: Dictionary = coordinator.cmd_attack(actor, t, b)
-	if not bool(r2.get("ok", true)):
-		coordinator.cmd_guard(actor)
-
-
-## Shapes that can catch more than one enemy in a single cast.
-const AUTO_MULTI_SHAPES: Array[int] = [
-	TechDef.Shape.LINE_PIERCE, TechDef.Shape.CONE, TechDef.Shape.CIRCLE, TechDef.Shape.CROSS,
-	TechDef.Shape.DELTA, TechDef.Shape.SPLIT_CONE,
-]
-
-
-## Which of the actor's attack techs the autobattle casts this turn. `techs` are the castable attacks,
-## `targetable` the enemies that can be hit right now (the 999 Shard Doll's split puts three up at once).
-## With several enemies up it takes the multi-target tech whose tags hit the most weaknesses, so a split
-## of dolls sharing a weakness is lined up rather than chipped one at a time; two casts in five stay
-## random so fights keep some variety.
-func _auto_pick_tech(techs: Array[TechDef], targetable: Array) -> TechDef:
-	if targetable.size() < 2 or randf() < 0.4:
-		return techs[randi() % techs.size()]
-	var best: TechDef = null
-	var best_hits: int = 1
-	for tech in techs:
-		if not AUTO_MULTI_SHAPES.has(tech.shape):
-			continue
-		var hits: int = 0
-		for e in targetable:
-			var sh := ShieldComponent.of(e)
-			if sh != null and sh.hits_weakness(tech.tags):
-				hits += 1
-		if hits > best_hits:
-			best_hits = hits
-			best = tech
-	return best if best != null else techs[randi() % techs.size()]
+			AutoBattler.act(self)
 
 
 # ------------------------------------------------------------------ presentation
@@ -622,13 +486,15 @@ func _on_strike(attacker: Node, target: Node, info: Dictionary) -> void:
 		colour = Color(0.5, 0.9, 0.5)
 	if dmg < 0:
 		hud.spawn_number(pos, "+%d" % (-dmg), Color(0.5, 0.9, 0.5))
+	elif bool(info.get("sealed", false)):
+		hud.spawn_number(pos, "SEALED", BattleHUD.PALE)  # the plates shave, the body takes nothing
 	else:
 		hud.spawn_number(pos, str(dmg), colour, big)
 	if int(info.get("shave", 0)) > 0:
 		Audio.play_sfx("combat/shield_chip", 0.0, 1.0 + 0.05 * float(int(info.get("shave", 0))))
 	if target is CombatActor:
 		var ca := target as CombatActor
-		if ca.stats.is_alive():
+		if ca.stats.is_alive() and not coordinator.is_broken(target):  # a Broken body stays locked mid-step (§5.4)
 			ca.sprite.play(&"hurt", &"ready" if ca.is_party else &"idle")
 			if ca.time_debt != null:
 				Audio.play_sfx("porcelain/tink")
@@ -647,8 +513,8 @@ func _on_broken(unit: Node, _breaker: Node) -> void:
 	hud.spawn_number(coordinator.position_of(unit), "BREAK", BattleHUD.GOLD, true)
 	if unit is CombatActor:
 		(unit as CombatActor).on_break()
-	_gold_shatter(coordinator.position_of(unit))
-	_flash_screen(Color(1.0, 0.9, 0.6, 0.35), 0.25)
+	BattleFx.gold_shatter(self, coordinator.position_of(unit))
+	BattleFx.flash(hud, Color(1.0, 0.9, 0.6, 0.35), 0.25)
 	if rig:
 		rig.shake(0.4)
 
@@ -673,8 +539,7 @@ func _on_koed(unit: Node) -> void:
 func _on_revived(unit: Node) -> void:
 	if unit is CombatActor:
 		var ca := unit as CombatActor
-		ca.visible = true
-		ca.frozen = false
+		ca.restore_body()  # stops die()'s fade: a revived ally is visible and opaque again
 		ca.sprite.play(&"revive", &"ready")
 
 
@@ -685,7 +550,7 @@ func _on_spared(unit: Node) -> void:
 		var tw := create_tween()
 		tw.tween_property(ca.sprite, "transparency", 1.0, 1.0)
 		tw.tween_callback(func() -> void: ca.visible = false)
-	Flags.add_lean(universe, "L")
+	# the spare's Light lean is paid at victory, by the codex signature (RewardResolver)
 
 
 func _on_enemy_action(enemy: Node, action: Dictionary) -> void:
@@ -695,46 +560,8 @@ func _on_enemy_action(enemy: Node, action: Dictionary) -> void:
 
 
 func _on_telegraph_started(enemy: Node, action: Dictionary) -> void:
-	if _aoe_shader == null:
-		_aoe_shader = load("res://shaders/aoe_floor_ring.gdshader")
-	var shape_name: String = String(action.get("shape", "SINGLE"))
-	var mi := MeshInstance3D.new()
-	var pm := PlaneMesh.new()
-	var mat := ShaderMaterial.new()
-	mat.shader = _aoe_shader
-	var aim: Vector3 = action.get("aim", coordinator.position_of(enemy))
-	var origin: Vector3 = coordinator.position_of(enemy)
-	match shape_name:
-		"CIRCLE":
-			var r: float = float(action.get("radius", 1.5))
-			pm.size = Vector2(r * 2.0, r * 2.0)
-			mat.set_shader_parameter("shape_mode", 0)
-			mi.position = Vector3(aim.x, center.y + 0.05, aim.z)
-		"LINE_PIERCE", "LINE":
-			var l: float = float(action.get("length", 6.0))
-			var w: float = float(action.get("width", 1.2))
-			pm.size = Vector2(w, l)
-			mat.set_shader_parameter("shape_mode", 1)
-			var dir: Vector3 = Vector3(aim.x - origin.x, 0.0, aim.z - origin.z).normalized()
-			mi.position = Vector3(origin.x, center.y + 0.05, origin.z) + dir * l * 0.5
-			mi.rotation.y = atan2(dir.x, dir.z) + PI
-		"CONE":
-			var l2: float = float(action.get("length", 4.0))
-			var r2: float = float(action.get("radius", 2.0))
-			pm.size = Vector2(r2 * 2.0, l2)
-			mat.set_shader_parameter("shape_mode", 2)
-			mat.set_shader_parameter("cone_half_angle", atan2(r2, l2))
-			var dir2: Vector3 = Vector3(aim.x - origin.x, 0.0, aim.z - origin.z).normalized()
-			mi.position = Vector3(origin.x, center.y + 0.05, origin.z) + dir2 * l2 * 0.5
-			mi.rotation.y = atan2(dir2.x, dir2.z) + PI
-		_:
-			pm.size = Vector2(2.2, 2.2)
-			mat.set_shader_parameter("shape_mode", 0)
-			mi.position = Vector3(aim.x, center.y + 0.05, aim.z)
-	mi.mesh = pm
-	mi.material_override = mat
-	add_child(mi)
-	telegraphs[enemy] = mi
+	_on_telegraph_ended(enemy)  # a new wind-up never orphans an old decal
+	telegraphs[enemy] = BattleFx.telegraph(self, action, coordinator.position_of(enemy), center.y + 0.05)
 	Audio.play_sfx("combat/telegraph_loop")
 
 
@@ -744,107 +571,22 @@ func _on_telegraph_ended(enemy: Node) -> void:
 		telegraphs.erase(enemy)
 
 
-func _on_truth(kind: StringName) -> void:
-	if rig:
-		rig.set_truth(true)
-		var tw := create_tween()
-		tw.tween_interval(1.6)
-		tw.tween_callback(func() -> void: if rig: rig.set_truth(false))
-	match kind:
-		&"phase_out":
-			hud.show_message("Sera: \"Don't forget me.\"")
-			Audio.play_sfx("time/rewind")
-		&"rewind":
-			Audio.play_sfx("time/rewind")
-		&"galaxy_reveal":
-			hud.show_message("The shell opens on stars.")
-			Audio.play_sfx("porcelain/crack_large")
-
-
 func _on_boost_used(a: Node, level: int) -> void:
 	Audio.play_sfx("combat/boost_lv%d" % clampi(level, 1, 4))
 	if level >= 3 and a is CombatActor:
-		_style_bleed(a as CombatActor)
+		BattleFx.style_bleed(self, a as CombatActor)
 
 
-func _on_sera_phase(phased: bool) -> void:
+## Phased, a gold ghost; un-phased, back to her Debt, not fully solid (CombatActor.apply_body_look reads the phase).
+func _on_sera_phase(_phased: bool) -> void:
 	var sera: Node = coordinator.unit_by_id(&"sera")
 	if sera is CombatActor:
-		var s := sera as CombatActor
-		s.sprite.set_opacity(0.18 if phased else 1.0)
-		s.sprite.set_tint(Color(1.0, 0.85, 0.5) if phased else Color.WHITE)
+		(sera as CombatActor).apply_body_look()
 
 
 func _on_unit_moved(unit: Node, _to: Vector3) -> void:
 	if unit is CombatActor:
 		(unit as CombatActor).sprite.update_from_velocity(Vector3.ZERO)
-
-
-func _gold_shatter(pos: Vector3) -> void:
-	var p := GPUParticles3D.new()
-	p.amount = 60
-	p.lifetime = 0.9
-	p.one_shot = true
-	p.explosiveness = 0.95
-	p.fixed_fps = int(Universe.current_fps())
-	var pm := ParticleProcessMaterial.new()
-	pm.direction = Vector3(0, 1, 0)
-	pm.spread = 80.0
-	pm.initial_velocity_min = 2.0
-	pm.initial_velocity_max = 5.0
-	pm.gravity = Vector3(0, -9.0, 0)
-	pm.scale_min = 0.05
-	pm.scale_max = 0.16
-	pm.color = Color(1.0, 0.82, 0.35)
-	p.process_material = pm
-	var qm := QuadMesh.new()
-	qm.size = Vector2(1, 1)
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = Color(1.0, 0.85, 0.4)
-	mat.emission_enabled = true
-	mat.emission = Color(1.0, 0.8, 0.3)
-	mat.emission_energy_multiplier = 2.0
-	mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-	qm.material = mat
-	p.draw_pass_1 = qm
-	p.position = pos + Vector3(0, 1.0, 0)
-	add_child(p)
-	p.emitting = true
-	var tw := create_tween()
-	tw.tween_interval(1.5)
-	tw.tween_callback(p.queue_free)
-
-
-func _style_bleed(a: CombatActor) -> void:
-	# Watercolour afterimages (U0), ink splitting (U1): a few fading ghost copies of the sprite.
-	for i in 3:
-		var ghost := ActorSprite.new()
-		ghost.material.set_shader_parameter("sheet", a.sprite.material.get_shader_parameter("sheet"))
-		ghost.material.set_shader_parameter("frame_rect", a.sprite.material.get_shader_parameter("frame_rect"))
-		ghost.material.set_shader_parameter("sheet_px", a.sprite.material.get_shader_parameter("sheet_px"))
-		ghost.mesh = a.sprite.mesh
-		ghost.set_tint(Color(0.7, 0.8, 1.0) if a.home_universe == 0 else Color(0.2, 0.2, 0.3))
-		ghost.set_opacity(0.5)
-		ghost.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(ghost)
-		ghost.global_position = a.sprite.global_position + Vector3(-0.25 * float(i + 1), 0.0, 0.0)
-		var tw := create_tween()
-		tw.tween_property(ghost, "transparency", 1.0, 0.35 + 0.1 * float(i))
-		tw.tween_callback(ghost.queue_free)
-
-
-func _flash_screen(color: Color, seconds: float) -> void:
-	if _flash == null:
-		_flash = ColorRect.new()
-		_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
-		_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		hud.root.add_child(_flash)
-	if bool(Game.settings.get("reduced_flicker", false)):
-		color.a *= 0.3
-	_flash.color = color
-	var tw := create_tween()
-	tw.tween_property(_flash, "color:a", 0.0, seconds)
 
 
 func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
@@ -856,22 +598,9 @@ func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
 	for e in telegraphs.values():
 		e.queue_free()
 	telegraphs.clear()
-	if victory:
-		Audio.play_sfx("music/stings/victory")
-		for p in party:
-			if p.stats.is_alive():
-				p.sprite.play(&"victory", &"idle")
-		var xp: Dictionary = summary.get("xp", {})
-		var parts: Array = []
-		for id in xp.keys():
-			var lv: int = int(xp[id]["levels"])
-			parts.append("%s +%d XP%s" % [String(id).capitalize(), int(xp[id]["xp"]), (" (Lv up ×%d)" % lv) if lv > 0 else ""])
-		if int(summary.get("spared", 0)) > 0:
-			parts.append("%d spared" % int(summary.get("spared", 0)))
-		hud.show_message("  ".join(PackedStringArray(parts)))
-	else:
-		hud.show_message("The Debt advances: Crono −%s integrity." % str(summary.get("integrity_lost", 5)))
-		Audio.play_sfx("music/stings/defeat")
+	if auto:
+		AutoBattler.report(victory)
+	BattleEndNotice.announce(hud, party, victory, summary)
 	var tw := create_tween()
 	tw.tween_interval(1.4 if victory else 1.0)
 	tw.tween_property(plane_mat, "shader_parameter/reveal", 0.0, 0.6)
@@ -879,8 +608,9 @@ func _on_battle_ended(victory: bool, summary: Dictionary) -> void:
 		summary["story"] = bool(config.get("story", false))
 		for p in party:
 			p.frozen = false
-			p.sprite.set_tint(Color.WHITE)
-			p.sprite.set_opacity(1.0)
+			p.apply_body_look()  # the phase ended with the battle (SolidityComponent.end_battle): her Debt's look
 			if p.stats.is_alive():
 				p.sprite.play(&"idle")
+		# reserves still down are recorded at the floor the field party stands up with (BattleAftermath)
+		roster.finish(BattleAftermath.floor_ratio(BattleAftermath.outcome(victory, summary), bool(summary["story"])))
 		finished.emit(victory, summary))

@@ -35,8 +35,8 @@
      "on_enter": "The timeline freezes at 99.0.",
      "on_break": "",
      "notes": "At 50%. The timeline freezes at 99.0 and the choice is made in-world (see branches)."},
-    {"id": "heart_expose", "name": "Heart Expose", "hp_from": 0.5, "hp_to": 0.0, "hp_from_by_branch": {"R66Y=Rewound": 0.4, "R66Y=Salvaged": 0.5},
-     "shield": {"shield": 12, "shield_by_branch": {"R66Y=Rewound": 8, "R66Y=Salvaged": 12}, "weak": ["ASTRAL", "FERRO", "SOUND"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
+    {"id": "heart_expose", "name": "Heart Expose", "hp_from": 0.5, "hp_to": 0.0, "hp_from_by_branch": {"R66Y:Rewound": 0.4, "R66Y:Salvaged": 0.5},
+     "shield": {"shield": 12, "shield_by_branch": {"R66Y:Rewound": 8, "R66Y:Salvaged": 12}, "weak": ["ASTRAL", "FERRO", "SOUND"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["RUIN", "FERRO", "FIRE"],
      "actions": [
        {"id": "marrow_boil", "name": "Marrow Boil", "tags": ["RUIN", "FIRE"], "shape": "CIRCLE", "radius": 4.0, "power": 1.2, "hits": 1, "wind_up_s": 2.0, "status": "ruin", "target": "weakest", "weight": 2},
@@ -47,7 +47,7 @@
      "on_enter": "The chest tears open over boiling Lavos marrow.",
      "on_break": "NavigationAgent freeze: he is lined up for a Solar Railgun LINE_PIERCE.",
      "notes": "Below 40% (Mercy) or below 50% (after Salvage). Shield 8 (Mercy: max shield dropped to 8 permanently by the Rewind) or 12 (Ruthless). Tags [RUIN][FERRO][FIRE]. Weak [ASTRAL][FERRO][SOUND]. If the Arris choir was harmonized to sleep, they hum the counter-frequency and Grief-Resonance is off for this phase."},
-    {"id": "mother_brain_unmasked", "name": "Mother Brain Unmasked (secret)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "break", "requires": "Pipe_Overload=Overclocked and the Unstable Amber Rift in Geno-Foundry was then declined",
+    {"id": "mother_brain_unmasked", "name": "Mother Brain Unmasked (secret)", "hp_from": 0.0, "hp_to": 0.0, "advance_on": "break", "requires": "Amber_Rift_U2:set",
      "shield": {"shield": 4, "weak": ["FERRO", "VITREOUS"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["FERRO", "MYCELIA", "TACHYON"],
      "actions": [
@@ -57,12 +57,12 @@
      "mechanics": ["press_form_detaches", "mother_brain_grafted_to_lavos_heart_is_luccas_nervous_system_grown_into_a_root", "player_chooses_extract_or_keep", "break_is_lucca_choosing"],
      "on_enter": "Lucca through the static: Cassia, you have to ask me before you use me—",
      "on_break": "The Break is Lucca choosing.",
-     "notes": "Secret Phase 4. Only if the Unstable Amber Rift in Geno-Foundry was overcharged and then declined earlier. Shield 4, Tags [FERRO][MYCELIA][TACHYON], Weak [FERRO][VITREOUS]."}
+     "notes": "Secret Phase 4. Only on the Paradox road: flag Amber_Rift_U2 set (the Unstable Amber Rift in the Geno-Foundry overloaded and the party back from U3 carrying Xyloph's Mycelia spores). Shield 4, Tags [FERRO][MYCELIA][TACHYON], Weak [FERRO][VITREOUS]."}
   ],
   "branches": [
     {"id": "r66y_branch", "after_phase": "archivist", "options": [
       {"id": "mercy", "label": "Lullaby Rewind", "flag": "R66Y", "state": "Rewound", "requires": "in one Sync window, land an ASTRAL tech and Cassia-09's Sound Ring on the exposed chest plate; then Sera casts Rewind on the plate three times (the third is carried by Cassia's lullaby record and costs nothing, 10% in total); Crono pays 25 integrity (his Time Egg fragment); R-66Y's max shield drops to 8 permanently"},
-      {"id": "ruthless", "label": "Empress's Salvage", "flag": "R66Y", "state": "Salvaged", "requires": "tear the tungsten loom through the mask array and rip out the Lavos-fibre core: immediate Break plus a free 370% hit; Cassia Resentment +2, the amber dims, Lucca's voice fades; Krona harvests the Lavos-Grafted Laser Cannon (unlocks the Dual Omega Annihilation)"}
+      {"id": "ruthless", "label": "Empress's Salvage", "flag": "R66Y", "state": "Salvaged", "requires": "tear the tungsten loom through the mask array and rip out the Lavos-fibre core: immediate Break plus a free 370% hit; Cassia Resentment +2, the amber dims, Lucca's voice fades; Krona harvests the Lavos-Grafted Laser Cannon (unlocks the Dual Empress Cannon, Krona + Cassia-09)"}
     ], "notes": "Phase 2 — Possibility Branch at 50%. The timeline freezes at 99.0."},
     {"id": "lucca_root", "after_phase": "mother_brain_unmasked", "options": [
       {"id": "extract", "label": "Extract", "flag": "Cassia", "state": "Extract", "requires": "secret Phase 4 only"},

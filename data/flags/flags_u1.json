@@ -3,12 +3,16 @@
   {
    "id": "Goyama",
    "where": "Ch2",
+   "amber_rift": true,
+   "rift_state": "Both",
+   "rift_source": "Amber_Rift_U1_Goyama",
    "states": [
     {
      "id": "Repainted",
      "affinity": {
       "light": 30
-     }
+     },
+     "upgrade": "parry_dojo"
     },
     {
      "id": "Incinerated",
@@ -18,9 +22,7 @@
     },
     {
      "id": "Both",
-     "affinity": {
-      "prismatic": 15
-     }
+     "affinity": {}
     }
    ]
   },
@@ -92,7 +94,8 @@
    "states": [
     {
      "id": "set",
-     "affinity": {}
+     "affinity": {},
+     "upgrade": "parry_taught"
     }
    ]
   },

@@ -1,0 +1,29 @@
+{
+ "group_id": "",
+ "export_version": "object",
+ "states": [
+  {
+   "character": {
+    "id": "46a70648-787c-4315-a783-f5fe6c3238e3",
+    "name": ""
+   },
+   "folder": "",
+   "frames": {
+    "rotations": {
+     "south": "rotations/unknown.png"
+    },
+    "animations": {
+     "the_hanging_cage_swings_gently_side_to_side_on_its": {
+      "south": [
+       "animations/the_hanging_cage_swings_gently_side_to_side_on_its/unknown/frame_000.png",
+       "animations/the_hanging_cage_swings_gently_side_to_side_on_its/unknown/frame_001.png",
+       "animations/the_hanging_cage_swings_gently_side_to_side_on_its/unknown/frame_002.png",
+       "animations/the_hanging_cage_swings_gently_side_to_side_on_its/unknown/frame_003.png",
+       "animations/the_hanging_cage_swings_gently_side_to_side_on_its/unknown/frame_004.png"
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

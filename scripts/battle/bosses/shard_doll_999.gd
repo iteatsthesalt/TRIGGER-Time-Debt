@@ -1,6 +1,8 @@
 ## Director for the 999 Shard Doll (Chapter 1 tutorial boss, Combat Laws §14.3). Zero-fail: nobody dies
 ## here; a fall only cracks Crono. Phase 1 hides FERRO until the plate reads 8. Phase 3 splits into three
-## dolls, one per canvas, that must all Break within 3 s. Phase 4 shows 999 shields of which 10 are real.
+## dolls, one per canvas, that must all Break within 3 s. Phase 4 shows 999 shields of which 10 are real; the
+## three dolls fold back into the one (BossController.fold_add). Every phase advances on the doll's own Break
+## once that Break has played out, and the last Break ends the fight with its XP (BossController.end_fight).
 extends RefCounted
 
 ## A broken doll is held in its Break until this director rebuilds it. Left alone, the shield's own
@@ -68,12 +70,9 @@ func on_phase(ctrl: BossController, i: int) -> void:
 		3:
 			if sc != null:
 				sc.remove(&"untargetable")
-			for a in ctrl.adds_alive:
-				if not is_instance_valid(a):
-					continue
-				ctrl.coordinator.undamageable.erase(a)
-				if CombatantStats.of(a).is_alive():
-					CombatantStats.of(a).apply_damage(999999, true)
+			# "The three fold back into one": they leave without a kill (no statues, no XP of their own)
+			for a in ctrl.adds_alive.duplicate():
+				ctrl.fold_add(a)
 			ctrl.scene.hud.show_message("The plate reads 999. Vaelos's shields are belief. Only the matching hits count.")
 
 

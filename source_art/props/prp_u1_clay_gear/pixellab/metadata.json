@@ -1,0 +1,29 @@
+{
+ "group_id": "",
+ "export_version": "object",
+ "states": [
+  {
+   "character": {
+    "id": "fae1201e-2d55-4c39-b63e-f38befce3e33",
+    "name": ""
+   },
+   "folder": "",
+   "frames": {
+    "rotations": {
+     "south": "rotations/unknown.png"
+    },
+    "animations": {
+     "the_big_clockwork_gear_turns_slowly_clockwise_in_s": {
+      "south": [
+       "animations/the_big_clockwork_gear_turns_slowly_clockwise_in_s/unknown/frame_000.png",
+       "animations/the_big_clockwork_gear_turns_slowly_clockwise_in_s/unknown/frame_001.png",
+       "animations/the_big_clockwork_gear_turns_slowly_clockwise_in_s/unknown/frame_002.png",
+       "animations/the_big_clockwork_gear_turns_slowly_clockwise_in_s/unknown/frame_003.png",
+       "animations/the_big_clockwork_gear_turns_slowly_clockwise_in_s/unknown/frame_004.png"
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

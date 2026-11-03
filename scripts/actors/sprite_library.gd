@@ -1,13 +1,22 @@
 ## Resolves sprite ids to sheets and frame tables. A character is a set of sprites (docs/ART_PIPELINE.md):
-## tiers map (64) / field (128, also battle) / action (256 cut-ins) / portrait, and variants (another canvas
-## or a story state): assets/<group>/<id>/<id>[_<variant>]_<tier>.png + _frames.json (+ _n normal, _m mask).
+## tiers map / field (also battle) / action (cut-ins) / portrait, each sheet's cell and height read from its
+## frames json, and variants (another canvas or a story state):
+## assets/<group>/<id>/<id>[_<variant>]_<tier>.png + _frames.json (+ _n normal, _m mask).
 ## Missing tiers or variants fall back to field/base, then the painted stand-in, then a generated placeholder.
+## The frames json keys read: cell, rows (row order), mirror_w, fps (the sheet's canvas rate, used when the
+## caller gives none), height_px / height_m, anims.{col, count, fps, loop, holds}.
 class_name SpriteLibrary
 extends RefCounted
 
 static var _placeholders: Dictionary = {}
+static var _warned: Dictionary = {}
+## The generated placeholders: a 64 px cell at the world's 32 px/m with a 55 px (1.72 m) figure.
+const PLACEHOLDER_CELL := 64
+const PLACEHOLDER_HEIGHT_PX := 55
 
 const GROUPS := ["characters", "npcs", "enemies", "bosses"]
+## Props live apart from the cast: assets/props/u<n>/<key>/ (see resolve_prop).
+const PROP_GROUP := "props"
 ## Default frame table for generated CHR-F sheets (columns): idle 4, walk 6, run 6, interact 3, emote 4,
 ## ready 4, attack 6, charge 4, release 6, hurt 3, ko 6, revive 5, victory 6, break 1, death 6.
 const DEFAULT_TABLE := {
@@ -54,15 +63,65 @@ static func resolve(id: String, tier: StringName = &"field", variant: StringName
 	return {}
 
 
+## Props (docs/ART_PIPELINE.md §6) have no tiers or variants: assets/props/u<n>/<key>/<key>.png with the
+## same _frames.json / _n contract. `universe` narrows the search; -1 scans u0..u9. Returns the same
+## dictionary shape as resolve(), or {}.
+static func resolve_prop(key: String, universe: int = -1) -> Dictionary:
+	var subs: Array[String] = []
+	if universe >= 0:
+		subs.append("u%d/" % universe)
+	else:
+		for u in 10:
+			subs.append("u%d/" % u)
+	for sub in subs:
+		var dir: String = "res://assets/%s/%s%s" % [PROP_GROUP, sub, key]
+		var path: String = "%s/%s.png" % [dir, key]
+		if ResourceLoader.exists(path):
+			return {"id": key, "dir": dir, "stem": key, "sheet": path, "tier": &"field", "variant": &""}
+	return {}
+
+
+## Load a prop sheet onto a sprite (height from its frames json, normal sheet picked up). Returns false,
+## leaving the sprite untouched, when the prop has no sheet; PropBillboard then shows its placeholder.
+static func apply_prop(sprite: ActorSprite, key: String, fps: float = 60.0, universe: int = -1) -> bool:
+	var r: Dictionary = resolve_prop(key, universe)
+	if r.is_empty():
+		return false
+	sprite.sprite_id = key
+	sprite.tier = &"field"
+	sprite.variant = &""
+	_apply_resolved(sprite, r, fps, false)
+	return true
+
+
+## The raw frames table of a resolved sheet (cell, rows, height_px, width_px, height_m, anims …) for
+## callers that need more than ActorSprite keeps, such as a prop's footprint. {} when there is none.
+static func frames_meta(r: Dictionary) -> Dictionary:
+	if r.is_empty():
+		return {}
+	var path: String = "%s/%s_frames.json" % [r["dir"], r["stem"]]
+	if not FileAccess.file_exists(path):
+		return {}
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return {}
+	var json := JSON.new()
+	if json.parse(f.get_as_text()) == OK and json.data is Dictionary:
+		return json.data
+	return {}
+
+
 static func has_tier(id: String, tier: StringName, variant: StringName = &"") -> bool:
 	var r: Dictionary = resolve(id, tier, variant)
 	return not r.is_empty() and r["tier"] == tier and (variant == &"" or r["variant"] == variant)
 
 
+## `fps` is the character's canvas rate (its data); 0 or less takes the sheet's own `fps`, else 60.
 static func apply(sprite: ActorSprite, id: String, fps: float, tier: StringName = &"field", variant: StringName = &"") -> void:
 	sprite.sprite_id = id
 	sprite.tier = tier
 	sprite.variant = variant
+	sprite.set_seed(seed_of(id))
 	var r: Dictionary = resolve(id, tier, variant)
 	if not r.is_empty():
 		_apply_resolved(sprite, r, fps, false)
@@ -72,7 +131,12 @@ static func apply(sprite: ActorSprite, id: String, fps: float, tier: StringName 
 		if ResourceLoader.exists(painted):
 			sprite.set_standin(load(painted), fps)
 			return
-	sprite.set_standin(placeholder(id, Color(0.6, 0.6, 0.65), 128, 110), fps)
+	sprite.set_standin(placeholder(id, Color(0.6, 0.6, 0.65), PLACEHOLDER_CELL, PLACEHOLDER_HEIGHT_PX), fps, ActorSprite.PIXELS_PER_METRE)
+
+
+## The shader seed of a sprite id: where its crack veins fall and how its drift jitters (0..99.7).
+static func seed_of(id: String) -> float:
+	return float(absi(hash(id)) % 997) * 0.1
 
 
 static func _apply_resolved(sprite: ActorSprite, r: Dictionary, fps: float, default_mirror: bool) -> void:
@@ -81,16 +145,18 @@ static func _apply_resolved(sprite: ActorSprite, r: Dictionary, fps: float, defa
 	if not FileAccess.file_exists(table_path):
 		table_path = "%s/%s_frames.json" % [r["dir"], r["id"]]  # legacy placeholder sheets: <id>_frames.json
 	var table: Dictionary = _load_table(table_path, fps)
-	var cell: int = int(table.get("_cell", 128))
+	var cell: int = maxi(1, int(table.get("_cell", 128)))
 	var mirror: bool = bool(table.get("_mirror_w", default_mirror))
 	var height_px: int = int(table.get("_height_px", 0))
 	var height_m: float = float(table.get("_height_m", 0.0))
-	table.erase("_cell")
-	table.erase("_mirror_w")
-	table.erase("_height_px")
-	table.erase("_height_m")
-	sprite.set_height(height_px, height_m)
-	sprite.set_sheet(tex, cell, table, fps, mirror)
+	var rate: float = fps if fps > 0.0 else float(table.get("_fps", 60.0))
+	var order: Array = table.get("_rows", [])
+	for k in ["_cell", "_mirror_w", "_height_px", "_height_m", "_fps", "_rows"]:
+		table.erase(k)
+	_fit_columns(table, tex.get_width() / cell, String(r["sheet"]))
+	sprite.set_height(height_px, height_m, cell)
+	sprite.set_sheet(tex, cell, table, rate, mirror, order)
+	sprite.set_seed(seed_of(String(r["id"])))
 	sprite.loaded_tier = r["tier"]
 	sprite.loaded_variant = r["variant"]
 	var n_path: String = "%s/%s_n.png" % [r["dir"], r["stem"]]
@@ -102,7 +168,8 @@ static func _apply_resolved(sprite: ActorSprite, r: Dictionary, fps: float, defa
 static func apply_enemy(sprite: ActorSprite, def: EnemyDef, tier: StringName = &"field", variant: StringName = &"") -> void:
 	var id: String = String(def.sprite if def.sprite != &"" else def.key)
 	var key: String = String(def.key)
-	for cand in [id, key]:
+	var cands: Array = [id, key] if def.art == &"" else [id, key, String(def.art)]  # `art`: a folder alias
+	for cand in cands:
 		var r: Dictionary = resolve(cand, tier, variant, ["enemies", "bosses"], ["u%d/" % def.universe, ""])
 		if not r.is_empty():
 			sprite.sprite_id = cand
@@ -114,10 +181,37 @@ static func apply_enemy(sprite: ActorSprite, def: EnemyDef, tier: StringName = &
 			for sub in ["u%d/%s" % [def.universe, cand], cand]:
 				var painted: String = "res://assets/%s/%s/%s_painted.png" % [g, sub, cand]
 				if ResourceLoader.exists(painted):
+					sprite.set_seed(seed_of(cand))
 					sprite.set_standin(load(painted), def.fps)
 					return
-	var cell_px: int = 128 if def.size <= 1.3 else (256 if def.size <= 2.5 else 512)
-	sprite.set_standin(placeholder(key, _element_colour(def), cell_px, int(float(cell_px) * 0.8 * minf(1.0, def.size / (cell_px / 128.0)))), def.fps)
+	# A placeholder 2, 4 or 8 m across at the world's 32 px/m, the figure 1.6 m per metre of `size`.
+	var cell_px: int = PLACEHOLDER_CELL if def.size <= 1.3 else (PLACEHOLDER_CELL * 2 if def.size <= 2.5 else PLACEHOLDER_CELL * 4)
+	# The cell spans cell_px / 32 m; 0.8 of it is the tallest figure, reached at size = cell_px / 64.
+	var fig_px: int = int(float(cell_px) * 0.8 * minf(1.0, def.size / (float(cell_px) / (2.0 * ActorSprite.PIXELS_PER_METRE))))
+	sprite.set_seed(seed_of(key))
+	sprite.set_standin(placeholder(key, _element_colour(def), cell_px, fig_px), def.fps, ActorSprite.PIXELS_PER_METRE)
+
+
+## Drop the animations a sheet does not hold and shorten the ones that run off its last column, saying so,
+## so a frames json that disagrees with its PNG shows the frames that exist instead of a smeared edge.
+static func _fit_columns(table: Dictionary, columns: int, sheet: String) -> void:
+	for k in table.keys():
+		var a: Dictionary = table[k]
+		var col: int = int(a.get("col", 0))
+		var count: int = int(a.get("count", 1))
+		if col >= columns:
+			table.erase(k)
+			_warn_once(sheet + "|" + String(k), "SpriteLibrary: %s has no column %d for '%s' (%d columns); dropped" % [sheet, col, k, columns])
+		elif col + count > columns:
+			a["count"] = columns - col
+			_warn_once(sheet + "|" + String(k), "SpriteLibrary: '%s' in %s runs past column %d; cut to %d frames" % [k, sheet, columns, columns - col])
+
+
+static func _warn_once(key: String, msg: String) -> void:
+	if _warned.has(key):
+		return
+	_warned[key] = true
+	push_warning(msg)
 
 
 static func _load_table(path: String, fps: float) -> Dictionary:
@@ -132,19 +226,40 @@ static func _load_table(path: String, fps: float) -> Dictionary:
 				table["_mirror_w"] = bool(d.get("mirror_w", false))
 				table["_height_px"] = int(d.get("height_px", 0))
 				table["_height_m"] = float(d.get("height_m", 0.0))
+				if float(d.get("fps", 0.0)) > 0.0:
+					table["_fps"] = float(d["fps"])
+				table["_rows"] = _row_order(d.get("rows", []), path)
+				# An anim without its own fps steps at the caller's rate, else the sheet's.
+				var rate: float = fps if fps > 0.0 else float(table.get("_fps", 60.0))
 				var anims: Dictionary = d.get("anims", {})
 				for k in anims.keys():
 					var a: Dictionary = anims[k]
 					var holds: Array[float] = []
 					for h in a.get("holds", []):
 						holds.append(float(h))
-					table[StringName(k)] = {"col": int(a.get("col", 0)), "count": int(a.get("count", 1)), "fps": float(a.get("fps", fps)), "loop": bool(a.get("loop", true)), "holds": holds}
+					table[StringName(k)] = {"col": int(a.get("col", 0)), "count": int(a.get("count", 1)), "fps": float(a.get("fps", rate)), "loop": bool(a.get("loop", true)), "holds": holds}
 				return table
+	_warn_once(path, "SpriteLibrary: no frames json at %s; reading the sheet with the default 70-column table" % path)
 	for k in DEFAULT_TABLE.keys():
 		var a: Dictionary = DEFAULT_TABLE[k]
-		table[StringName(k)] = {"col": a["col"], "count": a["count"], "fps": fps, "loop": a["loop"], "holds": []}
+		table[StringName(k)] = {"col": a["col"], "count": a["count"], "fps": fps if fps > 0.0 else 60.0, "loop": a["loop"], "holds": []}
 	table["_cell"] = 128
 	return table
+
+
+## A frames json's `rows` (the direction of each sheet row, top to bottom) as StringNames; [] when absent
+## or when it names something that is not a direction (warned), so the default order applies.
+static func _row_order(rows: Variant, path: String) -> Array:
+	var out: Array = []
+	if not rows is Array:
+		return out
+	for d in rows:
+		var n := StringName(str(d))
+		if not ActorSprite.DIRECTIONS.has(n) or out.has(n):
+			_warn_once(path + "|rows", "SpriteLibrary: %s rows %s is not a list of distinct directions; using s, w, e, n, sw, se, nw, ne" % [path, str(rows)])
+			return []
+		out.append(n)
+	return out
 
 
 static func _element_colour(def: EnemyDef) -> Color:
@@ -170,8 +285,9 @@ static func _element_colour(def: EnemyDef) -> Color:
 	return Color(0.6, 0.6, 0.65)
 
 
-## A readable placeholder: a soft blob silhouette with two eyes in the given colour (never shipped).
-static func placeholder(id: String, colour: Color, cell: int = 128, height_px: int = 100) -> Texture2D:
+## A readable placeholder: a soft blob silhouette with two eyes in the given colour (never shipped), drawn
+## for the world's 32 px/m (ActorSprite.set_standin with PIXELS_PER_METRE).
+static func placeholder(id: String, colour: Color, cell: int = PLACEHOLDER_CELL, height_px: int = PLACEHOLDER_HEIGHT_PX) -> Texture2D:
 	var key: String = "%s|%d|%d|%s" % [id, cell, height_px, colour.to_html()]
 	if _placeholders.has(key):
 		return _placeholders[key]

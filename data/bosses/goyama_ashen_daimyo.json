@@ -27,7 +27,7 @@
      "on_enter": "",
      "on_break": "Petitions scatter and reveal the child Krona's name under white-out. Sets Daimyo_Phase1.",
      "notes": "Shield 3, plate [SHIELD 3 -> 2 (-1) -> BREAK!] [VIT?][???]. Weak throughout [VITREOUS][TACHYON]: glass reveals the true text beneath ink, a time needle rewinds the petitions to blank."},
-    {"id": "ever_burning_roof", "name": "The Ever-Burning Roof", "hp_from": 0.75, "hp_to": 0.5,
+    {"id": "ever_burning_roof", "name": "The Ever-Burning Roof", "hp_from": 0.75, "hp_to": 0.5, "script": "ch2_daimyo_phase2",
      "shield": {"shield": 3, "weak": ["VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["FIRE", "PAPER"],
      "actions": [
@@ -38,7 +38,7 @@
      "on_enter": "",
      "on_break": "",
      "notes": "Shield 3, Tags [FIRE][PAPER]. In this chapter the [VITREOUS] weakness is reached through the Prism Lantern on the castle wall: a TACHYON Needle fired through the lantern's stained smoke carries [VITREOUS] for that hit."},
-    {"id": "oil_mother", "name": "Oil Mother", "hp_from": 0.5, "hp_to": 0.25,
+    {"id": "oil_mother", "name": "Oil Mother", "hp_from": 0.5, "hp_to": 0.25, "script": "ch2_daimyo_phase3",
      "shield": {"shield": 2, "weak": ["VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["PAPER", "INK", "OIL", "RUIN"],
      "actions": [
@@ -50,7 +50,7 @@
      "on_enter": "Krona: You drank it too?",
      "on_break": "",
      "notes": "Shield 2. Oil floods the arena: Ash Field (slow + shield chip). Steals 1 BP every 10 s (Oil-Blight; a battle-time timer, the drain action is the stand-in)."},
-    {"id": "barren_seal", "name": "The Barren Seal", "hp_from": 0.25, "hp_to": 0.0,
+    {"id": "barren_seal", "name": "The Barren Seal", "hp_from": 0.25, "hp_to": 0.0, "script": "ch2_daimyo_phase4",
      "shield": {"shield": 1, "weak": ["VITREOUS", "TACHYON"], "resist": [], "keyed_plates": [], "regenerating": false, "refill_once": false},
      "tags": ["PAPER", "INK", "LAVOS"],
      "actions": [
@@ -68,7 +68,7 @@
       {"id": "prismatic", "label": "Both", "flag": "Goyama", "state": "Both", "requires": "seal the vein but keep a vial; Amber Rift"}
     ], "notes": ""}
   ],
-  "drops": ["cobalt_nodachi", "vaelos_tooth"],
+  "drops": [],
   "flags": {"Goyama": ["Repainted", "Incinerated", "Both"], "Daimyo_Phase1": ["set"]},
-  "notes": "Lv 10, HP 18,000. Krona's former pigment lord fused to Goyama castle's burning floors; a body of petition scrolls, 20 ft but always seated. Weak throughout [VITREOUS][TACHYON]. HP windows per phase are not given and are split evenly across the four phases. Loot: Cobalt Nodachi; the Vaelos Tooth relic (it whispers in the clean young Crono voice). Base tags inferred from 'a body of petition scrolls'."
+  "notes": "Lv 10, HP 18,000. Krona's former pigment lord fused to Goyama castle's burning floors; a body of petition scrolls, 20 ft but always seated. Weak throughout [VITREOUS][TACHYON]. HP windows per phase are not given and are split evenly across the four phases. Loot: Cobalt Nodachi; the Vaelos Tooth relic (it whispers in the clean young Crono voice). Base tags inferred from 'a body of petition scrolls'. Drops are empty on purpose: ch2_daimyo_won gives the Vaelos Tooth and the vault (ch2_vault_nodachi) the cobalt pigment on 'Take it', so a KO drop would hand both out whatever the vault choice. Phase scripts ch2_daimyo_phase2..4 open phases 2-4."
 }

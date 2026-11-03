@@ -3,7 +3,10 @@
 class_name FieldNPC
 extends CharacterBody3D
 
+## A walk ended (arrived, or resolved where the NPC stands: ScriptedWalk).
 signal arrived
+
+const ARRIVE_M := 0.15
 
 var sprite: ActorSprite
 var npc_id: StringName = &""
@@ -11,14 +14,14 @@ var wander_radius: float = 0.0
 var wander_speed: float = 1.6
 var frozen: bool = false
 var home: Vector3
-var _walk_target: Variant = null
-var _walk_speed: float = 2.5
+var _walk: ScriptedWalk = null
+var _wandering: bool = false
 var _wait: float = 0.0
 var _rng := RandomNumberGenerator.new()
 var _bubble: Label3D
 
 
-static func make(id: StringName, sprite_id: String, fps: float = 60.0) -> FieldNPC:
+static func make(id: StringName, sprite_id: String, fps: float = 0.0) -> FieldNPC:
 	var n := FieldNPC.new()
 	n.name = String(id)
 	n.npc_id = id
@@ -45,20 +48,16 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if frozen:
+	if _walk != null:
+		var v: Vector3 = _walk.step(global_position, delta)  # a frozen NPC makes no headway and resolves
+		if _walk.done():
+			_end_walk()
+		elif not frozen:
+			velocity = v
+			move_and_slide()
+			sprite.update_from_velocity(velocity)
 		return
-	if _walk_target != null:
-		var to: Vector3 = (_walk_target as Vector3) - global_position
-		to.y = 0.0
-		if to.length() < 0.15:
-			_walk_target = null
-			velocity = Vector3.ZERO
-			sprite.update_from_velocity(Vector3.ZERO)
-			arrived.emit()
-			return
-		velocity = to.normalized() * _walk_speed
-		move_and_slide()
-		sprite.update_from_velocity(velocity)
+	if frozen:
 		return
 	if wander_radius > 0.0 and not Story.is_running():
 		_wait -= delta
@@ -66,13 +65,30 @@ func _physics_process(delta: float) -> void:
 			var ang: float = _rng.randf_range(0.0, TAU)
 			var r: float = _rng.randf_range(0.3, wander_radius)
 			walk_to(home + Vector3(cos(ang) * r, 0.0, sin(ang) * r), wander_speed)
+			_wandering = true
 			_wait = _rng.randf_range(2.0, 6.0)
 
 
+## Scripted walk (Story `move`). Awaitable, and it always resolves: on arrival, or where the NPC stands once it
+## stops making headway (blocked, frozen) or runs out of time (ScriptedWalk).
 func walk_to(target: Vector3, speed: float = 2.5) -> void:
-	_walk_target = target
-	_walk_speed = speed
+	_walk = ScriptedWalk.new(global_position, target, speed, ARRIVE_M)
+	_wandering = false
 	await arrived
+
+
+func is_walking() -> bool:
+	return _walk != null
+
+
+func _end_walk() -> void:
+	if _walk.result != ScriptedWalk.ARRIVED and not _wandering:
+		push_warning("%s: walk to %s %s at %s" % [name, str(_walk.target), _walk.result, str(global_position)])
+	_walk = null
+	_wandering = false
+	velocity = Vector3.ZERO
+	sprite.update_from_velocity(Vector3.ZERO)
+	arrived.emit()
 
 
 func face(dir: String) -> void:

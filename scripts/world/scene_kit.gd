@@ -1,9 +1,11 @@
-## Helpers to build textured primitives at the game's 64 px/m density (Reference Bible §1.2), used by
-## the diorama and by the location builders until the Blender kits arrive.
+## Helpers to build textured primitives at the game's 32 px/m density (the Nov 1 recipe, DECISIONS
+## "Direction"; it was 64 px/m per Reference Bible §1.2), used by the diorama and by the location builders
+## until real kits arrive.
 class_name SceneKit
 extends RefCounted
 
-const TILE_M := 16.0  # a 1024 px texture covers 16 m at 64 px/m
+const PX_PER_M := 32.0  # SNES density: a 64 px hero is 1.78 m, a 256 px tile is 8 m
+const TILE_M := 1024.0 / PX_PER_M  # the 1024 px material sheets cover 32 m
 ## Where imported textures land (docs/ART_PIPELINE.md §6): <material>_albedo.png + _normal.png.
 const GENERATED_DIR := "res://assets/textures/generated"
 ## Placeholder materials by name until the generated ones exist.
@@ -16,7 +18,7 @@ static var _mat_cache: Dictionary = {}
 
 
 ## A material by material name: the generated texture pair when it exists, else the named placeholder in
-## assets/textures/. Triplanar by default so kits and primitives share one 64 px/m density.
+## assets/textures/. Triplanar by default so kits and primitives share one 32 px/m density.
 static func named(material_name: String, roughness: float = 0.95, tint: Color = Color.WHITE, triplanar: bool = true) -> StandardMaterial3D:
 	var albedo: String = "%s/%s_albedo.png" % [GENERATED_DIR, material_name]
 	var normal: String = "%s/%s_normal.png" % [GENERATED_DIR, material_name]
@@ -52,6 +54,8 @@ static func material(albedo_path: String, normal_path: String = "", roughness: f
 	return m
 
 
+## A box wearing `mat` itself: boxes that share a material share one resource (a flat colour needs no UVs;
+## a textured material should be triplanar, as named() makes it, to keep the 32 px/m density on every face).
 static func box(parent: Node, size: Vector3, pos: Vector3, mat: Material, name: String = "Box", collide: bool = true) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.name = name
@@ -61,12 +65,6 @@ static func box(parent: Node, size: Vector3, pos: Vector3, mat: Material, name: 
 	mi.material_override = mat
 	mi.position = pos
 	parent.add_child(mi)
-	if mat is StandardMaterial3D and not (mat as StandardMaterial3D).uv1_triplanar:
-		(bm as BoxMesh).material = null
-		# scale UVs by the largest face so texels stay 64 px/m
-		var sm := (mat as StandardMaterial3D).duplicate() as StandardMaterial3D
-		sm.uv1_scale = Vector3(maxf(size.x, size.z) / TILE_M, size.y / TILE_M, 1.0)
-		mi.material_override = sm
 	if collide:
 		var sb := StaticBody3D.new()
 		sb.collision_layer = 1
@@ -157,3 +155,21 @@ static func marker(parent: Node, name: String, pos: Vector3) -> Marker3D:
 	m.position = pos
 	parent.add_child(m)
 	return m
+
+
+## A trigger box on the party layer (mask 2): body_entered fires as a party body walks in. Off unless
+## `monitoring`; the location arms it when its beat is due.
+static func trigger(parent: Node, pos: Vector3, size: Vector3, name: String = "Trigger", monitoring: bool = false) -> Area3D:
+	var a := Area3D.new()
+	a.name = name
+	a.collision_layer = 0
+	a.collision_mask = 2
+	a.monitoring = monitoring
+	var cs := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	cs.shape = box
+	a.add_child(cs)
+	a.position = pos
+	parent.add_child(a)
+	return a

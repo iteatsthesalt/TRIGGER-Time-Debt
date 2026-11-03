@@ -1,4 +1,5 @@
 ## Guardia Castle courtyard in the rain (Prologue beat 9): Glenn and Magus wait with the Epoch gauntlet.
+## Walls and towers are primitives; the well, cart, flower beds and portcullis are PixelLab props (`add_prop`).
 extends Location
 
 var rain: GPUParticles3D
@@ -12,9 +13,9 @@ func build() -> void:
 	camera_distance = 15.0
 	camera_pitch = 30.0
 	map_bounds = Rect2(-12, -12, 24, 22)
-	var stone := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.9, Color(0.85, 0.87, 0.9), true)
-	var gravel := SceneKit.material("res://assets/textures/gravel_albedo.png", "res://assets/textures/gravel_normal.png", 1.0, Color(0.9, 0.9, 0.92), true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.9, 0.9, 0.95), true)
+	var stone := SceneKit.named("castle_flagstone", 0.9, Color(0.85, 0.87, 0.9))
+	var gravel := SceneKit.named("grass_moss", 1.0, Color(0.9, 0.9, 0.92))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.98, 0.94, 0.86))
 	SceneKit.floor_plane(self, Vector2(26, 24), Vector3(0, 0, -1), gravel, "Ground")
 	# a flagstone path from the keep door (north) to the gatehouse (south)
 	SceneKit.box(self, Vector3(3.0, 0.04, 20.0), Vector3(0, 0.02, -1), stone, "Path", false)
@@ -31,15 +32,13 @@ func build() -> void:
 	SceneKit.box(self, Vector3(10.0, 6.0, 1.0), Vector3(-7.0, 3.0, 10.5), wall, "GateWallW")
 	SceneKit.box(self, Vector3(10.0, 6.0, 1.0), Vector3(7.0, 3.0, 10.5), wall, "GateWallE")
 	SceneKit.box(self, Vector3(4.0, 2.0, 1.0), Vector3(0, 5.0, 10.5), wall, "GateLintel")
-	# a well, a cart, flower beds gone to moss
-	SceneKit.cylinder(self, 0.9, 1.0, Vector3(-6.0, 0.5, 2.0), stone, "Well")
-	var wood := SceneKit.material("res://assets/textures/wood_albedo.png", "res://assets/textures/wood_normal.png", 0.85, Color(0.75, 0.7, 0.65), true)
-	SceneKit.box(self, Vector3(2.2, 0.8, 1.2), Vector3(7.0, 0.6, -5.0), wood, "Cart")
-	SceneKit.cylinder(self, 0.5, 0.2, Vector3(6.0, 0.5, -4.3), wood, "Wheel", false)
-	var moss := SceneKit.flat_color(Color(0.3, 0.38, 0.22), Color.BLACK, 0.0, 1.0)
-	for bx in [-8.0, 8.0]:
-		SceneKit.box(self, Vector3(3.0, 0.4, 1.2), Vector3(bx, 0.2, -8.5), stone, "Bed")
-		SceneKit.box(self, Vector3(2.8, 0.1, 1.0), Vector3(bx, 0.45, -8.5), moss, "BedMoss", false)
+	# the portcullis arch fills the gatehouse opening (solid: the GateDoor interactable is the way out)
+	add_prop(&"prp_u0_portcullis", Vector3(0.0, 0.0, 10.2))
+	# a well, a cart, flower beds gone to moss (Nich's props, Batch 6)
+	add_prop(&"prp_u0_stone_well", Vector3(-6.0, 0.0, 2.0))
+	add_prop(&"prp_u0_hand_cart", Vector3(7.0, 0.0, -5.0))
+	for bx in [-8.7, -7.3, 7.3, 8.7]:
+		add_prop(&"prp_u0_moss_flower_bed", Vector3(bx, 0.0, -8.5))
 	# rain
 	_build_rain()
 	add_marker("start", Vector3(0, 0, -9.5))

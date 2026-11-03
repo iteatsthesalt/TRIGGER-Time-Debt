@@ -5,26 +5,20 @@ func build() -> void:
 	location_id = &"test_arena"
 	universe_id = 0
 	camera_distance = 15.0
-	var stone := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color.WHITE, true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color.WHITE, true)
+	var stone := SceneKit.named("castle_flagstone", 0.95, Color.WHITE)
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color.WHITE)
 	SceneKit.floor_plane(self, Vector2(60, 60), Vector3.ZERO, stone)
 	SceneKit.box(self, Vector3(60, 3.0, 1.0), Vector3(0, 1.5, -20), wall, "NorthWall")
 	for i in 4:
-		var wood := SceneKit.material("res://assets/textures/wood_albedo.png", "res://assets/textures/wood_normal.png", 0.9, Color.WHITE, true)
+		var wood := SceneKit.named("oak_plank", 0.9, Color.WHITE)
 		SceneKit.box(self, Vector3(0.8, 0.8, 0.8), Vector3(-10.0 + float(i) * 6.5, 0.4, -12.0), wood, "Crate%d" % i)
 	add_marker("start", Vector3(0, 0, 6))
 	var enc: String = "kitchen_spoons"
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--encounter="):
 			enc = arg.trim_prefix("--encounter=")
-		if arg.begins_with("--party="):
-			var ids: Array[StringName] = []
-			for p in arg.trim_prefix("--party=").split(","):
-				ids.append(StringName(p))
-			Game.set_party(ids)
-		if arg.begins_with("--level="):
-			for id in Game.roster.keys():
-				Game.roster[id]["level"] = int(arg.trim_prefix("--level="))
+	# --party / --level / --chapter, as boot reads them (the arena scene can also be run directly, without boot)
+	BootArgs.apply(OS.get_cmdline_user_args(), true)
 	add_zone(StringName(enc), Vector3(0, 0, -4), 5.0)
 	add_marker("boss", Vector3(0, 0, -6))
 	add_marker("center", Vector3(0, 0, -2))

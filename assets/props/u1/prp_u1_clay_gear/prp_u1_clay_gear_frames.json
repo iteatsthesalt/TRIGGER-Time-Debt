@@ -1,0 +1,35 @@
+{
+ "cell": 256,
+ "rows": [
+  "s"
+ ],
+ "mirror_w": false,
+ "fps": 24.0,
+ "height_px": 185,
+ "width_px": 235,
+ "height_m": 4.0,
+ "source": {
+  "pixellab_object": "fae1201e-2d55-4c39-b63e-f38befce3e33",
+  "canvas": "u1",
+  "rotations": [
+   "south"
+  ],
+  "clips": {
+   "idle": "the_big_clockwork_gear_turns_slowly_clockwise_in_s"
+  }
+ },
+ "anims": {
+  "idle": {
+   "col": 0,
+   "count": 5,
+   "fps": 12.0,
+   "loop": true
+  },
+  "still": {
+   "col": 5,
+   "count": 1,
+   "fps": 1.0,
+   "loop": true
+  }
+ }
+}

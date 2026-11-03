@@ -10,21 +10,21 @@
     {"id": "wire_loom_mend", "unlock": {"on_join": true}},
     {"id": "sound_ring", "unlock": {"on_join": true}},
     {"id": "prometheus_overload", "unlock": {"chapter": 3}},
-    {"id": "gatling_arm", "unlock": {"flag": "R66Y_Salvaged"}},
+    {"id": "gatling_arm", "unlock": {"flag": "R66Y:Salvaged"}},
     {"id": "solar_railgun", "unlock": {"on_join": true}},
     {"id": "iron_maiden_scroll", "unlock": {"on_join": true}},
     {"id": "time_mines", "unlock": {"on_join": true}},
-    {"id": "reinforced_guard", "unlock": {"flag": "Arris_Dome_Sleeping"}},
-    {"id": "ferro_null", "unlock": {"flag": "Dark_40"}},
-    {"id": "empress_cannon", "unlock": {"flag": "R66Y_Salvaged"}},
+    {"id": "reinforced_guard", "unlock": {"flag": "Arris_Dome:Sleeping"}},
+    {"id": "ferro_null", "unlock": {"dark_min": 40}},
+    {"id": "empress_cannon", "unlock": {"flag": "R66Y:Salvaged"}},
     {"id": "spore_rail", "unlock": {"chapter": 4}},
     {"id": "prismlight_salvo", "unlock": {"chapter": 5}},
     {"id": "graviton_whiteout", "unlock": {"chapter": 7}},
     {"id": "ashtear_paradox", "unlock": {"on_join": true}},
-    {"id": "ashtear_paradox_family", "unlock": {"flag": "Lucca_Consent_Asked"}},
+    {"id": "ashtear_paradox_family", "unlock": {"flag": "Lucca_Consent:Asked"}},
     {"id": "first_light_fragment_i", "unlock": {"chapter": 4}},
     {"id": "carnival_of_souls", "unlock": {"chapter": 6}},
-    {"id": "promise_across_rust", "unlock": {"flag": "Seed_of_Doan_Grown"}}
+    {"id": "promise_across_rust", "unlock": {"flag": "Seed_of_Doan:Grown"}}
   ],
   "passives": ["porcelain_audit", "ferric_rattle"]
 }

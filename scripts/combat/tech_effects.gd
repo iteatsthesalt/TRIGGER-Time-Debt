@@ -1,5 +1,9 @@
 ## Special technique behaviours that bend the rules (Combat Laws Bible §11): Rewind, HOLD,
 ## Borrowed Future, Fall Break, taunts, the gourd, field makers. Standard damage techs never come here.
+## HANDLED are the bespoke handlers below; every other effect id is a row of data/effects/effects.json that
+## EffectSteps runs, or is listed there as flavour or pending (EffectTable.validation_errors, lint_data.py). A
+## handler's clauses that wait for a system are listed under the table's `handler_unbuilt`.
+## Enemy action effects are EnemyEffects.
 class_name TechEffects
 extends RefCounted
 
@@ -9,9 +13,16 @@ const HANDLED: Array[StringName] = [
 	&"tachyon_needle", &"ward", &"porcelain_promise", &"hover_rewind_hp", &"hover_fast_forward",
 	&"mercury_pulse", &"wire_loom_mend", &"sound_ring", &"reinforced_guard", &"fake_family_photo",
 	&"null_strip", &"divinity_field", &"core_lattice", &"prism_guard", &"sleight_of_arm",
-	&"swap_face", &"honest_laugh", &"balloon_escape", &"tune", &"lotus_reverse", &"miura_fold",
+	&"swap_face", &"honest_laugh", &"balloon_escape", &"tune", &"lotus_reverse",
 	&"time_debt_paid", &"crimson_seppuku", &"cobalt_nodachi", &"overclocked_short_circuit",
 	&"mycelia_tether", &"photosynthetic_burst", &"guile_feint", &"omega_annihilation",
+]
+## The handlers above whose cast strikes the enemies its shape caught (each resolves through _merge_damage); the
+## rest strike nothing, so their plate preview is empty (CastReach.strikes; suite_acceptance pins the two lists).
+const STRIKING: Array[StringName] = [
+	&"astral_field", &"cobalt_nodachi", &"crimson_seppuku", &"eclipse_x_strike", &"guile_feint", &"mercury_pulse",
+	&"mycelia_tether", &"omega_annihilation", &"overclocked_short_circuit", &"photosynthetic_burst",
+	&"porcelain_promise", &"ruin_purge", &"sleight_of_arm", &"sound_ring", &"swap_face", &"tachyon_needle",
 ]
 
 const DEFAULT_LV2 := {
@@ -21,14 +32,25 @@ const DEFAULT_LV2 := {
 
 
 static func handles(effect: StringName) -> bool:
-	return HANDLED.has(effect)
+	return HANDLED.has(effect) or EffectTable.has_row(effect)
 
 
 static func default_lv2(element: StringName) -> StringName:
 	return DEFAULT_LV2.get(element, &"")
 
 
+## The extra shave a technique gets against a status its target carries (status -> bonus). The
+## resolution reads it when the action is built and the preview reads it while aiming, so the plate
+## shows the same shave the hit then does (§18.7 #23).
+static func bonus_if_status(tech: TechDef) -> Dictionary:
+	if tech != null and tech.effect == &"tachyon_needle":
+		return {&"magnetized": 1}
+	return {}
+
+
 static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Dictionary:
+	if not HANDLED.has(tech.effect):
+		return EffectSteps.apply(c, tech, action)  # a row of the effect table
 	var actor: Node = action["attacker"]
 	var target: Node = action.get("primary", null)
 	var boost: int = int(action.get("boost", 0))
@@ -38,8 +60,8 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 			if target == null:
 				target = actor
 			actor.set_meta("used_tachyon_this_turn", true)
-			var ok: bool = c.rewind_unit(target)
-			c.crono_pays_for_slip()
+			var ok: bool = TurnRewind.rewind_unit(c, target)
+			TechCosts.crono_pays_for_slip(c)
 			info["targets"] = [target]
 			info["rewound"] = ok
 			c.truth_moment.emit(&"rewind")
@@ -50,13 +72,13 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				var sol := SolidityComponent.of(actor)
 				var per: float = sol.hold_step_seconds if sol != null else CombatConstants.SERA_HOLD_BREAK_EXTENSION_S
 				for i in range(1, steps):
-					c.spend_solidity(actor, CombatConstants.SERA_HOLD_STEP)
+					TechCosts.spend_solidity(c, actor, CombatConstants.SERA_HOLD_STEP)
 				ShieldComponent.of(target).extend_lock(per * steps)
 				info["targets"] = [target]
 				info["extended"] = per * steps
 		&"borrowed_future":
 			actor.set_meta("used_tachyon_this_turn", true)
-			info["duplicate"] = c.borrowed_future(actor)
+			info["duplicate"] = TurnRewind.borrowed_future(c, actor)
 			c.truth_moment.emit(&"borrowed_future")
 		&"fall_break":
 			if target == null:
@@ -77,8 +99,8 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 						sol2.restore(float(sera.get_meta("last_solidity_cost", CombatConstants.SERA_REWIND_COST)))
 				info["targets"] = [sera]
 		&"bekkler_guilt":
-			c.add_taunt(actor, 1, 1.0)
-			actor.set_meta("guilt_redirect", 2)
+			# until his next turn, hits on allies in the ring land on him at 75%, +1 BP each (max 2)
+			c.add_taunt(actor, 1, 0.0, {"ring": tech.radius * tech.shape_scale(boost), "taken": CombatConstants.GUILT_TAKEN, "bp": CombatConstants.GUILT_BP_MAX})
 			info["targets"] = [actor]
 		&"astral_field":
 			var f: Dictionary = c.fields.add(&"astral_field", c.position_of(actor), 4.0 * float(action["shape"].get("scale", 1.0)), 10.0, 0)
@@ -93,8 +115,8 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 			info["targets"] = c.party.duplicate()
 			info = _merge_damage(c, info, action)
 		&"shoguns_command":
-			c.add_taunt(actor, 2, 0.6)
-			actor.set_meta("shogun_command_pending", true)
+			# 60% of the attacks for 2 of her turns; standing at the end, every ally's next hit ignores DEF
+			c.add_taunt(actor, 2, CombatConstants.SHOGUN_TAUNT, {"payoff": &"ruin_infused"})
 			info["targets"] = [actor]
 		&"oil_drinker":
 			for u in c.party:
@@ -102,7 +124,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				if st.is_alive():
 					var healed: int = st.heal(roundi(float(st.max_hp()) * 0.10))
 					c.heal_resolved.emit(actor, u, healed)
-			actor.set_meta("corruption", float(actor.get_meta("corruption", 0.0)) + 5.0)
+			CorruptionComponent.add_to(actor, CorruptionComponent.GOURD_SIP)
 			info["targets"] = c.party.duplicate()
 		&"ruin_purge":
 			info = _merge_damage(c, info, action)
@@ -128,7 +150,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 		&"tachyon_needle":
 			actor.set_meta("used_tachyon_this_turn", true)
 			action["gauge_push_per_hit"] = 13.0 if boost >= 3 else 8.0
-			action["bonus_if_status"] = {&"magnetized": 1}
+			action["bonus_if_status"] = bonus_if_status(tech)
 			info = _merge_damage(c, info, action)
 		&"ward":
 			if target == null:
@@ -149,7 +171,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				crono.set_meta("next_astral_free", true)
 		&"hover_rewind_hp":
 			if target != null:
-				c.rewind_unit(target, true)
+				TurnRewind.rewind_unit(c, target, true)
 				actor.set_meta("used_tachyon_this_turn", true)
 				info["targets"] = [target]
 		&"hover_fast_forward":
@@ -158,16 +180,20 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				actor.set_meta("used_tachyon_this_turn", true)
 				info["targets"] = [target]
 		&"mercury_pulse":
-			var radius2: float = tech.radius * tech.shape_scale(boost) + (1.0 if actor.get_meta("centaur", true) else 0.0)
-			for e in c.living_enemies():
-				if c.position_of(e).distance_to(c.position_of(actor)) <= radius2:
-					var sh2 := ShieldComponent.of(e)
-					if sh2 != null:
-						sh2.reveal_all()
-					var sc5 := StatusComponent.of(e)
-					if sc5 != null:
-						sc5.add(&"mercury_slow", 4.0)
-						sc5.add(&"magnetized", -1.0, 2)
+			# the cast's own circle (CastReach.radius: +1.0 as Centaur), cloaked bodies included
+			var reach: Array = []
+			for en in c.living_enemies():
+				reach.append({"node": en, "pos": c.position_of(en), "radius": CombatantStats.of(en).body_radius})
+			for h in TacticalPositioner.targets_in_shape(action["shape"], c.position_of(actor), action["aim"], reach):
+				var e: Node = h["node"]
+				var sh2 := ShieldComponent.of(e)
+				if sh2 != null:
+					sh2.reveal_all()
+				var sc5 := StatusComponent.of(e)
+				if sc5 != null:
+					sc5.remove(&"cloaked")  # the Lucca Lens lights a cloaked body up (§13.5 Porcelain Raptor)
+				StatusRules.apply(c, e, &"mercury_slow", 4.0)  # a boss's halved (DECISIONS "Boss status rules")
+				StatusRules.apply(c, e, &"magnetized", -1.0, 2)
 			info = _merge_damage(c, info, action)
 		&"wire_loom_mend":
 			if target == null:
@@ -225,18 +251,14 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 					if st4 != null and st4.true_null:
 						continue
 					if sc7 != null:
+						# 2 turns (§11.10, §9.3): the status's undo gives the plates back (StatusRules).
 						sc7.cleanse()
-						sc7.add(&"nulled", -1.0, 2)
-					if sh4 != null:
-						if sh4.weaknesses.is_empty():
-							var fake: StringName = _fake_weakness(c, u)
-							sh4.weaknesses.append(fake)
-							sh4.revealed[fake] = true
-							if sc7 != null:
-								sc7.add(&"nulled_weakness", -1.0, 2, 1, {"tag": fake})
-						else:
-							sh4.resists.clear()
-							sh4.absorbs.clear()
+						var undo: Callable = Callable()
+						if sh4 != null and sh4.weaknesses.is_empty():
+							StatusRules.create_weakness(sh4, sc7, _fake_weakness(c, u), 2)
+						elif sh4 != null:
+							undo = StatusRules.strip_resists(sh4)
+						sc7.add(&"nulled", -1.0, 2, 1, {"undo": undo} if undo.is_valid() else {})
 					info["targets"].append(u)
 			c.fields.blank(center, radius3, 8.0)
 		&"divinity_field":
@@ -262,20 +284,17 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 		&"swap_face":
 			info = _merge_damage(c, info, action)
 			for t in info["targets"]:
-				var sc10 := StatusComponent.of(t)
-				if sc10 != null:
-					sc10.add(&"guilty", -1.0, 2)
+				StatusRules.apply(c, t, &"guilty", -1.0, 2)
 		&"honest_laugh":
 			if target == null:
 				target = actor
-			c.bank.add(2)
-			target.set_meta("honest_hit", true)
+			c.bank.add(2)  # the honest GUILE hit it promises waits for the honesty rule (`handler_unbuilt`)
 			info["targets"] = [target]
 		&"balloon_escape":
 			var sc11 := StatusComponent.of(actor)
 			if sc11 != null:
-				sc11.add(&"balloon", 2.0)
-			actor.set_meta("theft_immune_once", true)
+				sc11.add(&"balloon", 2.0)  # immune to [FIRE] while it lasts (EnemyStrike)
+			actor.set_meta(BpTheft.BALLOON, true)  # the next theft against the party fails (BpTheft)
 			info["targets"] = [actor]
 		&"tune":
 			actor.set_meta("tuning", String(action.get("mode", "NOISE")))
@@ -293,12 +312,6 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				if sc13 != null:
 					sc13.cleanse()
 				info["targets"] = [target]
-		&"miura_fold":
-			var living: Array = c.living_enemies()
-			if living.size() >= 2:
-				living[0].set_meta("fold_partner", living[1])
-				living[1].set_meta("fold_partner", living[0])
-				info["targets"] = [living[0], living[1]]
 		&"time_debt_paid":
 			for u in c.party:
 				var st5 := CombatantStats.of(u)
@@ -316,7 +329,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 					sc14.add(&"corroded", -1.0, 3)
 				var f5: Dictionary = c.fields.add(&"ash_field", c.position_of(t), 1.5, -1.0, 0)
 				c.field_added.emit(f5)
-			actor.set_meta("corruption", float(actor.get_meta("corruption", 0.0)) + 10.0)
+			CorruptionComponent.add_to(actor, CorruptionComponent.SEPPUKU)
 			var kst := CombatantStats.of(actor)
 			kst.heal(roundi(float(kst.max_hp()) * 0.2))
 		&"cobalt_nodachi":
@@ -325,8 +338,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				if f6["kind"] == &"ash_field" and c.position_of(actor).distance_to(f6["center"]) <= tech.length:
 					c.fields.fields.erase(f6)
 		&"overclocked_short_circuit":
-			# Arcs through metal only: non-metal targets are skipped.
-			info = _merge_damage(c, info, action, func(t: Node) -> bool: return c._is_metal(t))
+			info = _merge_damage(c, info, action, CastReach.target_filter(c, tech))  # arcs through metal only
 		&"mycelia_tether":
 			var nodes: Array = actor.get_meta("tether_nodes", [])
 			for u in c.party:
@@ -361,9 +373,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 		&"omega_annihilation":
 			info = _merge_damage(c, info, action)
 			for t in info["targets"]:
-				if c.wind_ups.has(t):
-					c.wind_ups.erase(t)
-					c.telegraph_ended.emit(t)
+				c.end_wind_up(t)
 				c.set_gauge(t, 0.0)
 			actor.set_meta("used_tachyon_this_turn", true)
 	return info
@@ -372,9 +382,10 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 static func _merge_damage(c: BattleCoordinator, info: Dictionary, action: Dictionary, filter: Callable = Callable()) -> Dictionary:
 	if filter.is_valid():
 		action["target_filter"] = filter
-	var dmg: Dictionary = c._resolve_action(action)
+	var dmg: Dictionary = StrikeResolution.resolve(c, action)
 	info["targets"] = dmg["targets"]
 	info["damage"] = dmg["damage"]
+	info["raw"] = dmg["raw"]
 	info["shave"] = dmg["shave"]
 	info["breaks"] = dmg["breaks"]
 	return info
@@ -400,67 +411,23 @@ static func _fake_weakness(c: BattleCoordinator, _u: Node) -> StringName:
 	return FAKE_POOL[c.rng.randi_range(0, FAKE_POOL.size() - 1)]
 
 
-static func _steal_from(c: BattleCoordinator, glenn: Node, target: Node, boost: int) -> int:
-	var n: int = CombatConstants.GLENN_STEAL[clampi(boost, 0, 4)]
+## Glenn's steal (§7.5, acceptance §18.7 #22): from the enemy's stolen-BP counter first (1 BP at Lv0-1, 2 at
+## Lv2, 3 at Lv3+); only when the counter is empty, 1 BP from its "laugh". A Broken enemy whose behaviour says
+## `steal_all_when_broken` (the Ash Ringmaster) gives up its whole counter. The pool's cap still applies.
+## `limit`: what is left of this action's steal (EffectSteps' multi-body steal), when it is less than the level's.
+static func _steal_from(c: BattleCoordinator, _glenn: Node, target: Node, boost: int, limit: int = 99) -> int:
+	var n: int = mini(CombatConstants.GLENN_STEAL[clampi(boost, 0, 4)], limit)
 	var taken: int = 0
-	if target != null and target.has_meta("stolen_bp"):
-		var held: int = int(target.get_meta("stolen_bp", 0))
-		var from_counter: int = mini(held, n)
-		target.set_meta("stolen_bp", held - from_counter)
-		taken += from_counter
-		n -= from_counter
-	if n > 0 and target != null:
-		taken += 1
-		target.set_meta("stolen_from", true)
+	var held: int = BpTheft.held(target) if target != null else 0
+	if held > 0:
+		var def: EnemyDef = c.enemy_defs.get(CombatantStats.of(target).actor_id, null)
+		if def != null and bool(def.behaviour.get("steal_all_when_broken", false)) and c.is_broken(target):
+			n = held
+		taken = mini(held, n)
+		target.set_meta(BpTheft.COUNTER, held - taken)
+	elif target != null and n > 0:
+		taken = 1
 	if taken > 0:
 		c.bank.add(taken)
-	glenn.set_meta("stole_this_battle", true)
 	return taken
 
-
-## Enemy actions with a named effect.
-static func apply_enemy_effect(c: BattleCoordinator, enemy: Node, action: Dictionary, hit_list: Array) -> void:
-	var eff: String = String(action.get("effect", ""))
-	if eff.begins_with("summon:"):
-		c.request_summon(StringName(eff.trim_prefix("summon:")), int(action.get("count", 2)), enemy)
-		return
-	match eff:
-		"bell_slow":
-			for u in c.party:
-				var sc := StatusComponent.of(u)
-				if sc != null:
-					sc.add(&"slow", 6.0)
-		"repaint":
-			if not enemy.get_meta("repainted", false):
-				enemy.set_meta("repainted", true)
-				var sh := ShieldComponent.of(enemy)
-				if sh != null and not sh.is_broken:
-					sh.current_shield = mini(sh.max_total(), sh.current_shield + 1)
-					sh.shield_changed.emit(sh.current_shield, sh.max_total())
-		"heal_ally_plates":
-			for e in c.living_enemies():
-				if e != enemy:
-					var sh2 := ShieldComponent.of(e)
-					if sh2 != null and not sh2.is_broken:
-						sh2.current_shield = mini(sh2.max_total(), sh2.current_shield + int(action.get("plates", 2)))
-						sh2.shield_changed.emit(sh2.current_shield, sh2.max_total())
-					break
-		"oil_blight":
-			c.set_oil_blight(true)
-		"time_stop":
-			for h in hit_list:
-				var sc2 := StatusComponent.of(h["node"])
-				if sc2 != null:
-					sc2.add(&"time_stop", 3.0)
-		"grief":
-			for h in hit_list:
-				var sc3 := StatusComponent.of(h["node"])
-				if sc3 != null:
-					sc3.add(&"grief", -1.0, -1)
-		"fog":
-			var f: Dictionary = c.fields.add(&"vhs_fog", action.get("aim", c.arena_center), 4.0, 20.0, 1)
-			c.field_added.emit(f)
-			for h in hit_list:
-				var sc4 := StatusComponent.of(h["node"])
-				if sc4 != null:
-					sc4.add(&"blind", 10.0)

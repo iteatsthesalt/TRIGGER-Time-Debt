@@ -1,16 +1,18 @@
 ## The Atrium Horologe (Story Bible U0, §9.7; Reference Bible §3.2, plate-00): Porre's gutted clocktower
 ## in Truce, grown through by Robo. A vertical brass cylinder: moss-garden floor, workbench ring, gate ring,
 ## and at its centre Robo's torso as the clock pillar. The hub: save, heal, swap, inspect, plant, train,
-## choose a gate. Chapter 1 plays out here (beats 1–9) before the Fair.
+## choose a gate. Chapter 1 plays out here (beats 1–9) before the Fair. The hall is primitives; the hearth,
+## Seed pot, gramophone workbench, plinth, alcove, ladder, doll and the eight gate arches are PixelLab props.
 extends Location
 
-const GATE_UNIVERSES := [1, 2, 3, 4, 5, 6, 7, 8]
-const GATE_COLOURS := {
-	1: Color(0.75, 0.33, 0.26), 2: Color(0.77, 0.54, 0.25), 3: Color(0.43, 0.62, 0.64), 4: Color(0.17, 0.3, 0.61),
-	5: Color(0.78, 0.23, 0.2), 6: Color(0.0, 0.94, 1.0), 7: Color(0.83, 0.69, 0.22), 8: Color(0.55, 0.49, 1.0),
-}
-const GATE_LOCATIONS := {1: &"bamboo_grove", 2: &"proto_dome", 3: &"eden_canopy", 4: &"cathedral_nave", 5: &"carnival_midway", 6: &"neo_truce", 7: &"bone_tree_root", 8: &"vaelos_heart"}
 const LOFT_Y := 3.2
+const FAIR := &"leene_square"
+## The memory echoes that leak near the lab once the dummy's shields were stressed (Story Bible Ch1 "Enemies"):
+## [encounter, centre, radius]. Each stands clear of dummy_center, where the dummy fight leaves the party.
+const LAB_ZONES := [
+	[&"atrium_lab_mice", Vector3(-9.0, 0, -3.0), 2.0], [&"atrium_lab_fragment", Vector3(-3.5, 0, -9.5), 1.8],
+	[&"atrium_lab_krona_echo", Vector3(-10.5, 0, -0.5), 1.6], [&"atrium_lab_drone", Vector3(3.0, 0, -7.0), 1.8],
+]
 
 # Chapter 1 checkpoints, in order.
 const CP_ARRIVAL := &"atrium_arrival"
@@ -52,10 +54,10 @@ func build() -> void:
 	camera_distance = 16.0
 	camera_pitch = 34.0
 	map_bounds = Rect2(-13, -13, 26, 26)
-	var stone := SceneKit.material("res://assets/textures/stone_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.9, 0.86, 0.78), true)
-	var mossy := SceneKit.material("res://assets/textures/stone_mossy_albedo.png", "res://assets/textures/stone_normal.png", 0.95, Color(0.95, 0.95, 0.9), true)
-	var wall := SceneKit.material("res://assets/textures/castle_wall_albedo.png", "res://assets/textures/castle_wall_normal.png", 0.9, Color(0.85, 0.78, 0.65), true)
-	var wood := SceneKit.material("res://assets/textures/wood_albedo.png", "res://assets/textures/wood_normal.png", 0.85, Color.WHITE, true)
+	var stone := SceneKit.named("castle_flagstone", 0.95, Color(0.9, 0.86, 0.78))
+	var mossy := SceneKit.named("stone_mossy", 0.95, Color(0.95, 0.95, 0.9))
+	var wall := SceneKit.named("castle_wall_block", 0.9, Color(0.85, 0.78, 0.65))
+	var wood := SceneKit.named("oak_plank", 0.85)
 	var brass := SceneKit.flat_color(Color(0.74, 0.56, 0.28), Color.BLACK, 0.0, 0.35, 0.85)
 	var dark_brass := SceneKit.flat_color(Color(0.42, 0.3, 0.16), Color.BLACK, 0.0, 0.5, 0.8)
 	var copper := SceneKit.flat_color(Color(0.72, 0.42, 0.25), Color(1.0, 0.45, 0.15), 1.2, 0.4, 0.8)
@@ -66,9 +68,14 @@ func build() -> void:
 	_ring_wall(13.6, 7.0, wall, 28)
 	for i in 12:
 		var a: float = float(i) / 12.0 * TAU
-		SceneKit.cylinder(self, 0.45, 8.0, Vector3(cos(a) * 12.6, 4.0, sin(a) * 12.6), wall, "Column%d" % i)
-		var bal := SceneKit.box(self, Vector3(5.5, 0.25, 1.6), Vector3(cos(a + TAU / 24.0) * 12.4, 4.5, sin(a + TAU / 24.0) * 12.4), wood, "Balcony%d" % i, false)
-		bal.rotation.y = -(a + TAU / 24.0) + PI * 0.5
+		# the camera-facing third of the ring keeps only its ledge (diorama convention, as _ring_wall):
+		# full columns and balconies there stood between the follow camera and the hearth, the pool and the gates
+		if sin(a) <= 0.45:
+			SceneKit.cylinder(self, 0.45, 8.0, Vector3(cos(a) * 12.6, 4.0, sin(a) * 12.6), wall, "Column%d" % i)
+		var ba: float = a + TAU / 24.0
+		if sin(ba) <= 0.45:
+			var bal := SceneKit.box(self, Vector3(5.5, 0.25, 1.6), Vector3(cos(ba) * 12.4, 4.5, sin(ba) * 12.4), wood, "Balcony%d" % i, false)
+			bal.rotation.y = -ba + PI * 0.5
 	for i in 7:
 		SceneKit.cylinder(self, 0.18 + 0.03 * float(i % 3), 3.0 + 0.6 * float(i), Vector3(11.4, 2.0 + 0.3 * float(i), -3.0 + float(i) * 0.9), brass, "Pipe%d" % i, false)
 	# ---- the dais and the pillar (Robo's torso), the clock face, the hands, the copper vines
@@ -103,25 +110,22 @@ func build() -> void:
 	var water := SceneKit.flat_color(Color(0.25, 0.45, 0.6, 0.85), Color(0.2, 0.4, 0.6), 0.6, 0.05)
 	water.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	pool_water = SceneKit.cylinder(self, 1.6, 0.1, Vector3(-4.5, 0.58, 4.0), water, "PoolWater", false)
-	var terracotta := SceneKit.flat_color(Color(0.6, 0.38, 0.25), Color.BLACK, 0.0, 0.9)
-	SceneKit.cylinder(self, 0.5, 0.7, Vector3(5.5, 0.35, 5.5), terracotta, "SeedPot")
-	var mercury := SceneKit.flat_color(Color(0.8, 0.82, 0.85), Color(0.6, 0.65, 0.7), 0.5, 0.1, 1.0)
-	SceneKit.cylinder(self, 0.18, 0.18, Vector3(5.5, 0.8, 5.5), mercury, "SeedOrb", false)
-	# ---- the workbench ring (north), the gramophone at six o'clock, Lucca's dummy lab at north-west
+	# the Seed of Doan in its garden pot (Nich's prop; the sprout grows above it after the first watering)
+	add_prop(&"prp_u0_seed_of_doan_pot", Vector3(5.5, 0.0, 5.5))
+	# ---- the workbench ring (north) with the little Bekkler doll on it, the gramophone workbench at six
+	# o'clock, Lucca's dummy lab at north-west on its plinth, Robo's rest alcove set into the north wall
 	SceneKit.box(self, Vector3(4.0, 0.9, 1.0), Vector3(0.0, 0.45, -9.5), wood, "Workbench")
 	SceneKit.box(self, Vector3(1.6, 0.9, 1.0), Vector3(5.0, 0.45, -9.0), wood, "Workbench2")
-	SceneKit.cylinder(self, 0.4, 0.9, Vector3(0.0, 0.45, 9.8), wood, "GramophoneTable")
-	var horn := SceneKit.cylinder(self, 0.5, 0.8, Vector3(0.0, 1.45, 9.8), brass, "GramophoneHorn", false)
-	horn.rotation.x = -0.9
-	SceneKit.box(self, Vector3(1.4, 0.2, 1.4), Vector3(-8.0, 0.1, -8.0), stone, "DummyPlinth")
-	# the hearth (west): a brass stove with embers, where the family sits at night
-	var hearth_m := SceneKit.flat_color(Color(0.22, 0.2, 0.19), Color.BLACK, 0.0, 0.9)
-	SceneKit.box(self, Vector3(1.2, 1.6, 1.8), Vector3(-11.6, 0.8, 1.5), hearth_m, "Hearth")
-	var ember := SceneKit.flat_color(Color(1.0, 0.45, 0.1), Color(1.0, 0.5, 0.12), 3.0)
-	SceneKit.box(self, Vector3(0.3, 0.4, 1.0), Vector3(-10.95, 0.5, 1.5), ember, "Embers", false)
-	SceneKit.omni(self, Vector3(-10.0, 1.0, 1.5), Color(1.0, 0.62, 0.3), 1.8, 6.0, false)
-	for bz in [0.2, 2.8]:
-		SceneKit.box(self, Vector3(1.2, 0.45, 0.5), Vector3(-9.6, 0.225, bz), wood, "HearthBench")
+	add_prop(&"prp_u0_bekkler_doll", Vector3(-1.2, 0.0, -9.4))
+	add_prop(&"prp_u0_gramophone_workbench", Vector3(0.0, 0.0, 9.8))
+	add_prop(&"prp_u0_dummy_plinth", Vector3(-8.0, 0.0, -8.15))
+	add_prop(&"prp_u0_robo_rest_alcove", Vector3(0.0, 0.0, -12.0))
+	# the hearth (west), its embers flickering, where the family sits at night. It stands a step in from the
+	# gate ring (x -7.9) so gate U2's arch and the west balcony do not hide it from the follow camera.
+	add_prop(&"prp_u0_hearth", Vector3(-7.9, 0.0, 0.5))
+	SceneKit.omni(self, Vector3(-6.9, 1.0, 0.5), Color(1.0, 0.62, 0.3), 1.8, 6.0, false)
+	for bz in [-0.8, 1.8]:
+		SceneKit.box(self, Vector3(1.2, 0.45, 0.5), Vector3(-6.0, 0.225, bz), wood, "HearthBench")
 	# ---- the loft: a wall of Crono's old Truce house set into the tower, reached by a brass ramp-stair
 	SceneKit.box(self, Vector3(6.0, 0.3, 5.0), Vector3(8.0, LOFT_Y - 0.15, -7.0), wood, "LoftFloor")
 	var plaster := SceneKit.flat_color(Color(0.86, 0.8, 0.68), Color.BLACK, 0.0, 1.0)
@@ -130,6 +134,7 @@ func build() -> void:
 	SceneKit.box(self, Vector3(1.2, 1.4, 0.1), Vector3(6.8, LOFT_Y + 1.7, -9.2), win_m, "LoftWindow", false)
 	SceneKit.box(self, Vector3(1.6, 0.5, 2.2), Vector3(9.8, LOFT_Y + 0.25, -7.5), SceneKit.flat_color(Color(0.5, 0.3, 0.3)), "SeraBed", false)
 	SceneKit.box(self, Vector3(1.0, 1.2, 0.6), Vector3(6.0, LOFT_Y + 0.6, -8.5), wood, "CronoChair", false)
+	add_prop(&"prp_u0_loft_ladder", Vector3(8.2, LOFT_Y, -9.0))
 	SceneKit.box(self, Vector3(0.1, 1.0, 5.0), Vector3(5.0, LOFT_Y + 0.5, -7.0), brass, "LoftRailW", false)
 	SceneKit.box(self, Vector3(6.0, 1.0, 0.1), Vector3(8.0, LOFT_Y + 0.5, -4.5), brass, "LoftRailS", false)
 	# the ramp (walkable) from (5.2, 0, -1.0) rising to the loft edge at z = -4.5; stair treads over it for the look
@@ -140,10 +145,7 @@ func build() -> void:
 	for i in 10:
 		var t: float = float(i) / 9.0
 		SceneKit.box(self, Vector3(1.6, 0.12, 0.6), Vector3(5.2, 0.1 + t * (LOFT_Y - 0.2), 1.3 - t * 5.8), brass, "Tread%d" % i, false)
-	# ---- the gate ring
-	for u in GATE_UNIVERSES:
-		var a4: float = (float(GATE_UNIVERSES.find(u)) + 0.5) / 8.0 * TAU + PI * 0.5
-		_build_gate(u, Vector3(cos(a4) * 11.2, 0.0, sin(a4) * 11.2), a4, dark_brass)
+	gates = AtriumGateRing.build(self)  # the ring of eight universe gates
 	# ---- a shaft of light from the dome
 	var dome := SpotLight3D.new()
 	dome.position = Vector3(-3.0, 14.0, -2.0)
@@ -172,14 +174,14 @@ func build() -> void:
 	add_marker("window_ink", Vector3(9.5, 0, 6.5))
 	add_marker("father_tank", Vector3(7.5, 0, 4.0))
 	add_marker("workbench", Vector3(0.0, 0.0, -8.3))
-	add_marker("hearth", Vector3(-9.0, 0.0, 1.5))
-	add_marker("hearth_crono", Vector3(-9.6, 0.0, 0.9))
-	add_marker("hearth_marle", Vector3(-9.6, 0.0, 2.3))
+	add_marker("hearth", Vector3(-5.4, 0.0, 0.5))
+	add_marker("hearth_crono", Vector3(-6.0, 0.0, -0.1))
+	add_marker("hearth_marle", Vector3(-6.0, 0.0, 1.3))
 	add_marker("glenn", Vector3(-6.2, 0.0, -7.6))
 	add_marker("right_gate", Vector3(10.5, 0.0, 3.5))
 	# ---- interactables
 	var robo := Interactable.make(self, "Robo", Vector3(0, 1.0, 3.4), &"", "Robo", 1.3)
-	robo.callback = Callable(self, "_talk_robo")
+	robo.callback = func(_by: Node) -> void: Story.run(&"atrium_robo")
 	Interactable.make(self, "Pool", Vector3(-4.5, 0.8, 6.0), &"atrium_pool", "The pool", 1.0)
 	var seed := Interactable.make(self, "SeedPot", Vector3(5.5, 0.8, 4.6), &"", "The Seed of Doan", 1.0)
 	seed.callback = Callable(self, "_use_seed")
@@ -187,13 +189,13 @@ func build() -> void:
 	Interactable.make(self, "Workbench", Vector3(0.0, 0.8, -8.7), &"atrium_workbench", "Workbench", 1.1)
 	var dummy := Interactable.make(self, "Dummy", Vector3(-7.4, 0.8, -6.6), &"", "The 999 Shield Dummy", 1.3)
 	dummy.callback = Callable(self, "_use_dummy")
-	hearth_interact = Interactable.make(self, "HearthSeat", Vector3(-9.0, 0.8, 1.5), &"", "The hearth", 1.1)
+	hearth_interact = Interactable.make(self, "HearthSeat", Vector3(-5.4, 0.8, 0.5), &"", "The hearth", 1.1)
 	hearth_interact.callback = Callable(self, "_use_hearth")
-	var dummy_actor := add_npc(&"shard_doll_999", "shard_doll_999", Vector3(-8.0, 0.2, -8.0), "s")
+	var dummy_actor := add_npc(&"shard_doll_999", "shard_doll_999", Vector3(-8.0, 0.3, -8.0), "s")
 	dummy_actor.frozen = true
 	# the ink that gathers at the east window (Father Tank)
 	_build_window_ink()
-	downstairs_trigger = _trigger(Vector3(5.2, 0.8, 2.6), Vector3(3.0, 2.0, 2.0))
+	downstairs_trigger = SceneKit.trigger(self, Vector3(5.2, 0.8, 2.6), Vector3(3.0, 2.0, 2.0), "DownstairsTrigger")
 	downstairs_trigger.body_entered.connect(_on_downstairs)
 
 
@@ -222,18 +224,19 @@ func after_ready() -> void:
 
 # ------------------------------------------------------------------ cast and state placement
 
+## Who stands where for a checkpoint. Sera alone walks the loft beats: a party that disagrees (a debug boot, an odd
+## save) is rebuilt, never left beside the cast, so there is one Crono. Marle stands at the hearth unless she
+## walked in with the party (the arrival from the courtyard).
 func _place_cast(cp: StringName) -> void:
-	if cp == CP_LOFT or cp == CP_REWIND:
+	if cp == CP_LOFT or cp == CP_REWIND or cp == CP_DOWNSTAIRS:
 		if Game.active_party != [&"sera"]:
-			Game.set_party([&"sera"])
-		var crono := add_cast(&"crono", get_marker("loft_chair"), "e")
-		crono.sprite.play(&"hurt")  # asleep sitting up; the hurt frame reads as slumped
-		crono.sprite.set_tint(Color(0.85, 0.85, 0.9))
-	elif cp == CP_DOWNSTAIRS:
-		if Game.active_party != [&"sera"]:
-			Game.set_party([&"sera"])
-		add_cast(&"crono", get_marker("ramp_bottom") + Vector3(1.5, 0, 0.5), "e")
-	if cp == CP_FREE or cp == CP_NIGHT or cp == CP_FAIR or cp == CP_ARRIVAL or cp == CP_HUB:
+			rebuild_party([&"sera"])
+		var down: bool = cp == CP_DOWNSTAIRS
+		var crono := add_cast(&"crono", get_marker("ramp_bottom") + Vector3(1.5, 0, 0.5) if down else get_marker("loft_chair"), "e")
+		if not down:
+			crono.sprite.play(&"hurt")  # asleep sitting up; the hurt frame reads as slumped
+			crono.sprite.set_tint(Color(0.85, 0.85, 0.9))
+	if (cp == CP_FREE or cp == CP_NIGHT or cp == CP_FAIR or cp == CP_ARRIVAL or cp == CP_HUB) and get_actor(&"marle") == null:
 		add_cast(&"marle", get_marker("hearth_marle"), "w", &"atrium_marle", "Marle")
 	if Flags.has(&"Atrium_Dummy") and (cp == CP_FREE or cp == CP_NIGHT or cp == CP_FAIR):
 		_spawn_glenn()
@@ -252,7 +255,7 @@ func _begin_loft(rewind_stage: bool = false) -> void:
 	place_party(&"loft_bed")
 	rig.distance = 11.0
 	rig.snap()
-	Saves.save(0)
+	autosave_at(&"loft_bed")
 	if not rewind_stage:
 		await Story.run(&"ch1_loft_wake")
 		_focus_hold = 0.0
@@ -262,7 +265,6 @@ func _begin_loft(rewind_stage: bool = false) -> void:
 
 func _free_roam_setup() -> void:
 	if Game.active_party.size() < 2:
-		Game.set_party([&"sera", &"crono"])
 		rebuild_party([&"sera", &"crono"], &"start")
 	_activate_lab_zones()
 	_krona_marks()
@@ -338,8 +340,9 @@ func _on_rewind() -> void:
 		downstairs_trigger.set_deferred("monitoring", true)
 		Saves.save(0)
 	elif sera != null:
-		field_rewind(sera, null)
-		prompt_label.text = "Nothing here to rewind. The Debt took its 5% anyway."
+		# a dry press rewinds nothing and costs nothing: the Debt prices a Rewind in combat or a gate jump (Story
+		# Bible §3.4; DECISIONS "A field Rewind with nothing to rewind is free")
+		prompt_label.text = "Nothing here to rewind."
 		prompt_label.visible = true
 		await get_tree().create_timer(2.0).timeout
 		prompt_label.visible = false
@@ -359,7 +362,7 @@ func _on_downstairs(body: Node3D) -> void:
 	rebuild_party([&"sera", &"crono"])
 	Game.checkpoint = CP_FREE
 	_free_roam_setup()
-	Saves.save(0)
+	autosave_at(&"ramp_bottom")  # the hub opens where Father Tank stood, never back up in the loft
 	await Story.run(&"ch1_hub_tutorial")
 
 
@@ -391,20 +394,16 @@ func wrist_reveal() -> void:
 
 
 func _activate_lab_zones() -> void:
-	if zones.any(func(z: EncounterZone) -> bool: return z.encounter_id == &"atrium_lab_mice"):
+	if not Flags.has(&"Atrium_Dummy") or zones.any(func(z: EncounterZone) -> bool: return z.encounter_id == LAB_ZONES[0][0]):
 		return
-	# memory echoes leak near the dummy lab once its shields have been stressed
-	if Flags.has(&"Atrium_Dummy"):
-		var z1 := add_zone(&"atrium_lab_mice", Vector3(-9.0, 0, -3.0), 2.0)
-		z1.spawn(self)
-		z1.triggered.connect(_on_zone_triggered)
-		var z2 := add_zone(&"atrium_lab_fragment", Vector3(-3.5, 0, -9.5), 1.8)
-		z2.spawn(self)
-		z2.triggered.connect(_on_zone_triggered)
+	for row in LAB_ZONES:
+		var z := add_zone(row[0], row[1], row[2])
+		z.spawn(self)
+		z.triggered.connect(_on_zone_triggered)
 
 
 func _krona_marks() -> void:
-	if ink_path != null or Flags.counter(&"seed_waters") > 0:
+	if ink_path != null or SeedOfDoan.waters() > 0:
 		return
 	# barefoot indigo prints from the dais to the garden pot: Sera's slips leaking U1 ink
 	ink_path = InkPath.make(self, [Vector3(1.5, 0, 3.6), Vector3(3.0, 0, 4.6), Vector3(4.6, 0, 4.9), Vector3(5.4, 0, 4.4)], 30.0)
@@ -424,26 +423,23 @@ func _bloom_lotus() -> void:
 
 
 func _use_seed(_by: Node) -> void:
-	if Flags.counter(&"seed_waters") == 0 and Game.checkpoint != CP_LOFT:
+	if SeedOfDoan.waters() == 0 and SeedOfDoan.can_water() and Game.checkpoint != CP_LOFT:
 		await Story.run(&"atrium_seed_first_water")
+		if SeedOfDoan.waters() > 0:
+			autosave_at(&"seed")  # the watering is kept without ending the day (GAP2-6)
 	else:
 		Story.run(&"atrium_seed")
 
 
-## Scripted: the first watering. The orb becomes a sprout with a tiny gramophone horn.
+## Scripted: the first watering (SeedOfDoan: the count, the Light it pays, the Grown state on the third). A
+## sprout with a tiny gramophone horn rises from the rim of the Seed's pot, playing a tune backwards.
 func water_seed() -> void:
-	Flags.add_counter(&"seed_waters", 1)
-	var orb: Node = get_node_or_null("SeedOrb")
-	if orb:
-		orb.queue_free()
-	var green := SceneKit.flat_color(Color(0.45, 0.6, 0.3), Color.BLACK, 0.0, 0.9)
-	SceneKit.cylinder(self, 0.04, 0.5, Vector3(5.5, 0.95, 5.5), green, "Sprout", false)
-	var brass := SceneKit.flat_color(Color(0.74, 0.56, 0.28), Color.BLACK, 0.0, 0.35, 0.85)
-	var horn := SceneKit.cylinder(self, 0.12, 0.2, Vector3(5.5, 1.25, 5.4), brass, "SproutHorn", false)
-	horn.rotation.x = -0.6
+	SeedOfDoan.water()
+	var pot: PropBillboard = get_prop(&"prp_u0_seed_of_doan_pot")
+	SeedOfDoan.grow_sprout(self, pot.global_position + Vector3(0.0, pot.footprint.y, 0.0) if pot != null else Vector3(5.5, 1.1, 5.5))
 	if ink_path:
 		ink_path.active = false
-	Audio.play_sfx("ui/gramophone_needle")
+	Audio.play_sfx("time/rewind")
 
 
 func _use_dummy(_by: Node) -> void:
@@ -458,24 +454,35 @@ func _use_dummy(_by: Node) -> void:
 	_dummy_pending = true
 	await Story.run(&"ch1_dummy_sequence")
 	_dummy_pending = false
-	if Flags.has(&"Atrium_Dummy"):
-		_activate_lab_zones()
-		_spawn_glenn()
-		if Flags.is_state(&"Atrium_Dummy", &"Salvaged"):
-			_masks_weep_oil()
+	_after_dummy()
+
+
+## The dummy is spared or salvaged: the lab's echoes leak, Glenn comes to read the record, and the result is
+## autosaved where the fight left the party, without moving the story on (GAP2-6: the rest that saves ends the day).
+func _after_dummy() -> void:
+	if not Flags.has(&"Atrium_Dummy"):
+		return
+	_activate_lab_zones()
+	_spawn_glenn()
+	if Flags.is_state(&"Atrium_Dummy", &"Salvaged"):
+		_masks_weep_oil()
+	autosave_at(&"dummy_center")
 
 
 func _spawn_glenn() -> void:
 	if glenn_npc != null:
 		return
-	glenn_npc = add_npc(&"glenn_marshall", "glenn_marshall", get_marker("glenn"), "w", 60.0, &"", "Glenn")
-	var it: Interactable = glenn_npc.get_node_or_null("Talk")
-	if it:
-		it.callback = func(_by: Node) -> void:
-			if Flags.has(&"Glenn_Honour_Checked"):
-				Story.run(&"ch1_glenn_after")
-			else:
-				Story.run(&"ch1_glenn_honour")
+	# his Talk is his own, never borrowed from the Atrium's ambient lines (STORY-12)
+	glenn_npc = add_npc(&"glenn_marshall", "glenn_marshall", get_marker("glenn"), "w", 60.0, &"", "Glenn", 0.0, _talk_glenn)
+
+
+## Glenn's honour check once (autosaved: his verdict is kept without a rest), then his after-lines.
+func _talk_glenn(_by: Node) -> void:
+	if Flags.has(&"Glenn_Honour_Checked"):
+		Story.run(&"ch1_glenn_after")
+		return
+	await Story.run(&"ch1_glenn_honour")
+	autosave_at(&"dummy_center")
 
 
 func _masks_weep_oil() -> void:
@@ -483,10 +490,6 @@ func _masks_weep_oil() -> void:
 		var m := SceneKit.flat_color(Color(0.05, 0.05, 0.06), Color(0.1, 0.1, 0.12), 0.3, 0.2)
 		eye_right.material_override = m
 	Audio.set_rtpc("hydraulic_hiss", 1.0)
-
-
-func _talk_robo(_by: Node) -> void:
-	Story.run(&"atrium_robo")
 
 
 ## Rest at the hub: full heal for everyone, the smear reset (never the Debt), and the clock runs to night.
@@ -497,7 +500,9 @@ func heal_party() -> void:
 		a.set_porcelain_visuals()
 	for id in Game.roster.keys():
 		Game.roster[id]["hp_ratio"] = 1.0
-	Audio.play_sfx("ui/heal_chime")
+	Audio.play_sfx("ui/save")
+	if Game.checkpoint == CP_FREE or Game.checkpoint == CP_NIGHT or Game.checkpoint == CP_FAIR:
+		Game.spawn_point = &"dais"  # the rest's save (atrium_robo) resumes in front of Robo
 	if Game.checkpoint == CP_FREE and Flags.has(&"Atrium_Dummy"):
 		Game.checkpoint = CP_NIGHT
 		tower_time = 23.6
@@ -529,8 +534,7 @@ func _midnight() -> void:
 func _use_hearth(_by: Node) -> void:
 	if Game.checkpoint == CP_NIGHT and midnight_done and not Flags.has(&"Crono_Confession"):
 		await Story.run(&"ch1_hearth")
-		Game.checkpoint = CP_FAIR
-		Saves.save(0)
+		autosave_at(&"hearth", CP_FAIR)
 		await get_tree().create_timer(0.5).timeout
 		await Story.run(&"ch1_fair_call")
 	elif Game.checkpoint == CP_NIGHT:
@@ -539,11 +543,15 @@ func _use_hearth(_by: Node) -> void:
 		Story.run(&"atrium_hearth")
 
 
-## Scripted: the family leaves for Leene Square; Crono alone, chasing.
+## Scripted: the family leaves for Leene Square; Crono alone, chasing. Nothing is committed unless the Router will
+## take him there (its own refusals, checked first): while the square is unbuilt the hub stays as it was, the Fair
+## call says so (ch1_fair_call reads Ch1_Fair_Left) and plays again from the CP_FAIR autosave.
 func leave_for_fair() -> void:
+	if not Router.has_location(FAIR) or Router.transitioning:
+		return
 	Flags.set_flag(&"Ch1_Fair_Left", &"set")
 	Game.set_party([&"crono"])
-	Router.go(&"leene_square", &"start", 1.0)
+	Router.go(FAIR, &"start", 1.0)
 
 
 # ------------------------------------------------------------------ builders
@@ -557,38 +565,6 @@ func _ring_wall(radius: float, height: float, mat: Material, segments: int) -> v
 		var h: float = 1.0 if facing else height
 		var b := SceneKit.box(self, Vector3(seg_len, h, 0.8), Vector3(cos(a) * radius, h * 0.5, sin(a) * radius), mat, "Wall%d" % i)
 		b.rotation.y = -a + PI * 0.5
-
-
-func _build_gate(u: int, pos: Vector3, angle: float, frame_mat: Material) -> void:
-	var holder := Node3D.new()
-	holder.name = "Gate%d" % u
-	holder.position = pos
-	holder.rotation.y = -angle + PI * 0.5
-	add_child(holder)
-	SceneKit.box(holder, Vector3(0.4, 3.4, 0.4), Vector3(-1.2, 1.7, 0), frame_mat, "JambA", false)
-	SceneKit.box(holder, Vector3(0.4, 3.4, 0.4), Vector3(1.2, 1.7, 0), frame_mat, "JambB", false)
-	SceneKit.box(holder, Vector3(2.8, 0.4, 0.4), Vector3(0, 3.6, 0), frame_mat, "Lintel", false)
-	var unlocked: bool = Flags.has(StringName("Gate_U%d_Open" % u))
-	var col: Color = GATE_COLOURS.get(u, Color.WHITE)
-	var fill := SceneKit.flat_color(col * (0.9 if unlocked else 0.12), col, 2.0 if unlocked else 0.15, 0.3)
-	var panel := SceneKit.box(holder, Vector3(2.0, 3.2, 0.15), Vector3(0, 1.7, 0.1), fill, "Panel", false)
-	gates[u] = panel
-	var it := Interactable.make(holder, "GateUse", Vector3(0, 0.8, 1.0), &"", "Gate: " + Universe.name_of(u), 1.1)
-	it.callback = func(_by: Node) -> void: _use_gate(u)
-	if unlocked:
-		SceneKit.omni(holder, Vector3(0, 2.0, 1.0), col, 1.5, 6.0, false)
-
-
-func _use_gate(u: int) -> void:
-	if Flags.has(StringName("Gate_U%d_Open" % u)):
-		var loc: StringName = GATE_LOCATIONS.get(u, &"")
-		if Router.has_location(loc):
-			Audio.play_sfx("time/gate_open_u%d" % u)
-			Router.go(loc, &"start")
-		else:
-			Story.run(&"atrium_gate_unbuilt")
-	else:
-		Story.run(&"atrium_gate_locked")
 
 
 func _build_window_ink() -> void:
@@ -619,18 +595,3 @@ func _build_window_ink() -> void:
 	qm.material = mat
 	window_ink.draw_pass_1 = qm
 	add_child(window_ink)
-
-
-func _trigger(pos: Vector3, size: Vector3) -> Area3D:
-	var a := Area3D.new()
-	a.collision_layer = 0
-	a.collision_mask = 2
-	a.monitoring = false
-	var cs := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = size
-	cs.shape = box
-	a.add_child(cs)
-	a.position = pos
-	add_child(a)
-	return a

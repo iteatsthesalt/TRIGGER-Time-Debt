@@ -1,6 +1,7 @@
 """Character specs for tools/art/spritegen.py (Reference Bible §4, §5.2, §5.4).
 
-Palettes are hex strings; proportions are in cell pixels (128 px cell = 2 m, so 114 px ≈ 1.78 m).
+Palettes are hex strings; proportions are in cell pixels (128 px cell = 2 m, so 114 px ≈ 1.78 m: the placeholder
+generator's density; PixelLab imports are scaled by height_m instead, see docs/DECISIONS.md "Scale" and "Direction").
 Humanoid rigs only: the non-humanoid playables (Cassia-09, Xyloph, Vesper, Pierrot-Glenn, Static,
 Omega-Spekkio) get their own rigs in later passes and currently use their painted stand-ins.
 """
@@ -52,7 +53,9 @@ CHARACTERS = {
     },
     # ------------------------------------------------------------------ supporting cast / NPCs
     "marle": {
-        "id": "marle", "group": "npcs", "canvas": "u0", "fps": 60, "height": 106, "build": 0.9, "female": True,
+        # she has a kit (data/characters/marle.json), so her sheets live under assets/characters/marle with the
+        # PixelLab import; spritegen refuses to overwrite it (the old assets/npcs/marle paper doll is gone)
+        "id": "marle", "group": "characters", "canvas": "u0", "fps": 60, "height": 106, "build": 0.9, "female": True,
         "hair": "ponytail",
         "palette": {
             "skin": "#EBC7A8", "skin_shadow": "#C1977B", "hair": "#E2C25A", "hair_shadow": "#A88B32",

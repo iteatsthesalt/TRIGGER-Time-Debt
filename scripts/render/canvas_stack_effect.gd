@@ -1,18 +1,28 @@
 @tool
-## The canvas stack as one CompositorEffect (Reference Bible §1.7). Reads the UniverseSwitcher's
-## weights and grades, copies the colour buffer to a scratch image, then grades it in place.
+## The canvas stack as one CompositorEffect (Reference Bible §1.7). Reads the UniverseSwitcher's three
+## stage weights (§2.4: paper, grade, frame rate) and the grades, copies the colour buffer to a scratch image,
+## then grades it in place.
 class_name CanvasStackEffect
 extends CompositorEffect
 
 const SHADER_PATH := "res://shaders/compositor/canvas_stack.glsl"
 const CONTEXT := &"canvas_stack"
 const SCRATCH := &"scratch"
-const U_BASE := 16
+## The params buffer (canvas_stack.glsl reads the same offsets): [0] reduced_flicker, [1] debt, [2] vaelos_near,
+## [3] strength, then ten weights each for the grade, the paper and the frame rate, then 16 floats per universe.
+const W_GRADE := 4
+const W_PAPER := 14
+const W_FPS := 24
+const U_BASE := 40
 const U_STRIDE := 16
 const FLOATS := U_BASE + 10 * U_STRIDE
 
-## Weights for U0..U9 (set by the UniverseSwitcher each frame; defaults to U0).
+## Grade weights for U0..U9 (LUT, inks, line, VHS; set from the UniverseSwitcher each frame; defaults to U0).
 @export var weights := PackedFloat32Array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+## Paper weights (they lead the grade in a Chronoslip).
+@export var paper_weights := PackedFloat32Array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+## Frame-rate weights: the canvas quantises at the rate of the universe holding the most, never a blend.
+@export var fps_weights := PackedFloat32Array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 @export_range(0.0, 1.0) var strength: float = 1.0
 @export_range(0.0, 1.0) var debt: float = 0.0
 @export_range(0.0, 1.0) var vaelos_near: float = 0.0
@@ -26,6 +36,8 @@ var _params := PackedFloat32Array()
 var _ready: bool = false
 
 ## Per-universe parameters (sat, paper rgb, paper amount, gold, edge, vhs, posterize, ink, edge rgb, scanline, chroma px, fps).
+## The one grade table: the battle plane's paper tint reads it too (paper_of); the fps column must equal
+## data/universes/universes.json (Universe.fps_of reads that; suite_progression checks they agree).
 const GRADES := [
 	[0.85, 0.96, 0.93, 0.86, 0.55, 0.15, 0.10, 0.00, 0.0, 0.00, 0.18, 0.17, 0.17, 0.0, 0.0, 60.0],   # U0 watercolour
 	[0.20, 0.95, 0.93, 0.85, 0.65, 0.00, 0.75, 0.00, 0.0, 0.85, 0.10, 0.10, 0.10, 0.0, 0.0, 24.0],   # U1 sumi-e
@@ -38,6 +50,12 @@ const GRADES := [
 	[0.90, 1.00, 1.00, 1.00, 0.40, 0.60, 0.30, 0.30, 0.0, 0.00, 0.20, 0.20, 0.20, 0.5, 1.0, 15.0],   # U8 porcelain null
 	[0.00, 1.00, 1.00, 1.00, 0.95, 0.10, 0.00, 0.00, 0.0, 0.00, 0.20, 0.20, 0.20, 0.0, 0.0, 60.0],   # U9 white void
 ]
+
+
+## The paper colour of universe `u` (the battle plane's tint, BattleScene).
+static func paper_of(u: int) -> Color:
+	var g: Array = GRADES[clampi(u, 0, GRADES.size() - 1)]
+	return Color(float(g[1]), float(g[2]), float(g[3]))
 
 
 func _init() -> void:
@@ -87,17 +105,7 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 	var size: Vector2i = buffers.get_internal_size()
 	if size.x <= 0 or size.y <= 0:
 		return
-	_params[0] = 1.0 if reduced_flicker else 0.0
-	_params[1] = debt
-	_params[2] = vaelos_near
-	_params[3] = strength
-	var total: float = 0.0
-	for i in 10:
-		total += weights[i] if i < weights.size() else 0.0
-	for i in 10:
-		var w: float = weights[i] if i < weights.size() else 0.0
-		_params[4 + i] = (w / total) if total > 0.0 else (1.0 if i == 0 else 0.0)
-	rd.buffer_update(param_buffer, 0, FLOATS * 4, _params.to_byte_array())
+	rd.buffer_update(param_buffer, 0, FLOATS * 4, pack_params().to_byte_array())
 
 	if not buffers.has_texture(CONTEXT, SCRATCH):
 		buffers.create_texture(CONTEXT, SCRATCH, RenderingDevice.DATA_FORMAT_R16G16B16A16_SFLOAT,
@@ -111,6 +119,27 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 		var scratch: RID = buffers.get_texture_slice(CONTEXT, SCRATCH, view, 0, 1, 1)
 		_dispatch(scratch, color, size, time_s, 0.0, groups_x, groups_y)
 		_dispatch(color, scratch, size, time_s, 1.0, groups_x, groups_y)
+
+
+## The params buffer for this frame (the header and the three normalised weight sets over the grade table).
+func pack_params() -> PackedFloat32Array:
+	_params[0] = 1.0 if reduced_flicker else 0.0
+	_params[1] = debt
+	_params[2] = vaelos_near
+	_params[3] = strength
+	_pack_weights(weights, W_GRADE)
+	_pack_weights(paper_weights, W_PAPER)
+	_pack_weights(fps_weights, W_FPS)
+	return _params
+
+
+func _pack_weights(w: PackedFloat32Array, at: int) -> void:
+	var total: float = 0.0
+	for i in 10:
+		total += w[i] if i < w.size() else 0.0
+	for i in 10:
+		var v: float = w[i] if i < w.size() else 0.0
+		_params[at + i] = (v / total) if total > 0.0 else (1.0 if i == 0 else 0.0)
 
 
 func _dispatch(dst: RID, src: RID, size: Vector2i, time_s: float, mode: float, gx: int, gy: int) -> void:

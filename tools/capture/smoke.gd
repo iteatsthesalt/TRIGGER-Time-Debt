@@ -1,6 +1,7 @@
 ## Smoke test and screenshot capture. Boots the game's main scene (or --scene=<location>), runs for
 ## --frames=N frames with no script errors, saves screenshots to /tmp/captures/ every --every=N frames. Saves are
-## suspended (user://scratch), so a capture that reaches an autosave never writes the player's slot.
+## suspended (user://scratch) and the options are the defaults, so a capture that reaches an autosave never writes
+## the player's slot and never plays on his settings.
 ##   xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --rendering-driver vulkan --audio-driver Dummy \
 ##     --script res://tools/capture/smoke.gd -- --frames=600 --scene=test_diorama --out=/tmp/captures
 ## --capture_after=<signal>:<seconds> also saves <prefix>_<signal>.png that many seconds after the loaded
@@ -49,8 +50,11 @@ func _initialize() -> void:
 
 
 func _boot() -> void:
-	# a capture plays real scenes, which autosave: keep it out of the player's slots and settings (Saves)
+	# a capture plays real scenes, which autosave: keep it out of the player's slots and settings (Saves), and play
+	# on the default options, not the player's, so a capture looks the same on every machine. (check.sh and
+	# render.sh pass --no-save, so Game._ready already read the scratch settings; a bare smoke.gd run read his.)
 	root.get_node("Saves").set("suspended", true)
+	root.get_node("Game").call("reset_settings")
 	if after_signal != &"" and root.has_node("Router"):
 		root.get_node("Router").connect("location_loaded", _on_location_loaded)
 	var packed: PackedScene = load("res://scenes/boot/boot.tscn")

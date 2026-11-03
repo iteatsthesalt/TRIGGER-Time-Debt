@@ -41,6 +41,7 @@ func run() -> void:
 		test_coordinator_hairline_rewind_tax,
 		test_coordinator_phase_out_two_turns_and_synergy,
 		test_coordinator_guard_parry_and_ens_ring,
+		test_ens_parry_press_covers_the_aimed_guards_and_is_spent,
 		test_coordinator_enemy_wind_up_and_break_cancels,
 		test_coordinator_victory_rewards_and_spare,
 		test_coordinator_defeat_costs_integrity,
@@ -826,6 +827,40 @@ func test_coordinator_guard_parry_and_ens_ring() -> void:
 	check(TimeDebtComponent.of(crono).debt_null_left > 0.0, "Crono's debt costs are nulled for 5 s")
 
 
+## H1: what one press of the parry key arms (EnsParry; the key itself is driven in suite_battle_scene): the guards
+## an enemy wind-up is aimed at; every guard when none is aimed at a guard (no wind-up, or one at an ally who is not
+## guarding) or when the wind-up is an area; never an ally who is not guarding. A press is spent for
+## ENS_PARRY_RECOVER_S of battle time.
+func test_ens_parry_press_covers_the_aimed_guards_and_is_spent() -> void:
+	var c := _coord(5)
+	var crono := _party_member(&"crono", 5, Vector3(-3, 0, 0))
+	var marle := _party_member(&"marle", 5, Vector3(-3, 0, 2))
+	var sera := _party_member(&"sera", 5, Vector3(-3, 0, -2))
+	var e := _enemy(&"x", 5, Vector3(3, 0, 0), 2, ["FIRE"], {"hp": 500})
+	_start(c, [crono, marle, sera], [e])
+	var ids := func(units: Array) -> Array: return units.map(func(u: Node) -> StringName: return CombatantStats.of(u).actor_id)
+	check_eq(ids.call(EnsParry.covered(c)), [], "nobody guarding: a press covers nobody")
+	CombatantStats.of(crono).is_guarding = true
+	CombatantStats.of(marle).is_guarding = true
+	check_eq(ids.call(EnsParry.covered(c)), [&"crono", &"marle"], "no wind-up: every guard, not the ally who is not guarding")
+	c.wind_ups[e] = {"action": {"shape": "SINGLE", "targets": [marle]}, "left": 1.0, "total": 1.0}
+	check_eq(ids.call(EnsParry.covered(c)), [&"marle"], "a strike wound up at a guard: that guard")
+	c.wind_ups[e]["action"] = {"shape": "SINGLE", "targets": [sera]}
+	check_eq(ids.call(EnsParry.covered(c)), [&"crono", &"marle"], "at an ally who is not guarding: no hit is due a guard, so every guard")
+	c.wind_ups[e]["action"] = {"shape": "CIRCLE", "targets": [sera]}
+	check_eq(ids.call(EnsParry.covered(c)), [&"crono", &"marle"], "an area: any guard may stand in it")
+	c.wind_ups[e]["action"] = {"shape": "SINGLE", "targets": [marle]}
+	var p := EnsParry.new()
+	check_eq(ids.call(p.press(c)), [&"marle"], "a press arms the guard the strike is coming for")
+	check(c.parry_armed.has(marle) and not c.parry_armed.has(crono), "and only her")
+	check_near(float(c.parry_armed[marle]), float(c.parry_frames) / 60.0, 0.0001, "for parry_frames / 60 s")
+	c.parry_armed.erase(marle)  # the window closed
+	check_eq(ids.call(p.press(c)), [], "a press is spent: the next one at once arms nothing")
+	c.battle_time += CombatConstants.ENS_PARRY_RECOVER_S
+	check_eq(ids.call(p.press(c)), [&"marle"], "after ENS_PARRY_RECOVER_S it arms again")
+	c.wind_ups.erase(e)
+
+
 func test_coordinator_enemy_wind_up_and_break_cancels() -> void:
 	var c := _coord(3)
 	var crono := _party_member(&"crono", 5, Vector3(-3, 0, 0))
@@ -1312,7 +1347,7 @@ func test_audio_stings_resolve() -> void:
 ## After a battle the rig returns to the scene's exported pitch (the Atrium's 34°), not a literal 30°;
 ## the rig's and Location's defaults are the same 30°.
 func test_camera_rig_restores_scene_pitch() -> void:
-	check_near(HD2DCameraRig.new().pitch_degrees, 30.0, 0.001, "rig default 30°")
+	check_near((_track(HD2DCameraRig.new()) as HD2DCameraRig).pitch_degrees, 30.0, 0.001, "rig default 30°")  # tracked: freed
 	var loc := Location.new()
 	check_near(loc.camera_pitch, 30.0, 0.001, "Location default 30°")
 	loc.free()

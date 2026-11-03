@@ -500,12 +500,54 @@ func test_continue_at_the_flatline_starts_the_siege() -> void:
 
 # ---------------------------------------------------------------- the Router and a held black (CORE-8)
 
+## H5: pinned by behaviour, not by the spelling of the source. Router.go fades in over a location unless it holds the
+## black (the arena, made to hold it from location_loaded, stays black past the Router's fade time; left alone it is
+## faded in); the kitchen at New Game holds it for its whole wake and lifts it itself after.
 func test_the_router_leaves_a_held_black_to_its_location() -> void:
-	var src: String = (load("res://scripts/autoload/scene_router.gd") as GDScript).source_code
-	check(src.contains("next.get(\"holds_black\") == true"), "Router.go skips its fade-in when the location holds black")
 	var loc := Location.new()
 	check(not loc.holds_black, "a location does not hold black by default")
 	loc.free()
-	var kitchen: String = (load("res://scripts/locations/guardia_kitchen.gd") as GDScript).source_code
-	var at: int = kitchen.find("func _opening")
-	check(at >= 0 and kitchen.find("holds_black = true", at) < kitchen.find("await", at), "the kitchen claims the black before its first await")
+	Game.new_game()
+	_fast_story()
+	var router_scene: Node = Router.current_scene
+	var router_loc: StringName = Router.current_location
+	Router.current_scene = null
+	var hold := func(_id: StringName, node: Node) -> void: node.set("holds_black", true)
+	Router.location_loaded.connect(hold)
+	check(await Router.go(&"test_arena", &"start", 0.05), "the Router goes to the arena")
+	Router.location_loaded.disconnect(hold)
+	check_near(Router.fade.color.a, 1.0, 0.001, "a location that holds the black: the Router does not fade in over it")
+	await get_tree().create_timer(0.2).timeout
+	check_near(Router.fade.color.a, 1.0, 0.001, "not even late")
+	check(await Router.go(&"test_arena", &"start", 0.05), "the arena again")
+	check_near(Router.fade.color.a, 0.0, 0.001, "one that does not hold it: the Router fades in over it")
+	Router.current_scene.free()
+	Router.current_scene = null
+	get_tree().current_scene = null
+	Game.new_game()  # New Game: the kitchen opens on the wake
+	check(await Router.go(&"guardia_kitchen", &"start", 0.05), "New Game's route to the kitchen (title.gd)")
+	var k: Location = Router.current_scene as Location
+	check(k != null and k.holds_black, "the kitchen holds the black for its opening")
+	check(Story.current_id == &"prologue_wake", "the wake is running")
+	var darkest: float = 1.0
+	var frames: int = 0
+	while Story.current_id == &"prologue_wake" and frames < 3000:
+		darkest = minf(darkest, Router.fade.color.a)
+		frames += 1
+		await get_tree().process_frame
+	check(frames > 3, "the wake ran past the Router's fade (%d frames)" % frames)
+	check_near(darkest, 1.0, 0.001, "the screen stays black for the whole wake")
+	var t: float = 0.0
+	while (Story.is_running() or Router.transitioning or Router.fade.color.a > 0.01) and t < 40.0:
+		await get_tree().create_timer(0.05).timeout
+		t += 0.05
+	check(Router.fade.color.a < 0.01, "after the wake the kitchen lifts the black itself")
+	check(not Story.is_running(), "and the breakfast runs to its end")
+	if is_instance_valid(Router.current_scene):
+		Router.current_scene.free()
+	Router.current_scene = router_scene
+	Router.current_location = router_loc
+	get_tree().current_scene = null
+	Saves.delete(0)
+	_slow_story()
+	Game.new_game()

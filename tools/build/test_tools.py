@@ -5,6 +5,9 @@ What they pin (the "tools" audit cluster): one Godot uid encoder for every sidec
 re-import never mixing two deliveries, character sheets sized to the delivered directions, the hourly importer's
 routes and record keys, the placeholder generator refusing PixelLab sheets, texture tiles that keep 32 px/m,
 the audio loop flags read from one place, an honest manifest verdict, and render.sh's documented arguments.
+And the gate itself: check.sh fails on a SCRIPT ERROR or a leak at exit in the unit-test log and on a SCRIPT ERROR
+in a probe log (a stubbed Godot plays each log), the test runner fails a test that dies mid-way and a suite that
+does not parse, without hanging (the real runner on fixture suites), and no capture plays on the player's files.
 Scratch files go to a temporary folder under the git-ignored .tools/ and are removed afterwards.
 """
 import contextlib
@@ -356,6 +359,142 @@ class RenderArgs(unittest.TestCase):
             smoke = f.read()
         self.assertIn("SMOKE_FAIL", smoke)
         self.assertIn("quit(1)", smoke, "a missing battle_started fails the capture (rc != 0, no SMOKE_OK)")
+
+
+# The fake Godot and Python a gate test runs check.sh with: each step's log is what the environment says.
+_STUB_GODOT = """#!/usr/bin/env bash
+case "$*" in
+  *run_tests.gd*) printf '%b\\n' "${STUB_TESTS:-3 passed, 0 failed (1 suites)}"; exit "${STUB_TESTS_RC:-0}" ;;
+  *tools/build/*probe.gd*) printf '%b\\n' "${STUB_PROBE:-}" "PROBE_END ok=true"; exit 0 ;;
+  *) exit 0 ;;
+esac
+"""
+_STUB_PYTHON = "#!/usr/bin/env bash\necho 'Ran 1 test'\nexit 0\n"
+
+
+class Gate(unittest.TestCase):
+    """H2, H6: a test that dies with a SCRIPT ERROR after its first checks exits 0 from a runner that does not
+    count it, and a leaked node shows only as a line at exit; a probe that threw mid-run can still print ok=true.
+    check.sh reads its logs for all three. A copy of check.sh runs on a stub Godot (and a stub python3 for the
+    lint and these tool tests), its logs in a scratch CHECK_LOG_DIR, so /tmp and the real gate are untouched."""
+
+    def _gate(self, **env):
+        if BASH is None:
+            self.skipTest("bash not on PATH")
+        with _scratch() as d:
+            os.makedirs(os.path.join(d, "tools"))
+            shutil.copy(os.path.join(ROOT, "tools", "check.sh"), os.path.join(d, "tools", "check.sh"))
+            stubs = os.path.join(d, "stubs")
+            os.makedirs(stubs)
+            for name, body in (("godot", _STUB_GODOT), ("python3", _STUB_PYTHON)):
+                with open(os.path.join(stubs, name), "w", newline="\n") as f:
+                    f.write(body)
+                os.chmod(os.path.join(stubs, name), 0o755)
+            run_env = dict(os.environ, PATH=stubs + os.pathsep + os.environ.get("PATH", ""),
+                           CHECK_LOG_DIR=os.path.join(d, "logs").replace(os.sep, "/"), **env)
+            r = subprocess.run([BASH, os.path.join(d, "tools", "check.sh"), "--no-visual"], cwd=d, env=run_env,
+                               capture_output=True, text=True, timeout=120)
+            return r.returncode, r.stdout
+
+    def test_a_clean_run_passes(self):
+        rc, out = self._gate()
+        self.assertEqual(rc, 0, out)
+        self.assertIn("TESTS: OK", out)
+        self.assertIn("ALL CHECKS PASSED", out)
+
+    def test_a_script_error_in_the_tests_fails_whatever_the_exit_code(self):
+        rc, out = self._gate(STUB_TESTS="SCRIPT ERROR: Invalid call. Nonexistent function 'free' in base 'Nil'.\n"
+                                        "4 passed, 0 failed (1 suites)")
+        self.assertEqual(rc, 1, out)
+        self.assertIn("TESTS: FAIL (a SCRIPT ERROR in the log)", out)
+        self.assertIn("CHECKS FAILED", out)
+
+    def test_a_leak_at_exit_fails_the_tests(self):
+        for line in ("WARNING: 3 ObjectDB instances were leaked at exit (run with `--verbose` for details).",
+                     "ERROR: 1 resources still in use at exit (run with --verbose for details)."):
+            rc, out = self._gate(STUB_TESTS="3 passed, 0 failed (1 suites)\n" + line)
+            self.assertEqual(rc, 1, out)
+            self.assertIn("TESTS: FAIL (a leak at exit", out, line)
+
+    def test_a_timed_out_test_run_says_so(self):
+        rc, out = self._gate(STUB_TESTS_RC="124")
+        self.assertEqual(rc, 1, out)
+        self.assertIn("TESTS: FAIL (timed out", out)
+
+    def test_a_script_error_in_a_probe_fails_it_even_with_ok_true(self):
+        rc, out = self._gate(STUB_PROBE="SCRIPT ERROR: Invalid get index 'stats' (on base: 'null instance').")
+        self.assertEqual(rc, 1, out)
+        self.assertIn("a SCRIPT ERROR in", out)
+        self.assertIn("CHECKS FAILED", out)
+
+    def test_every_capture_runs_off_the_players_files(self):
+        """H7: Game._ready adopts the settings file before smoke.gd's own code runs, so the gate's smoke boot and
+        captures pass --no-save (Saves.suspended from the start: the scratch settings, which are the defaults),
+        and smoke.gd resets the options itself for a bare run."""
+        with open(os.path.join(ROOT, "tools", "check.sh"), encoding="utf-8") as f:
+            check = f.read().replace("\\\n", " ")
+        smoke_calls = [l for l in check.splitlines() if "tools/capture/smoke.gd" in l and "--script" in l]
+        self.assertGreaterEqual(len(smoke_calls), 3, "the smoke boot (xvfb and desktop) and capture()")
+        for l in smoke_calls:
+            self.assertIn("--no-save", l.split(), l.strip())
+        with open(os.path.join(ROOT, "tools", "capture", "smoke.gd"), encoding="utf-8") as f:
+            self.assertIn('get_node("Game").call("reset_settings")', f.read(), "smoke.gd plays on the default options")
+
+
+# Fixture suites for the real runner: two tests that die part way (before and after an await) between a clean one,
+# and a suite that does not parse.
+_CRASH_SUITE = """extends "res://tests/suite_base.gd"
+
+
+func test_a_crash_before_an_await() -> void:
+\tcheck(true, "the first check")
+\tvar n: Object = null
+\tn.free()
+\tcheck(false, "NEVER REACHED before")
+
+
+func test_a_crash_after_an_await() -> void:
+\tcheck(true, "the first check")
+\tawait get_tree().process_frame
+\tvar n: Object = null
+\tn.free()
+\tcheck(false, "NEVER REACHED after")
+
+
+func test_a_clean_test() -> void:
+\tcheck(true, "fine")
+"""
+_BROKEN_SUITE = 'extends "res://tests/suite_base.gd"\n\n\nfunc test_x() -> void:\n\tcheck(true, "x"\n'
+
+
+class TestRunner(unittest.TestCase):
+    """H2: the real tests/run_tests.gd on fixture suites (--suites=<dir>): a SCRIPT ERROR fails the test it
+    stopped, by name, and the run; the suites after it still run; a suite with a parse error is a failed suite,
+    not a hang until check.sh's 900 s timeout."""
+
+    def test_a_crash_mid_test_and_a_broken_suite_fail_by_name(self):
+        if BASH is None:
+            self.skipTest("bash not on PATH")
+        with _scratch() as d:
+            with open(os.path.join(d, "suite_a_crash.gd"), "w", newline="\n") as f:
+                f.write(_CRASH_SUITE)
+            with open(os.path.join(d, "suite_b_broken.gd"), "w", newline="\n") as f:
+                f.write(_BROKEN_SUITE)
+            # through bash, so the Git Bash shim in .tools/bin (an extensionless script) is found as check.sh finds it
+            r = subprocess.run([BASH, "-c", 'command -v godot > /dev/null || exit 77; exec godot "$@"', "godot",
+                                "--headless", "--path", ROOT, "--script", "res://tests/run_tests.gd", "--",
+                                "--suites=" + d.replace(os.sep, "/")], capture_output=True, text=True, timeout=120)
+        if r.returncode == 77:
+            self.skipTest("godot not on PATH (tools/check.sh puts it there)")
+        out = r.stdout + r.stderr
+        self.assertEqual(r.returncode, 1, out)
+        self.assertIn("FAIL [test_a_crash_before_an_await]: raised 1 SCRIPT ERROR", out)
+        self.assertIn("FAIL [test_a_crash_after_an_await]: raised 1 SCRIPT ERROR", out)
+        self.assertNotIn("NEVER REACHED", out)
+        self.assertIn("suite_a_crash.gd: 3 passed, 2 failed", out, "the clean test still ran; no pass for a guard")
+        self.assertRegex(out, r"FAIL cannot load \S*suite_b_broken\.gd")
+        self.assertIn("3 passed, 3 failed (2 suites)", out)
+        self.assertIn("FAIL 3 SCRIPT ERROR(s) during the run", out)
 
 
 if __name__ == "__main__":

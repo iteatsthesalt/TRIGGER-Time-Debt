@@ -34,6 +34,8 @@ var _ended: bool = false
 var boss: BossController
 var roster := BattleRoster.new()
 var input_blocked: bool = false
+## The parry input's presses this battle (Ens Parry, §4.2).
+var ens_parry := EnsParry.new()
 ## Counts the decision windows offered: a command that opens the next one itself (a parked ally gets the floor
 ## back at once) leaves that window's deck open.
 var _window_serial: int = 0
@@ -83,7 +85,7 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 	coordinator.telegraph_ended.connect(_on_telegraph_ended)
 	coordinator.enemy_action_started.connect(_on_enemy_action)
 	coordinator.battle_message.connect(hud.show_message)
-	coordinator.truth_moment.connect(_on_truth)
+	coordinator.truth_moment.connect(BattleFx.truth_moment.bind(self))
 	coordinator.battle_ended.connect(_on_battle_ended)
 	coordinator.boost_used.connect(_on_boost_used)
 	coordinator.sera_phase_changed.connect(_on_sera_phase)
@@ -384,8 +386,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _ended or coordinator == null or auto or input_blocked or Story.blocks_battle_input():
 		return
 	if coordinator.state == BattleCoordinator.State.TICK:
-		# A parked ally may leave the Ready Pool at any time (§3.4): confirm wakes the first one.
-		if not coordinator.ready_pool.is_empty() and event.is_action_pressed("confirm") and coordinator.request_command(coordinator.ready_pool[0]):
+		# Parry arms the guarding allies a hit is coming for (EnsParry). A parked ally may leave the Ready Pool at
+		# any time (§3.4): confirm wakes the first one.
+		if event.is_action_pressed("parry") and not coordinator.paused:
+			ens_parry.press(coordinator)
+			get_viewport().set_input_as_handled()
+		elif not coordinator.ready_pool.is_empty() and event.is_action_pressed("confirm") and coordinator.request_command(coordinator.ready_pool[0]):
 			get_viewport().set_input_as_handled()
 		return
 	if coordinator.state != BattleCoordinator.State.COMMAND_WAIT:
@@ -563,23 +569,6 @@ func _on_telegraph_ended(enemy: Node) -> void:
 	if telegraphs.has(enemy):
 		telegraphs[enemy].queue_free()
 		telegraphs.erase(enemy)
-
-
-func _on_truth(kind: StringName) -> void:
-	if rig:
-		rig.set_truth(true)
-		var tw := create_tween()
-		tw.tween_interval(1.6)
-		tw.tween_callback(func() -> void: if rig: rig.set_truth(false))
-	match kind:
-		&"phase_out":
-			hud.show_message("Sera: \"Don't forget me.\"")
-			Audio.play_sfx("time/rewind")
-		&"rewind":
-			Audio.play_sfx("time/rewind")
-		&"galaxy_reveal":
-			hud.show_message("The shell opens on stars.")
-			Audio.play_sfx("porcelain/crack_large")
 
 
 func _on_boost_used(a: Node, level: int) -> void:

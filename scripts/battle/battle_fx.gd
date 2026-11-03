@@ -1,6 +1,6 @@
 ## The battle's one-shot presentation pieces (Combat Laws Bible §17.1): the telegraph decal on the plane, the gold
-## shatter of a Break, the Lv3+ style bleed and the screen flash. Pure presentation, no rule reads them; each
-## is parented under the node it is given and frees itself.
+## shatter of a Break, the Lv3+ style bleed, the screen flash and a truth moment's camera tilt and line. Pure
+## presentation, no rule reads them; each is parented under the node it is given and frees itself.
 class_name BattleFx
 extends RefCounted
 
@@ -125,3 +125,22 @@ static func flash(hud: BattleHUD, color: Color, seconds: float) -> void:
 	rect.color = color
 	var tw := hud.create_tween()
 	tw.tween_property(rect, "color:a", 0.0, seconds)
+
+
+## A truth moment (BattleCoordinator.truth_moment): the rig's truth tilt for 1.6 s, and the moment's line and sound.
+static func truth_moment(kind: StringName, scene: BattleScene) -> void:
+	var rig: HD2DCameraRig = scene.rig
+	if is_instance_valid(rig):
+		rig.set_truth(true)
+		var tw := scene.create_tween()
+		tw.tween_interval(1.6)
+		tw.tween_callback(func() -> void: if is_instance_valid(rig): rig.set_truth(false))
+	match kind:
+		&"phase_out":
+			scene.hud.show_message("Sera: \"Don't forget me.\"")
+			Audio.play_sfx("time/rewind")
+		&"rewind":
+			Audio.play_sfx("time/rewind")
+		&"galaxy_reveal":
+			scene.hud.show_message("The shell opens on stars.")
+			Audio.play_sfx("porcelain/crack_large")

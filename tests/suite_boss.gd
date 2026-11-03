@@ -504,6 +504,63 @@ func test_cradle_director_parry_gold_leaf_and_crack() -> void:
 	Universe.set_universe(home, true)
 
 
+## Press and release `action` through the root viewport, as a key does (Viewport.push_input, _unhandled_input).
+func _press(action: String) -> void:
+	for on: bool in [true, false]:
+		var ev := InputEventAction.new()
+		ev.action = action
+		ev.pressed = on
+		root.push_input(ev)
+		await get_tree().process_frame
+
+
+## H1, the second Bowl Still Whole route by hand (DECISIONS "The Bowl Still Whole has two routes"; Combat Laws §4.2
+## and the Cradle's Phase 3): Crono guarding, the parry key pressed for real as the Crack-Slide is about to land is
+## a perfect parry on the Cradle's own Crack-Slide, and the Prismatic window opens.
+func test_the_parry_key_on_the_crack_slide_opens_the_prismatic_window() -> void:
+	var loc: Location = await _arena()
+	var scene: BattleScene = _fight(loc, &"atrium_cradle")
+	var c: BattleCoordinator = scene.coordinator
+	var ctrl: BossController = scene.boss
+	c.party_hp_floor = 1
+	ctrl.phase_index = 2
+	ctrl._apply_phase_def(2)  # Atrium Fracture: the Crack-Slide's phase
+	var boss: Node3D = ctrl.actor
+	var crono: Node3D = c.unit_by_id(&"crono")
+	crono.global_position = boss.global_position + Vector3(0.0, 0.0, 2.0)  # inside the slide's six metres
+	for z in loc.zones:
+		z.active = false  # where he now stands is the arena's encounter zone: no second fight after this one
+	var st := CombatantStats.of(crono)
+	var window: float = float(c.parry_frames) / 60.0
+	var landing := func() -> bool:
+		if not st.is_guarding or not c.wind_ups.has(boss) or float(c.wind_ups[boss]["left"]) > window * 0.5:
+			return false
+		return String((c.wind_ups[boss]["action"] as Dictionary).get("id", "")) == "crack_slide"
+	var t: float = 0.0
+	while not bool(landing.call()) and t < 90.0 and c.state != BattleCoordinator.State.IDLE:
+		for e in c.living_enemies():
+			if e != boss:
+				CombatantStats.of(e).apply_damage(999999, true)  # nothing but the Cradle strikes at Crono
+		if c.state == BattleCoordinator.State.COMMAND_WAIT:
+			c.cmd_guard(c.active_actor)
+			continue
+		c.advance(1.0 / 60.0)
+		t += 1.0 / 60.0
+	check(landing.call(), "the Cradle's Crack-Slide is half a window from Crono, who guards")
+	check(not scene.input_blocked and not Story.blocks_battle_input(), "and the fight has the player's input")
+	var hp: int = st.hp
+	await _press("parry")
+	check(c.parry_armed.has(crono), "the parry key arms his window")
+	t = 0.0
+	while c.wind_ups.has(boss) and t < 1.0:
+		c.advance(1.0 / 60.0)
+		t += 1.0 / 60.0
+	check(not c.wind_ups.has(boss), "the Crack-Slide lands")
+	check_eq(st.hp, hp, "a perfect parry: it does nothing")
+	check(ctrl.window_open(&"prismatic"), "and the Prismatic window opens: the second Bowl Still Whole route")
+	check(await _end(loc, true), "the battle ends")
+
+
 ## BATTLE-20: the split dolls fold back into the Shard Doll: no statue, no XP, out of the fight.
 func test_fold_add_leaves_without_a_kills_rewards() -> void:
 	var id := _boss("test_fold", [_phase("p", 1.0, 0.0, 3)], {"adds": [{"key": "porcelain_shardling", "count": 2, "phase": "p"}]})

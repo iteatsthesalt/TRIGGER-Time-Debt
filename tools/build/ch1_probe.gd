@@ -1,5 +1,6 @@
 ## Headless Chapter 1 playthrough in the Atrium: loft wake → crack check (focus) → rewind (R) → downstairs
-## → Father Tank → dummy fight (autobattle) → Glenn → rest → midnight → hearth → the Fair call.
+## → Father Tank → dummy fight (autobattle) → Glenn (he must come, and his verdict must match the dummy's)
+## → rest → midnight → hearth → the Fair call.
 ## Ends with `PROBE_END ok=<bool>` and exits with 1 when it is false (a stall, a failed check, a timeout).
 ##   godot --headless --path . --script res://tools/build/ch1_probe.gd -- --autobattle
 extends SceneTree
@@ -145,14 +146,23 @@ func _run() -> void:
 		print("PROBE FAIL sprout base %.2f m sits below the pot rim %.2f m" % [sprout_base, rim_y])
 		_fail = true
 	print("PROBE seed watered: sprout base %.2f m, pot rim %.2f m, waters=%d" % [sprout_base, rim_y, int(F.call("counter", &"seed_waters"))])
-	# Glenn
+	# Glenn comes after the dummy to read the record; his honour check grants his Duals for a spared dummy and
+	# refuses them for a salvaged one, and is autosaved where the party stands
 	var glenn: Node = loc.get("glenn_npc")
-	if glenn:
-		var it: Node = glenn.get_node_or_null("Talk")
-		if it:
-			it.call("use", null)
-			await _wait_until(func() -> bool: return _idle(), 2000, "glenn")
-			print("PROBE glenn: Glenn_Duals=%s" % str(F.call("state", &"Glenn_Duals")))
+	var talk: Node = glenn.get_node_or_null("Talk") if glenn != null else null
+	if talk == null:
+		print("PROBE FAIL Glenn %s after the dummy" % ("has no Talk" if glenn != null else "never came"))
+		_fail = true
+	else:
+		talk.call("use", null)
+		if not await _wait_until(func() -> bool: return F.call("has", &"Glenn_Honour_Checked") and _idle(), 2000, "glenn"):
+			return _end()
+		var verdict: StringName = &"Refused" if F.call("is_state", &"Atrium_Dummy", &"Salvaged") else &"Granted"
+		print("PROBE glenn: Glenn_Duals=%s" % str(F.call("state", &"Glenn_Duals")))
+		if not F.call("is_state", &"Glenn_Duals", verdict):
+			print("PROBE FAIL Glenn_Duals should be %s after a %s dummy" % [verdict, str(F.call("state", &"Atrium_Dummy"))])
+			_fail = true
+		_expect_save("glenn autosave", &"ch1_hub_free", &"dummy_center")
 	# rest with Robo → night
 	S.call("run", &"atrium_robo")
 	await _wait_until(func() -> bool: return _idle(), 2000, "robo rest")

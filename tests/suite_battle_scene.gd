@@ -575,6 +575,86 @@ func test_the_cradle_story_battle_takes_the_players_input() -> void:
 	Game.new_game()
 
 
+# ---------------------------------------------------------------- the parry key
+
+## Run the clock (one frame a step) with Crono guarding every window he gets, until `done` holds or `max_s` passes.
+func _guarding_until(c: BattleCoordinator, done: Callable, max_s: float) -> bool:
+	var t: float = 0.0
+	while not bool(done.call()) and t < max_s and c.state != BattleCoordinator.State.IDLE:
+		if c.state == BattleCoordinator.State.COMMAND_WAIT:
+			c.cmd_guard(c.active_actor)
+			continue
+		c.advance(1.0 / 60.0)
+		t += 1.0 / 60.0
+	return bool(done.call())
+
+
+## H1 (Combat Laws §4.2; DECISIONS "Ens Parry is 'armed'"): the parry key, pressed for real (Viewport.push_input
+## through BattleScene._unhandled_input), is the Ens Parry. With nobody guarding it arms nothing. Crono guarding, a
+## press as a telegraphed hit is about to land arms his window and the hit is a perfect parry: no damage, an Ens
+## ring, his Debt costs nulled. A press is spent: a second one at once arms nothing, one after
+## ENS_PARRY_RECOVER_S arms again and does not reopen a window already open. Against U1 ink enemies a press with no
+## hit due throws the ink blot when its window closes.
+func test_the_parry_key_parries_a_hit_on_a_guarding_ally() -> void:
+	var loc: Location = await _arena([&"crono"])
+	var scene: BattleScene = _zone_battle(loc)
+	var c: BattleCoordinator = scene.coordinator
+	c.party_hp_floor = 1
+	var crono: Node = c.unit_by_id(&"crono")
+	var st := CombatantStats.of(crono)
+	# one foe, one telegraphed single-target strike: every hit on Crono is a wind-up he can read
+	var jab := EnemyDef.from_dict({"key": "jab_foe", "level": 2, "actions": [{"id": "jab", "name": "Jab", "tags": ["BLUNT"],
+		"shape": "SINGLE", "power": 1.0, "hits": 1, "wind_up_s": 1.0, "target": "nearest"}]})
+	var foe: Node = c.living_enemies()[0]
+	for e in c.living_enemies():
+		if e != foe:
+			CombatantStats.of(e).apply_damage(999999, true)
+	c.enemy_defs[CombatantStats.of(foe).actor_id] = jab
+	var window: float = float(c.parry_frames) / 60.0
+	var results: Array = []
+	c.parry_result.connect(func(_a: Node, perfect: bool) -> void: results.append(perfect))
+	check(c.state == BattleCoordinator.State.TICK and not st.is_guarding, "the fight opens on the clock, Crono not guarding")
+	await _tap("parry")
+	check(c.parry_armed.is_empty(), "the parry key arms nobody while nobody guards")
+	var landing := func() -> bool:
+		return st.is_guarding and c.wind_ups.has(foe) and float(c.wind_ups[foe]["left"]) <= window * 0.5
+	check(_guarding_until(c, landing, 60.0), "Crono guards as the jab is half a window from landing")
+	var hp: int = st.hp
+	await _tap("parry")
+	check(c.parry_armed.has(crono), "a real parry press arms his window")
+	check(_guarding_until(c, func() -> bool: return not results.is_empty(), 1.0), "the jab lands")
+	check_eq(results, [true], "inside the window: a perfect parry")
+	check_eq(st.hp, hp, "which negates the hit")
+	check(c.ens_rings.has(crono), "and leaves an Ens ring")
+	check(TimeDebtComponent.of(crono).debt_null_left > 0.0, "Crono's Debt costs are nulled")
+	await _tap("parry")
+	check(not c.parry_armed.has(crono), "a press is spent: another at once arms nothing")
+	# from `since`, the press has recovered, Crono guards, and no hit is due inside a window
+	var recovered := func(since: float) -> bool:
+		return st.is_guarding and c.battle_time >= since + CombatConstants.ENS_PARRY_RECOVER_S \
+			and (not c.wind_ups.has(foe) or float(c.wind_ups[foe]["left"]) > window + 0.1)
+	check(_guarding_until(c, recovered.bind(c.battle_time), 10.0), "the press recovers while Crono guards and no hit is due")
+	results.clear()
+	await _tap("parry")
+	check(c.parry_armed.has(crono), "after ENS_PARRY_RECOVER_S a press arms again")
+	c.advance(1.0 / 60.0)
+	var left: float = float(c.parry_armed.get(crono, 0.0))
+	await _tap("parry")
+	check_near(float(c.parry_armed.get(crono, -1.0)), left, 0.0001, "a press while armed does not reopen the window")
+	check(_guarding_until(c, func() -> bool: return not results.is_empty(), 1.0), "the window closes unmet")
+	check_eq(results, [false], "a press with no hit due is no parry")
+	check(not StatusComponent.of(crono).has(&"ink_blot"), "outside U1 it costs nothing")
+	c.universe = 1  # U1 ink enemies
+	check(_guarding_until(c, recovered.bind(c.battle_time), 10.0), "recovered again, no hit due")
+	results.clear()
+	await _tap("parry")
+	check(c.parry_armed.has(crono), "armed against ink")
+	check(_guarding_until(c, func() -> bool: return not results.is_empty(), 1.0), "the window closes unmet")
+	check(StatusComponent.of(crono).has(&"ink_blot"), "against U1 ink enemies a mistimed press throws the ink blot")
+	check(await _end(loc, true), "the battle ends")
+	Game.new_game()
+
+
 func _story_defaults() -> void:
 	Story.auto_advance_s = -1.0
 	Story.auto_choice = -1

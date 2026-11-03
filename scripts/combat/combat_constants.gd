@@ -128,6 +128,9 @@ const ENS_PARRY_FRAMES_BASE := 4
 const ENS_PARRY_FRAMES_TAUGHT := 6
 const ENS_PARRY_FRAMES_DOJO := 8
 const ENS_RING_DEBT_NULL_S := 5.0
+## A parry press is spent: that ally's next press arms nothing for this long (battle seconds), so a held or
+## hammered key is never a parry (EnsParry).
+const ENS_PARRY_RECOVER_S := 0.5
 const GUARD_DAMAGE_MULT := 0.5
 const GUARD_NEXT_GAUGE := 20.0
 const SWAP_GAUGE := 50.0

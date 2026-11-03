@@ -79,7 +79,11 @@ func _run() -> void:
 	await _wait_frames(5)
 	var kitchen: Node = _loc()
 	# the kitchen holds the screen black for the wake (the Router leaves the fade to it): 1.00 here
-	print("PROBE location=%s opening_black=%.2f" % [str(kitchen.name if kitchen else null), float((R.get("fade") as ColorRect).color.a)])
+	var black: float = float((R.get("fade") as ColorRect).color.a)
+	print("PROBE location=%s opening_black=%.2f" % [str(kitchen.name if kitchen else null), black])
+	if black < 0.99:
+		print("PROBE FAIL the kitchen's opening is not held black (%.2f): the Router faded in over the wake" % black)
+		_fail = true
 	if not await _wait_until(func() -> bool: return _cp() == &"prologue_breakfast_done", 6000, "breakfast"):
 		return _end()
 	print("PROBE breakfast done: party=%s integrity=%.0f flags=%s" % [str(G.get("active_party")), float(G.get("crono_integrity")), str(F.get("flags").keys())])

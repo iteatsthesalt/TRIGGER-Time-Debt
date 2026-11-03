@@ -5,6 +5,8 @@ extends Node
 
 var root: Node
 var exit_code: int = 0
+## The runner's SCRIPT ERROR counter (tests/script_error_log.gd); null when a suite runs without it.
+var error_log: Object = null
 
 var _passed: int = 0
 var _failed: int = 0
@@ -25,11 +27,25 @@ func run_list(tests: Array[Callable]) -> void:
 	for t in tests:
 		_current = t.get_method()
 		var before: int = _passed + _failed
+		var errors_before: int = _script_errors()
 		await t.call()
-		check(_passed + _failed > before, "ran no checks; it crashed before its first check")
+		_guard(_passed + _failed > before, "ran no checks; it crashed before its first check")
+		var raised: int = _script_errors() - errors_before
+		_guard(raised == 0, "raised %d SCRIPT ERROR(s) (the log above names them): the test stopped there and its later checks never ran" % raised)
 		_cleanup()
 	print("\n%s: %d passed, %d failed" % [String(get_script().resource_path).get_file(), _passed, _failed])
 	exit_code = 1 if _failed > 0 else 0
+
+
+## A harness guard on the test that just ran: it counts as a failure when it fails and as nothing when it holds,
+## so the totals count the tests' own checks.
+func _guard(cond: bool, msg: String) -> void:
+	if not cond:
+		check(false, msg)
+
+
+func _script_errors() -> int:
+	return int(error_log.call("count")) if error_log != null else 0
 
 
 func passed() -> int:

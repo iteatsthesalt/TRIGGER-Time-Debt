@@ -16,6 +16,8 @@ var plane_mat: ShaderMaterial
 var party: Array[CombatActor] = []
 var enemies: Array[CombatActor] = []
 var center: Vector3
+## The side of the centre the party stands on (PartyPlacement): +Z, toward the camera, unless the ground says no.
+var party_side: Vector3 = Vector3(0, 0, 1)
 var mode: int = Mode.NONE
 var actor: CombatActor
 var current_tech: TechDef
@@ -100,7 +102,7 @@ func begin(party_in: Array, enemies_in: Array, c: Vector3, cfg: Dictionary, came
 	}
 	hud.register_units(party, enemies, roster.hover)
 	for e in enemies:
-		e.face_toward(center + Vector3(0, 0, 4))
+		e.face_toward(center + party_side * 4.0)
 	coordinator.flow_speed = float(Game.settings.get("flow_speed", 1.0))
 	coordinator.start_battle(party, enemies, center, start_cfg)
 	for e in enemies:
@@ -157,32 +159,10 @@ func _build_plane() -> void:
 	add_child(preview_mesh)
 
 
+## The enemies pushed apart, the party fanned out on ground it can stand on (PartyPlacement).
 func _place_party() -> void:
-	# Enemies keep their positions but never overlap (min 1.3 m apart).
-	for i in enemies.size():
-		for j in range(i):
-			var a: CombatActor = enemies[i]
-			var b: CombatActor = enemies[j]
-			var d: Vector3 = a.global_position - b.global_position
-			d.y = 0.0
-			if d.length() < 1.3:
-				var push: Vector3 = (d.normalized() if d.length() > 0.01 else Vector3(1, 0, 0)) * (1.3 - d.length()) * 0.5
-				a.global_position += push
-				b.global_position -= push
-	# Party on the near side (toward the camera, +Z), fanned; enemies keep their positions.
-	var n: int = party.size()
-	for i in n:
-		var mid: float = float(n - 1) * 0.5
-		var angle: float = PI * 0.5 + (float(i) - mid) * 0.5
-		var anchor: Vector3 = center + Vector3(cos(angle), 0.0, sin(angle)) * 4.5
-		anchor.y = party[i].global_position.y
-		party[i].global_position = anchor
-		party[i].reset_physics_interpolation()
-		party[i].frozen = false
-		party[i].velocity = Vector3.ZERO
-		party[i].sprite.update_from_velocity(Vector3.ZERO)
-		party[i].face_toward(center + Vector3(0, 0, -5))
-		party[i].sprite.play(&"ready")
+	PartyPlacement.spread_enemies(enemies)
+	party_side = PartyPlacement.place(party, center, config.get("ground") as WalkableGround)
 
 
 # ------------------------------------------------------------------ commands
@@ -211,6 +191,7 @@ func _on_deck_command(cmd: String, payload: Dictionary) -> void:
 	match cmd:
 		"attack":
 			current_tech = null
+			partners.clear()  # a Dual picked and backed out of leaves no partner on a plain Attack
 			_begin_targeting(BattleDeck.targets(coordinator, "attack"))
 		"techs":
 			mode = Mode.TECHS
@@ -299,7 +280,7 @@ func _refresh_preview() -> void:
 	hud.update_plates(previews, _party_blind(), t)
 	# Shape outline on the plane.
 	if current_tech != null and current_tech.shape != TechDef.Shape.SINGLE and current_tech.shape != TechDef.Shape.PARTY:
-		var params := {"shape": current_tech.shape, "radius": current_tech.radius, "length": current_tech.length, "width": current_tech.width, "scale": current_tech.shape_scale(boost)}
+		var params := {"shape": current_tech.shape, "radius": CastReach.radius(current_tech), "length": current_tech.length, "width": current_tech.width, "scale": current_tech.shape_scale(boost)}
 		var pts: PackedVector3Array = TacticalPositioner.preview_points(params, actor.global_position, coordinator.position_of(t))
 		if pts.size() >= 2:
 			im.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
@@ -399,7 +380,7 @@ func _on_summon_requested(key: StringName, count: int, near: Node) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _ended or coordinator == null or auto or input_blocked or Story.is_running():
+	if _ended or coordinator == null or auto or input_blocked or Story.blocks_battle_input():
 		return
 	if coordinator.state == BattleCoordinator.State.TICK:
 		# A parked ally may leave the Ready Pool at any time (§3.4): confirm wakes the first one.
@@ -454,7 +435,7 @@ func _process(delta: float) -> void:
 	hud.refresh_plates(_party_blind())
 	# A window with no deck up (a path that closed it and opened nothing) gets its deck back: never a soft-lock.
 	if not auto and mode == Mode.NONE and not input_blocked and not coordinator.paused and coordinator.active_actor != null \
-			and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and not Story.is_running():
+			and coordinator.state == BattleCoordinator.State.COMMAND_WAIT and not Story.blocks_battle_input():
 		_on_command_requested(coordinator.active_actor)
 	for e in telegraphs.keys():
 		if not coordinator.wind_ups.has(e):

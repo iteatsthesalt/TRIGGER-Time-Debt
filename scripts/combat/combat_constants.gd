@@ -105,6 +105,11 @@ const REGEN_PCT := 0.02
 ## Lv2 debuffs (§7.3): Refracted splits 20% of the bearer's damage away; GUILTY turns 50% of its attacks.
 const REFRACTED_SPLIT := 0.20
 const GUILTY_REDIRECT := 0.5
+## Taunts (§11): Bekkler's Guilt turns hits on allies in its ring onto Crono at 75%, +1 BP each (2 at most);
+## Shogun's Command binds 60% of the attacks to Krona.
+const GUILT_TAKEN := 0.75
+const GUILT_BP_MAX := 2
+const SHOGUN_TAUNT := 0.6
 const DIVINITY_PERIOD_S := 5.0
 const DIVINITY_CAP := 0.20
 const DIVINITY_RUIN_THAW := 0.01

@@ -39,11 +39,11 @@ static func _default_resolve(tech: TechDef) -> String:
 static func _resolve(c: BattleCoordinator, tech: TechDef, action: Dictionary, how: String) -> Dictionary:
 	var actor: Node = action["attacker"]
 	var info := {"kind": "effect", "effect": tech.effect, "attacker": actor, "casters": action.get("casters", [actor]), "tech": tech,
-		"boost": int(action.get("boost", 0)), "targets": [], "damage": {}, "shave": {}, "breaks": [], "heal": {}}
+		"boost": int(action.get("boost", 0)), "targets": [], "damage": {}, "raw": {}, "shave": {}, "breaks": [], "heal": {}}
 	match how:
 		"damage":
 			var dmg: Dictionary = c._resolve_action(action)
-			for k in ["targets", "damage", "shave", "breaks"]:
+			for k in ["targets", "damage", "raw", "shave", "breaks"]:
 				info[k] = dmg[k]
 		"support":
 			var sup: Dictionary = c._resolve_support(action)
@@ -209,12 +209,23 @@ static func units(c: BattleCoordinator, on: String, op: Dictionary, ctx: Diction
 	return []
 
 
+## A `status` op; with `dot` its tick is that fraction of one hit's raw damage on the body (§6.3): the raw of the
+## action's last strike that landed on it, else (a body it caught but did not strike) the best caster's against it.
 static func _status(c: BattleCoordinator, op: Dictionary, ctx: Dictionary, u: Node) -> void:
 	var extra: Dictionary = {}
 	if op.has("dot"):
-		var dealt: int = int(ctx["info"].get("damage", {}).get(u, 0))
-		extra["tick"] = maxi(1, roundi(float(dealt) * float(op["dot"])))
+		var raws: Dictionary = ctx["info"].get("raw", {})
+		extra["tick"] = StatusRules.dot_tick(float(raws[u]) if raws.has(u) else _raw(c, ctx, u), float(op["dot"]))
 	StatusRules.apply(c, u, StringName(String(op.get("id", ""))), float(op.get("s", -1.0)), int(op.get("turns", -1)), int(op.get("stacks", 1)), extra)
+
+
+## §6.4's raw term of the cast's best caster (for its `uses`) against `u`, at `u`'s DEF as it stands.
+static func _raw(c: BattleCoordinator, ctx: Dictionary, u: Node) -> float:
+	var uses: int = int(ctx["action"].get("uses", TechDef.Uses.BEST))
+	var best: CombatantStats = PartyHit.best_caster(ctx["casters"], uses, CombatantStats.of(ctx["attacker"]))
+	var tsc := StatusComponent.of(u)
+	var pair: Dictionary = DamagePipeline.pick_stats(uses, best, CombatantStats.of(u), tsc.def_multiplier(c._is_metal(u)) if tsc != null else 1.0)
+	return maxf(1.0, 0.8 * (float(pair["atk"]) - float(pair["def"]) * 0.5))
 
 
 static func heal_pct(c: BattleCoordinator, source: Node, u: Node, pct: float) -> void:

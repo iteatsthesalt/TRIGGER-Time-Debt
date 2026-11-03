@@ -29,7 +29,7 @@ func _action(c: BattleCoordinator, actor: Node, tech_id: StringName, aim: Vector
 	var who: Array = casters if not casters.is_empty() else [actor]
 	var action := {
 		"kind": "tech", "attacker": actor, "casters": who, "tags": Array(tech.tags),
-		"shape": {"shape": tech.shape, "radius": tech.radius, "length": tech.length, "width": tech.width,
+		"shape": {"shape": tech.shape, "radius": CastReach.radius(tech), "length": tech.length, "width": tech.width,
 			"inner_radius": tech.inner_radius, "beams": tech.beams, "scale": tech.shape_scale(boost)},
 		"hits": tech.hit_count, "aim": c.position_of(primary) if primary != null else aim, "primary": primary, "steps": 1,
 	}
@@ -51,6 +51,12 @@ func _sturdy(u: Node) -> void:
 	var st := CombatantStats.of(u)
 	st.base_max_hp = 100000
 	st.hp = 100000
+
+
+## §6.4's raw term of `attacker` against `t` for a technique's `uses`, at `t`'s DEF × `def_mult`.
+func _raw_of(attacker: Node, t: Node, uses: int, def_mult: float) -> float:
+	var pair: Dictionary = DamagePipeline.pick_stats(uses, CombatantStats.of(attacker), CombatantStats.of(t), def_mult)
+	return maxf(1.0, 0.8 * (float(pair["atk"]) - float(pair["def"]) * 0.5))
 
 
 func _keep_flags() -> void:
@@ -217,7 +223,10 @@ func test_prometheus_overload_once_shutdown_and_burn() -> void:
 	check(int(info["damage"].get(e, 0)) > 0, "the nova lands")
 	check(not EffectTable.requirements_met(c, cassia, tech), "once per battle (§11.5)")
 	var esc := StatusComponent.of(e)
-	check(esc.has(&"burn") and int(esc.data(&"burn").get("tick", 0)) > 0, "10 burn ticks of 15% of the hit")
+	var raw: float = _raw_of(cassia, e, tech.uses, 1.0)
+	check(esc.has(&"burn"), "it burns")
+	check_near(float(info["raw"].get(e, 0.0)), raw, 0.01, "the nova's one hit has §6.4's raw (%.1f)" % raw)
+	check_eq(int(esc.data(&"burn").get("tick", 0)), StatusRules.dot_tick(raw), "10 burn ticks of 15% of that raw, not of the nova (dot-tick-two-formulas)")
 	check(StatusComponent.of(cassia).has(&"shutdown") and StatusComponent.of(cassia).gauge_multiplier() == 0.0, "Cassia-09 shuts down: her gauge does not fill")
 	check(CombatantStats.of(crono).hp < 100000, "an ally within 2 m takes 10% max HP")
 	check(Flags.is_state(&"Prometheus_Core", &"Burned"), "without Lucca's consent the Core is burned selfishly")
@@ -233,7 +242,11 @@ func test_solar_railgun_burns_and_leaves_the_venn_residual_on_a_break() -> void:
 	var c := _battle([crono, cassia], [e])
 	var info: Dictionary = _cast(c, crono, &"solar_railgun", Vector3(2, 0, 0), null, 0, [crono, cassia])
 	check((info["breaks"] as Array).has(e), "the rail breaks it")
-	check(StatusComponent.of(e).has(&"burn"), "and burns once (15% of raw)")
+	check(StatusComponent.of(e).has(&"burn"), "and burns once")
+	var rail: TechDef = Data.techs[&"solar_railgun"]
+	var best: Node = crono if PartyHit.best_caster([crono, cassia], rail.uses, CombatantStats.of(crono)) == CombatantStats.of(crono) else cassia
+	var raw: float = _raw_of(best, e, rail.uses, CombatConstants.BREAK_DEF_MULT)  # the last rail hits it Broken (§6.5 #3)
+	check_eq(int(StatusComponent.of(e).data(&"burn").get("tick", 0)), StatusRules.dot_tick(raw), "a tick of 15%% of one rail's raw (%.1f), not of the three rails' %d" % [raw, int(info["damage"].get(e, 0))])
 	check(c.fields.has_kind_at(&"watercolour_puddle", Vector3(2, 0, 0)) and c.fields.has_kind_at(&"amber_pool", Vector3(2, 0, 0)), "a Break leaves watercolour + amber")
 
 
@@ -571,6 +584,115 @@ func test_omega_triple_gives_the_party_null_shield() -> void:
 	StatusComponent.of(crono).add(&"null_shield")
 	var shielded: int = EnemyStrike.resolve(c, e, crono, hit, 1, 0)
 	check_near(float(shielded), float(open) * 0.8, 1.0, "NULL SHIELD: 20% less damage (§12.4)")
+
+
+# ---------------------------------------------------------------- taunts and the Lucca Lens's reach
+
+## taunt-counts-its-own-turn: Bekkler's Guilt (§11) lasts until Crono's next turn, the cast not counted. A hit aimed
+## at an ally inside its 4 m ring lands on him instead at 75%, +1 BP each (2 at most); a hit on him, or on an ally
+## outside the ring, lands as aimed; the ring draws no attack by itself, and his next action ends it.
+func test_bekkler_guilt_turns_hits_in_its_ring_onto_crono_until_his_next_turn() -> void:
+	var crono := _party_member(&"crono", 10, Vector3(0, 0, 0))
+	var marle := _party_member(&"marle", 10, Vector3(2, 0, 0))
+	var krona := _party_member(&"krona", 10, Vector3(-8, 0, 0))
+	var e := _enemy(&"e", 10, Vector3(0, 0, -6), 4, ["ICE"], {"hp": 500000})
+	var c := _battle([crono, marle, krona], [e])
+	for u in [crono, marle, krona]:
+		_sturdy(u)
+	check(_advance_until_actor(c, &"crono") == crono, "Crono's window")
+	check(bool(c.cmd_tech(crono, &"bekkler_guilt", null, c.position_of(crono)).get("ok", false)), "Bekkler's Guilt is cast through cmd_tech")
+	check_eq(c.taunts.turns_left(crono), 1, "it holds until his next turn: the casting action does not count it down")
+	check(c.current_taunter(e) == null, "the ring draws no attack by itself")
+	var jab := {"id": "jab", "tags": ["BLUNT"], "shape": "SINGLE", "power": 1.0, "hits": 1, "wind_up_s": 0.5}  # telegraphed: no evasion roll
+	var hp := func(u: Node) -> int: return CombatantStats.of(u).hp
+	c.bank.bp = 0
+	var c0: int = hp.call(crono)
+	c._execute_enemy_action(e, jab.merged({"targets": [crono]}))
+	var direct: int = c0 - int(hp.call(crono))
+	check(direct > 0 and c.bank.bp == 0, "a hit on Crono himself lands on him as aimed, and gives no BP")
+	for i in 3:
+		c0 = hp.call(crono)
+		var m0: int = hp.call(marle)
+		c._execute_enemy_action(e, jab.merged({"targets": [marle]}))
+		check_eq(int(hp.call(marle)), m0, "hit %d on Marle in the ring does not reach her" % (i + 1))
+		check_near(float(c0 - int(hp.call(crono))), float(direct) * CombatConstants.GUILT_TAKEN, 1.0, "it lands on Crono at 75%")
+	check_eq(c.bank.bp, CombatConstants.GUILT_BP_MAX, "+1 BP for each turned hit, 2 at most")
+	var k0: int = hp.call(krona)
+	c0 = hp.call(crono)
+	c._execute_enemy_action(e, jab.merged({"targets": [krona]}))
+	check(int(hp.call(krona)) < k0 and int(hp.call(crono)) == c0, "Krona outside the ring takes her own hit")
+	check(_advance_until_actor(c, &"crono") == crono, "Crono's next window")
+	check(c.taunts.has(crono), "the ring stands until his next action")
+	c.cmd_guard(crono)
+	check(not c.taunts.has(crono), "which ends it")
+	var m1: int = hp.call(marle)
+	c._execute_enemy_action(e, jab.merged({"targets": [marle]}))
+	check(int(hp.call(marle)) < m1, "Marle takes her own hits again")
+
+
+## taunt-counts-its-own-turn: Shogun's Command binds 60% of the attacks to Krona for 2 of her turns, the cast not
+## counted; when it runs out with her standing every ally gains Ruin-infused, and an ally's next strike ignores
+## DEF (§12.3): the preview reads it, the strike deals it, and it is spent.
+func test_shoguns_command_binds_two_of_kronas_turns_and_pays_off_with_ruin_infused() -> void:
+	var krona := _party_member(&"krona", 10, Vector3(0, 0, 0))
+	var crono := _party_member(&"crono", 10, Vector3(0, 0, 2))
+	var e := _enemy(&"e", 10, Vector3(3, 0, 0), 4, ["ICE"], {"hp": 500000})
+	var c := _battle([krona, crono], [e])
+	for u in [krona, crono]:
+		_sturdy(u)
+	check(_advance_until_actor(c, &"krona") == krona, "Krona's window")
+	check(bool(c.cmd_tech(krona, &"shoguns_command", null, c.position_of(krona)).get("ok", false)), "Shogun's Command is cast through cmd_tech")
+	check_eq(c.taunts.turns_left(krona), 2, "two of her turns: the casting action does not count it down")
+	check(c.current_taunter(e) == krona, "she draws the attacks")
+	check_near(c.taunt_strength(krona), CombatConstants.SHOGUN_TAUNT, 0.0001, "60% of them")
+	check(_advance_until_actor(c, &"krona") == krona, "her next window")
+	c.cmd_guard(krona)
+	check(c.taunts.turns_left(krona) == 1 and c.current_taunter(e) == krona, "one turn of it left")
+	check(not StatusComponent.of(crono).has(&"ruin_infused"), "no payoff yet")
+	check(_advance_until_actor(c, &"krona") == krona, "her second window")
+	c.cmd_guard(krona)
+	check(not c.taunts.has(krona) and c.current_taunter(e) == null, "it runs out with her second turn")
+	check(StatusComponent.of(krona).has(&"ruin_infused") and StatusComponent.of(crono).has(&"ruin_infused"), "standing, she gives every ally Ruin-infused")
+	check(_advance_until_actor(c, &"crono") == crono, "Crono's window")
+	var est := CombatantStats.of(e)
+	var keen: int = int(c.preview(crono, null, e, c.position_of(e), 0)[e]["damage"])
+	var hp0: int = est.hp
+	check(bool(c.cmd_attack(crono, e, 0).get("ok", false)), "Crono attacks")
+	check_eq(hp0 - est.hp, keen, "the Attack deals what its preview read")
+	check(not StatusComponent.of(crono).has(&"ruin_infused"), "and spends Ruin-infused")
+	var plain: int = int(c.preview(crono, null, e, c.position_of(e), 0)[e]["damage"])
+	check(keen > plain, "its first strike ignored DEF: %d against %d now" % [keen, plain])
+	var one: Dictionary = PartyHit.terms(c, PartyHit.action_keys(c, null, 0, [crono]), crono, CombatantStats.of(crono), e, [&"SWORD"], false, false, 0, false, false)
+	check(float(one["def"]) > 0.0, "a strike without it reads the enemy's DEF")
+
+
+## mercury-pulse-skips-boss-rules (the reach): the Gramophone Centaur's +1.0 m is the cast's own circle, so the
+## bodies slowed, magnetized and revealed are the bodies struck and previewed; the Bipedal Porcelain (R66Y
+## Salvaged) reaches 5.5 m.
+func test_mercury_pulse_slows_what_it_strikes_centaur_or_bipedal() -> void:
+	_keep_flags()
+	Flags.flags.erase(&"R66Y")
+	var pulse: TechDef = Data.techs[&"mercury_pulse"]
+	check_near(CastReach.radius(pulse), 6.5, 0.0001, "the Centaur (her default form) reaches 6.5 m")
+	var cassia := _party_member(&"cassia", 25, Vector3(0, 0, 0))
+	var near := _enemy(&"near", 25, Vector3(6.8, 0, 0), 4, ["ICE"], {"hp": 500000})
+	var mid := _enemy(&"mid", 25, Vector3(0, 0, 6.3), 4, ["ICE"], {"hp": 500000})
+	var far := _enemy(&"far", 25, Vector3(-7.3, 0, 0), 4, ["ICE"], {"hp": 500000})
+	var c := _battle([cassia], [near, mid, far])
+	var prev: Dictionary = c.preview(cassia, pulse, null, c.position_of(cassia), 0)
+	var info: Dictionary = _cast(c, cassia, &"mercury_pulse", c.position_of(cassia))
+	for e in [near, mid]:
+		check(StatusComponent.of(e).has(&"mercury_slow") and int(info["damage"].get(e, 0)) > 0 and prev.has(e), "%s, inside 6.5 m and its body: slowed, struck and previewed" % CombatantStats.of(e).actor_id)
+	check(not StatusComponent.of(far).has(&"mercury_slow") and not info["damage"].has(far) and not prev.has(far), "beyond it: neither")
+	Flags.set_flag(&"R66Y", &"Salvaged")
+	check_near(CastReach.radius(pulse), 5.5, 0.0001, "the Bipedal Porcelain reaches 5.5 m")
+	var cassia2 := _party_member(&"cassia", 25, Vector3(0, 0, 0))
+	var mid2 := _enemy(&"mid2", 25, Vector3(0, 0, 6.3), 4, ["ICE"], {"hp": 500000})
+	var c2 := _battle([cassia2], [mid2])
+	var prev2: Dictionary = c2.preview(cassia2, pulse, null, c2.position_of(cassia2), 0)
+	var info2: Dictionary = _cast(c2, cassia2, &"mercury_pulse", c2.position_of(cassia2))
+	check(not StatusComponent.of(mid2).has(&"mercury_slow") and not info2["damage"].has(mid2) and not prev2.has(mid2), "6.3 m out the Bipedal pulse neither slows nor strikes")
+	_restore_flags()
 
 
 # ---------------------------------------------------------------- enemy effects

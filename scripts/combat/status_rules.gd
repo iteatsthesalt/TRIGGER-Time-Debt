@@ -8,8 +8,15 @@ extends RefCounted
 
 const BOSS_HALVED: Array[StringName] = [&"slow", &"mercury_slow", &"chrono_lag", &"knock_static"]
 const BOSS_IMMUNE: Array[StringName] = [&"confuse", &"guilty", &"time_stop"]
-## Damage over time (§6.3): the tick is set where the status lands (15% of the hit's raw damage).
+## Damage over time (§6.3): the tick is set where the status lands (15% of the hit's raw damage, dot_tick).
 const DOTS: Array[StringName] = [&"oil_dot", &"ink_dot", &"bleed", &"burn"]
+
+
+## A DoT's tick (§6.3, DECISIONS "DoT ticks and regen"): `fraction` (15%) of one hit's raw damage, the §6.4 term
+## max(1, 0.8 × (atk − def_used/2)) before power, crit, weakness or variance (DamagePipeline.compute_hit's "raw");
+## at least 1. The enemy hit (EnemyStrike) and the party's effect-table `dot` op (EffectSteps) both read it.
+static func dot_tick(raw: float, fraction: float = CombatConstants.DOT_TICK_FRACTION) -> int:
+	return maxi(1, roundi(raw * fraction))
 
 
 ## Apply status `id` to `target`. seconds/turns < 0 mean "until removed". Returns true when it landed.

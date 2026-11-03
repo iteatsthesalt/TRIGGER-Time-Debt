@@ -106,7 +106,7 @@ func perform(scene: BattleScene, actor: CombatActor, payload: Dictionary) -> Dic
 	if not bool(r.get("ok", false)):
 		return r
 	_park(incoming, false)
-	incoming.face_toward(scene.center + Vector3(0, 0, -5))
+	incoming.face_toward(scene.center - scene.party_side * 5.0)
 	incoming.sprite.play(&"ready")
 	_park(outgoing, true)
 	var i: int = scene.party.find(outgoing)

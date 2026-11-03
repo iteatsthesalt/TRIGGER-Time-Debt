@@ -124,21 +124,23 @@ static func settle_enemies(fought: Array, spared: Array, zone: EncounterZone, re
 
 
 ## The party back in the field, standing on ground `ground` says can hold it. After a withdraw the leader stands
-## where the withdrawing ally broke away (`at`), or where it stood before the battle (`fallback`) when the ground
-## there cannot hold it; then the followers snap in behind (PartyFollow), and one the ground cannot hold there
-## steps back toward the leader (a wall, a ledge or the void behind it).
+## where the withdrawing ally broke away (`at`); after any battle, a leader the ground cannot hold there (or where
+## it stands, when there is no `at`) stands where it stood before the battle (`fallback`). Then the followers snap
+## in behind (PartyFollow), and one the ground cannot hold there steps back toward the leader (a wall, a ledge or
+## the void behind it).
 static func regroup(follow: PartyFollow, party: Array, at: Variant, ground: WalkableGround, fallback: Variant) -> void:
 	if party.is_empty() or not is_instance_valid(party[0]):
 		return
 	var leader := party[0] as CombatActor
-	if at is Vector3:
-		var spot: Variant = ground.stand_at(at) if ground != null else at
+	var spot: Variant = at
+	if ground != null and (at is Vector3 or ground.stand_at(leader.global_position) == null):
+		spot = ground.stand_at(at) if at is Vector3 else null
 		if spot == null and fallback is Vector3:
 			spot = ground.stand_at(fallback)
 			spot = fallback if spot == null else spot
-		if spot is Vector3:
-			leader.global_position = spot
-			leader.reset_physics_interpolation()
+	if spot is Vector3:
+		leader.global_position = spot
+		leader.reset_physics_interpolation()
 	if follow != null:
 		follow.snap_behind()
 	for i in range(1, party.size()):

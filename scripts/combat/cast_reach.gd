@@ -6,6 +6,9 @@
 class_name CastReach
 extends RefCounted
 
+## Cassia-09's Gramophone Centaur reaches this much further with Mercury Pulse (§10: "radius +1.0 as Centaur").
+const CENTAUR_PULSE_BONUS_M := 1.0
+
 
 ## True when a cast of `tech` resolves hits on enemies (a plain Attack, `tech` null, always does). False for
 ## support and heals, an effect row whose resolve is "none" or "support" (Time Mines, Rewind Reel), and the
@@ -18,6 +21,16 @@ static func strikes(tech: TechDef) -> bool:
 			return TechEffects.STRIKING.has(tech.effect)
 		return EffectSteps.resolve_mode(tech) == "damage"
 	return not (tech.heal > 0.0 or tech.target in ["ally", "self", "party"])  # cmd_tech's support path
+
+
+## The radius a cast of `tech` reaches before its shape scale: the technique's own, plus a form's (Cassia-09's
+## Gramophone Centaur, her default form, adds CENTAUR_PULSE_BONUS_M to Mercury Pulse; the Bipedal Porcelain of
+## R66Y Salvaged adds nothing, §10). The resolution, the plate preview, the statuses the pulse lays and the aim
+## outline all read it, so what is slowed is what is struck.
+static func radius(tech: TechDef) -> float:
+	if tech.effect == &"mercury_pulse" and not Flags.is_state(&"R66Y", &"Salvaged"):
+		return tech.radius + CENTAUR_PULSE_BONUS_M
+	return tech.radius
 
 
 ## The second and third origins a shape takes from the casters after the first (a Dual's or Triple's partners).

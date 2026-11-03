@@ -1,11 +1,11 @@
 ## One party strike's damage context for DamagePipeline.compute_hit (Combat Laws Bible §6.2, §6.3, §6.4, §8.7,
 ## §8.8). `terms` builds every term that only reads the battle; the resolution's `context` adds the strike's own
-## draws and spends (the oil-drinker crit, the variance roll, one Exposed stack), and the preview's `estimate` sums
-## `terms` over the strikes it aims (variance 1.0, no chance crit), so the aim line reads what the hit deals before
-## its rolls (§4.5, §4.6). NULL is true damage (§6.3): DEF and resistances (resist, immunity, absorb) are ignored
-## and no weakness multiplies it unless NULL itself created that weakness (`nulled_weakness`); every other term
-## (synergy, party synergy, home canvas, Boost, the Broken crit, guaranteed crits, perfect frame, falloff, height,
-## taken_mult, flicker, variance) applies as to any hit.
+## draws and spends (the oil-drinker crit, the variance roll, one Exposed stack, the striker's Ruin-infused), and
+## the preview's `estimate` sums `terms` over the strikes it aims (variance 1.0, no chance crit), so the aim line
+## reads what the hit deals before its rolls (§4.5, §4.6). NULL is true damage (§6.3): DEF and resistances
+## (resist, immunity, absorb) are ignored and no weakness multiplies it unless NULL itself created that weakness
+## (`nulled_weakness`); every other term (synergy, party synergy, home canvas, Boost, the Broken crit, guaranteed
+## crits, perfect frame, falloff, height, taken_mult, flicker, variance) applies as to any hit.
 class_name PartyHit
 extends RefCounted
 
@@ -86,17 +86,30 @@ static func terms(c: BattleCoordinator, action: Dictionary, attacker: Node, best
 		ctx["base"] = float(ctx["base"]) * 1.5
 	null_rule(ctx, tags, tsc)
 	EffectTable.adjust_hit(ctx, tsc, false, ahead)  # The Last Joke's crack, the Gold Leaf washi pocket
+	if ahead == 0 and infused(action, attacker):
+		ctx["def"] = 0.0
 	return ctx
 
 
+## Ruin-infused on the striker (§12.3; Shogun's Command's payoff): its next strike ignores DEF. The resolution
+## spends it on the strike that lands (`context`); the preview gives it to the first strike it forecasts and marks
+## its action spent (`estimate`), so a second body or a second hit reads full DEF in both.
+static func infused(action: Dictionary, attacker: Node) -> bool:
+	var sc := StatusComponent.of(attacker)
+	return sc != null and sc.has(&"ruin_infused") and not bool(action.get("infused_spent", false))
+
+
 ## The context for one strike as it lands (the resolution): `terms`, then its draws from the battle RNG (the
-## oil-drinker crit, then the variance roll) and its spend (one Exposed stack). `res`: the shield's answer.
+## oil-drinker crit, then the variance roll) and its spends (one Exposed stack, Ruin-infused). `res`: the shield's
+## answer.
 static func context(c: BattleCoordinator, action: Dictionary, attacker: Node, best: CombatantStats, t: Node, tags: Array, res: Dictionary, was_broken: bool, rank: int, perfect: bool, flick: bool) -> Dictionary:
 	var ctx := terms(c, action, attacker, best, t, tags, bool(res.get("hit_weakness", false)), was_broken, rank, perfect, flick)
 	if not bool(ctx["crit"]):
 		ctx["crit"] = c._oil_drinker_crit(attacker, t)
 	ctx["variance"] = c._variance()
 	EffectTable.spend_hit(StatusComponent.of(t))
+	if infused(action, attacker):
+		StatusComponent.of(attacker).remove(&"ruin_infused")
 	return ctx
 
 
@@ -115,6 +128,8 @@ static func estimate(c: BattleCoordinator, action: Dictionary, attacker: Node, b
 	var total: int = 0
 	for i in hits:
 		total += int(DamagePipeline.compute_hit(terms(c, action, attacker, best, t, tags, weak, broken, rank, perfect, flick, i))["damage"])
+	if hits > 0 and infused(action, attacker):
+		action["infused_spent"] = true
 	return total
 
 

@@ -5,6 +5,7 @@
 extends "res://tests/suite_base.gd"
 
 const ATRIUM := "res://scenes/u0/atrium_horologe.tscn"
+const KITCHEN := "res://scenes/u0/guardia_kitchen.tscn"
 
 
 ## Wait (real time, sped up) until the Location has run its end-of-battle hand-off.
@@ -182,5 +183,95 @@ func test_atrium_lab_withdraw_never_leaves_the_hall() -> void:
 	check(_floor_under(sera) and s.y > -0.5, "Sera, the leader, stands on the hall floor a second after the hand-off (%.2f, %.2f, %.2f)" % [s.x, s.y, s.z])
 	check(Vector2(s.x, s.z).length() < 13.5, "inside the hall's 13.5 m floor")
 	check(_floor_under(crono) and crono.global_position.y > -0.5, "and so does Crono behind her")
+	_story_defaults()
+	Game.new_game()
+
+
+# ---------------------------------------------------------------- the party stands on the room's ground
+
+## kitchen-win-falls-into-void: the party fans out on the near side when the floor holds it there, comes in and
+## turns about the centre when it does not (here the floor's south edge is 2 m away), and so never stands over
+## the void; with no ground (a bare test) the fan is the near side as it was.
+func test_the_party_fans_out_on_ground_it_can_stand_on() -> void:
+	var host: Node3D = await _small_room()
+	var g := WalkableGround.new(host)
+	var starts: Array[Vector3] = [Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(0, 0, 0)]
+	var open: Dictionary = PartyPlacement.fan(Vector3(0, 0, -1), starts, g)
+	check((open["side"] as Vector3).is_equal_approx(Vector3(0, 0, 1)), "open floor: the near side (+Z, toward the camera)")
+	for p: Vector3 in open["anchors"]:
+		check_near(Vector2(p.x, p.z + 1.0).length(), PartyPlacement.RADIUS_M, 0.01, "at the usual 4.5 m")
+	var edge: Dictionary = PartyPlacement.fan(Vector3(0, 0, 4), starts, g)
+	check(not (edge["side"] as Vector3).is_equal_approx(Vector3(0, 0, 1)), "2 m from the south edge the fan turns away from it")
+	for p: Vector3 in edge["anchors"]:
+		check(g.stand_at(p) != null, "every anchor is floor a body stands on (%.2f, %.2f)" % [p.x, p.z])
+	var bare: Dictionary = PartyPlacement.fan(Vector3(0, 0, 4), starts, null)
+	check_near((bare["anchors"][1] as Vector3).z, 8.5, 0.01, "no ground: the near-side fan, whatever lies there")
+
+
+## kitchen-win-falls-into-void: after any battle, a leader the ground cannot hold where it stands goes back to
+## where it stood before the battle; one on the floor stays where the fight left it.
+func test_regroup_stands_a_leader_over_the_void_where_it_began() -> void:
+	Game.new_game()
+	var host: Node3D = await _small_room()
+	var crono := CombatActor.create_party_member(&"crono")
+	host.add_child(crono)
+	var g := WalkableGround.new(host)
+	crono.global_position = Vector3(0, 0, 9)  # 3 m past the floor's edge
+	BattleAftermath.regroup(null, [crono], null, g, Vector3(1, 0, 2))
+	check(crono.global_position.is_equal_approx(Vector3(1, 0, 2)), "over the void: back where he began (%s)" % str(crono.global_position))
+	crono.global_position = Vector3(-2, 0, 3)
+	BattleAftermath.regroup(null, [crono], null, g, Vector3(1, 0, 2))
+	check(crono.global_position.is_equal_approx(Vector3(-2, 0, 3)), "on the floor: where the fight left him")
+	Game.new_game()
+
+
+## kitchen-win-falls-into-void, the shipped case: the Prologue kitchen's three zones (motes, shardlings, spoons)
+## sit within 3 m of the floor's south edge. Each battle stands the party on the floor, and a win hands it back
+## there: a second after the hand-off everyone is still on the floor.
+func test_kitchen_zone_wins_keep_the_party_on_the_floor() -> void:
+	Game.new_game()
+	Game.location = &"guardia_kitchen"
+	Game.checkpoint = &"prologue_cradle_done"
+	Game.set_party([&"crono", &"sera", &"marle"] as Array[StringName])
+	Story.auto_advance_s = 0.01
+	Story.auto_choice = 0
+	Story.skip_waits = true
+	var loc: Location = (load(KITCHEN) as PackedScene).instantiate()
+	root.add_child(loc)
+	_track(loc)
+	get_tree().current_scene = loc
+	var t: float = 0.0
+	while (Story.is_running() or Router.transitioning) and t < 12.0:
+		await get_tree().create_timer(0.05).timeout
+		t += 0.05
+	loc._activate_kitchen_zones()
+	for zone in loc.zones:
+		zone.active = false  # each fight is started here; no wanderer starts another one meanwhile
+	await _physics(0.2)
+	for id in [&"kitchen_motes", &"kitchen_shardlings", &"kitchen_spoons"]:
+		var z: EncounterZone = null
+		for zone in loc.zones:
+			if zone.encounter_id == id:
+				z = zone
+		check(z != null, "the %s zone is awake" % id)
+		if z == null:
+			continue
+		loc._on_zone_triggered(z, "normal")
+		var c: BattleCoordinator = loc.battle.coordinator
+		c.auto_tick = false
+		var g := WalkableGround.new(loc, loc.map_bounds)
+		for a in loc.party_actors:
+			var p: Vector3 = a.global_position
+			check(g.stand_at(p) != null, "%s: %s stands on the floor in the battle (%.2f, %.2f, %.2f)" % [id, a.actor_id, p.x, p.y, p.z])
+		for e in c.enemies:
+			CombatantStats.of(e).apply_damage(CombatantStats.of(e).hp, true)  # a real win: the zone's bodies fall
+		c.force_end(true)
+		check(await _await_finished(loc), "%s: the win hands back to the field" % id)
+		await _physics(1.0)
+		for a in loc.party_actors:
+			var q: Vector3 = a.global_position
+			check(_floor_under(a) and q.y > -0.5, "%s: %s is on the floor a second after the win (%.2f, %.2f, %.2f)" % [id, a.actor_id, q.x, q.y, q.z])
+		loc.place_party(&"start")
+		await _physics(0.2)
 	_story_defaults()
 	Game.new_game()

@@ -51,6 +51,15 @@ static func thaw(u: Node, n: int = 1) -> void:
 		sc.remove_stacks(&"ruin", n)
 
 
+## Rewind (§3.6) takes `u` back to a turn start where it bore `then` stacks: the stacks gained since thaw, through
+## thaw(), so Crono's component and his mirror move together. Returns the stacks thawed.
+static func rewind_to(u: Node, then: int) -> int:
+	var n: int = stacks(u) - then
+	if n > 0:
+		thaw(u, n)
+	return maxi(0, n)
+
+
 ## True when the Prometheus Core may not revive `u` (Ruin 2+, §7.8).
 static func blocks_prometheus(u: Node) -> bool:
 	return stacks(u) >= 2

@@ -10,7 +10,8 @@ extends RefCounted
 ##   ledge: +0.1 / -0.1 / 0, vulnerable (bool, ×1.5 on allies), taken_mult (status multiplier)
 ##   variance: float in [0.95, 1.05] (pass 1.0 for deterministic tests)
 ##   astral (bool), target_hp (int), is_boss (bool), flicker_bonus (bool)
-## Returns {damage, mult, crit, absorbed, displacement, gauge_push}.
+## Returns {damage, raw, mult, crit, absorbed, displacement, gauge_push}; `raw` is §6.4's max(1, 0.8 × (atk − def/2))
+## before any multiplier, the base a DoT's tick is taken from (§6.3, StatusRules.dot_tick).
 static func compute_hit(ctx: Dictionary) -> Dictionary:
 	var atk: float = float(ctx.get("atk", 0.0))
 	var def: float = float(ctx.get("def", 0.0))
@@ -45,6 +46,7 @@ static func compute_hit(ctx: Dictionary) -> Dictionary:
 		gauge_push = 5.0
 	return {
 		"damage": maxi(0, roundi(dmg)) + displacement,
+		"raw": raw,
 		"mult": mult,
 		"crit": crit,
 		"absorbed": absorbed,

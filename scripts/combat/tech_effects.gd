@@ -98,8 +98,8 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 						sol2.restore(float(sera.get_meta("last_solidity_cost", CombatConstants.SERA_REWIND_COST)))
 				info["targets"] = [sera]
 		&"bekkler_guilt":
-			c.add_taunt(actor, 1, 1.0)
-			actor.set_meta("guilt_redirect", 2)
+			# until his next turn, hits on allies in the ring land on him at 75%, +1 BP each (max 2)
+			c.add_taunt(actor, 1, 0.0, {"ring": tech.radius * tech.shape_scale(boost), "taken": CombatConstants.GUILT_TAKEN, "bp": CombatConstants.GUILT_BP_MAX})
 			info["targets"] = [actor]
 		&"astral_field":
 			var f: Dictionary = c.fields.add(&"astral_field", c.position_of(actor), 4.0 * float(action["shape"].get("scale", 1.0)), 10.0, 0)
@@ -114,8 +114,8 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 			info["targets"] = c.party.duplicate()
 			info = _merge_damage(c, info, action)
 		&"shoguns_command":
-			c.add_taunt(actor, 2, 0.6)
-			actor.set_meta("shogun_command_pending", true)
+			# 60% of the attacks for 2 of her turns; standing at the end, every ally's next hit ignores DEF
+			c.add_taunt(actor, 2, CombatConstants.SHOGUN_TAUNT, {"payoff": &"ruin_infused"})
 			info["targets"] = [actor]
 		&"oil_drinker":
 			for u in c.party:
@@ -179,17 +179,20 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				actor.set_meta("used_tachyon_this_turn", true)
 				info["targets"] = [target]
 		&"mercury_pulse":
-			var radius2: float = tech.radius * tech.shape_scale(boost) + (1.0 if actor.get_meta("centaur", true) else 0.0)
-			for e in c.living_enemies():
-				if c.position_of(e).distance_to(c.position_of(actor)) <= radius2:
-					var sh2 := ShieldComponent.of(e)
-					if sh2 != null:
-						sh2.reveal_all()
-					var sc5 := StatusComponent.of(e)
-					if sc5 != null:
-						sc5.remove(&"cloaked")  # the Lucca Lens lights a cloaked body up (§13.5 Porcelain Raptor)
-						sc5.add(&"mercury_slow", 4.0)
-						sc5.add(&"magnetized", -1.0, 2)
+			# the cast's own circle (CastReach.radius: +1.0 as Centaur), cloaked bodies included
+			var reach: Array = []
+			for en in c.living_enemies():
+				reach.append({"node": en, "pos": c.position_of(en), "radius": CombatantStats.of(en).body_radius})
+			for h in TacticalPositioner.targets_in_shape(action["shape"], c.position_of(actor), action["aim"], reach):
+				var e: Node = h["node"]
+				var sh2 := ShieldComponent.of(e)
+				if sh2 != null:
+					sh2.reveal_all()
+				var sc5 := StatusComponent.of(e)
+				if sc5 != null:
+					sc5.remove(&"cloaked")  # the Lucca Lens lights a cloaked body up (§13.5 Porcelain Raptor)
+				StatusRules.apply(c, e, &"mercury_slow", 4.0)  # a boss's halved (DECISIONS "Boss status rules")
+				StatusRules.apply(c, e, &"magnetized", -1.0, 2)
 			info = _merge_damage(c, info, action)
 		&"wire_loom_mend":
 			if target == null:
@@ -388,6 +391,7 @@ static func _merge_damage(c: BattleCoordinator, info: Dictionary, action: Dictio
 	var dmg: Dictionary = c._resolve_action(action)
 	info["targets"] = dmg["targets"]
 	info["damage"] = dmg["damage"]
+	info["raw"] = dmg["raw"]
 	info["shave"] = dmg["shave"]
 	info["breaks"] = dmg["breaks"]
 	return info

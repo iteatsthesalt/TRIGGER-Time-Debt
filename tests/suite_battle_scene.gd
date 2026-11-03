@@ -6,6 +6,7 @@
 extends "res://tests/suite_base.gd"
 
 const ARENA := "res://scenes/test/arena.tscn"
+const KITCHEN := "res://scenes/u0/guardia_kitchen.tscn"
 const CRADLE := {"boss_id": "atrium_cradle", "boss": true, "at": "boss", "center": "center"}
 
 
@@ -134,6 +135,36 @@ func test_battle_deck_lists_and_items_follow_the_coordinator() -> void:
 	var r2: Dictionary = BattleDeck.use_item(c, crono, Data.items[&"tonic"], crono)
 	check(bool(r2["ok"]), "on his window it is used")
 	check_eq(int(Game.inventory.get("tonic", 0)), 0, "and only then taken from the bag")
+	Game.new_game()
+
+
+## preview-partners-after-cancelled-dual: a Dual picked and backed out of leaves no partner on the Attack that
+## follows: the aim's numbers are the actor's own, the ones cmd_attack then deals (the coordinator's preview reads
+## no partner for an Attack either).
+func test_an_attack_after_a_cancelled_dual_previews_the_actors_own_hit() -> void:
+	var loc: Location = await _arena([&"crono", &"marle"])
+	var scene: BattleScene = _zone_battle(loc)
+	var c: BattleCoordinator = scene.coordinator
+	var crono: CombatActor = loc.get_actor(&"crono") as CombatActor
+	var marle: CombatActor = loc.get_actor(&"marle") as CombatActor
+	marle.stats.p_atk = crono.stats.p_atk * 3.0  # a partner who would hit far harder than Crono
+	c.fixed_variance = 1.0
+	check(_window_for(c, crono), "Crono's window")
+	var target: Node = c.targetable_enemies()[0]
+	ShieldComponent.of(target).weaknesses.clear()  # no Break mid-Attack: the preview does not forecast one
+	var own: int = int(c.preview(crono, null, target, c.position_of(target), 0)[target]["damage"])
+	check_eq(int(c.preview(crono, null, target, c.position_of(target), 0, [marle])[target]["damage"]), own, "an Attack's preview takes no partner")
+	scene.partners = [marle]  # what a Dual picked from the deck leaves when it is backed out of
+	scene._on_deck_command("attack", {})
+	check(scene.partners.is_empty(), "Attack clears the cancelled Dual's partner")
+	scene.target_index = scene.target_list.find(target)
+	scene._refresh_preview()
+	var shown: Dictionary = c.preview(scene.actor, scene.current_tech, target, c.position_of(target), scene.boost, scene.partners)
+	check_eq(int(shown[target]["damage"]), own, "the aim reads Crono's own hit")
+	var hp0: int = CombatantStats.of(target).hp
+	scene._confirm_target()
+	check_eq(hp0 - CombatantStats.of(target).hp, own, "and that is what the Attack deals")
+	check(await _end(loc, true), "the battle ends")
 	Game.new_game()
 
 
@@ -468,3 +499,84 @@ func test_autobattle_casts_effect_techs() -> void:
 	check_eq(int(AutoBattler.tally.get("tech:hold", 0)), 1, "and the tally counts it")
 	AutoBattler.report(true)
 	check(AutoBattler.tally.is_empty(), "report() prints and clears the tally")
+
+
+# ---------------------------------------------------------------- a story battle has the player
+
+## Press and release `action` through the root viewport, as a key does (Viewport.push_input, _unhandled_input).
+func _tap(action: String) -> void:
+	for on: bool in [true, false]:
+		var ev := InputEventAction.new()
+		ev.action = action
+		ev.pressed = on
+		root.push_input(ev)
+		await get_tree().process_frame
+
+
+func _wait(cond: Callable, max_s: float) -> bool:
+	var t: float = 0.0
+	while not bool(cond.call()) and t < max_s:
+		await get_tree().create_timer(0.05).timeout
+		t += 0.05
+	return bool(cond.call())
+
+
+## story-battle-input-dead: the Cradle, started as the Prologue starts it (the pantry trigger runs
+## prologue_cradle_sequence, whose `battle` command waits on the fight), takes real key presses: the deck cursor
+## moves, Attack opens the aim and confirm strikes; a deck closed on an open window comes back by itself; the win
+## runs the script on to its checkpoint.
+func test_the_cradle_story_battle_takes_the_players_input() -> void:
+	Game.new_game()
+	Game.location = &"guardia_kitchen"
+	Game.checkpoint = &"prologue_gate_open"
+	Game.set_party([&"crono", &"marle", &"sera"] as Array[StringName])
+	Story.auto_advance_s = 0.01
+	Story.auto_choice = 0
+	Story.skip_waits = true
+	var k: Location = (load(KITCHEN) as PackedScene).instantiate()
+	root.add_child(k)
+	_track(k)
+	get_tree().current_scene = k
+	await _wait(func() -> bool: return not Story.is_running() and not Router.transitioning, 12.0)
+	Engine.time_scale = 4.0
+	k.call("_on_cradle_trigger", k.party_actors[0])
+	check(await _wait(func() -> bool: return k.battle != null, 30.0), "the pantry trigger starts the Cradle")
+	var scene: BattleScene = k.battle
+	if scene == null:
+		Engine.time_scale = 1.0
+		_story_defaults()
+		return
+	var c: BattleCoordinator = scene.coordinator
+	var open := func() -> bool: return c.state == BattleCoordinator.State.COMMAND_WAIT and not scene.input_blocked and scene.hud.deck_open and scene.mode == BattleScene.Mode.DECK
+	check(await _wait(open, 40.0), "a party window opens with its deck up")
+	Engine.time_scale = 1.0
+	check(Story.is_running() and Story.current_id == &"prologue_cradle_sequence", "the Cradle's script is running, waiting on the fight")
+	check(not scene.auto and not Story.blocks_battle_input(), "and the fight has the player's input")
+	var first: Node = c.active_actor
+	check_eq(String(scene.hud.deck_items[0].get("cmd", "")), "attack", "the deck opens on Attack")
+	await _tap("move_down")
+	check_eq(scene.hud.deck_index, 1, "a real move_down moves the cursor")
+	await _tap("move_up")
+	check_eq(scene.hud.deck_index, 0, "and move_up brings it back")
+	scene.mode = BattleScene.Mode.NONE
+	scene.hud.close_deck()
+	await get_tree().process_frame
+	check(scene.mode == BattleScene.Mode.DECK and scene.hud.deck_open, "a deck closed on an open window comes back by itself")
+	await _tap("confirm")
+	check_eq(scene.mode, BattleScene.Mode.TARGET, "confirm on Attack opens the aim")
+	await _tap("confirm")
+	check(c.state != BattleCoordinator.State.COMMAND_WAIT or c.active_actor != first, "confirm strikes, and the window is over")
+	c.force_end(true)
+	Engine.time_scale = 4.0
+	check(await _wait(func() -> bool: return not Story.is_running(), 30.0), "the win releases the script")
+	Engine.time_scale = 1.0
+	check_eq(Game.checkpoint, &"prologue_cradle_done", "which runs on to its checkpoint")
+	_story_defaults()
+	Game.new_game()
+
+
+func _story_defaults() -> void:
+	Story.auto_advance_s = -1.0
+	Story.auto_choice = -1
+	Story.skip_waits = false
+	get_tree().current_scene = null

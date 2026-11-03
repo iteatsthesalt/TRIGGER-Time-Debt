@@ -100,6 +100,44 @@ func test_enemy_ruin_lowers_the_ceiling_and_clears_when_the_battle_ends() -> voi
 	check_eq(kst.max_hp(), kbase, "and her ceiling with them")
 
 
+## rewind-erases-ruin: Sera's Rewind takes back the Ruin gained since the turn start through RuinRules, for Crono
+## (his TimeDebtComponent and his status mirror together) as for any other ally; the HP comes back against the
+## restored ceiling, and later Ruin keeps the mirror in step.
+func test_rewind_takes_back_the_ruin_gained_since_for_crono_and_an_ally_alike() -> void:
+	var c := _coord()
+	var crono := _party_member(&"crono", 10, Vector3(-3, 0, 0))
+	var krona := _party_member(&"krona", 10, Vector3(-3, 0, 2))
+	var sera := _party_member(&"sera", 10, Vector3(-4, 0, 1))
+	var e := _enemy(&"conduit", 10, Vector3(3, 0, 0), 4, ["ICE"], {"hp": 50000})
+	_start(c, [crono, krona, sera], [e])
+	var cst := CombatantStats.of(crono)
+	var kst := CombatantStats.of(krona)
+	var td := TimeDebtComponent.of(crono)
+	check(_advance_until_actor(c, &"krona") == krona, "Krona's window: her turn start is recorded")
+	c.cmd_guard(krona)
+	check(_advance_until_actor(c, &"crono") == crono, "Crono's window: his turn start is recorded")
+	c.cmd_guard(crono)
+	check(_advance_until_actor(c, &"sera") == sera, "Sera's window")
+	var k_hp: int = kst.hp
+	var c_hp: int = cst.hp
+	var k_max: int = kst.max_hp()
+	var c_max: int = cst.max_hp()
+	StatusRules.apply(c, krona, &"ruin")
+	StatusRules.apply(c, crono, &"ruin")
+	check(kst.max_hp() < k_max and cst.max_hp() < c_max and td.ruin_stacks == 1, "both carry one stack of Ruin since their turn start")
+	check(bool(c.cmd_tech(sera, &"rewind", krona, c.position_of(krona)).get("ok", false)), "Sera Rewinds Krona")
+	check_eq(RuinRules.stacks(krona), 0, "Krona's Ruin gained since is taken back")
+	check_eq(kst.max_hp(), k_max, "her ceiling with it")
+	check_eq(kst.hp, k_hp, "and her HP is her turn start's, not clamped to the Ruined ceiling")
+	check(c.rewind_unit(crono), "the same Rewind on Crono")
+	check_eq(td.ruin_stacks, 0, "his TimeDebtComponent's stack is taken back")
+	check(not StatusComponent.of(crono).has(&"ruin"), "and so is its mirror")
+	check_eq(cst.max_hp(), c_max, "his ceiling is whole again")
+	check_eq(cst.hp, c_hp, "and his HP is his turn start's")
+	StatusRules.apply(c, crono, &"ruin")
+	check(td.ruin_stacks == 1 and StatusComponent.of(crono).stacks(&"ruin") == 1, "a later Ruin keeps the mirror in step")
+
+
 func test_porcelain_silence_lifts_the_ruin_cap_to_ten() -> void:
 	var c := _coord()
 	var crono := _party_member(&"crono", 10, Vector3(-3, 0, 0))
@@ -210,9 +248,10 @@ func test_knock_static_hitches_two_actions_a_boss_one() -> void:
 			c.gauges[e] = CombatConstants.GAUGE_MAX
 			c._begin_enemy_turn(e)  # the brain chooses, the turn counts its statuses down, the wind-up starts
 			out.append(float(c.wind_ups[e]["total"]) if c.wind_ups.has(e) else 0.0)
-			if c.wind_ups.has(e):
-				c._execute_enemy_action(e, c.wind_ups[e]["action"])
-				c.wind_ups.erase(e)
+			if c.wind_ups.has(e):  # it lands as the clock lands it: the wind-up ends (end_wind_up), then the action
+				var landing: Dictionary = c.wind_ups[e]["action"]
+				check(c.end_wind_up(e) and not c.wind_ups.has(e), "the wind-up ends through end_wind_up")
+				c._execute_enemy_action(e, landing)
 		return out
 	StatusRules.apply(c, grunt, &"knock_static", -1.0, 2)
 	check_eq(str(hitches.call(grunt, 3)), str([0.5, 0.5, 0.0]), "a 2-turn Knock-Static hitches the enemy's next two actions 0.5 s")
@@ -680,6 +719,49 @@ func test_bosses_halve_the_slows_and_shrug_off_confusion() -> void:
 	StatusRules.apply(c, grunt, &"slow", 6.0)
 	check_near(float(StatusComponent.of(grunt).statuses[&"slow"]["seconds"]), 6.0, 0.0001, "a regular enemy takes it all")
 	check(StatusRules.apply(c, grunt, &"guilty", -1.0, 2), "and can be made GUILTY")
+
+
+## mercury-pulse-skips-boss-rules: Mercury Pulse cast through cmd_tech lays its Mercury SLOW through StatusRules,
+## so a boss caught in it keeps 2 s of the 4 (DECISIONS "Boss status rules count Mercury SLOW as SLOW") while a
+## regular enemy keeps all 4; the magnetic bind is not a SLOW and stays whole on both.
+func test_mercury_pulse_through_cmd_tech_halves_its_slow_on_a_boss() -> void:
+	var c := _coord()
+	var cassia := _party_member(&"cassia", 25, Vector3(0, 0, 0))
+	var boss := _enemy(&"big", 25, Vector3(2, 0, 0), 4, ["ICE"], {"hp": 500000, "kind": "boss"})
+	var grunt := _enemy(&"grunt", 25, Vector3(-2, 0, 0), 4, ["ICE"], {"hp": 500000})
+	_start(c, [cassia], [boss, grunt], {"techs": {&"mercury_pulse": Data.techs[&"mercury_pulse"]}})
+	_tough_party(cassia)
+	check(_advance_until_actor(c, &"cassia") == cassia, "Cassia-09's window")
+	check(bool(c.cmd_tech(cassia, &"mercury_pulse", null, c.position_of(cassia)).get("ok", false)), "Mercury Pulse is cast")
+	var bsc := StatusComponent.of(boss)
+	var gsc := StatusComponent.of(grunt)
+	check(bsc.has(&"mercury_slow") and gsc.has(&"mercury_slow"), "both are slowed")
+	check_near(float(bsc.statuses.get(&"mercury_slow", {}).get("seconds", 0.0)), 2.0, 0.0001, "the boss for half the 4 s")
+	check_near(float(gsc.statuses.get(&"mercury_slow", {}).get("seconds", 0.0)), 4.0, 0.0001, "the regular enemy for all of it")
+	check(int(bsc.statuses.get(&"magnetized", {}).get("turns", 0)) == 2 and int(gsc.statuses.get(&"magnetized", {}).get("turns", 0)) == 2, "Magnetized for 2 turns on both")
+
+
+## dot-tick-two-formulas, the enemy path: a DoT an enemy hit lays ticks at 15% of that hit's raw damage, §6.4's
+## max(1, 0.8 × (atk − def/2)), whatever the action's power (here 2.0) does to the hit itself.
+func test_an_enemy_dot_ticks_at_fifteen_percent_of_the_hits_raw_damage() -> void:
+	var c := _coord()
+	var krona := _party_member(&"krona", 10, Vector3(-3, 0, 0))
+	var e := _enemy(&"oiler", 10, Vector3(3, 0, 0), 4, ["ICE"], {"hp": 50000})
+	_start(c, [krona], [e])
+	_tough_party(krona)
+	var kst := CombatantStats.of(krona)
+	kst.luk = 0.0  # no resistance roll
+	var pair: Dictionary = DamagePipeline.pick_stats(TechDef.Uses.BEST, CombatantStats.of(e), kst, StatusComponent.of(krona).def_multiplier(false))
+	var raw: float = maxf(1.0, 0.8 * (float(pair["atk"]) - float(pair["def"]) * 0.5))
+	var hp0: int = kst.hp
+	c._execute_enemy_action(e, _strike("oil_weep", "krona", {"power": 2.0, "status": "oil_dot", "status_seconds": 6.0, "targets": [krona]}))
+	var dealt: int = hp0 - kst.hp
+	var tick: int = int(StatusComponent.of(krona).data(&"oil_dot").get("tick", 0))
+	check(dealt > 0 and StatusComponent.of(krona).has(&"oil_dot"), "the hit lands and lays its oil")
+	check_eq(tick, StatusRules.dot_tick(raw), "the tick is 15%% of the hit's raw damage (raw %.1f)" % raw)
+	check(tick < roundi(float(dealt) * CombatConstants.DOT_TICK_FRACTION), "not 15%% of the 2.0-power hit (%d dealt)" % dealt)
+	check_eq(StatusRules.dot_tick(81.2), 12, "§6.5's worked example: 15% of raw 81.2 is a tick of 12")
+	check_eq(StatusRules.dot_tick(0.5), 1, "and a tick is never under 1")
 
 
 # ---------------------------------------------------------------- Glenn's steals (GAP3-2, #22)

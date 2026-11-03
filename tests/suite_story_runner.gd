@@ -336,3 +336,44 @@ func test_history_keeps_the_last_lines_only() -> void:
 	check_eq(String(Story.history()[0]["text"]), "5", "the oldest lines fall off first")
 	Story.reset()
 	check_eq(Story.history().size(), 0, "reset empties the history")
+
+
+# ---------------------------------------------------------------- a story battle has the player
+
+## story-battle-input-dead: a script waiting on the battle its `battle` command started is running, yet the battle
+## has the player's input (Story.blocks_battle_input is false); a phase beat run nested in it takes the screen
+## back while it lasts, and the waiting script, released by the result, runs to its end.
+func test_a_script_waiting_on_its_battle_leaves_the_input_to_the_battle() -> void:
+	_fast_story()
+	var asked: Array = []
+	var cb := func(id: StringName, _cmd: Dictionary) -> void: asked.append(id)
+	Story.battle_requested.connect(cb)
+	var done: Array = []
+	var fin := func(id: StringName) -> void: done.append(id)
+	Story.script_finished.connect(fin)
+	check(not Story.blocks_battle_input(), "no script, nothing blocks")
+	Story.run(&"t_story_fight", [{"say": "Before.", "who": "narrator"}, {"battle": "t_fight"}, {"say": "After.", "who": "narrator"}, {"end": true}])
+	var t: float = 0.0
+	while asked.is_empty() and t < 5.0:
+		await get_tree().create_timer(0.02).timeout
+		t += 0.02
+	check_eq(asked, [&"t_fight"], "the script asks for its battle")
+	check(Story.is_running(), "and is running while it waits")
+	check(not Story.blocks_battle_input(), "but the battle it waits on has the input")
+	Story.run(&"t_phase_beat", [{"say": "A phase beat.", "who": "narrator"}, {"end": true}])
+	check(Story.blocks_battle_input(), "a phase beat nested in the fight takes the screen")
+	t = 0.0
+	while not done.has(&"t_phase_beat") and t < 5.0:
+		await get_tree().create_timer(0.02).timeout
+		t += 0.02
+	check(done.has(&"t_phase_beat"), "the beat ends")
+	check(Story.is_running() and not Story.blocks_battle_input(), "and the input is the battle's again")
+	Story.report_battle_result({"victory": true})
+	t = 0.0
+	while not done.has(&"t_story_fight") and t < 5.0:
+		await get_tree().create_timer(0.02).timeout
+		t += 0.02
+	check(done.has(&"t_story_fight") and not Story.is_running() and not Story.blocks_battle_input(), "the result releases the script to its end")
+	Story.battle_requested.disconnect(cb)
+	Story.script_finished.disconnect(fin)
+	_slow_story()

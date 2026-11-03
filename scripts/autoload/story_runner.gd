@@ -30,6 +30,10 @@ var skip_waits: bool = false
 ## The last `go` the Router refused (unknown location or a transition already running); &"" when none.
 var last_refused_go: StringName = &""
 var _battle_waiting: bool = false
+## How many scripts are running (a phase beat runs nested inside the one waiting on its battle), and the depth of
+## the script whose `battle` command is waiting: while that script is the innermost, the battle has the player.
+var _depth: int = 0
+var _battle_depth: int = 0
 var _in_run_cmd: bool = false
 var _history: Array[Dictionary] = []
 var _vars: Dictionary = {}
@@ -47,6 +51,12 @@ func _ready() -> void:
 
 func is_running() -> bool:
 	return running
+
+
+## True while a script steers the screen: one is running and it is not merely waiting on the battle it started
+## (its `battle` command). A story battle takes the player's input; a phase beat nested in it does not.
+func blocks_battle_input() -> bool:
+	return running and not (_battle_waiting and _depth == _battle_depth)
 
 
 ## A new game: script variables and the line history start empty.
@@ -79,7 +89,9 @@ func run(id: StringName, inline: Array = []) -> void:
 	var nested: bool = running
 	var outer_id: StringName = current_id
 	var outer_waiting: bool = _battle_waiting
+	var outer_battle_depth: int = _battle_depth
 	running = true
+	_depth += 1
 	current_id = id
 	script_started.emit(id)
 	var labels: Dictionary = {}
@@ -102,11 +114,14 @@ func run(id: StringName, inline: Array = []) -> void:
 				push_warning("Story: unknown label %s" % jump)
 	box.hide_box()
 	script_finished.emit(id)
+	_depth -= 1
 	if nested:
 		current_id = outer_id
 		_battle_waiting = outer_waiting
+		_battle_depth = outer_battle_depth
 	else:
 		running = false
+		_depth = 0
 		current_id = &""
 
 
@@ -234,6 +249,7 @@ func _apply_actions(cmd: Dictionary) -> String:
 	if cmd.has("battle"):
 		battle_result = {}
 		_battle_waiting = true
+		_battle_depth = _depth
 		battle_requested.emit(StringName(String(cmd["battle"])), cmd)
 		while _battle_waiting:
 			await get_tree().process_frame

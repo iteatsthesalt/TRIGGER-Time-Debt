@@ -7,8 +7,9 @@ class_name EnemyStrike
 extends RefCounted
 
 
-## Resolve `shape_hits` × the action's hits on `t`. Returns the HP removed.
-static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, shape_hits: int, rank: int) -> int:
+## Resolve `shape_hits` × the action's hits on `t`, each scaled by `scale` (a hit Bekkler's Guilt turned onto Crono
+## lands at 75%, TauntBook). Returns the HP removed.
+static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, shape_hits: int, rank: int, scale: float = 1.0) -> int:
 	var est := CombatantStats.of(e)
 	var tst := CombatantStats.of(t)
 	var tags: Array = action.get("tags", [])
@@ -50,7 +51,7 @@ static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, 
 			"atk": pair["atk"], "def": pair["def"], "base": float(action.get("power", 1.0)),
 			"falloff_rank": rank, "variance": variance,
 			"vulnerable": tst.is_vulnerable_to(tags), "resist": (CombatConstants.RESIST_MULT if tst.is_resistant_to(tags) else 1.0),
-			"taken_mult": (tsc.damage_taken_multiplier() if tsc != null else 1.0) * keep,
+			"taken_mult": (tsc.damage_taken_multiplier() if tsc != null else 1.0) * keep * scale,
 		}
 		var shielded: bool = tst.null_shield or (tsc != null and tsc.has(&"null_shield"))  # Omega Triple: for the fight
 		if shielded or tst.true_null:
@@ -73,15 +74,15 @@ static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, 
 			dmg = mini(dmg, maxi(0, tst.hp - c.party_hp_floor))
 		var dealt: int = tst.apply_damage(dmg, vulnerable_breaks_guard)
 		total += dealt
-		apply_status(c, action, t, int(r["damage"]))
+		apply_status(c, action, t, float(r["raw"]))
 		c.strike_resolved.emit(e, t, {"damage": dealt, "tags": tags, "crit": r["crit"]})
 		c._after_damage(t)
 	return total
 
 
 ## The action's status on a landed hit: the target's resistance (LUK × 0.1%, max 30%), then the action's chance.
-## A DoT keeps 15% of the hit's raw damage as its tick (§6.3).
-static func apply_status(c: BattleCoordinator, action: Dictionary, t: Node, raw_damage: int) -> void:
+## A DoT keeps 15% of the hit's raw damage (`raw`, §6.4's term before power, crit or variance) as its tick (§6.3).
+static func apply_status(c: BattleCoordinator, action: Dictionary, t: Node, raw: float) -> void:
 	var sid := StringName(String(action.get("status", "")))
 	if sid == &"" or StatusComponent.of(t) == null:
 		return
@@ -93,7 +94,7 @@ static func apply_status(c: BattleCoordinator, action: Dictionary, t: Node, raw_
 		return
 	var extra: Dictionary = {}
 	if StatusRules.DOTS.has(sid):
-		extra["tick"] = maxi(1, roundi(float(raw_damage) * CombatConstants.DOT_TICK_FRACTION))
+		extra["tick"] = StatusRules.dot_tick(raw)
 	StatusRules.apply(c, t, sid, float(action.get("status_seconds", -1.0)), int(action.get("status_turns", -1)), 1, extra)
 
 

@@ -69,7 +69,7 @@ var hover_sera: Node = null
 var prometheus_available: bool = false
 var prometheus_used: bool = false
 var swapped_once: bool = false
-var taunts: Dictionary = {}
+var taunts := TauntBook.new()  # who draws the enemies' attacks, and Bekkler's Guilt's ring
 var parry_armed: Dictionary = {}
 var parry_frames: int = CombatConstants.ENS_PARRY_FRAMES_BASE
 var ens_rings: Dictionary = {}
@@ -570,7 +570,7 @@ func cmd_tech(actor: Node, tech_id: StringName, target: Node, aim: Vector3, boos
 		aim_point = position_of(actor)
 	var action := {
 		"kind": "tech", "attacker": actor, "casters": casters, "tags": Array(tech.tags),
-		"shape": {"shape": tech.shape, "radius": tech.radius, "length": tech.length, "width": tech.width,
+		"shape": {"shape": tech.shape, "radius": CastReach.radius(tech), "length": tech.length, "width": tech.width,
 			"inner_radius": tech.inner_radius, "beams": tech.beams, "scale": tech.shape_scale(boost)},
 		"hits": tech.hit_count, "aim": aim_point, "primary": target, "steps": maxi(1, tech.steps),
 	}
@@ -761,11 +761,13 @@ func preview(actor: Node, tech: TechDef, target: Node, aim: Vector3, boost: int,
 	var st := CombatantStats.of(actor)
 	if not CastReach.strikes(tech):
 		return {}
+	if tech == null:
+		partners = []  # an Attack is the actor's alone (cmd_attack), whatever Dual was picked and backed out of
 	var tags: Array = Array(tech.tags) if tech != null else Array(st.weapon_tags)
 	var hits: int = CastReach.hits(self, tech, actor, boost, partners) if tech != null else maxi(1, st.weapon_hits)
 	var shape: Dictionary = {"shape": TechDef.Shape.SINGLE, "scale": CombatConstants.BOOST_SCALE[boost]}
 	if tech != null:
-		shape = {"shape": tech.shape, "radius": tech.radius, "length": tech.length, "width": tech.width, "inner_radius": tech.inner_radius, "beams": CastReach.beams(self, tech, actor, boost, partners), "scale": tech.shape_scale(boost)}
+		shape = {"shape": tech.shape, "radius": CastReach.radius(tech), "length": tech.length, "width": tech.width, "inner_radius": tech.inner_radius, "beams": CastReach.beams(self, tech, actor, boost, partners), "scale": tech.shape_scale(boost)}
 	var aim_point: Vector3 = position_of(target) if target != null else aim
 	var found: Array = CastReach.caught(self, tech, TacticalPositioner.targets_in_shape(shape, position_of(actor), aim_point, _enemy_candidates(), _blockers(), CastReach.extra_origins(self, [actor] + partners)))
 	var bonus_if_status: Dictionary = TechEffects.bonus_if_status(tech)
@@ -865,20 +867,17 @@ func current_taunter(enemy: Node) -> Node:
 		var est := CombatantStats.of(enemy)
 		if CombatantStats.of(sera).hp_ratio() < 0.4 and est != null and est.tags.has(&"LAVOS"):
 			return crono
-	for t in taunts.keys():
-		if _alive(t) and int(taunts[t].get("turns", 0)) > 0:
-			return t
-	return null
+	return taunts.drawing(_alive)
 
 
 func taunt_strength(t: Node) -> float:
-	if taunts.has(t):
-		return float(taunts[t].get("strength", 0.6))
-	return 1.0
+	return taunts.strength_of(t)
 
 
-func add_taunt(t: Node, turns: int, strength: float) -> void:
-	taunts[t] = {"turns": turns, "strength": strength}
+## A taunt on `t` for `turns` of its turns; one given while `t` acts counts from its next action (TauntBook).
+func add_taunt(t: Node, turns: int, strength: float, extra: Dictionary = {}) -> void:
+	var sc := StatusComponent.of(t)
+	taunts.add(t, turns, strength, sc.acting if sc != null else t == active_actor, extra)
 
 
 # ------------------------------------------------------------------ enemy turns
@@ -943,10 +942,11 @@ func _execute_enemy_action(e: Node, action: Dictionary) -> void:
 		var stolen: int = bank.drain(bp_steal)
 		e.set_meta("stolen_bp", int(e.get_meta("stolen_bp", 0)) + stolen)
 	for h in hit_list:
-		var t: Node = h["node"]
-		info["targets"].append(t)
-		var dealt: int = EnemyStrike.resolve(self, e, t, action, int(h["hits"]), int(h["rank"]))
-		info["damage"][t] = dealt
+		var landing: Array = taunts.landing(self, h["node"])  # Bekkler's Guilt: a hit on an ally in its ring lands on Crono
+		var t: Node = landing[0]
+		if not info["targets"].has(t):
+			info["targets"].append(t)
+		info["damage"][t] = int(info["damage"].get(t, 0)) + EnemyStrike.resolve(self, e, t, action, int(h["hits"]), int(h["rank"]), float(landing[1]))
 	if String(action.get("effect", "")) != "":
 		EnemyEffects.apply(self, e, action, hit_list)
 	action_executed.emit(info)
@@ -991,7 +991,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 		found = [{"node": primary, "hits": 1, "rank": 0}] if primary != null else []
 	else:
 		found = TacticalPositioner.targets_in_shape(shape, position_of(attacker), aim, _enemy_candidates(), _blockers(), extra)
-	var info := {"kind": action["kind"], "attacker": attacker, "casters": casters, "tech": tech, "boost": boost, "targets": [], "damage": {}, "shave": {}, "breaks": [], "tags": tags}
+	var info := {"kind": action["kind"], "attacker": attacker, "casters": casters, "tech": tech, "boost": boost, "targets": [], "damage": {}, "raw": {}, "shave": {}, "breaks": [], "tags": tags}
 	var a_stats := CombatantStats.of(attacker)
 	var best_caster: CombatantStats = PartyHit.best_caster(casters, int(action.get("uses", TechDef.Uses.BEST)), a_stats)  # §8.7
 	var perfect: bool = bool(_perfect_frame_pending.get(attacker, false))
@@ -1042,6 +1042,7 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 			var ctx: Dictionary = PartyHit.context(self, action, attacker, best_caster, t, t_tags, res, was_broken, int(h["rank"]), perfect, flicker)
 			ctx["taken_mult"] = float(ctx["taken_mult"]) * FieldEffects.on_party_strike(self, t, t_tags)  # confetti, mercury pool
 			var r: Dictionary = DamagePipeline.compute_hit(ctx)
+			info["raw"][t] = float(r["raw"])  # one hit's raw damage on it: a DoT's tick base (§6.3, EffectSteps)
 			var dmg: int = int(r["damage"])
 			var dealt: int
 			if bool(r["absorbed"]):
@@ -1206,15 +1207,24 @@ func _snapshot_turn(u: Node) -> void:
 		"gauge": float(gauges.get(u, 0.0)),
 		"pos": position_of(u),
 		"statuses": sc.ids() if sc != null else [],
+		"ruin": RuinRules.stacks(u),
 	}
 
 
-## Restore a unit to its last turn start: HP, gauge, position, statuses gained since (§3.6).
+## Restore a unit to its last turn start: HP, gauge, position, statuses gained since (§3.6). Ruin gained since
+## thaws through RuinRules (Crono's component and its mirror alike) before the HP, so the ceiling is back first.
 func rewind_unit(u: Node, hp_only: bool = false) -> bool:
 	if not turn_snapshots.has(u):
 		return false
 	var snap: Dictionary = turn_snapshots[u]
 	var st := CombatantStats.of(u)
+	var sc := StatusComponent.of(u)
+	if not hp_only:
+		RuinRules.rewind_to(u, int(snap.get("ruin", RuinRules.stacks(u))))
+		if sc != null:
+			for id in sc.ids():
+				if id != &"ruin" and not (snap["statuses"] as Array).has(id):
+					sc.remove(id)
 	if st != null:
 		if st.hp <= 0 and int(snap["hp"]) > 0:
 			st.revive(0.01)
@@ -1226,11 +1236,6 @@ func rewind_unit(u: Node, hp_only: bool = false) -> bool:
 	if not ready_pool.has(u):
 		gauges[u] = float(snap["gauge"])
 	_set_position(u, snap["pos"])
-	var sc := StatusComponent.of(u)
-	if sc != null:
-		for id in sc.ids():
-			if not (snap["statuses"] as Array).has(id):
-				sc.remove(id)
 	return true
 
 
@@ -1400,16 +1405,10 @@ func _finish_turn(actor: Node, next_gauge: float) -> void:
 	var sc := StatusComponent.of(actor)
 	if sc != null:
 		sc.on_turn_taken()
-	if taunts.has(actor):
-		taunts[actor]["turns"] = int(taunts[actor]["turns"]) - 1
-		if int(taunts[actor]["turns"]) <= 0:
-			taunts.erase(actor)
-			if actor.get_meta("shogun_command_pending", false) and _alive(actor):
-				actor.remove_meta("shogun_command_pending")
-				for u in party:
-					var usc := StatusComponent.of(u)
-					if usc != null:
-						usc.add(&"ruin_infused", -1.0, 1)
+	var ended: Dictionary = taunts.on_turn_taken(actor)
+	if ended.has("payoff") and _alive(actor):  # Shogun's Command held: every ally's next hit ignores DEF (§11)
+		for u in party:
+			StatusRules.apply(self, u, StringName(String(ended["payoff"])))
 	cooldowns.on_turn_taken(actor)
 	var sol := SolidityComponent.of(actor)
 	if sol != null and not actor.get_meta("used_tachyon_this_turn", false):

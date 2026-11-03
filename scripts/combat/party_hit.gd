@@ -99,13 +99,11 @@ static func infused(action: Dictionary, attacker: Node) -> bool:
 	return sc != null and sc.has(&"ruin_infused") and not bool(action.get("infused_spent", false))
 
 
-## The context for one strike as it lands (the resolution): `terms`, then its draws from the battle RNG (the
-## oil-drinker crit, then the variance roll) and its spends (one Exposed stack, Ruin-infused). `res`: the shield's
-## answer.
+## The context for one strike as it lands (the resolution): `terms`, then its draw from the battle RNG (the
+## variance roll) and its spends (one Exposed stack, Ruin-infused). `res`: the shield's answer. (Oil-Drinker+'s
+## crit waits for the beat that earns it: data/effects/effects.json `handler_unbuilt`.)
 static func context(c: BattleCoordinator, action: Dictionary, attacker: Node, best: CombatantStats, t: Node, tags: Array, res: Dictionary, was_broken: bool, rank: int, perfect: bool, flick: bool) -> Dictionary:
 	var ctx := terms(c, action, attacker, best, t, tags, bool(res.get("hit_weakness", false)), was_broken, rank, perfect, flick)
-	if not bool(ctx["crit"]):
-		ctx["crit"] = c._oil_drinker_crit(attacker, t)
 	ctx["variance"] = c._variance()
 	EffectTable.spend_hit(StatusComponent.of(t))
 	if infused(action, attacker):

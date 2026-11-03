@@ -348,6 +348,34 @@ func test_one_summon_rule_with_the_summoners_own_cap() -> void:
 	Game.new_game()
 
 
+## Code health F6: summoned adds face the party's side as BattleScene faces every enemy it opens with (party_side,
+## which PartyPlacement turns where the floor needs it), not the plane's +Z, and stand on the room's ground.
+func test_summoned_adds_face_the_party_side_and_stand_on_the_ground() -> void:
+	var loc: Location = await _arena([&"crono"])
+	var scene: BattleScene = _zone_battle(loc)
+	var c: BattleCoordinator = scene.coordinator
+	check(c.ground != null, "a Location battle has its ground")
+	scene.party_side = Vector3(1, 0, 0)  # a fan PartyPlacement turned by 90 degrees
+	var n0: int = c.enemies.size()
+	c.request_summon(&"moss_mouse", 3, c.enemies[0])
+	var adds: Array = c.enemies.slice(n0)
+	check_eq(adds.size(), 3, "three adds join")
+	var turned: int = 0
+	for a in adds:
+		var add := a as CombatActor
+		check(c.ground.stand_at(add.global_position) != null, "%s stands on the room's floor" % add.name)
+		var faced: StringName = add.sprite.facing
+		add.face_toward(add.global_position + Vector3(0, 0, 4))
+		var plane_z: StringName = add.sprite.facing
+		add.face_toward(scene.center + scene.party_side * 4.0)
+		check_eq(faced, add.sprite.facing, "%s faces the party's side" % add.name)
+		if plane_z != faced:
+			turned += 1
+	check(turned > 0, "which is not the plane's +Z for at least one of them")
+	check(await _end(loc, true), "the zone battle ends")
+	Game.new_game()
+
+
 ## Combat Laws 15.3: a scaled regular summoner's adds fight at the rank its encounter gives the same kind (the
 ## Filament Guardian's Atom-Eaters beside the encounter's own), and a summoner nothing scaled calls its adds at
 ## their authored level, as a boss's are.

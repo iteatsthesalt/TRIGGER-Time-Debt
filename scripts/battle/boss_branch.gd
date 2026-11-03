@@ -27,19 +27,30 @@ static func script_for(entry: Dictionary, prompt: String) -> Array:
 	return [{"choice": options, "prompt": prompt}, {"end": true}]
 
 
-## Write what option `id` of `entry` sets: its flag (Flag:State) and, with no flag, its lean.
+## Write what option `id` of `entry` sets: its flag (option_ref) and, with no flag, its lean.
 static func apply(entry: Dictionary, id: String, universe: int) -> Dictionary:
 	for o in entry.get("options", []):
 		if String(o.get("id", "")) != id:
 			continue
 		var flag: String = String(o.get("flag", ""))
-		if flag != "":
-			Flags.set_flag(StringName(flag), StringName(String(o.get("state", "set"))))
+		var ref: String = option_ref(o)
+		if ref != "":
+			Flags.set_ref(ref)
 		var lean: String = String(o.get("lean", ""))
 		if flag == "" and lean != "":
 			Flags.add_lean(universe, lean.left(1).to_upper())
 		return o
 	return {}
+
+
+## The flag reference an option writes: its `flag` with its `state` ("set" when it names none, FlagRef.written);
+## "" for an option with no flag (a lean, or nothing). Data.load_all and lint_data.py validate it.
+static func option_ref(o: Dictionary) -> String:
+	var flag: String = String(o.get("flag", ""))
+	if flag.strip_edges() == "":
+		return ""
+	var p: PackedStringArray = FlagRef.with_state(flag, String(o.get("state", "")))
+	return FlagRef.written("%s:%s" % [p[0], p[1]] if p[1] != "" else p[0])
 
 
 ## Ask the question with the clock frozen (the coordinator in State.BRANCH when it was ticking) and return the

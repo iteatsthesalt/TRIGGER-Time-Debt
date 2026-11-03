@@ -170,8 +170,6 @@ func gauge_multiplier() -> float:
 		m *= 1.5
 	if has(&"slow"):
 		m *= 0.5
-	if has(&"ghost_ring"):
-		m *= 1.15
 	if has(&"rubber_chicken"):
 		m *= 0.6
 	if has(&"pollen_haze"):

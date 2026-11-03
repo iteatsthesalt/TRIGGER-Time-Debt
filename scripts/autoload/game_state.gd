@@ -298,6 +298,11 @@ func set_debt(v: float) -> void:
 	debt_changed.emit(sera_debt)
 
 
+## Krona's Corruption (CorruptionComponent: 0-100, persistent).
+func set_corruption(v: float) -> void:
+	krona_corruption = clampf(v, 0.0, CorruptionComponent.MAX)
+
+
 func set_chapter(c: int) -> void:
 	chapter = c
 	# chapter-gated kit entries unlock for everyone who can learn: the recruited and a guest in the roster (Marle)

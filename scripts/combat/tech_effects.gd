@@ -1,7 +1,8 @@
 ## Special technique behaviours that bend the rules (Combat Laws Bible §11): Rewind, HOLD,
 ## Borrowed Future, Fall Break, taunts, the gourd, field makers. Standard damage techs never come here.
 ## HANDLED are the bespoke handlers below; every other effect id is a row of data/effects/effects.json that
-## EffectSteps runs, or is listed there as flavour or pending (EffectTable.validation_errors, lint_data.py).
+## EffectSteps runs, or is listed there as flavour or pending (EffectTable.validation_errors, lint_data.py). A
+## handler's clauses that wait for a system are listed under the table's `handler_unbuilt`.
 ## Enemy action effects are EnemyEffects.
 class_name TechEffects
 extends RefCounted
@@ -12,7 +13,7 @@ const HANDLED: Array[StringName] = [
 	&"tachyon_needle", &"ward", &"porcelain_promise", &"hover_rewind_hp", &"hover_fast_forward",
 	&"mercury_pulse", &"wire_loom_mend", &"sound_ring", &"reinforced_guard", &"fake_family_photo",
 	&"null_strip", &"divinity_field", &"core_lattice", &"prism_guard", &"sleight_of_arm",
-	&"swap_face", &"honest_laugh", &"balloon_escape", &"tune", &"lotus_reverse", &"miura_fold",
+	&"swap_face", &"honest_laugh", &"balloon_escape", &"tune", &"lotus_reverse",
 	&"time_debt_paid", &"crimson_seppuku", &"cobalt_nodachi", &"overclocked_short_circuit",
 	&"mycelia_tether", &"photosynthetic_burst", &"guile_feint", &"omega_annihilation",
 ]
@@ -123,7 +124,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				if st.is_alive():
 					var healed: int = st.heal(roundi(float(st.max_hp()) * 0.10))
 					c.heal_resolved.emit(actor, u, healed)
-			actor.set_meta("corruption", float(actor.get_meta("corruption", 0.0)) + 5.0)
+			CorruptionComponent.add_to(actor, CorruptionComponent.GOURD_SIP)
 			info["targets"] = c.party.duplicate()
 		&"ruin_purge":
 			info = _merge_damage(c, info, action)
@@ -287,14 +288,13 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 		&"honest_laugh":
 			if target == null:
 				target = actor
-			c.bank.add(2)
-			target.set_meta("honest_hit", true)
+			c.bank.add(2)  # the honest GUILE hit it promises waits for the honesty rule (`handler_unbuilt`)
 			info["targets"] = [target]
 		&"balloon_escape":
 			var sc11 := StatusComponent.of(actor)
 			if sc11 != null:
-				sc11.add(&"balloon", 2.0)
-			actor.set_meta("theft_immune_once", true)
+				sc11.add(&"balloon", 2.0)  # immune to [FIRE] while it lasts (EnemyStrike)
+			actor.set_meta(BpTheft.BALLOON, true)  # the next theft against the party fails (BpTheft)
 			info["targets"] = [actor]
 		&"tune":
 			actor.set_meta("tuning", String(action.get("mode", "NOISE")))
@@ -312,12 +312,6 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 				if sc13 != null:
 					sc13.cleanse()
 				info["targets"] = [target]
-		&"miura_fold":
-			var living: Array = c.living_enemies()
-			if living.size() >= 2:
-				living[0].set_meta("fold_partner", living[1])
-				living[1].set_meta("fold_partner", living[0])
-				info["targets"] = [living[0], living[1]]
 		&"time_debt_paid":
 			for u in c.party:
 				var st5 := CombatantStats.of(u)
@@ -335,7 +329,7 @@ static func apply(c: BattleCoordinator, tech: TechDef, action: Dictionary) -> Di
 					sc14.add(&"corroded", -1.0, 3)
 				var f5: Dictionary = c.fields.add(&"ash_field", c.position_of(t), 1.5, -1.0, 0)
 				c.field_added.emit(f5)
-			actor.set_meta("corruption", float(actor.get_meta("corruption", 0.0)) + 10.0)
+			CorruptionComponent.add_to(actor, CorruptionComponent.SEPPUKU)
 			var kst := CombatantStats.of(actor)
 			kst.heal(roundi(float(kst.max_hp()) * 0.2))
 		&"cobalt_nodachi":
@@ -421,21 +415,19 @@ static func _fake_weakness(c: BattleCoordinator, _u: Node) -> StringName:
 ## Lv2, 3 at Lv3+); only when the counter is empty, 1 BP from its "laugh". A Broken enemy whose behaviour says
 ## `steal_all_when_broken` (the Ash Ringmaster) gives up its whole counter. The pool's cap still applies.
 ## `limit`: what is left of this action's steal (EffectSteps' multi-body steal), when it is less than the level's.
-static func _steal_from(c: BattleCoordinator, glenn: Node, target: Node, boost: int, limit: int = 99) -> int:
+static func _steal_from(c: BattleCoordinator, _glenn: Node, target: Node, boost: int, limit: int = 99) -> int:
 	var n: int = mini(CombatConstants.GLENN_STEAL[clampi(boost, 0, 4)], limit)
 	var taken: int = 0
-	var held: int = int(target.get_meta("stolen_bp", 0)) if target != null else 0
+	var held: int = BpTheft.held(target) if target != null else 0
 	if held > 0:
 		var def: EnemyDef = c.enemy_defs.get(CombatantStats.of(target).actor_id, null)
 		if def != null and bool(def.behaviour.get("steal_all_when_broken", false)) and c.is_broken(target):
 			n = held
 		taken = mini(held, n)
-		target.set_meta("stolen_bp", held - taken)
+		target.set_meta(BpTheft.COUNTER, held - taken)
 	elif target != null and n > 0:
 		taken = 1
-		target.set_meta("stolen_from", true)
 	if taken > 0:
 		c.bank.add(taken)
-	glenn.set_meta("stole_this_battle", true)
 	return taken
 

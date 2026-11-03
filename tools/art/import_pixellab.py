@@ -11,10 +11,11 @@
 The asset key is the game's sprite id. A key that starts with `prp_` (or an `/objects/` URL, or
 `--kind object`) is a prop: it takes the object route (`pipeline/pixellab_objects.py`) and lands in
 `assets/props/u<n>/<key>/<key>.png` with its height from `data/props/props.json`. Everything else is a
-character. A character is a SET of sprites: tiers (map 64 / field 128 / action
-256 / portrait 512) and variants (another canvas such as u1, or a story state such as debt20). The tier and
-variant come from the PixelLab name when you pass it (`--name "TRIGGER Sera u1 field v1"`), else from
-`--tier` / `--variant`, else field/base. The file written is `<key>[_<variant>]_<tier>.png`. The target
+character. A character is a SET of sprites: tiers (field, map, action, portrait; their canvas sizes are the
+table in docs/ART_PIPELINE.md §1b: field is the 64 px recipe, a portrait 48x48, map and action are to be
+re-specified at the new scale) and variants (another canvas such as u1, a story state such as debt20, or the
+px64 transition variant). The tier and variant come from the PixelLab name when you pass it
+(`--name "TRIGGER Sera u1 field v1"`), else from `--tier` / `--variant`, else field/base. The file written is `<key>[_<variant>]_<tier>.png`. The target
 folder, canvas, frame rate and height are resolved from the game data:
 
     data/characters/<key>.json          -> assets/characters/<key>/   (height_m from the kit)

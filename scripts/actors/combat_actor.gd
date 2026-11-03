@@ -26,6 +26,7 @@ var statuses: StatusComponent
 var shield: ShieldComponent
 var time_debt: TimeDebtComponent
 var solidity: SolidityComponent
+var corruption: CorruptionComponent
 var sprite: ActorSprite
 var nav: NavigationAgent3D
 var break_hull: Area3D
@@ -355,6 +356,11 @@ static func create_party_member(id: StringName, level: int = -1) -> CombatActor:
 		if Game.hold_upgraded:
 			a.solidity.hold_step_seconds = CombatConstants.SERA_HOLD_BREAK_EXTENSION_UPGRADED_S
 		a.add_child(a.solidity)
+	if id == &"krona":
+		a.corruption = CorruptionComponent.new()
+		a.corruption.name = "CorruptionComponent"
+		a.corruption.value = Game.krona_corruption
+		a.add_child(a.corruption)
 	a.stats.reset_vitals()
 	var ratio: float = float(Game.roster.get(id, {}).get("hp_ratio", 1.0))
 	a.stats.hp = maxi(1, roundi(float(a.stats.max_hp()) * ratio))

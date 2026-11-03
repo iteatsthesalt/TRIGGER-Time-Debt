@@ -72,9 +72,7 @@ static func run(c: BattleCoordinator, name: String, op: Dictionary, ctx: Diction
 				Flags.add_counter(counter, dark)
 			Flags.add_affinity(int(op.get("light", 0)), dark, int(op.get("prismatic", 0)))
 		"flag":
-			var parts: PackedStringArray = String(op["set"]).split(":")
-			if parts.size() == 2:
-				Flags.set_flag(StringName(parts[0]), StringName(parts[1]))
+			Flags.set_ref(String(op["set"]))  # "Name:State", or "Name" for the state "set" (FlagRef.written)
 		"shutdown":
 			# Prometheus Overload (§11.5): her next gauge starts at -`gauge`, i.e. that much fill is lost.
 			var actor: Node = ctx["attacker"]

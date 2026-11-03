@@ -11,11 +11,13 @@ const CENTAUR_PULSE_BONUS_M := 1.0
 
 
 ## True when a cast of `tech` resolves hits on enemies (a plain Attack, `tech` null, always does). False for
-## support and heals, an effect row whose resolve is "none" or "support" (Time Mines, Rewind Reel), and the
-## bespoke handlers that strike nothing (Rewind, Miura Fold, the NULL strips, Fake Family Photo).
+## support and heals, an effect row whose resolve is "none" or "support" (Time Mines, Rewind Reel), the bespoke
+## handlers that strike nothing (Rewind, the NULL strips, Fake Family Photo) and a pending effect (Miura Fold).
 static func strikes(tech: TechDef) -> bool:
 	if tech == null:
 		return true
+	if EffectTable.is_pending(tech.effect):
+		return false  # never cast (EffectTable.is_pending)
 	if tech.effect != &"" and TechEffects.handles(tech.effect):
 		if TechEffects.HANDLED.has(tech.effect):
 			return TechEffects.STRIKING.has(tech.effect)

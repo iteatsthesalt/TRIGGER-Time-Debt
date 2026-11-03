@@ -40,7 +40,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 sys.path.insert(0, os.path.join(ROOT, "tools", "art"))
 import pixel  # noqa: E402
 sys.path.insert(0, os.path.join(ROOT, "tools", "common"))
-from godot_uid import godot_uid  # noqa: E402
+import import_sidecar  # noqa: E402
 
 PIXELLAB = "https://api.pixellab.ai/mcp"
 # Row order of the game's sheets. The first four match the old 4-row sheets, so every existing reader still works.
@@ -501,23 +501,9 @@ detect_3d/compress_to=0
 
 
 def write_import(png_path, normal=False):
-    """Write the Godot .import sidecar (§1.12) for a sheet, keeping an existing uid when there is one."""
-    import hashlib
-    rel = os.path.relpath(png_path, ROOT).replace(os.sep, "/")
-    imp = png_path + ".import"
-    uid = None
-    if os.path.exists(imp):
-        with open(imp) as f:
-            for line in f:
-                if line.startswith("uid="):
-                    uid = line.strip().split("uid://")[1].rstrip('"')
-    if uid is None:
-        # Godot's own base-34 text (tools/common/godot_uid.py), so the next --import keeps it
-        uid = godot_uid("res://" + rel)[len("uid://"):]
-    md5 = hashlib.md5(("res://" + rel).encode()).hexdigest()
-    with open(imp, "w") as f:
-        f.write(IMPORT_TEMPLATE.format(uid=uid, name=os.path.basename(png_path), md5=md5, rel=rel,
-                                       normal=1 if normal else 0))
+    """Write the Godot .import sidecar (§1.12) for a sheet: lossless, no mipmaps, fix alpha border. The writer
+    and its uid rule are the textures' too (tools/common/import_sidecar.py)."""
+    import_sidecar.write_import(png_path, IMPORT_TEMPLATE, ROOT, normal)
 
 
 def contact_sheet(sheet, cell, path, scale=2, max_cols=12):

@@ -3,11 +3,18 @@
 ## definition (the boss file, or the enemy's entry), default 3, never more than that many of one kind standing
 ## beside it at once, since summoners re-cast every few turns. A scaled summoner's adds fight at the rank its
 ## encounter gives them (EffectiveRank.create_summoned); a boss's keep their authored level. The newcomers ring the
-## summoner, face the party, join the coordinator and get a Turn-Bar marker and a plate.
+## summoner on ground a body can stand on (the battle's WalkableGround: never inside a pillar or over the void),
+## face the party's side (BattleScene.party_side, which PartyPlacement may have turned), join the coordinator and get
+## a Turn-Bar marker and a plate.
 class_name EnemySpawner
 extends RefCounted
 
 const DEFAULT_MAX_ADDS := 3
+## The ring: the k-th newcomer stands RING_M + RING_STEP_M * k from the summoner (DECISIONS "One summon rule").
+const RING_M := 1.8
+const RING_STEP_M := 0.4
+## The angles a ring spot is tried at, from its random start, before it falls back to the summoner's own spot.
+const RING_TRIES := 8
 
 
 ## A summoner's cap from its raw definition.
@@ -40,12 +47,28 @@ static func spawn(scene: BattleScene, edef: EnemyDef, near: Node, count: int, ca
 	for k in n:
 		var a: CombatActor = EffectiveRank.create_summoned(edef, near, "_%s%d" % [tag, k + 10 * (randi() % 1000)])  # §15.3
 		scene.get_parent().add_child(a)
-		var ang: float = randf() * TAU
-		a.global_position = base + Vector3(cos(ang), 0.0, sin(ang)) * (1.8 + 0.4 * float(k))
-		a.face_toward(c.arena_center + Vector3(0, 0, 4))
+		a.global_position = ring_spot(c.ground, base, RING_M + RING_STEP_M * float(k), randf() * TAU)
+		a.reset_physics_interpolation()
+		a.face_toward(scene.center + scene.party_side * 4.0)  # as BattleScene faces the enemies it opens with
 		scene.enemies.append(a)
 		c.add_enemy(a, edef)
 		scene.hud.register_enemy(a)
 		a.sprite.play(&"revive", &"idle")
 		out.append(a)
 	return out
+
+
+## A spot `radius` from `base` a body can stand on: the ring at `start_ang`, then RING_TRIES - 1 more angles round
+## it; with no ground (a headless test) the first; when none holds, the summoner's own spot (on the ground when
+## it can stand there).
+static func ring_spot(ground: WalkableGround, base: Vector3, radius: float, start_ang: float) -> Vector3:
+	for i in RING_TRIES:
+		var ang: float = start_ang + TAU * float(i) / float(RING_TRIES)
+		var p: Vector3 = base + Vector3(cos(ang), 0.0, sin(ang)) * radius
+		if ground == null:
+			return p
+		var spot: Variant = ground.stand_at(p)
+		if spot is Vector3:
+			return spot
+	var own: Variant = ground.stand_at(base)
+	return own if own is Vector3 else base

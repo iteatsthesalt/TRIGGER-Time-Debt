@@ -55,7 +55,13 @@ static func has_row(effect: StringName) -> bool:
 ## True when `effect` is accounted for: a bespoke handler, a row, or listed as flavour or pending.
 static func known(effect: StringName) -> bool:
 	return TechEffects.HANDLED.has(effect) or has_row(effect) or Data.effects.get("flavour", {}).has(String(effect)) \
-		or Data.effects.get("pending", {}).has(String(effect))
+		or is_pending(effect)
+
+
+## The effect is listed as pending: nothing runs it yet, so its technique is never offered (BattleCoordinator's
+## knows-check) and strikes nothing (CastReach.strikes), instead of resolving as a plain strike or heal.
+static func is_pending(effect: StringName) -> bool:
+	return effect != &"" and Data.effects.get("pending", {}).has(String(effect))
 
 
 ## Problems in the table and in the techniques' effect ids (Data.load_all appends them; lint_data.py mirrors it).
@@ -66,6 +72,12 @@ static func validation_errors(techs: Dictionary, table: Dictionary) -> PackedStr
 	for group in ["flavour", "pending"]:
 		for id in (table.get(group, {}) as Dictionary).keys():
 			listed[id] = group
+	for id in (table.get("pending", {}) as Dictionary).keys():
+		if TechEffects.HANDLED.has(StringName(id)):
+			errors.append("effects: %s has a bespoke handler and is listed as pending (its waiting clauses go under handler_unbuilt)" % id)
+	for id in (table.get("handler_unbuilt", {}) as Dictionary).keys():
+		if not TechEffects.HANDLED.has(StringName(id)):
+			errors.append("effects: handler_unbuilt lists %s, which has no bespoke handler" % id)
 	for id in t_rows.keys():
 		if TechEffects.HANDLED.has(StringName(id)):
 			errors.append("effects: %s has a bespoke handler and a row" % id)
@@ -118,6 +130,32 @@ static func row_errors(id: String, r: Variant) -> PackedStringArray:
 	if String(d.get("resolve", "damage")) not in ["damage", "support", "none"]:
 		errors.append("effects: %s resolve must be damage, support or none" % id)
 	return errors
+
+
+## The flag references a row names, each as Data.load_all validates it (FlagRef.error): the `flag` / `flag_not`
+## conditions of its `requires`, `pre`, `after`, `mult` and `shave` (inside `any` too) as written, and each `flag`
+## op's `set` as the state it writes (FlagRef.written: a bare name writes "set").
+static func flag_refs(r: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	_cond_flags(r.get("requires", {}), out)
+	for group in ["pre", "after", "mult", "shave"]:
+		for entry in r.get(group, []):
+			if entry is Dictionary:
+				_cond_flags(entry.get("if", {}), out)
+				if group == "after" and String(entry.get("op", "")) == "flag":
+					out.append(FlagRef.written(String(entry.get("set", ""))))
+	return out
+
+
+static func _cond_flags(cond: Variant, out: Array[String]) -> void:
+	if not (cond is Dictionary):
+		return
+	for k in (cond as Dictionary).keys():
+		if String(k) in ["flag", "flag_not"]:
+			out.append(String(cond[k]))
+		elif String(k) == "any":
+			for sub in cond[k]:
+				_cond_flags(sub, out)
 
 
 static func _cond_errors(id: String, cond: Variant) -> PackedStringArray:
@@ -308,8 +346,7 @@ static func _holds_one(k: String, v: Variant, ctx: Dictionary, t: Node) -> bool:
 					return true
 			return false
 		"flag", "flag_not":
-			var parts: PackedStringArray = String(v).split(":")
-			var on: bool = parts.size() == 2 and Flags.is_state(StringName(parts[0]), StringName(parts[1]))
+			var on: bool = Flags.holds(String(v))  # "Name" (set, any state) or "Name:State" (FlagRef)
 			return on if k == "flag" else not on
 		"universe":
 			return c.universe == int(v)

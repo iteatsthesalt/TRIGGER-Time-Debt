@@ -30,14 +30,6 @@ static func default_field_for(element: StringName) -> StringName:
 	return ELEMENT_FIELD.get(element, &"")
 
 
-## The first field of `kind` that holds `pos`, or an empty Dictionary.
-func first_at(kind: StringName, pos: Vector3) -> Dictionary:
-	for f in fields:
-		if f["kind"] == kind and _inside(f, pos):
-			return f
-	return {}
-
-
 ## True when the ground path from `from` to `to` crosses (or ends in) a field of `kind`, sampled every 0.25 m.
 func path_crosses(kind: StringName, from: Vector3, to: Vector3) -> bool:
 	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)

@@ -115,6 +115,24 @@ func test_walkable_ground_is_floor_inside_the_bounds_clear_of_solids() -> void:
 	check(float(past["edge_m"]) == INF, "the ground does not end there")
 
 
+## Code health F6: a summoned add stands on ground a body can stand on (EnemySpawner.ring_spot): a ring spot inside
+## a solid or over the void turns round the summoner until one holds, and with none the add takes the summoner's
+## own spot. Without ground (a headless coordinator) the ring is used as it is.
+func test_a_summons_ring_spot_is_ground() -> void:
+	var host: Node3D = await _small_room()
+	var g := WalkableGround.new(host)
+	var by_crate := Vector3(0, 0, -0.2)
+	var into_crate: Vector3 = EnemySpawner.ring_spot(g, by_crate, 1.8, -PI * 0.5)  # first try: (0, 0, -2.0), the crate
+	check(g.stand_at(into_crate) != null, "a spot the crate takes turns to open floor")
+	check_near(Vector2(into_crate.x - by_crate.x, into_crate.z - by_crate.z).length(), 1.8, 0.01, "still on the ring")
+	var by_edge := Vector3(0, 0, 4.8)
+	var over_void: Vector3 = EnemySpawner.ring_spot(g, by_edge, 2.2, PI * 0.5)  # first try: (0, 0, 7.0), the void
+	check(g.stand_at(over_void) != null, "a spot over the void turns back onto the floor")
+	var tiny := WalkableGround.new(host, Rect2(-0.8, -0.8, 1.6, 1.6))  # bounds that hold only the centre
+	check_eq(EnemySpawner.ring_spot(tiny, Vector3.ZERO, 1.8, 0.0), tiny.stand_at(Vector3.ZERO) as Vector3, "no ring spot holds: the summoner's own")
+	check_eq(EnemySpawner.ring_spot(null, by_crate, 1.8, 0.0), by_crate + Vector3(1.8, 0, 0), "no ground: the ring as it is")
+
+
 ## BATTLE-6 / GAP1-2 (refix): in a room smaller than the 28 m plane the fall-back lands on the room's floor, its
 ## walkable edge counts as the plane's edge, and the ally (not frozen in battle) never falls off it.
 func test_withdraw_in_a_small_room_stays_on_the_floor() -> void:

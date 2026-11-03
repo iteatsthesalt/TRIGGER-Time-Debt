@@ -22,6 +22,9 @@ static func resolve(c: BattleCoordinator, e: Node, t: Node, action: Dictionary, 
 	if redirect == &"decoyed":
 		c.strike_resolved.emit(e, t, {"damage": 0, "decoy": true, "tags": tags})
 		return 0
+	if fire_proof(t, tags):  # Balloon Escape (§11): the inflated body squashes out of every [FIRE] hit
+		c.strike_resolved.emit(e, t, {"damage": 0, "evaded": true, "immune": true, "tags": tags})
+		return 0
 	for i in hits:
 		if not tst.is_alive():
 			break
@@ -96,6 +99,12 @@ static func apply_status(c: BattleCoordinator, action: Dictionary, t: Node, raw:
 	if StatusRules.DOTS.has(sid):
 		extra["tick"] = StatusRules.dot_tick(raw)
 	StatusRules.apply(c, t, sid, float(action.get("status_seconds", -1.0)), int(action.get("status_turns", -1)), 1, extra)
+
+
+## `t` is inflated by Balloon Escape (its `balloon` status, 2 s) and the action is [FIRE].
+static func fire_proof(t: Node, tags: Array) -> bool:
+	var sc := StatusComponent.of(t)
+	return sc != null and sc.has(&"balloon") and CombatTags.to_names(tags).has(&"FIRE")
 
 
 static func evasion_bonus(t: Node) -> float:

@@ -120,6 +120,11 @@ def _cond_check(where, cond):
         if k not in FX_CONDS: errors.append(f"effects: {where} uses unknown condition {k}")
         elif k == "any":
             for sub in v: _cond_check(where, sub)
+fx_unbuilt = fx.get("handler_unbuilt", {})
+for eid in fx_pending:
+    if eid in TECH_HANDLED: errors.append(f"effects: {eid} has a bespoke handler and is listed as pending (its waiting clauses go under handler_unbuilt)")
+for eid in fx_unbuilt:
+    if eid not in TECH_HANDLED: errors.append(f"effects: handler_unbuilt lists {eid}, which has no bespoke handler")
 for eid, r in fx_rows.items():
     if eid in TECH_HANDLED: errors.append(f"effects: {eid} has a bespoke handler and a row")
     if eid in fx_flavour or eid in fx_pending: errors.append(f"effects: {eid} has a row and is also listed as flavour/pending")
@@ -170,8 +175,8 @@ for tid, t in techs.items():
 for eid, r in fx_rows.items():
     for op in r.get("after", []):
         if op.get("op") == "status" and not _status_ok(op.get("id", "")): errors.append(f"effects: {eid} applies status {op.get('id')}, which has no reader")
-if fx_pending or fx.get("enemy_pending"):
-    print(f"  effects: {len(fx_pending)} technique, {len(fx.get('enemy_pending', {}))} enemy effect and {len(fx.get('status_pending', {}))} status id(s) pending (data/effects/effects.json)")
+if fx_pending or fx.get("enemy_pending") or fx_unbuilt:
+    print(f"  effects: {len(fx_pending)} technique, {len(fx.get('enemy_pending', {}))} enemy effect and {len(fx.get('status_pending', {}))} status id(s) pending, {len(fx_unbuilt)} handler(s) with clauses unbuilt (data/effects/effects.json): {', '.join(sorted(list(fx_pending) + list(fx_unbuilt)))}")
 # The text layer (data/text/*.json, contract in docs/JOB_CHATGPT.md): a key that names nothing in the game is an
 # error; a game id without prose is a gap (warned, counted), so content can land before its text does.
 bosses = {}
@@ -279,9 +284,12 @@ def _audio_refs():
         for ident in re.findall(r'play_music\(&"(mus_[a-z0-9_]+)"', raw): add("music", ident, rel)
     return refs
 music_dir, amb_dir = ROOT / "audio/music", ROOT / "audio/ambience"
+# AudioDirector.play_music loads <id>.ogg and only the stems its MUSIC_STEMS lists (<id>__<stem>.ogg), as
+# DialogueCheck.music_exists does: a track shipped only as an unlisted stem plays nothing.
+MUSIC_STEMS = set(re.findall(r'"([a-z_]+)"', re.search(r"const MUSIC_STEMS: Array\[String\] = \[(.*?)\]", (ROOT / "scripts/autoload/audio_director.gd").read_text(encoding="utf-8")).group(1)))
 def _has_track(kind, ident):
     d = music_dir if kind == "music" else amb_dir
-    return (d / f"{ident}.ogg").exists() or (kind == "music" and any(d.glob(f"{ident}__*.ogg")))
+    return (d / f"{ident}.ogg").exists() or (kind == "music" and any((d / f"{ident}__{s}.ogg").exists() for s in MUSIC_STEMS))
 # A missing music id must at least be a scheduled track: a row of the Reference Bible's track briefs (section 8.5),
 # where `mus_battle_core` stands for its per-universe arrangements mus_battle_core_u<n>. Anything else is a typo or an
 # unplanned track (an error); a scheduled one waits for its file (a warning).
@@ -389,6 +397,41 @@ for p in sorted((ROOT/"data/universes").rglob("*.json")):
     for u in (load(p) or {}).get("universes", []):
         for r in u.get("hazard_by_flag", {}):
             if flag_ref_error(r): errors.append(f"universe {u.get('id')}: hazard_by_flag {flag_ref_error(r)}")
+# A write is validated as the state it writes (FlagRef.written: a bare name writes "set"): a boss branch option's
+# flag and state (BossBranch.option_ref) and an effect row's `flag` op. The effect table's flag / flag_not
+# conditions (requires, pre, after, mult, shave, inside `any` too) are read as written (EffectTable.flag_refs).
+def written_ref(ref):
+    name, _, state = str(ref).strip().partition(":")
+    return f"{name.strip()}:{state.strip() or 'set'}" if name.strip() else ""
+def option_ref(o):
+    flag = str(o.get("flag", "") or "").strip()
+    if not flag: return ""
+    name, _, st = flag.partition(":")
+    st = str(o.get("state", "") or "").strip() or st.strip()
+    return written_ref(f"{name}:{st}" if st else name)
+for bid, b in bosses.items():
+    for br in b.get("branches", []) or []:
+        for o in (br.get("options", []) if isinstance(br, dict) else []):
+            r = option_ref(o) if isinstance(o, dict) else ""
+            if r and flag_ref_error(r): errors.append(f"boss {bid}: branch option {o.get('id')}: {flag_ref_error(r)}")
+def fx_flag_refs(r):
+    out = []
+    def cond(c):
+        if not isinstance(c, dict): return
+        for k, v in c.items():
+            if k in ("flag", "flag_not"): out.append(v)
+            elif k == "any":
+                for sub in v: cond(sub)
+    cond(r.get("requires", {}))
+    for g in ("pre", "after", "mult", "shave"):
+        for e in r.get(g, []):
+            if isinstance(e, dict):
+                cond(e.get("if", {}))
+                if g == "after" and e.get("op") == "flag": out.append(written_ref(e.get("set", "")))
+    return out
+for eid, r in fx_rows.items():
+    for ref in fx_flag_refs(r):
+        if flag_ref_error(ref): errors.append(f"effects {eid}: {flag_ref_error(ref)}")
 # Endings (Story Bible 7.1, EndingRules): every flag an ending tests is a defined flag and state.
 ENDING_FIELDS = {"id", "name", "plays_in", "notes", "flags", "not_flags", "counters", "rifts",
                  "light_min", "light_max", "dark_min", "dark_max", "prismatic_min", "prismatic_max"}

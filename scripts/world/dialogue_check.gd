@@ -10,8 +10,8 @@ extends RefCounted
 
 const SFX_DIR := "res://audio/sfx"
 const MUSIC_DIR := "res://audio/music"
-## The stems AudioDirector.play_music loads beside <id>.ogg (kept in step with it).
-const MUSIC_STEMS: Array[String] = ["box", "piano", "strings", "hiss", "bass", "drums", "lead", "pad", "quartet", "crackle", "wind", "tick"]
+## AudioDirector (the Audio autoload): its MUSIC_STEMS are the stems play_music loads beside <id>.ogg.
+const AUDIO := preload("res://scripts/autoload/audio_director.gd")
 ## Game.sera_in_story values besides BattleRoster.HOVER_STATES (the hover states put Sera on the Turn Bar).
 const SERA_STATES: Array[String] = ["with", "taken", "absent"]
 ## Command keys whose value is a label of the same script.
@@ -173,7 +173,7 @@ static func sfx_exists(id: String) -> bool:
 static func music_exists(id: String) -> bool:
 	if ResourceLoader.exists("%s/%s.ogg" % [MUSIC_DIR, id]):
 		return true
-	for stem in MUSIC_STEMS:
+	for stem in AUDIO.MUSIC_STEMS:
 		if ResourceLoader.exists("%s/%s__%s.ogg" % [MUSIC_DIR, id, stem]):
 			return true
 	return false

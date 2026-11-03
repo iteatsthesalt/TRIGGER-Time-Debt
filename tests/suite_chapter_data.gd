@@ -67,6 +67,20 @@ func test_chapter2_cues_resolve() -> void:
 		check(music.has(id), "Chapter 2 names the Reference Bible 8.5 track %s" % id)
 
 
+## Code health F8: one list of music stems (AudioDirector.MUSIC_STEMS), read by play_music and DialogueCheck (and
+## lint_data.py), so every track shipped as stems is one music_exists finds: none plays only unlisted stems.
+func test_every_shipped_stem_track_plays_through_the_one_stem_list() -> void:
+	check(DialogueCheck.AUDIO.MUSIC_STEMS == Audio.MUSIC_STEMS, "DialogueCheck reads AudioDirector's own list")
+	var tracks: Dictionary = {}
+	for f in DirAccess.get_files_at(DialogueCheck.MUSIC_DIR):
+		if f.ends_with(".ogg") and f.contains("__"):
+			tracks[f.get_slice("__", 0)] = true
+	check(tracks.size() >= 5, "the stem tracks were found (%d)" % tracks.size())
+	for id in tracks.keys():
+		check(DialogueCheck.music_exists(String(id)), "%s has a stem play_music loads" % id)
+	check(not DialogueCheck.music_exists("mus_zz_none"), "an id with no file is not music")
+
+
 func test_router_registers_the_chapter3_arrival() -> void:
 	check(Router.locations.has(&"ossuary_arrival"), "the Router registers ossuary_arrival (scheduled)")
 	check(not Router.has_location(&"ossuary_arrival"), "and refuses it until the scene is built")

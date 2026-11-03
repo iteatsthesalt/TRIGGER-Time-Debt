@@ -104,6 +104,27 @@ class GodotUid(unittest.TestCase):
                 writer(png, normal=True)
                 self.assertEqual(_uid_of(png + ".import"), uid, "a rewrite keeps the uid")
 
+    def test_both_image_writers_share_one_sidecar_rule(self):
+        # code health F8: the sheets' and the textures' sidecars come from tools/common/import_sidecar.py, so a uid
+        # Godot cannot parse (the old base-36 text) is re-minted as the path's stable uid by either writer, which the
+        # next --import keeps, instead of being kept here and replaced at random by Godot.
+        import import_sidecar
+        for mod in (pl, import_texture):
+            with open(mod.__file__, encoding="utf-8") as f:
+                src = f.read()
+            self.assertIn("import_sidecar.write_import(png_path, IMPORT_TEMPLATE, ROOT, normal)", src, mod.__name__)
+            self.assertNotIn("hashlib.md5", src, f"{mod.__name__} keeps no sidecar writer of its own")
+        with _scratch() as d:
+            for writer in (pl.write_import, import_texture.write_import):
+                png = os.path.join(d, f"legacy_{writer.__module__}.png")
+                _figure().save(png)
+                with open(png + ".import", "w") as f:
+                    f.write('[remap]\n\nuid="uid://ci94iqrbh2jac"\n')
+                writer(png)
+                rel = os.path.relpath(png, ROOT).replace(os.sep, "/")
+                self.assertEqual(_uid_of(png + ".import"), godot_uid.godot_uid("res://" + rel), writer.__module__)
+                self.assertEqual(import_sidecar.existing_uid(png + ".import"), _uid_of(png + ".import"))
+
 
 def _object_zip(rotations, clip_dirs=()):
     buf = io.BytesIO()

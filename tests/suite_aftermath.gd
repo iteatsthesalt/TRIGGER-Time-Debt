@@ -251,6 +251,89 @@ func test_field_withdraw_keeps_the_party_and_resets_the_zone() -> void:
 	Game.new_game()
 
 
+## Code health F1: a battle's marks hold for that battle only (BattleMarks). The arena keeps one Crono and one
+## Sera for every fight in it, as Location does: Time Debt Seal cancels Sera's phase-out in the first fight and,
+## as the bible's "once per battle" says (Combat Laws 11, time_debt_seal), again in the next one. A zone enemy that
+## repainted and stole BP comes back after the withdraw without either, and repaints again in the next fight.
+func test_per_battle_marks_do_not_outlive_their_battle() -> void:
+	var loc: Location = await _arena([&"crono", &"sera"])
+	var crono: CombatActor = _actor(loc, &"crono")
+	var sera: CombatActor = _actor(loc, &"sera")
+	var z: EncounterZone = null
+	for fight in [1, 2]:
+		z = _zone_battle(loc)
+		var c: BattleCoordinator = loc.battle.coordinator
+		c.party_hp_floor = 1
+		var foe: CombatActor = z.enemies[0]
+		check(not crono.has_meta(&"seal_used") and not foe.has_meta(&"repainted") and BpTheft.held(foe) == 0, "fight %d: no mark of an earlier fight is on the bodies" % fight)
+		c.spend_solidity(sera, 200.0)  # every point of solidity and more: a Causal Collapse
+		check(sera.solidity.is_phased(), "fight %d: Sera phases out" % fight)
+		check(_window_for(c, crono), "fight %d: Crono gets a window" % fight)
+		var r: Dictionary = c.cmd_tech(crono, &"time_debt_seal", sera, c.position_of(sera))
+		check(bool(r.get("ok", false)), "fight %d: Crono casts Time Debt Seal (%s)" % [fight, r.get("error", "")])
+		check(not sera.solidity.is_phased(), "fight %d: the Seal cancels her phase-out" % fight)
+		var plates: int = foe.shield.current_shield
+		foe.shield.current_shield = maxi(0, plates - 1)
+		EnemyEffects.apply(c, foe, {"effect": "repaint"}, [])
+		check_eq(foe.shield.current_shield, plates, "fight %d: the foe repaints a plate" % fight)
+		c.bank.add(2)
+		check_eq(BpTheft.steal(c, foe, 1), 1, "fight %d: and steals a BP into its counter" % fight)
+		c._finish(false, "withdraw")
+		check(await _await_finished(loc), "fight %d: the withdraw hands back to the field" % fight)
+		check(z.enemies.has(foe) and not foe.has_meta(&"repainted") and BpTheft.held(foe) == 0, "fight %d: the zone's survivor stands again without the fight's repaint or loot" % fight)
+	Game.new_game()
+
+
+## Code health F1: the start of a battle clears every BattleMarks entry on the bodies it is given (party, bench,
+## hover Sera, enemies), and only those: EffectiveRank's encounter mark and a boss id stay.
+func test_a_battle_starts_without_the_last_ones_marks() -> void:
+	var crono := _party_member(&"crono", 5, Vector3(-1, 0, 2))
+	var e := _enemy(&"mote", 3, Vector3(0, 0, -3), 2, [&"SWORD"])
+	for m in BattleMarks.PER_BATTLE:
+		crono.set_meta(m, 1)
+		e.set_meta(m, 1)
+	e.set_meta(EffectiveRank.META_ENCOUNTER, {"hazard": 1})
+	e.set_meta(&"boss_id", "atrium_cradle")
+	var c := _coord()
+	_start(c, [crono], [e])
+	for m in BattleMarks.PER_BATTLE:
+		check(not crono.has_meta(m) and not e.has_meta(m), "%s is cleared when a battle starts" % m)
+	check(e.has_meta(EffectiveRank.META_ENCOUNTER) and e.has_meta(&"boss_id"), "the marks a body is made with stay")
+
+
+## Code health F3: Krona's Corruption is a ledger (CorruptionComponent), not a battle mark. A gourd sip and a
+## Crimson Seppuku add to it, the write-back carries it into Game (and so into the save), and a body made after
+## the location rebuilds starts from Game's value (Combat Laws 10.3: "persistent", 18.5: save data).
+func test_krona_corruption_persists_through_the_write_back() -> void:
+	Game.new_game()
+	Game.recruit(&"krona")
+	var krona := CombatActor.create_party_member(&"krona")
+	root.add_child(krona)
+	_track(krona)
+	check(krona.corruption != null and is_zero_approx(krona.corruption.value), "Krona's body carries her Corruption, 0 at the start")
+	var e := _enemy(&"mote", 3, Vector3(0, 0, -3), 2, [&"SWORD"])
+	var c := _coord()
+	_start(c, [krona], [e])
+	BattleAftermath.enter_battle([krona])
+	TechEffects.apply(c, Data.techs[&"oil_drinker"], {"attacker": krona, "casters": [krona], "boost": 0})
+	check_near(krona.corruption.value, CorruptionComponent.GOURD_SIP, 0.001, "the gourd command adds 5")
+	krona.stats.hp = maxi(1, roundi(float(krona.stats.max_hp()) * 0.2))
+	c.enemy_action_serial += 1
+	c._after_damage(krona)
+	check_near(krona.corruption.value, 2.0 * CorruptionComponent.GOURD_SIP, 0.001, "the automatic sip below 25% adds 5 more")
+	check_near(Game.krona_corruption, 10.0, 0.001, "Game follows it through the battle")
+	c.force_end(true)
+	BattleAftermath.write_back(krona, 0.0)
+	check_near(Game.krona_corruption, 10.0, 0.001, "the write-back keeps it in Game")
+	check_near(float(Game.to_save().get("krona_corruption", -1.0)), 10.0, 0.001, "and Game's save carries it")
+	var rebuilt := CombatActor.create_party_member(&"krona")
+	_track(rebuilt)
+	check_near(rebuilt.corruption.value, 10.0, 0.001, "a body made after a location rebuild starts from it")
+	krona.corruption.add(500.0)
+	check_near(krona.corruption.value, CorruptionComponent.MAX, 0.001, "it never passes 100")
+	Game.new_game()
+
+
 # ---------------------------------------------------------------- enemies after a battle
 
 ## GAP1-4: a spared enemy leaves the zone alive (Combat Laws 4.2) instead of standing there invisible.

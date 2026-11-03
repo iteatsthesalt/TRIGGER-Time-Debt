@@ -726,6 +726,104 @@ func test_steal_bp_is_the_coordinators_bp_steal() -> void:
 	check_eq(int(e.get_meta("stolen_bp", 0)), 1, "into its visible counter (§7.5)")
 
 
+## Code health F5: a Balloon Escape makes the next BP theft against the party this battle fail (Combat Laws 11,
+## balloon_escape) and keeps [FIRE] off Glenn while he is inflated; the theft after the failed one lands.
+func test_balloon_escape_foils_the_next_theft_and_fire() -> void:
+	var glenn := _party_member(&"glenn", 20, Vector3(-2, 0, 0))
+	var e := _enemy(&"x", 12, Vector3(2, 0, 0), 4, ["ASTRAL"], {"hp": 50000})
+	var c := _battle([glenn], [e])
+	_sturdy(glenn)
+	c.bank.bp = 3
+	_cast(c, glenn, &"balloon_escape", c.position_of(glenn))
+	var drain := {"id": "drain", "tags": ["OIL"], "shape": "SINGLE", "power": 0.0, "hits": 1, "effect": "steal_bp", "bp_steal": 1, "targets": [glenn]}
+	c._execute_enemy_action(e, drain)
+	check_eq(c.bank.bp, 3, "the theft after a Balloon Escape fails: the pool keeps its BP")
+	check_eq(BpTheft.held(e), 0, "and the thief's counter stays empty")
+	c._execute_enemy_action(e, drain)
+	check_eq(c.bank.bp, 2, "only the next one fails: the one after lands")
+	check_eq(BpTheft.held(e), 1, "into its counter")
+	var hp: int = CombatantStats.of(glenn).hp
+	var fire := {"id": "flame", "tags": ["FIRE"], "shape": "SINGLE", "power": 3.0, "hits": 2, "wind_up_s": 0.0, "targets": [glenn]}
+	c._execute_enemy_action(e, fire)
+	check_eq(CombatantStats.of(glenn).hp, hp, "inflated, he squashes out of every [FIRE] hit")
+	var blunt := {"id": "bonk", "tags": ["BLUNT"], "shape": "SINGLE", "power": 3.0, "hits": 1, "wind_up_s": 0.0, "targets": [glenn]}
+	c._execute_enemy_action(e, blunt)
+	check(CombatantStats.of(glenn).hp < hp, "a hit of another element still lands")
+
+
+## Code health F5: a pending effect is never cast (EffectTable.is_pending): Miura Fold's shared pool is unbuilt, so
+## Omega-Spekkio is not offered it and its plate preview strikes nothing; the handlers whose clauses wait are listed.
+func test_a_pending_effect_is_not_offered() -> void:
+	var omega := _party_member(&"omega", 40, Vector3(-2, 0, 0))
+	var e1 := _enemy(&"a", 30, Vector3(2, 0, 0), 4, ["ICE"], {"hp": 50000})
+	var e2 := _enemy(&"b", 30, Vector3(3, 0, 1), 4, ["ICE"], {"hp": 50000})
+	var c := _battle([omega], [e1, e2])
+	var fold: TechDef = Data.techs[&"miura_fold"]
+	check(EffectTable.is_pending(fold.effect) and not TechEffects.HANDLED.has(fold.effect), "Miura Fold is pending, with no handler")
+	check(not c._actor_knows(omega, fold), "so it is never offered")
+	check(not CastReach.strikes(fold), "and strikes nothing")
+	var unbuilt: Dictionary = Data.effects.get("handler_unbuilt", {})
+	for id in ["honest_laugh", "balloon_escape", "oil_drinker"]:
+		check(unbuilt.has(id) and TechEffects.HANDLED.has(StringName(id)), "%s lists what its handler does not run yet" % id)
+	var table: Dictionary = Data.effects.duplicate()
+	table["pending"] = {"rewind": "x"}
+	table["handler_unbuilt"] = {"zz_none": "x"}
+	var errs: String = "\n".join(EffectTable.validation_errors(Data.techs, table))
+	check(errs.contains("rewind has a bespoke handler and is listed as pending"), "a pending effect with a handler is an error")
+	check(errs.contains("handler_unbuilt lists zz_none"), "an unbuilt clause of no handler is an error")
+	check(EffectTable.validation_errors(Data.techs, Data.effects).is_empty(), "the shipped table has neither")
+
+
+## Code health F4: the effect table reads and writes flags as FlagRef spells them everywhere else: a bare "Name"
+## holds when the flag is set to any state (and flag_not then fails), and a bare `flag` op writes the state "set".
+func test_effect_table_flag_references_use_flagref() -> void:
+	_keep_flags()
+	Flags.flags.erase(&"Lucca_Consent")
+	Flags.flags.erase(&"Re_String")
+	var crono := _party_member(&"crono", 10, Vector3(-2, 0, 0))
+	var e := _enemy(&"x", 12, Vector3(2, 0, 0), 4, ["ASTRAL"])
+	var c := _battle([crono], [e])
+	var ctx := {"c": c}
+	check(not EffectTable.holds({"flag": "Lucca_Consent"}, ctx) and EffectTable.holds({"flag_not": "Lucca_Consent"}, ctx), "unset: a bare flag fails and its flag_not holds")
+	Flags.set_flag(&"Lucca_Consent", &"Asked")
+	check(EffectTable.holds({"flag": "Lucca_Consent"}, ctx), "set to any state, a bare flag holds")
+	check(not EffectTable.holds({"flag_not": "Lucca_Consent"}, ctx), "and its flag_not fails")
+	check(EffectTable.holds({"flag": "Lucca_Consent:Asked"}, ctx) and not EffectTable.holds({"flag": "Lucca_Consent:Skipped"}, ctx), "Name:State holds in exactly that state")
+	EffectOps.run(c, "flag", {"set": "Re_String"}, {"c": c, "tech": Data.techs[&"time_slice"], "action": {}, "attacker": crono}, [])
+	check(Flags.is_state(&"Re_String", &"set"), "a bare flag op writes the state set, as dialogue's set_flag does")
+	_restore_flags()
+
+
+## Code health F4: Data.load_all validates the effect table's flag references and what a boss branch option writes
+## (EffectTable.flag_refs, BossBranch.option_ref): a typo in either is an error, not a silently dropped bonus.
+func test_effect_and_branch_flag_typos_are_errors() -> void:
+	var errors_before: PackedStringArray = Data.errors.duplicate()
+	var rows: Dictionary = Data.effects["techs"]
+	var doll: Dictionary = Data.bosses[&"shard_doll_999"]
+	var doll_before: Dictionary = doll.duplicate(true)
+	rows["zz_typo"] = {"mult": [{"x": 1.3, "if": {"any": [{"flag": "Lucca_Consent:Askd"}]}}], "requires": {"flag_not": "Atrium_Dumy"},
+		"after": [{"op": "flag", "set": "Prometheus_Corr"}, {"op": "flag", "set": "Prometheus_Core"}]}
+	for b in doll.get("branches", []):
+		for o in b.get("options", []):
+			if String(o.get("id", "")) == "spare":
+				o["state"] = "Sparred"
+	Data.errors.clear()
+	Data._check_flag_refs()
+	var found: String = "\n".join(Data.errors)
+	rows.erase("zz_typo")
+	Data.bosses[&"shard_doll_999"] = doll_before
+	Data.errors = errors_before
+	check(found.contains("Lucca_Consent:Askd"), "a condition's typo (inside `any`) is an error")
+	check(found.contains("Atrium_Dumy"), "a requires flag_not naming no flag is an error")
+	check(found.contains("Prometheus_Corr:set"), "a flag op naming no flag is an error")
+	check(found.contains("Prometheus_Core:set"), "a bare flag op is checked as the state it writes (Prometheus_Core has no `set`)")
+	check(found.contains("Atrium_Dummy:Sparred"), "a branch option's state typo is an error")
+	check_eq(EffectTable.flag_refs(Data.effects["techs"]["mercy_leap"]), ["Atrium_Dummy:Salvaged", "Glenn_Arm:HoseArm_Accepted"] as Array[String], "the shipped refs are read where they stand")
+	check_eq(BossBranch.option_ref({"flag": "Re_String", "state": "set"}), "Re_String:set", "an option writes its flag in its state")
+	check_eq(BossBranch.option_ref({"flag": "Re_String"}), "Re_String:set", "with no state, the state set")
+	check_eq(BossBranch.option_ref({"flag": "", "lean": "Light"}), "", "a lean option writes no flag")
+
+
 func test_cloak_and_the_lucca_lens() -> void:
 	var cassia := _party_member(&"cassia", 25, Vector3(-2, 0, 0))
 	var raptor := _enemy(&"porcelain_raptor", 25, Vector3(1, 0, 0), 4, ["FERRO"], {"hp": 50000})

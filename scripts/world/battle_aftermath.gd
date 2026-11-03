@@ -31,9 +31,10 @@ static func floor_ratio(result: String, story: bool) -> float:
 	return float(FLOOR_RATIO.get(result, 0.0))
 
 
-## Game holds Crono's integrity and Sera's Translucency Debt between battles (Story commands, the gate toll
-## and the field Rewind write it there); the field bodies take it up so the write-back after the next
-## battle carries those changes instead of overwriting them with a stale component.
+## Game holds Crono's integrity, Sera's Translucency Debt and Krona's Corruption between battles (Story commands,
+## the gate toll and the field Rewind write the first two there); the field bodies take it up so the write-back
+## after the next battle carries those changes instead of overwriting them with a stale component. (Game follows
+## Corruption through a battle, follow_ledger, so taking it up is never stale.)
 static func sync_from_game(party: Array, integrity: bool = true, debt: bool = true) -> void:
 	for a in party:
 		if not is_instance_valid(a) or not (a is CombatActor):
@@ -43,6 +44,8 @@ static func sync_from_game(party: Array, integrity: bool = true, debt: bool = tr
 			ca.time_debt.integrity = Game.crono_integrity
 		if debt and ca.solidity != null:
 			ca.solidity.debt = Game.sera_debt
+		if ca.corruption != null:
+			ca.corruption.value = Game.krona_corruption
 
 
 ## Game's ledger moved (a Story `debt` or `integrity` command, the gate toll): the party and the cast standing in
@@ -70,12 +73,14 @@ static func enter_battle(party: Array) -> void:
 			follow_ledger(a as CombatActor, true)
 
 
-## Game follows the body's integrity and Debt (on), or stops following it (off, at the write-back).
+## Game follows the body's integrity, Debt and Corruption (on), or stops following it (off, at the write-back).
 static func follow_ledger(a: CombatActor, on: bool) -> void:
 	if a.time_debt != null:
 		_link(a.time_debt.integrity_changed, Game.set_integrity, on)
 	if a.solidity != null:
 		_link(a.solidity.debt_changed, Game.set_debt, on)
+	if a.corruption != null:
+		_link(a.corruption.corruption_changed, Game.set_corruption, on)
 
 
 static func _link(sig: Signal, to: Callable, on: bool) -> void:
@@ -100,7 +105,7 @@ static func restore_party(party: Array, ratio: float) -> void:
 
 
 ## Level (Game.set_level), XP and HP ratio into the member's roster row (a guest has one too, Game.set_party),
-## Crono's integrity and Sera's Debt into Game. A member still down (a reserve, never stood up) records `ratio`,
+## Crono's integrity, Sera's Debt and Krona's Corruption into Game. A member still down (a reserve, never stood up) records `ratio`,
 ## and a living one at least `ratio`, matching what restore_party gives the field party.
 static func write_back(a: CombatActor, ratio: float) -> void:
 	follow_ledger(a, false)
@@ -112,14 +117,18 @@ static func write_back(a: CombatActor, ratio: float) -> void:
 		Game.set_integrity(a.time_debt.integrity)
 	if a.solidity != null:
 		Game.set_debt(a.solidity.debt)
+	if a.corruption != null:
+		Game.set_corruption(a.corruption.value)
 
 
 ## An enemy left standing in the field after a battle: back on its feet at full strength, its Break, its
 ## statuses and its body undone (§16.5: "Enemies return to their wander routes at full strength"). The statuses
 ## go first: an enemy's Ruin lowers its max_hp() (StatusRules.end_battle clears only the party's), so the vitals
-## are refilled to the whole ceiling, not to the Ruined one.
+## are refilled to the whole ceiling, not to the Ruined one. What held for the battle (a repaint, a split, the BP it
+## stole: BattleMarks) goes too.
 static func restore_enemy(e: CombatActor) -> void:
 	e.restore_body()
+	BattleMarks.clear(e)
 	RuinRules.clear(e)
 	if e.statuses != null:
 		e.statuses.clear_all()

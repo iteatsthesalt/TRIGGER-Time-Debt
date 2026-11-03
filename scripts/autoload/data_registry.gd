@@ -150,7 +150,8 @@ func _check_kits() -> void:
 
 
 ## Flag references outside dialogue use one spelling, "Name" or "Name:State" (FlagRef): a tech's
-## requires_flags and unlock flag, and a boss's *_by_branch keys and its adds' and actions' `requires`.
+## requires_flags and unlock flag, a boss's *_by_branch keys, its adds' and actions' `requires` and what its branch
+## options write (BossBranch.option_ref), and the effect table's flag conditions and `flag` ops (EffectTable.flag_refs).
 func _check_flag_refs() -> void:
 	for tid in techs.keys():
 		var t: TechDef = techs[tid]
@@ -163,10 +164,22 @@ func _check_flag_refs() -> void:
 			if e != "":
 				errors.append("tech %s: %s" % [tid, e])
 	for bid in bosses.keys():
-		for r in boss_flag_refs(bosses[bid]):
+		var brefs: Array[String] = boss_flag_refs(bosses[bid])
+		for b in bosses[bid].get("branches", []):
+			for o in (b.get("options", []) if b is Dictionary else []):
+				if o is Dictionary and BossBranch.option_ref(o) != "":
+					brefs.append(BossBranch.option_ref(o))
+		for r in brefs:
 			var e2: String = FlagRef.error(r, flags)
 			if e2 != "":
 				errors.append("boss %s: %s" % [bid, e2])
+	var rows: Dictionary = effects.get("techs", {})
+	for eid in rows.keys():
+		if rows[eid] is Dictionary:
+			for r2 in EffectTable.flag_refs(rows[eid]):
+				var e3: String = FlagRef.error(r2, flags)
+				if e3 != "":
+					errors.append("effects %s: %s" % [eid, e3])
 
 
 ## The machine-read flag references in a boss file: *_by_branch keys anywhere, and the `requires` of its adds

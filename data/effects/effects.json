@@ -1,5 +1,5 @@
 {
-  "_doc": "Technique effect rows (Combat Laws Bible §11, §7, §12; DECISIONS 'Effect table'). Every `effect` id a technique in data/techs names is either a bespoke handler in scripts/combat/tech_effects.gd (TechEffects.HANDLED), a row under `techs` (run by EffectSteps), or listed under `flavour` or `pending` with its reason; every enemy action `effect` is an arm of EnemyEffects (scripts/combat/enemy_effects.gd) or listed under `enemy_pending`; every status id the data names (enemy action `status`, technique `lv2_debuff`, a row's status op) has a reader in scripts/ (a has/stacks/data query, StatusComponent.PERIODS or MAX_STACKS) or is listed under `status_pending`. lint_data.py and tests/suite_effects.gd fail on anything else. A row: `chapter` (when the kit first reaches it), `requires` (availability), `resolve` (damage | support | none; default from the technique), `pre` (action changes), `mult` / `per_debuff` (damage), `shave` (flat shave bonus), `no_shave`, `after` (ops after the hit), `unbuilt` (clauses that wait for a system). The op and condition vocabulary is EffectTable.OPS / EffectTable.CONDITIONS.",
+  "_doc": "Technique effect rows (Combat Laws Bible §11, §7, §12; DECISIONS 'Effect table'). Every `effect` id a technique in data/techs names is either a bespoke handler in scripts/combat/tech_effects.gd (TechEffects.HANDLED), a row under `techs` (run by EffectSteps), or listed under `flavour` or `pending` with its reason (a pending effect is never castable: its technique is not offered); a bespoke handler's clauses that wait for a system are listed under `handler_unbuilt`; every enemy action `effect` is an arm of EnemyEffects (scripts/combat/enemy_effects.gd) or listed under `enemy_pending`; every status id the data names (enemy action `status`, technique `lv2_debuff`, a row's status op) has a reader in scripts/ (a has/stacks/data query, StatusComponent.PERIODS or MAX_STACKS) or is listed under `status_pending`. lint_data.py and tests/suite_effects.gd fail on anything else. A row: `chapter` (when the kit first reaches it), `requires` (availability), `resolve` (damage | support | none; default from the technique), `pre` (action changes), `mult` / `per_debuff` (damage), `shave` (flat shave bonus), `no_shave`, `after` (ops after the hit), `unbuilt` (clauses that wait for a system). The op and condition vocabulary is EffectTable.OPS / EffectTable.CONDITIONS.",
   "techs": {
     "gramophone_resonance": {"chapter": 3,
       "mult": [{"x": 1.25, "if": {"target_metal": true}}],
@@ -186,7 +186,14 @@
   "flavour": {
     "prismlight_salvo": "Its rule is the damage the data carries: the six hits are the doubled Ferro Graviton shards the cat aims, and the U4 secret chest it reveals on a [VITREOUS][FERRO]-weak target is an exploration hook for the U4 chapter."
   },
-  "pending": {},
+  "pending": {
+    "miura_fold": "Omega-Spekkio's fold (Chapter 8): the two enemies share one HP pool for 2 turns and the snap splits everything dealt to it back between them as true damage. That needs a damage hook every strike, tick and effect goes through, which neither pipeline has yet; until it lands the technique is not offered (a pending effect is never castable)."
+  },
+  "handler_unbuilt": {
+    "honest_laugh": "The ally's next hit counting as an honest GUILE hit, and with it the Ash-Knight's theft cycle it breaks on Crono's ASTRAL (Chapter 6): no reader judges honesty yet (a GUILE hit on a target Glenn has not stolen from this battle; the Heckler Harlequin, the Ash Ringmaster and Cyrus are weak only to one), and the self-shatter's +5 Light. The handler gives the +2 BP; its cost is the hp_to_one and Fragile the data carries.",
+    "balloon_escape": "The squash-dodge to 4 px is presentation (the FIRE immunity and the failed theft are built: EnemyStrike.fire_proof, BpTheft).",
+    "oil_drinker": "Oil-Drinker+ (Geothermal, §10.3): +25% crit against mechanical and Lavos enemies once the U2 ruthless road is taken (Chapter 3), which has no flag yet. Corruption's thresholds (50: +10% RUIN damage, -10% healing received; 100: only the gourd heals her) and the Goyama_Repainted clear wait for Krona's Chapter 2 fights; the ledger itself is built (CorruptionComponent)."
+  },
   "status_pending": {
     "confuse": "The Hiss Larva Drone's White Noise (U6): 30% of each action goes to a random battler until a hit lands. A confused ally needs the command layer to retarget its action, which no reader does yet (Chapter 7 content); bosses are already immune (StatusRules.BOSS_IMMUNE)."
   },

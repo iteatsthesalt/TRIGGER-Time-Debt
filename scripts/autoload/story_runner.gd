@@ -331,10 +331,7 @@ func _apply_side_effects(cmd: Dictionary) -> void:
 ## "Name:State" (the README form, the same one boot.gd reads from --flag=) or "Name" plus a separate state.
 ## An explicit state wins over the colon; the result is [name, state] with state "" when neither gives one.
 func _flag_pair(id: String, state: String) -> PackedStringArray:
-	if id.contains(":"):
-		var parts: PackedStringArray = id.split(":", true, 1)
-		return PackedStringArray([parts[0], state if state != "" else parts[1]])
-	return PackedStringArray([id, state])
+	return FlagRef.with_state(id, state)  # an explicit `state` wins over the part after the colon
 
 
 func _test(cond: Dictionary) -> bool:

@@ -8,6 +8,9 @@ const MUSIC_DIR := "res://audio/music"
 const SFX_DIR := "res://audio/sfx"
 const AMB_DIR := "res://audio/ambience"
 const VO_DIR := "res://audio/vo"
+## The stems play_music loads beside <id>.ogg, as <id>__<stem>.ogg. DialogueCheck.music_exists and lint_data.py
+## read this list, so a track shipped only as an unlisted stem is reported, not played as silence.
+const MUSIC_STEMS: Array[String] = ["box", "piano", "strings", "hiss", "bass", "drums", "lead", "pad", "quartet", "crackle", "wind", "tick"]
 
 var rtpc: Dictionary = {
 	"porcelain_stress": 0.0, "vhs_tracking": 0.0, "mycelia_shared": 12.0, "bp_stolen": 0.0, "shave_bonus": 0.0,
@@ -97,7 +100,7 @@ func play_music(track_id: StringName, fade_s: float = 1.5, stems: Array = []) ->
 	var paths: Array[String] = []
 	if stems.is_empty():
 		paths.append("%s/%s.ogg" % [MUSIC_DIR, track_id])
-		for stem in ["box", "piano", "strings", "hiss", "bass", "drums", "lead", "pad", "quartet", "crackle", "wind", "tick"]:
+		for stem in MUSIC_STEMS:
 			var p: String = "%s/%s__%s.ogg" % [MUSIC_DIR, track_id, stem]
 			if ResourceLoader.exists(p):
 				paths.append(p)

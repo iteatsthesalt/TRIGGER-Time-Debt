@@ -61,6 +61,16 @@ func holds(ref: String) -> bool:
 	return is_state(StringName(p[0]), StringName(p[1])) if p[1] != "" else has(StringName(p[0]))
 
 
+## Write a flag reference (FlagRef.written): "Name:State" sets that state, a bare "Name" the state "set".
+func set_ref(ref: String) -> void:
+	var w: String = FlagRef.written(ref)
+	if w == "" or ref.contains("="):
+		push_warning("Flags: %s is not Name or Name:State" % ref)
+		return
+	var p: PackedStringArray = FlagRef.split(w)
+	set_flag(StringName(p[0]), StringName(p[1]))
+
+
 ## Set a flag to one of its states. Affinity and Beckons are written from the flag definition
 ## (data/flags/*.json) unless `affinity` overrides them: {light, dark, prismatic}.
 ## A defined flag is permanent for the cycle (Story Bible §9.2): once set, a different state is refused with a

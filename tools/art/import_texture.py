@@ -27,7 +27,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "tools", "art"))
 import pixel  # noqa: E402
 sys.path.insert(0, os.path.join(ROOT, "tools", "common"))
-from godot_uid import godot_uid  # noqa: E402
+import import_sidecar  # noqa: E402
 
 OUT = os.path.join(ROOT, "assets", "textures", "generated")
 MANIFEST = os.path.join(ROOT, "source_art", "MANIFEST.csv")
@@ -114,23 +114,9 @@ detect_3d/compress_to=0
 def write_import(png_path, normal=False):
     """The Godot .import sidecar of a world texture (the breakdown's section 12 texture row): lossless,
     never VRAM-compressed even after its first 3D use (detect_3d/compress_to=0), mipmaps on because
-    SceneKit samples world textures with a mipmapped anisotropic filter. Keeps an existing uid."""
-    import hashlib
-    rel = os.path.relpath(png_path, ROOT).replace(os.sep, "/")
-    imp = png_path + ".import"
-    uid = None
-    if os.path.exists(imp):
-        with open(imp) as f:
-            for line in f:
-                if line.startswith("uid="):
-                    uid = line.strip().split("uid://")[1].rstrip('"')
-    if uid is None:
-        # Godot's own base-34 text (tools/common/godot_uid.py), so the next --import keeps it
-        uid = godot_uid("res://" + rel)[len("uid://"):]
-    md5 = hashlib.md5(("res://" + rel).encode()).hexdigest()
-    with open(imp, "w") as f:
-        f.write(IMPORT_TEMPLATE.format(uid=uid, name=os.path.basename(png_path), md5=md5, rel=rel,
-                                       normal=1 if normal else 0))
+    SceneKit samples world textures with a mipmapped anisotropic filter. The writer and its uid rule are
+    the sheets' too (tools/common/import_sidecar.py)."""
+    import_sidecar.write_import(png_path, IMPORT_TEMPLATE, ROOT, normal)
 
 
 def tile_error(width, height):

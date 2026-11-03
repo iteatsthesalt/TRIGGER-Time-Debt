@@ -75,7 +75,6 @@ var parry_frames: int = CombatConstants.ENS_PARRY_FRAMES_BASE
 var ens_rings: Dictionary = {}
 var oil_blight_accum: float = 0.0
 var oil_blight: bool = false
-var hazard_hooks: Array[Callable] = []
 var branch_pending: Dictionary = {}
 var branch_callback: Callable = Callable()
 var last_summary: Dictionary = {}
@@ -88,7 +87,6 @@ var enemy_action_serial: int = 0
 var _break_callables: Dictionary = {}
 var _ko_callables: Dictionary = {}
 var _perfect_frame_pending: Dictionary = {}
-var _last_action_info: Dictionary = {}
 ## unit -> snapshot {hp, gauge, pos, statuses} taken at its last turn start (Rewind, §3.6).
 var turn_snapshots: Dictionary = {}
 ## unit -> the last action it performed (Borrowed Future's Token Duplicate copies it).
@@ -164,6 +162,8 @@ func start_battle(party_in: Array, enemies_in: Array, center: Vector3, config: D
 	else:
 		rng.randomize()
 
+	for u in _all_units() + bench:
+		BattleMarks.clear(u)  # the bodies outlive a battle: what held for the last one does not hold for this one
 	var advantage: String = String(config.get("advantage", "normal"))
 	for u in party:
 		_init_unit(u, _start_gauge(true, advantage))
@@ -203,7 +203,6 @@ func _init_unit(u: Node, gauge: float) -> void:
 			var cb := _on_unit_defeated.bind(u)
 			st.defeated.connect(cb)
 			_ko_callables[u] = cb
-	u.remove_meta(&"sipped_action")
 	var usc := StatusComponent.of(u)
 	if usc != null:
 		usc.acting = false
@@ -327,8 +326,6 @@ func advance(delta: float) -> void:
 	FieldEffects.tick(self, dt)
 	_tick_oil_blight(dt)
 	_tick_ens_rings(dt)
-	for hook in hazard_hooks:
-		hook.call(self, dt)
 	if state != State.TICK:
 		return
 
@@ -726,6 +723,8 @@ func _actor_knows(actor: Node, t: TechDef) -> bool:
 		return false
 	if (t.tier == TechDef.Tier.ULTIMATE and bank.ultimates_blocked) or not EffectTable.requirements_met(self, actor, t):
 		return false
+	if EffectTable.is_pending(t.effect):
+		return false  # nothing runs it yet (data/effects/effects.json `pending`)
 	if knows_tech.is_valid():
 		return bool(knows_tech.call(actor, t))
 	return true
@@ -937,10 +936,7 @@ func _execute_enemy_action(e: Node, action: Dictionary) -> void:
 		var amt: int = DamagePipeline.compute_heal(est.e_atk, float(action["heal"]), 0)
 		var healed: int = est.heal(amt)
 		heal_resolved.emit(e, e, healed)
-	var bp_steal: int = int(action.get("bp_steal", 0))
-	if bp_steal > 0:
-		var stolen: int = bank.drain(bp_steal)
-		e.set_meta("stolen_bp", int(e.get_meta("stolen_bp", 0)) + stolen)
+	BpTheft.steal(self, e, int(action.get("bp_steal", 0)))  # into its visible counter; a Balloon Escape foils one
 	for h in hit_list:
 		var landing: Array = taunts.landing(self, h["node"])  # Bekkler's Guilt: a hit on an ally in its ring lands on Crono
 		var t: Node = landing[0]
@@ -950,7 +946,6 @@ func _execute_enemy_action(e: Node, action: Dictionary) -> void:
 	if String(action.get("effect", "")) != "":
 		EnemyEffects.apply(self, e, action, hit_list)
 	action_executed.emit(info)
-	_last_action_info = info
 	if state == State.EXECUTING:
 		state = prev if prev != State.EXECUTING else State.TICK
 	_check_end()
@@ -964,7 +959,7 @@ func _after_damage(t: Node) -> void:
 	if st.actor_id == &"krona" and st.hp_ratio() < 0.25 and int(t.get_meta("sipped_action", -1)) != enemy_action_serial:
 		t.set_meta("sipped_action", enemy_action_serial)  # once per enemy action against her (DECISIONS)
 		st.heal(roundi(float(st.max_hp()) * 0.20))
-		t.set_meta("corruption", float(t.get_meta("corruption", 0.0)) + 5.0)
+		CorruptionComponent.add_to(t, CorruptionComponent.GOURD_SIP)
 		battle_message.emit("Krona drinks from the gourd.")
 	if st.actor_id == &"crono" and _crono_galaxy(t) and not t.get_meta("concerned_fired", false):
 		t.set_meta("concerned_fired", true)
@@ -1073,7 +1068,6 @@ func _resolve_action(action: Dictionary) -> Dictionary:
 	if token_duplicate_active != attacker:
 		last_actions[attacker] = action.duplicate()
 	action_executed.emit(info)
-	_last_action_info = info
 	return info
 
 
@@ -1118,7 +1112,6 @@ func _resolve_support(action: Dictionary) -> Dictionary:
 			if tsc2 != null:
 				tsc2.add(tech.lv2_debuff, -1.0, 2)
 	action_executed.emit(info)
-	_last_action_info = info
 	return info
 
 
@@ -1139,16 +1132,6 @@ func _pair_synergy(casters: Array) -> float:
 	if casters.size() == 3 and homes.size() == 3:
 		s *= CombatConstants.SYNERGY_THREE_UNIVERSES
 	return s
-
-
-func _oil_drinker_crit(attacker: Node, target: Node) -> bool:
-	var st := CombatantStats.of(attacker)
-	if st.actor_id != &"krona" or not attacker.has_meta("oil_drinker_plus"):
-		return false
-	var tst := CombatantStats.of(target)
-	if tst.tags.has(&"LAVOS") or _is_metal(target):
-		return rng.randf() < 0.25
-	return false
 
 
 func _crono_galaxy(actor: Node) -> bool:

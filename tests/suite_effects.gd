@@ -617,6 +617,8 @@ func test_bekkler_guilt_turns_hits_in_its_ring_onto_crono_until_his_next_turn() 
 		check_eq(int(hp.call(marle)), m0, "hit %d on Marle in the ring does not reach her" % (i + 1))
 		check_near(float(c0 - int(hp.call(crono))), float(direct) * CombatConstants.GUILT_TAKEN, 1.0, "it lands on Crono at 75%")
 	check_eq(c.bank.bp, CombatConstants.GUILT_BP_MAX, "+1 BP for each turned hit, 2 at most")
+	EnemyTurn.execute(c, e, jab.merged({"targets": [marle], "effect": "grief"}))  # the action's effect follows the hit
+	check(StatusComponent.of(crono).has(&"grief") and not StatusComponent.of(marle).has(&"grief"), "a turned hit's effect lands on Crono, not on Marle")
 	var k0: int = hp.call(krona)
 	c0 = hp.call(crono)
 	EnemyTurn.execute(c, e, jab.merged({"targets": [krona]}))

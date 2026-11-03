@@ -54,14 +54,16 @@ static func execute(c: BattleCoordinator, e: Node, action: Dictionary) -> void:
 		var healed: int = est.heal(amt)
 		c.heal_resolved.emit(e, e, healed)
 	BpTheft.steal(c, e, int(action.get("bp_steal", 0)))  # into its visible counter; a Balloon Escape foils one
+	var landed: Array = []  # where the hits came down: the action's effect follows them (a Guilt-turned hit included)
 	for h in hit_list:
 		var landing: Array = c.taunts.landing(c, h["node"])  # Bekkler's Guilt: a hit on an ally in its ring lands on Crono
 		var t: Node = landing[0]
 		if not info["targets"].has(t):
 			info["targets"].append(t)
+			landed.append({"node": t, "hits": h["hits"], "rank": h["rank"]})
 		info["damage"][t] = int(info["damage"].get(t, 0)) + EnemyStrike.resolve(c, e, t, action, int(h["hits"]), int(h["rank"]), float(landing[1]))
 	if String(action.get("effect", "")) != "":
-		EnemyEffects.apply(c, e, action, hit_list)
+		EnemyEffects.apply(c, e, action, landed)
 	c.action_executed.emit(info)
 	if c.state == BattleCoordinator.State.EXECUTING:
 		c.state = prev if prev != BattleCoordinator.State.EXECUTING else BattleCoordinator.State.TICK

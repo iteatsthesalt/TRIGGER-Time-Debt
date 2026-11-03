@@ -669,7 +669,8 @@ a call, the later text is kept.
   Cassia-09 kit)
 - **Party-only ledge term.** The ±10% height term (attacking down from a ledge of 1 m or more: +10%; attacking up:
   -10%) is live for party strikes through PartyHit.ledge. EnemyStrike has no ledge term yet, and the preview's
-  _estimate_damage leaves it out, so on uneven arenas the preview plate and the actual hit differ by 10%. Why:
+  the preview now includes it too (the final review's "one hit context": the preview and the resolution share
+  PartyHit). Why:
   This records the asymmetry so it can be closed deliberately: add the term to EnemyStrike and to the preview
   estimate. Shave parity is unaffected. (COMBAT_LAWS_BIBLE §8.8)
 
@@ -738,8 +739,8 @@ a call, the later text is kept.
   §13 drop notes, §14.6; Story Bible 3.6)
 - **Rewards: XP, drops and leans at victory.** RewardResolver pays on victory only (a defeat or a withdraw pays
   nothing). XP: a defeated enemy pays full, a spared one half. Drops: every defeated, non-boss enemy rolls its
-  drops ({item, chance, count}) through Game.grant; a boss's drops go through the same RewardResolver.give when
-  its fight ends. Leans: an enemy feeds its codex lean only when resolved the signature way: L when spared, D when
+  drops ({item, chance, count}) through Game.grant; a boss's drops are paid by RewardResolver.award_drops at victory
+  only (final review). Leans: an enemy feeds its codex lean only when resolved the signature way: L when spared, D when
   salvaged (killed while Broken by a RUIN or FERRO finisher) or incinerated (FIRE finisher), P when a Dual or
   Triple finished it. Anything else feeds nothing; bosses lean through their branches. The +1 crafting part from a
   salvage waits for crafting. Why: Every spare used to add Light whatever the enemy's lean, and no regular enemy
@@ -1142,3 +1143,299 @@ a call, the later text is kept.
   table are presentation notes, not a rule; AUDIT.md lets the Combat Laws numbers win on combat.
 - **The title footer and the project description no longer call the game a sequel.** The working title stays until
   Nich picks a release title (breakdown section 14; QUESTIONS_FOR_NICH).
+
+### Final integration review
+
+After the fifteen clusters, two review rounds looked at how their changes fit together: six angles (battle seams,
+combat rules, a whole run, what the player sees, the harness, code health), every finding refuted by a second
+agent and reproduced where it mattered, then fixed one group at a time (commits f5e18e9 to ac990dc). Two
+pre-existing critical defects came out of it: battle input was ignored during every story battle (the gate's
+probes all use --autobattle), and the party could be placed past the kitchen floor after a zone battle. The calls
+those fixes made:
+
+#### Battle seams (round one)
+
+- **Enemy Ruin clears in the restore, not in end_battle.** restore_enemy clears Ruin and the statuses before it
+  refills the vitals. StatusRules.end_battle still clears Ruin only for the party, the bench and hover Sera. Why:
+  restore_enemy is the only path where an enemy body outlives its battle (zone survivors), and §16.5's 'full
+  strength' is its job. Clearing the statuses first keeps reset_vitals reading the base ceiling. Enemy bodies that
+  are not kept are freed, so clearing their Ruin at end_battle as well would be a second rule for the same thing.
+  (COMBAT_LAWS §16.5; DECISIONS "Enemies after a battle", "Ruin is battle-scoped")
+- **A spared enemy's statuses still run out, but nothing ticks on it.** StatusTicks ignores periodic emissions for
+  units the coordinator no longer counts (c._alive). StatusComponent timers keep counting down, so a status still
+  expires and runs its undo. Why: §4.2: the spared enemy is 'removed from the fight alive'. This matches d454087,
+  which stopped its Break from ticking, and FieldEffects._living. Stopping the timers too would change expiry and
+  undo timing for KO'd party members, who are also not _alive.
+- **One end_wind_up helper on the coordinator.** Every way a wind-up ends goes through
+  BattleCoordinator.end_wind_up(e): resolution, Break, KO, spare, HZ, Omega Annihilation, Rewind Reel and a boss
+  phase change. Nothing else erases a wind-up entry or emits telegraph_ended. BossController's phase change now
+  emits only when the boss was actually winding up. That changes no behaviour, because a decal exists only while a
+  wind_ups entry does. Why: Five call sites erased the entry and emitted the signal by hand, and the KO path had
+  no such call. One helper means a new way out of the fight cannot forget the decal. (COMBAT_LAWS §3.5)
+- **Boss drops are paid by RewardResolver at victory; on_defeat stays at the fall.** RewardResolver.award_drops
+  pays the boss's drops at victory, from its phase EnemyDef, which carries the boss file's drops. Game.note_drop
+  now also records the boss key. The director's on_defeat still runs when the boss falls or end_fight is called,
+  so it can play the message, the gold-leaf teardown and the Shard Doll's counters. Why: DECISIONS "Rewards: XP,
+  drops and leans at victory" says a defeat pays nothing, and a story retry loop must not pay twice. Paying in
+  resolve() also puts the boss's drops in the victory summary. on_defeat is the presentation of the fall. The only
+  director bookkeeping in it today is in the Shard Doll's fight, which cannot be lost. (DECISIONS "Rewards: XP,
+  drops and leans at victory"; COMBAT_LAWS §15.2)
+- **Summoned adds are scaled from the summoner's encounter.** A regular or elite add, called or split from a body
+  that EffectiveRank scaled, is built with EffectiveRank.create using that encounter's hazard, so it gets its own
+  ERL and the Time Shear rule. The level is not inherited as an offset from the summoner. Boss, mini-boss and
+  pinned-row summoners, and regular adds of a boss, keep their adds at the authored level. Why: Inheriting the
+  summoner's offset gives the wrong level when the 'band minimum - 2' floor applies. Example: a Lv-1 party in U8
+  gets the guardian floored to 69 (offset -6), so its Atom-Eaters would come out at 65 while the encounter's own
+  rows are 69. Building the add from the same ERL formula keeps it level with the encounter's rows. (COMBAT_LAWS
+  §15.3; DECISIONS "Effective Rank Level")
+
+#### Combat rules (round one)
+
+- **The preview's damage.** BattleCoordinator.preview estimates damage with PartyHit.estimate. For each strike it
+  aims at, estimate sums DamagePipeline.compute_hit over PartyHit.terms, which the resolution's PartyHit.context
+  also uses. Variance is 1.0, there is no chance crit (oil drinker), nothing is spent and the RNG is not touched.
+  Exposed is counted per strike: strike i ignores DEF while the target has more than i stacks. A shield-only body
+  previews 0 until it Breaks. Two things are not forecast: the mercury pool's +20% on the first FERRO hit
+  (FieldEffects.on_party_strike has side effects) and a Break that lands mid-action (the preview reads the target
+  as it stands). PartyHit.action_keys is the one builder of an action's damage keys for cmd_attack, cmd_tech and
+  the preview. This closes the 'Party-only ledge term' gap on the preview side: the preview now includes the
+  ledge. The DECISIONS line that names _estimate_damage should be updated; EnemyStrike still has no ledge term.
+  Why: The aim line should read what the hit deals (bible: the preview shows 'the exact shave and damage each will
+  take'). One shared builder stops the two paths drifting again. (COMBAT_LAWS_BIBLE §4.5, §4.6, §6.2-§6.4, §8.7,
+  §8.8, §18.7 #23)
+- **Knock-Static is read when the action is chosen.** EnemyBrain.choose records Knock-Static as action.stepped
+  before the turn's countdown, and the wind-up adds its 0.5 s hitch from that snapshot. A 2-turn Knock-Static
+  hitches two enemy actions; a boss's halved 1 turn hitches one. Magnetized and Gramophone Resonance's hitched
+  stay 'next action' statuses read after the countdown (turns 2 = one action, as DECISIONS 'Readings chosen'
+  sets). Why: The bible says Knock-Static means every action hitches 0.5 s for 2 turns. Read after the countdown,
+  it covered one action, and a boss's halved status never hitched at all. This extends the existing rule 'Statuses
+  that act during an enemy action are read when the action is chosen' (refracted, probability_lock, GUILTY) to
+  Knock-Static. (COMBAT_LAWS_BIBLE §12.1, §12.2 (Knock-Static row), §11 Red Bike Ghost)
+- **One steal per Glenn action across many bodies.** An effect-table steal op takes one steal per action, sized as
+  before (by_boost or n, giving GLENN_STEAL 1/2/3 BP). It draws from the units of `on` in order, counter first and
+  then the laugh, until that size is filled. Guilt Halo ('Steals 1 BP on a Break') therefore takes 1 BP however
+  many bodies Break. Only a steal_all_when_broken Break (the Ash Ringmaster) gives more. Why: §7.5 says one steal
+  per Glenn action, and #22 says never more than 3 BP per action. Under the per-body loop, one Guilt Halo into
+  five weakened adds took 5 BP. Capping at the action's own steal size, not at a flat 3, is the literal reading of
+  §7.5 and also satisfies #22. (COMBAT_LAWS_BIBLE §7.5, §11 guilt_halo, §18.7 #22)
+- **Silence on enemies.** A Silenced enemy's named actions are all sealed: EnemyBrain makes it a plain weapon-tag
+  Attack with no wind-up until Silence ends. StatusComponent.outgoing_multiplier was removed as dead code;
+  Refracted is read from the snapshot taken when the action is chosen. Why: §12 defines Silence as 'Techniques
+  sealed; Attack, Guard, Items and commands still work'. The Divinity Break's 15 s silence had no reader on the
+  enemy path. (COMBAT_LAWS_BIBLE §12 (Silence), §12.5 (Divinity Field))
+
+#### Battle input and rules
+
+- **A story battle has the player's input.** Story.blocks_battle_input() is true while a script is running, except
+  when the innermost running script is the one waiting on its own `battle` command. A phase beat or branch nested
+  in the fight still blocks, as does input_blocked. Battle input and the deck-recovery guard read this, not
+  Story.is_running(). Why: Every story fight (Cradle, Shard Doll, Chapter 2) was soft-locked at its first party
+  window. The waiting script owns how the fight ends, not the screen during it. (Combat Laws §3-§4 (decision
+  windows); DECISIONS Code-audit fixes second pass, Story runner)
+- **Battle placement stands the party on the ground.** PartyPlacement fans the party on the Location's
+  WalkableGround. Order: the near side (+Z) at 4.5 m, then at 3.0 m, then the fan turned ±45, ±90, ±135 and 180°
+  until every anchor is standable. Failing all of those, each member walks out from the centre to the last floor.
+  Enemies face the party's side. After any outcome, regroup puts a leader the ground cannot hold back where it
+  stood before the battle. Why: The kitchen's three zones sit within 3 m of a south edge or wall, so the fixed +Z
+  fan put everyone over the void and a win dropped the party forever. §2.1 says the plane conforms to the terrain.
+  (Combat Laws §2.1; DECISIONS Withdraw / After a battle)
+- **DoT tick base is one hit's §6.4 raw.** tick = max(1, round(15% × raw)), with raw = max(1, 0.8 × (atk −
+  def_used/2)) before power, crit, weakness, vulnerability or variance. Enemy path: that hit's raw. Party
+  effect-table `dot` path: the raw of the action's last landed strike on that body, at Broken DEF if that strike
+  hit it Broken. A caught but unstruck body uses the best caster's raw against it. Why: §6.3 and the §6.5 #3
+  example (raw 81.2 gives a tick of 12). The party path stored 15% of the whole action (Solar Railgun ticked about
+  400), and the enemy path stored 15% of the final hit. (Combat Laws §6.3, §6.4, §6.5 #3; DECISIONS DoT ticks and
+  regen)
+- **Taunts count from the bearer's next action.** TauntBook entries given during the bearer's own action are fresh
+  and are not counted down by that action, matching Turn statuses. Bekkler's Guilt is now the §11 ring and does
+  not draw attacks: a hit aimed at another ally within 4 m × Boost scale lands on Crono at 75% and gives +1 BP, 2
+  at most, until his next action. Shogun's Command draws 60% of attacks for 2 of Krona's turns. If she is still
+  standing when it runs out, every ally gets ruin_infused through StatusRules, and it lasts until spent. Why: The
+  casting action erased Bekkler's Guilt before any enemy acted and halved Shogun's Command. Its payoff and
+  guilt_redirect had no reader. (Combat Laws §11 tech table (bekkler_guilt, shoguns_command); DECISIONS Turn
+  statuses)
+- **Ruin-infused is the bearer's next landed strike.** PartyHit.terms sets DEF to 0 for the infused striker's
+  first strike, and PartyHit.context removes the status on the strike that lands. The preview gives the bonus to
+  the first strike it forecasts (the first body in resolution order) and marks it spent, so later hits and later
+  bodies read full DEF in both the preview and the resolution. Why: §12.3 says 'the next hit ignores DEF'. Reading
+  it as one strike keeps the preview and the resolution consistent, which is the f5e18e9 rule. (Combat Laws §12.3)
+- **Mercury Pulse: one circle, boss rules, Centaur reach.** CastReach.radius(tech) is tech.radius + 1.0 for
+  Mercury Pulse unless R66Y:Salvaged; Centaur is her default form. cmd_tech, the preview and the aim outline use
+  it. The pulse uncloaks, reveals, slows (StatusRules, 4 s, halved on bosses) and magnetizes exactly the bodies
+  its own circle reaches, including cloaked ones. Why: The handler called StatusComponent.add directly, skipping
+  the boss halving. It also always added +1.0 to the status radius only, so bodies 6-7 m away were slowed but not
+  struck or previewed. (Combat Laws §10 (Cassia-09 forms), §11 mercury_pulse; DECISIONS Boss status rules count
+  Mercury SLOW as SLOW)
+- **Rewind takes back Ruin gained since the turn start.** The turn snapshot records Ruin stacks. Rewind thaws the
+  stacks gained since, through RuinRules, for every battler: Crono's TimeDebtComponent and his mirror together. It
+  does this before restoring HP, so the HP returns against the whole ceiling. Why: Rewind already dropped another
+  ally's new Ruin but left Crono's, desyncing his mirror. The bible's Rewind restores 'statuses gained since', and
+  one rule for every battler fixes the split. (Combat Laws §3.6, §10 Rewind, §12.2 Ruin)
+- **An Attack's preview never takes Dual partners.** coordinator.preview ignores partners when tech is null, and
+  the deck's Attack clears partners left from a cancelled Dual. Why: cmd_attack strikes with the actor alone, so
+  the aim line must read the same. (Combat Laws §4.5-§4.6 (the preview reads what the hit deals))
+
+#### A whole run: story, world and saves
+
+- **Lines and captions are drawn above the transition fade.** The Story CanvasLayer is 110 (StoryRunner.LAYER),
+  above Router.FADE_LAYER (100). If a caption is the first command of a script, the box is shown without its
+  panel. Router.fade_out emits fading_out; a line the player has already read (no prompt or choice waiting) is
+  cleared then. A line still waiting and a caption stay up over the black. Why: DECISIONS 'A location may hold its
+  opening black' wants the wake's lines on a black screen. With the box under the fade, a by-hand New Game sat on
+  an invisible prompt, and opening captions were never drawn because the box was still hidden. Clearing read lines
+  stops the box (now above the fade) from leaving the last line up through every scene change. (REFERENCE_BIBLE
+  §7.6 (dialogue box); STORY_BIBLE Prologue wake and Ch1 time skip; DECISIONS 'A location may hold its opening
+  black')
+- **Captures and debug starts never write the player's files.** smoke.gd suspends Saves and render.sh passes
+  --no-save. In boot.gd, any state argument (--scene/--location other than the title, --spawn, --checkpoint,
+  --party, --level, --chapter, --integrity, --flag) puts saves and settings in scratch. A new --save argument opts
+  back into the player's files. README should list --save under boot arguments and note the --no-save in
+  render.sh. Why: 'Headless runs never touch the player's files' covered only the probes and the test runner. A
+  location capture or a debug start that reached an autosave overwrote Nich's slot_00 with made-up state.
+  (DECISIONS 'Headless runs never touch the player's files' (extended))
+- **Arriving at the flatline starts the Atrium Siege.** Location._ready calls AtriumSiege.begin_if_owed. A save
+  made while the siege is owed keeps integrity 0; saves are not deferred. Continuing that save runs the siege when
+  the player arrives. Why: Deferring or skipping saves could lose a save the player meant to make. Starting the
+  siege on arrival also repairs any other route into a 0-integrity state, including older saves. Acceptance check
+  25 and Ending 5's counter then hold after Continue. (COMBAT_LAWS §16.3, §18.7 #25; DECISIONS 'The Atrium Siege,
+  first cut')
+- **Time Debt Seal is taught at breakfast; a tech the story teaches mid-chapter carries the next chapter as its
+  kit unlock.** prologue.json robo_relay teaches crono time_debt_seal right after the 'TIME DEBT' caption,
+  silently, with no new text. Sera's kit entry for fall_break is now {chapter: 1}. Cradle phase 2's `learn` still
+  teaches it in the Prologue, and data/techs keeps the bible's 'Prologue' unlock for reference. The general rule:
+  a kit entry's chapter is the latest chapter start by which the tech is known. A tech the story teaches partway
+  through a chapter is keyed to the next chapter, so a debug start at a chapter's beginning holds exactly what a
+  real party holds there. README and DECISIONS 'A debug start learns its chapter's kit' should drop Fall Break
+  from the chapter-0 debug kit. Why: STORY_BIBLE lists Time Debt Seal as a Prologue tech ('he uses it here'), but
+  nothing in the Prologue taught it. battle_probe's chapter-0 kit also gave Sera Fall Break from phase 1, which a
+  real player only gets in phase 2. DECISIONS says probes must fight with the kit a real party has. (STORY_BIBLE
+  Prologue 'Rewards and techs'; COMBAT_LAWS §11 Unlock column; DECISIONS 'Kit unlocks', 'A debug start learns its
+  chapter's kit (BootArgs)')
+- **One scratch directory per process.** A suspended run writes to user://scratch/<pid> (ScratchDir). It is
+  emptied on first use and removed when the run exits. A pid directory where nothing has changed for 7 days is
+  pruned. Liveness checks are not used, because OS.is_process_running only knows the process's own children. The
+  flat user://scratch/saves of older builds is left alone, since one of them may still be running. Why: Every
+  probe and test run on one machine shared one autosave, so concurrent gates (worktrees, the build lead next to
+  the studio assistant) could fail ch1_probe or suite_locations at random. (DECISIONS 'Headless runs never touch
+  the player's files'; CLAUDE.md quality bar (probes keep printing PROBE_END ok=true))
+- **Version 1 saves rename retired flag ids.** Saves.RETIRED_FLAGS_V1 maps Glenn_Duals_Offered to
+  Glenn_Duals:Granted and Glenn_Duals_Refused to Glenn_Duals:Refused when a v1 save loads; if the new id is
+  already set it keeps its state. Unknown flag ids are not dropped on load, because test flags and boot --flag ids
+  are legitimately undefined and a blanket drop could lose state. A future rename adds its own entry with the
+  version that retires it. Why: A v1 Chapter 1 save where Glenn refused played his 'offered' line, and the verdict
+  could never be recorded again because Glenn_Honour_Checked skips the honour check. (DECISIONS 'Save files are
+  atomic and versioned'; STORY_BIBLE §9.3 Glenn_Duals)
+
+#### What the player sees
+
+- **One owner of the body look; the phase wins over every redraw.** CombatActor.apply_body_look is now the only
+  place that sets a body's standing opacity and tint. A phased Sera is always drawn at 0.18 in gold, after a hit,
+  a DoT tick or a revive. A Sera who is KO'd and revived while still phased comes back phased-looking, because the
+  rules leave her phased: a KO does not clear phased_turns_left, and she stays untargetable until her phased turns
+  pass. A Debt redraw (set_porcelain_visuals) leaves the tint alone unless she is phased, so a cutscene's grey
+  tint survives it. Why: The look must match what the coordinator does. Changing the rules (ending the phase on a
+  KO) was outside this finding. (COMBAT_LAWS_BIBLE §10.2 (phase-out); STORY_BIBLE §4.2 'Look'; amends DECISIONS
+  'One body opacity for un-phase and revive')
+- **Ground overlays sort before sprites.** The battle plane material uses render_priority -2 and the telegraph/AoE
+  decals use -1. Sprites stay at 0. The constants live in BattleFx (PLANE_RENDER_PRIORITY, DECAL_RENDER_PRIORITY).
+  Why: The fade pass writes no depth, so a centre-sorted ground quad drawn after a faded body blends over it.
+  Ground overlays should always be under the bodies standing on them. (REFERENCE_BIBLE §1.13; COMBAT_LAWS_BIBLE
+  §2.1 (battle plane), §8.5 (telegraphs); DECISIONS 'Sprite opacity is two passes')
+- **The gate's battle capture is timed from battle_started, at 20 Debt.** smoke.gd
+  --capture_after=<signal>:<seconds> (plus --max_frames) saves <prefix>_<signal>.png and fails the run if the
+  signal never fires. check.sh shoots the arena 1 s after battle_started with a new boot argument, --debt=20, so
+  the shot is check_test_arena_battle_started.png. It shows the HUD, the plates, the plane and Sera's fade pass on
+  any host speed. The lineup capture is unchanged. check.sh now says xvfb's OpenGL 3 fallback never renders the
+  compositor. Why: A fixed frame landed on the walk on a GPU and on the empty field after victory under xvfb, so
+  the gate never looked at a battle or a faded sprite. (CLAUDE.md quality bar (look at every capture); DECISIONS
+  on the check.sh visual step)
+- **Cast bodies follow Game's ledger in the field.** A Story debt or integrity command, or the gate toll, now
+  syncs and redraws the party and the cast (npc_actors CombatActors) through BattleAftermath.follow_game. During a
+  battle only the values sync. Every create_party_member spawn applies its porcelain look. Why: A body's Debt and
+  cracks should show the moment the ledger moves, not at the next hit. The battle redraws its own bodies, so the
+  field redraw is guarded by not _in_battle. (STORY_BIBLE §4.2 'Look'; DECISIONS 'Sera's Debt is drawn on her
+  sprite')
+
+#### Whether green means what it says
+
+- **The parry key.** The `parry` action (G / joypad 4) is read only while the battle clock runs (TICK, not
+  paused). One press arms the Ens Parry of every guarding living ally that an active enemy wind-up targets. If no
+  wind-up targets a guard, or any wind-up is an area (non-SINGLE) shape, it arms every guard. An ally who is not
+  guarding is never armed. Each ally's press is then spent for ENS_PARRY_RECOVER_S = 0.5 s of battle time (30
+  frames), and a press never reopens a window that is already open. The logic is in scripts/combat/ens_parry.gd
+  (EnsParry); BattleScene keeps one per battle. Why: DECISIONS 'Ens Parry is armed' made the parry a player press,
+  but nothing read the key. With one key and several guards, arming only the guards a hit is aimed at keeps the U1
+  ink-blot penalty off guards no hit was coming for. A press with no hit due still opens a window, so the bible's
+  'pressing outside the window against U1 ink enemies throws an ink blot' holds. Without the 0.5 s recovery,
+  mashing at about 10 Hz would keep a 4-8 frame window open most of the time, and the timing skill the bible
+  describes would mean nothing. (COMBAT_LAWS_BIBLE §4.2 (Guard, Ens Parry); DECISIONS 'Ens Parry is "armed"')
+- **The test runner counts SCRIPT ERRORs and the gate fails on them and on exit leaks.** tests/run_tests.gd
+  installs an OS Logger (tests/script_error_log.gd). A test that raised a SCRIPT ERROR fails by name, and any
+  SCRIPT ERROR fails the run. A suite that does not parse is a failed suite. The 'ran no checks' guard counts
+  failures only, so totals drop from 3693 to 3392 (they no longer include one guard pass per test). check.sh fails
+  the unit-test step on SCRIPT ERROR or 'leaked at exit' / 'still in use at exit', and a probe on any SCRIPT
+  ERROR. Before quit the runner stops all audio players and waits 0.5 s so audio playbacks still mixing are not
+  reported as leaks. run_tests.gd takes --suites=<dir>, and check.sh honours CHECK_LOG_DIR. Why: A runtime error
+  part way through a test ended it silently and the gate stayed green (H2). The exit leak line was printed on
+  every run and never read (H6). Today's log has neither, so making them fatal costs nothing. The only leaks left
+  were audio playbacks still mixing at quit, which varied by timing, so they are drained rather than allowlisted.
+  (CLAUDE.md quality bar (probes print PROBE_END ok=true; verified/untested/broken); DECISIONS 'Tooling and
+  harness')
+- **Captures play on the default options.** check.sh passes --no-save to its smoke boot and captures, and smoke.gd
+  calls Game.reset_settings(), so no capture reads the player's settings.cfg. Why: Game._ready adopts the settings
+  file before smoke.gd's code runs, so the gate's captures used Nich's flow_speed and reduced_flicker and differed
+  from machine to machine (H7). This extends DECISIONS 'Headless runs never touch the player's files' to the
+  visual steps. (DECISIONS 'Headless runs never touch the player's files')
+
+#### Code health
+
+- **Per-battle marks are cleared at battle start and on restore, not in init_unit.** BattleMarks.PER_BATTLE is the
+  list of battle-long Node metas. start_battle clears them on every body it is given, and
+  BattleAftermath.restore_enemy clears them on a zone survivor. Sunlight Stacks, Static's tuning and Xyloph's
+  tether nodes count as battle-scoped. Why: The bodies outlive a battle (Location reuses its party; zones keep
+  their survivors). init_unit also runs for a mid-battle swap-in, and clearing there would let Crono use the Seal
+  a second time in one battle by swapping out and back in. (COMBAT_LAWS §11 time_debt_seal (once per battle),
+  §10.1 Wire Loom Mend (+0.6 once per battle), §12.3 Concerned (once per battle), Tune 'for the battle')
+- **Krona's Corruption is a component ledger like Debt and integrity.** CorruptionComponent on Krona's body is
+  seeded from Game, followed by Game during a battle, and written back afterwards. The 50/100 thresholds, the
+  Goyama clear and Oil-Drinker+ are not built; they are listed under effects.json handler_unbuilt.oil_drinker. The
+  dead oil_drinker_plus crit check is removed until a beat earns the passive. Why: The bible makes Corruption
+  persistent save data. No flag exists for the U2 ruthless road yet. (COMBAT_LAWS §10.3, §18.5 save data)
+- **A bare flag write means the state 'set' everywhere outside dialogue too.** The effect table's `flag` op and a
+  boss branch option with no state write Name:set (Flags.set_ref / FlagRef.written). Validators check a write as
+  the exact state it writes, and a read as written (bare means any state). Why: This is dialogue's existing
+  set_flag rule. Before, the effect op silently wrote nothing for a bare name. (DECISIONS 'One flag spelling';
+  STORY_BIBLE §9.3)
+- **A pending effect is never castable; a handler's unbuilt clauses get their own listing.** A technique whose
+  effect is under effects.json `pending` is not offered and its preview strikes nothing. Miura Fold moved there,
+  because its shared HP pool needs a damage hook that no strike path has. A new `handler_unbuilt` group lists the
+  clauses a bespoke handler does not run yet (Honest Laugh's honest GUILE hit, since no honesty rule exists;
+  Balloon Escape's squash; Oil-Drinker+). The lint prints both lists. Why: Otherwise a pending effect would
+  resolve as a plain strike or heal, and the lint counted half-built handlers as done. (COMBAT_LAWS §11
+  (miura_fold, honest_laugh, balloon_escape), §10.3)
+- **Balloon Escape: one foiled theft per cast, and a FIRE hit on the balloon is a miss.** The cast sets
+  theft_immune_once on the caster. The next enemy bp_steal against the party drains nothing and spends that mark.
+  While the 2 s balloon status lasts, every enemy hit tagged [FIRE] on that body resolves as evaded (shown as
+  'miss'). Why: This follows the bible's 'the next BP theft against the party this battle fails, immune to [FIRE]
+  for 2 s'. The 4 px squash is presentation. (COMBAT_LAWS §11 balloon_escape, §7.5)
+- **Summoned adds stand on the room's ground and face the party's side.** Each ring spot is tried at 8 angles
+  around the summoner; if none is standable, the add takes the summoner's own spot. Adds face center + party_side
+  * 4. Why: A Cradle shardling could appear inside the hall pillar, and rooms where PartyPlacement turns the fan
+  would have adds facing away from the party. (COMBAT_LAWS §2.1; DECISIONS 'One summon rule', 'Withdraw')
+- **The coordinator is a coordinator: 815 lines, rules in static classes, no private access from outside.** The
+  coordinator keeps the lifecycle, the timeline, the command entry points, the queries and the bookkeeping.
+  Resolution, costs, availability, preview, rewind, enemy turns, the gate pick, parry, Oil-Blight and the damage
+  terms moved out. A suite_acceptance guard fails if any script names one of its underscore members. Why: It was
+  2.7 times the ~600-line rule, and 22 files used its private API, which the parser does not check. At 815 lines
+  it is still above the rule; splitting the timeline further (for example into a BattleClock) would be the next
+  step. (CLAUDE.md working agreement (scripts under ~600 lines, one class per file))
+- **One music stem list, one image sidecar writer.** AudioDirector.MUSIC_STEMS is the list play_music,
+  DialogueCheck and lint all read. tools/common/import_sidecar.py writes every sheet and texture .import, keeping
+  a canonical uid and re-minting one Godot cannot parse. Why: There were two hand-kept stem lists, and lint
+  accepted any stem. The two writer bodies were identical except for their docstrings. (REFERENCE_BIBLE §8.2;
+  docs/ART_PIPELINE.md §1b)
+
+- **Bekkler's Guilt turns the whole action.** An enemy action's effect (time stop, grief, fog blind and the rest)
+  follows its hits to where they landed, so a hit the ring turns onto Crono brings its effect with it. Why: the ring
+  already turned the damage and the action's own status; leaving the effect on the guarded ally split one attack in
+  two (COMBAT_LAWS §11, Bekkler's Guilt).

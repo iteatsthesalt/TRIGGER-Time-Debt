@@ -35,8 +35,10 @@ you do.
 
 ```bash
 source tools/setup_godot.sh                 # downloads Godot 4.7.2 into .tools/ and puts `godot` on PATH (~1 min)
-bash tools/check.sh                         # import, parse every script, ~710 unit checks, data lint, 600-frame smoke boot with captures
-bash tools/check.sh --no-visual             # the same without the software-Vulkan smoke boot (fast, headless)
+bash tools/check.sh                         # the gate: import, parse every script, every unit suite, data lint, tool tests,
+                                            # the three headless probes, a 600-frame smoke boot and two scene captures
+bash tools/check.sh --no-visual             # the same without the software-Vulkan boot and captures (headless)
+bash tools/check.sh --quick                 # import, parse and the unit suites only (no lint, tool tests or probes)
 godot --path .                              # play (window 1280×720, UI canvas 640×360 integer-scaled)
 ```
 
@@ -44,7 +46,8 @@ Boot arguments (any scene; the full list is the docstring of `scenes/boot/boot.g
 `--location=<id>`, `--spawn=<marker>`, `--checkpoint=<id>`, `--party=a,b,c`, `--chapter=<n>` (unlocks the
 chapter-gated kit entries), `--integrity=<n>`, `--level=<n>` (every roster member), `--flag=Name:State`
 (repeatable), `--say=<text>`. Battle arguments are read by BattleScene and the test arena, not by boot:
-`--autobattle`, `--boss=<id>`, `--boss_hp=<n>`.
+`--autobattle`, `--boss=<id>`, `--boss_hp=<n>`. A debug start (any of these state arguments) and every capture write
+saves and settings under `user://scratch/<pid>` instead of the player's files; `--save` opts a debug start back in.
 
 Headless probes play the game without a window and end with `PROBE_END ok=true` (ok=false and exit code 1 on a
 stall, a failed check, a lost battle or a timeout); `tools/check.sh` runs all three (not with `--quick`), after the
@@ -79,24 +82,42 @@ scenes/                  boot/ (main scene), ui/title.tscn (the HUD and the dial
 scripts/
   autoload/              Data (JSON registry) · Flags (possibility engine: flags, affinity, counters) · Game (party, integrity, chapter, checkpoints)
                          Saves · Universe (canvas switcher) · Audio (music/stems/SFX/RTPC) · Router (scene routing) · Story (dialogue scripts)
-  combat/                the Combat Laws core: stats, timeline, shields/Break, damage, Boost, statuses, techs, AI (headless-tested)
-  battle/                BattleScene + HUD glue, BossController, bosses/<id>.gd directors (per-boss mechanics)
+  combat/                the Combat Laws core (headless-tested): BattleCoordinator (the timeline, its state and the command entry
+                         points) with its rules in static classes that take it first: PartyActions, StrikeResolution, ActionPreview
+                         (the plate preview), TechCosts, TechAvailability, TurnRewind, EnemyTurn; damage (DamagePipeline,
+                         PartyHit, ShaveBonus, CastReach: the preview reaches what the cast reaches), Boost, shields/Break,
+                         statuses (StatusRules, StatusTicks, RuinRules, BreakConditions), technique effects (EffectTable over
+                         data/effects/effects.json, EffectSteps/Ops/Fields, TechEffects for the bespoke ones, EnemyEffects),
+                         fields (FieldEffects, ResidualFields), TauntBook, TechCooldowns, CapUpgrades, SwapRules, WithdrawRules,
+                         ItemUse, RewardResolver (XP, drops and leans at victory), EnemyBrain/EnemyStrike, BpTheft, EnsParry,
+                         StatueTimers, BattleMarks (per-battle metas), CorruptionComponent (Krona's ledger)
+  battle/                BattleScene + BattleDeck (the command deck), BattleRoster (bench, hover Sera, swaps), AutoBattler, BattleFx,
+                         EnemySpawner, SealPayment, BattleEndNotice, PartyPlacement (the opening fan, kept on the floor), BossController +
+                         BossAdds + BossBranch, bosses/<id>.gd directors
   actors/                CombatActor, ActorSprite (lit billboard), SpriteLibrary (sheet lookup), PlayerController, PartyFollow, FieldNPC
-  world/                 Location base (every playable scene extends it), SceneKit (materials, primitives), PropBillboard (placed props), EncounterZone, Interactable
+  world/                 Location base (every playable scene extends it), SceneKit (materials, primitives), PropBillboard (placed props),
+                         EncounterZone, Interactable, BattleAftermath (restore, write-back, freeing story bodies), WalkableGround,
+                         GateJump (the gate toll), KitUnlocks, FlagRef (the one flag spelling), EffectiveRank (§15.3), EndingRules,
+                         AtriumSiege, DialogueCheck (dialogue validation shared by Data and lint), BootArgs, ScratchDir, SeedOfDoan
   locations/             one script per location (build(), after_ready())
   render/                HD2DWorld (compositor canvas stack), HD2DCameraRig, CanvasStackEffect
   ui/                    title, dialogue box, battle HUD, portraits, speaker styles
-shaders/                 sprite_canvas (lit billboard, porcelain states), battle_plane, aoe_floor_ring (telegraphs), compositor/canvas_stack.glsl (the canvas stack; grades are procedural, not LUT textures)
+shaders/                 sprite_canvas (lit billboard, porcelain states; the opaque cut-out pass) and sprite_canvas_fade (the same
+                         body, sprite_canvas.gdshaderinc, blended for opacity below 1: ghosts, phased or indebted Sera), battle_plane, aoe_floor_ring (telegraphs), compositor/canvas_stack.glsl (the canvas stack; grades are procedural, not LUT textures)
 data/                    all content as JSON (see "Adding content")
 assets/                  characters/ npcs/ enemies/ bosses/ (imported sprite sheets) · props/u<n>/<key>/ (imported PixelLab objects: sheet, frames json, normal)
                          textures/ (procedural placeholders) · textures/generated/ (the twelve U0 PixelLab textures) · ui/ (icon, theme, title/, generated/: the delivered UI panels)
                          created on first import: portraits/<id>/ (Batch 5), vfx/generated/ (Batch 9)
 source_art/              raw PixelLab downloads (unpacked frames + metadata + contact sheets; the zips are not tracked), style_kit/, MANIFEST.csv (every generated file: tool, model, seed, prompt); ignored by Godot
 audio/                   music (OGG + stems, loop points in .import), sfx/<family>/, beds; built by tools/audio/build_all.py
-tests/                   run_tests.gd and the headless check suites
+tests/                   run_tests.gd runs every suite_*.gd (one per area: core, story_runner, aftermath, battle_scene, boss, statuses,
+                         pipeline, effects, progression, engine_saves, locations, chapter_data, tools, render, actors, acceptance
+                         = the Combat Laws §18.7 checks); suite_base.gd holds the check helpers and the battle fixtures;
+                         script_error_log.gd makes any SCRIPT ERROR or exit leak fail the run
 tools/                   setup_godot.sh · check.sh · art/import_pixellab.py + art/import_incoming.py (+ art/pipeline/pixellab_import.py for characters, pixellab_objects.py for props) · art/import_texture.py · art/pixellab_mcp.py (listings, job checks, generation when Nich asks)
                          art/ (spritegen.py + characters.py placeholder generators, make_textures.py, make_portraits.py, pixel.py helpers) · audio/ (synthesis toolchain)
-                         build/ (probes, parse_all, lint_data, write_chapter2_dialogue.py: the Chapter 2 dialogue generator) · capture/ (render.sh, smoke.gd) · blender/build_truce_pier.py (a kit-script example from the earlier prototype)
+                         build/ (probes, parse_all, lint_data, test_tools.py: the Python tools' self-tests, write_chapter2_dialogue.py:
+                         the Chapter 2 dialogue generator) · common/godot_uid.py and import_sidecar.py (the one uid encoder, the one .import writer) · capture/ (render.sh, smoke.gd) · blender/build_truce_pier.py (a kit-script example from the earlier prototype)
 design/                  the three bibles, AUDIT.md, images/catalog (59), images/plates (12), images/refs; .gdignore (reference material, never loaded under res://)
 docs/                    PROGRESS hand-off lives in the root; here: ART_PIPELINE, ASSET_REQUESTS, BOT_REVIEW, DECISIONS, JOB_CHATGPT, QUESTIONS_FOR_NICH, reports/ (workspace audit, enemy codex, audio build, prototype combat audit), screenshots/
 ```
@@ -118,10 +139,16 @@ script on a `Node3D` root (copy `scenes/u0/guardia_courtyard.tscn`), and registe
 
 **Dialogue and cutscenes.** `data/dialogue/<chapter>.json` maps a script id to a list of commands (Chapter 2's
 file is generated by `tools/build/write_chapter2_dialogue.py`; edit the generator, not the JSON). Commands:
-`label`, `goto`, `if` (a condition, with `then` / `else` label keys), `end`, `wait`, `say` (keys `who`,
+A command may carry several keys; they run in a fixed order: side effects (`set_flag`, `give_item`, `counter`,
+`var`, ...), then scene actions (`move`, `face`, `anim`, `show`/`hide`, `teleport`, `camera`, `universe`, `music`,
+`sfx`, `fade`, `emote`, `shake`, `run`, `call`, `battle`, `go`), then one verb (`say`, `caption` or `choice`, then a
+numeric `wait`, then `goto` / `if` / `end`). `call` awaits a coroutine method, so the method must not free its own
+scene before it returns. A `go` the Router refuses (an unbuilt scene) ends the script with a warning.
+Commands: `label`, `goto`, `if` (a condition, with `then` / `else` label keys), `end`, `wait`, `say` (keys `who`,
 `portrait`, `style`, `voice`), `caption`, `choice` (keys `who`, `prompt`; options carry `goto` and an optional
-`if`), `move` (keys `to`, `speed`, `wait`), `face` (`dir`), `anim` (`name`), `show`/`hide`, `teleport` (`to`),
-`camera` (`truth`/`explore`, optional `focus`), `universe` (optional `instant`), `music`/`stop_music` (`fade`)/
+`if`), `move` (keys `to`, `speed`, `wait`), `face` (`dir`, or `to` an actor or marker), `anim` (`name`), `show`/`hide`
+(`show` takes `at` a marker), `teleport` (`to`), `camera` (`truth`/`explore`, optional `focus` on an actor or a
+marker), `universe` (optional `instant`; `jump: true` charges the gate toll), `music` (`"stop"` stops it)/`stop_music` (`fade`)/
 `sfx`/`ambience`/`rtpc`, `fade` (`s`), `emote` (`kind`), `shake`, `run` (nest a script), `call` (a method on
 the location, with `args`), `battle` (an encounter id or `""` with `boss_id`, `at`, `center`, `music`;
 `on_win`/`on_lose` labels), `go` (keys `spawn`, `end_after`), `set`, `set_flag` (`state`, `affinity`),
@@ -129,33 +156,50 @@ the location, with `args`), `battle` (an encounter id or `""` with `boss_id`, `a
 `set_integrity`, `debt`, `recruit` (`level`), `learn` (`who`), `chapter`, `checkpoint`, `sera_state`, `party`,
 `save`. The authoritative list is the `cmd.has(...)` chain in `scripts/autoload/story_runner.gd`. Conditions: `{"flag": "Name", "state": "State"}`, `not_flag`,
 `light_min`, `dark_min`, `prismatic_min`, `counter_min` (+ `value`), `recruited`, `var`, `integrity_max`,
-`chapter_min`, `has_key_item`, `has_item`, `party_has`. Text may use `{integrity}` and `{debt}`.
+`chapter_min`, `has_key_item`, `has_item`, `party_has`; `flag` and `not_flag` also take `"Name:State"`. Text may use
+`{integrity}` and `{debt}`. `Data.load_all` and `lint_data.py` validate every script through `DialogueCheck`:
+labels (`goto`, `then`/`else`, `on_win`/`on_lose`), `run` targets, flag names and states, item, boss, encounter and
+learn ids, sfx ids and `go` targets (an unregistered location is an error, a registered but unbuilt one a warning).
 Speakers need an entry in `scripts/ui/speaker_styles.gd` only for a special style.
 
 **A flag.** Add it to the `flags` list in `data/flags/flags_u*.json` (one file may cover several universes:
 `flags_u0`, `flags_u1`, `flags_u2_u3`, `flags_u4_u9`): `id`, `where`, `states` (each with an
 `id`, `affinity` light/dark/prismatic deltas, `text`). Set it from dialogue with `{"set_flag": "Name:State"}`
-or code with `Flags.set_flag(&"Name", &"State")`; read with `Flags.has`, `Flags.state`, `Flags.is_state`. Endings and the Codex
-read these; the Story Bible lists every canonical flag.
+or code with `Flags.set_flag(&"Name", &"State")`; read with `Flags.has`, `Flags.state`, `Flags.is_state`, `Flags.holds`.
+Outside dialogue every flag reference (kit unlocks, boss branches, `requires`, `hazard_by_flag`, endings) is
+`"Name"` or `"Name:State"` (`FlagRef`); other spellings are load errors. A defined flag keeps its first state for
+the cycle unless its definition says `"mutable": true`. Progress markers that dialogue sets and reads but that need
+no Codex page go in `data/flags/script_local.json`. The endings are data too: `data/endings/endings.json`
+(affinity bounds, flags, counters, rifts; `EndingRules`). The Story Bible lists every canonical flag.
 
 **A tech.** Add to `techs` in `data/techs/<actor>.json`, `duals.json`, `duals_early.json` (the Prologue and
 Chapter 1 Duals) or `triples.json`: `id`, `name`, `tier` (single, dual,
 triple), `actors`, `tags` (element and weapon keys), `shape` (SINGLE, LINE, CONE, RING, ALL …), `hits`,
-`power`, `uses`, `costs` per actor (`strain_pct`, `bp`, `integrity_pct`), `unlock` (chapter, level or flag),
-optional `status`, `effects`, `notes`. Then list it under `techs` in the actor's kit
-`data/characters/<id>.json` with its `unlock`. Combat Laws §11 is the source of every number.
+`power`, `uses`, `costs` per actor (`strain_pct`, `bp`, `integrity_pct`), `unlock` (the bible's column, for
+reference), optional `status`, `effect`, `notes`. Then list it under `techs` in the actor's kit
+`data/characters/<id>.json` with its `unlock`, which Game evaluates: all of `chapter`, `on_join`, `level`, `flag`,
+`light_min`/`dark_min`/`prismatic_min`, `drop` (an enemy key looted this cycle) and `story` (taught only by a dialogue
+`learn`). An `effect` id is a bespoke handler in `TechEffects`, a row of `data/effects/effects.json` (conditions,
+damage and shave modifiers, ops after the hit), or listed there as `flavour` or `pending` with a reason; anything
+else fails `Data.load_all` and the lint. Combat Laws §11 is the source of every number.
 
 **An enemy.** Add to `enemies` in any JSON under `data/enemies/` (`u<n>/u<n>_enemies.json` per universe; the
 post-game roster is `u9/postgame_enemies.json`): `id` (E-number), `key`, `name`,
 `universe`, `level`, `kind`, `shield` (plate count), `tags`, `weak`, `lean` (L/D), `sprite`, `fps`,
 `body_radius`, `size`, `actions` (id, tags, shape, power, hits, target, optional `effects` such as
-`summon:<key>`), `drops`, `notes`. Put encounters that use it in `data/encounters/u<n>.json`. Its sheet goes
+`summon:<key>`), `drops` (`{item, chance, count}`, rolled at victory by `RewardResolver`), `notes`. Put encounters
+that use it in `data/encounters/u<n>.json` (optional `hazard` 0-2, `level` to pin a level); regular and elite
+enemies spawn at the Effective Rank Level (Combat Laws §15.3: party average + the universe's `bias` + hazard, the
+authored level read as rank inside `level_band`). Its sheet goes
 in `assets/enemies/u<n>/<key>/<key>_sheet.png` + `<key>_frames.json` (rows W, E and optionally S, N); until
 it exists the engine draws a readable placeholder.
 
 **A boss.** `data/bosses/<id>.json`: `id`, `name`, `level`, `hp`, `phases` (each a full `EnemyDef` override:
-shield, tags, actions, `adds`, `max_adds`, `script` = a dialogue id run with the clock stopped), `drops`,
-`music`. Mechanics that data cannot express go in `scripts/battle/bosses/<id>.gd` (hooks: `on_setup`,
+shield, tags, actions, `adds`, `max_adds`, `script` = a dialogue id run with the clock stopped, `advance_on`: an HP
+window, or a gate the controller opens (`break`, `adds_defeated`, `arm_broken`, `branch`) or one a director opens
+(`scripted`, `threads_cut`, ...; any other value is a validation error)), `drops`, `music`. Add rows take `count`,
+`trigger` (`every_<N>pct_hp_lost` or a director's id), `respawn_s` and overrides (`shield`, `level`, `weak`,
+`resist`, `tags`, `hp`, `xp`). A phase change that comes due during a Break waits for the Break to end. Mechanics that data cannot express go in `scripts/battle/bosses/<id>.gd` (hooks: `on_setup`,
 `on_phase`, `on_break`, `on_parry`, `on_action`, `on_tick`, `on_defeat`, `on_summon`). Start it from
 dialogue with `{"battle": "", "boss_id": "<id>", "at": "<marker>", "center": "<marker>", "music": ...}`.
 Drive it headless with `tools/build/battle_probe.gd -- --boss=<id>`.
@@ -216,11 +260,21 @@ checks and the generation Nich asks for. Every generated file, and every deliver
 row in `source_art/MANIFEST.csv` (tool, model, seed, prompt, post-process): the project's AI-disclosure log. It
 lives outside `assets/` because Godot imports any CSV under the project as a translation table.
 
+**An item.** `data/items/items.json`: `id`, `name`, `kind` (`consumable`, `material`, `key`, `relic` or `counter`,
+which adds to the Flags counter it names), the battle effect for consumables, and its text in `data/text/items.json`.
+`Game.grant` routes every boss drop, enemy drop and dialogue `give_item`/`key_item`/`relic` by that kind.
+
+**Saves and settings.** Slots are JSON under `user://` written atomically (a `.tmp` renamed over the target) and
+versioned (`Saves.VERSION`; `Saves.status` is empty/ok/corrupt/newer and only ok loads). Options live in
+`user://settings.cfg`, not in the slots. Headless runs (the probes, the test runner, `--no-save`) set
+`Saves.suspended` and write under `user://scratch`, so they never touch a player's files.
+
 **Music and SFX.** `tools/audio/` synthesises every track and effect (`python3 tools/audio/build_all.py`);
 `Audio.play_music(&"id")`, `Audio.play_ambience(&"id")`, `Audio.play_sfx("family/id")`,
 `Audio.set_rtpc("name", value)` drive them. New tracks need a loop point in their `.import` and a row in
-`docs/reports/audio_build_report.md`. `lint_data.py` warns for every music or ambience id that data or a
-location script names without a file under `audio/`; `AudioDirector` plays silence for an unknown id (an error
+`docs/reports/audio_build_report.md`. `lint_data.py` reports every music, ambience or sfx id that data or a
+script names without a file under `audio/` (a music id that is not a Reference Bible 8.5 row is an error; a
+scheduled one is a warning); `AudioDirector` plays silence for an unknown id (an error
 only when the Prologue or Chapter 1 asks for it).
 
 ## Conventions

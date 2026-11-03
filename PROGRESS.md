@@ -1,119 +1,126 @@
 # Progress
 
 The hand-off between runs. Keep it honest: what exists, what is verified, what is next, what is broken.
-Two agents work this repository in turns (the build agent and the studio assistant); Nich makes the art.
+Nich makes the art decisions; his asset team generates; the build lead (the Claude Code session Nich runs)
+builds, imports and records; the studio assistant writes dialogue and audits deliveries.
 
-## Run 3 (2026-10-29 from 10:20 EDT): the build lead is Claude Code (Fable) on Nich's Windows PC
+## Run 4 (2026-11-02, cloud session): branch `ccr-71b3659f-ryo8fv`, draft PR iteatsthesalt/TRIGGER-Time-Debt#1
 
-- **Machine:** repo at `C:\Users\names\dev\TRIGGER-Time-Debt`; Godot 4.7.2 and python shims in `.tools/bin`
-  (CLAUDE.md "Environment notes"); `bash tools/check.sh` passes on Windows (parse, 440 unit checks, data lint,
-  smoke boot without xvfb).
-- **Chapter 1 Shard Doll fixed, verified:** `ch1_probe.gd -- --autobattle` prints `PROBE_END ok=true` (split
-  lesson: rebuilds 0→8, then the dolls stay broken, phase 4, the rest of the chapter through the Fair call).
-  Three causes, all in `scripts/battle/bosses/shard_doll_999.gd` (see DECISIONS "The 999 Shard Doll's split
-  dolls"): a broken doll's Break is now held until the director rebuilds it; the dolls are undamageable
-  during the split (they died at ~100 HP with plates up); the dummy's integrity bleed is capped at five
-  floors (10 integrity; a slow party lost all 100).
-- **Probes:** `--chapter=<n>` at boot now calls `Game.set_chapter()` (kits unlock); `battle_probe.gd` and
-  `ch1_probe.gd` print each add's plates, BROKEN, and a director's `rebuilds`.
-- **Autobattle hook:** `BattleScene._auto_pick_tech()` chooses the tech the AI casts (currently random; a
-  multi-target preference for fights like the split is the next tuning step).
-- **Team hub:** Slack `#all-trigger` (workspace "Trigger"): Nich's kickoff, the build-lead protocol
-  (`[BUILD]` threads, hourly import replies). Read it before every push.
-- **In progress:** `docs/ASSET_REQUESTS.md` is being expanded from Batches 1–9 to the complete game (every
-  Reference Bible §11 row, tiers map/field/action/portrait, variants, cut-ins) as Batches 10+.
+**This run could not push to `main`** (cloud sessions work on their branch, CLAUDE.md "Branch rule"). Everything
+below is on the branch and in draft PR #1; Nich merges. The prototype repository has a one-commit draft PR of its
+own (iteatsthesalt/Trigger#6: a status note pointing here). The full record of the run is
+`docs/reports/WORKSPACE_AUDIT_2026-11-02.md`.
 
-## State on 2026-10-29 (run 2, in progress)
+### Direction (from Nich, in session)
+- **The Nov 1 "Chrono-Style Recreation Breakdown" is the style, and assets are remade at its scale** (DECISIONS
+  "Direction"; the text is `design/STYLE_BREAKDOWN_2026-11-01.md`): 64x64 three-head sprites (hero 56-61 px =
+  1.78 m), one locked palette (Resurrect 64 until Nich confirms), coloured selective outlines, held frames; the
+  world at 32 px per metre (`SceneKit.PX_PER_M`); 15-colour material families. Superseded: the 128 px chibi field
+  tier (still shipped until each character's 64 px set exists), the asset team's 256 px "field v3" sets (not
+  imported), the 64 px/m texel rule.
 
-### The plan now (from Nich, read first)
-- **Art comes from Nich's PixelLab bot**, which works from `docs/ASSET_REQUESTS.md` (prioritized, ready-to-send
-  requests; entries move to Done with the PixelLab id when imported). Agents do not generate art beyond the
-  pipeline proof. **Check the PixelLab library at least hourly and before any scene work** (`list_characters`,
-  `list_objects`, `list_topdown_tilesets`, `list_ui_assets`, `list_images`), import anything completed that
-  matches an asset key with `python3 tools/art/import_pixellab.py <id|url> <asset_key> [--name "<PixelLab name>"]`,
-  wire it in, screenshot it; the import is recorded in `data/art/pixellab_assets.json`. Never delete anything on
-  the account. Characters with pending jobs are zip-locked: wait or `--listing`.
-- **A character is a set of sprites**: tiers map/field/action/portrait + variants (`docs/ART_PIPELINE.md` §1b).
-- **Lanes:** the studio assistant writes `data/dialogue/chapter2.json` and ASSET_REQUESTS Batch 4 (U1); the
-  build agent keeps Chapter 1, the Fair, scenes/, scripts/ and wires Chapter 2 scenes to those dialogue ids.
-  Dialogue commands are listed in README ("Dialogue and cutscenes"); add new ones there.
-- Pull (`git pull --rebase`) before every push; both agents commit to `main`.
-
-### Art pipeline (done, verified in-engine)
-- `tools/art/import_pixellab.py` (+ `tools/art/pipeline/pixellab_import.py`): downloads a PixelLab character,
-  packs the 8-row sheet (s, w, e, n, sw, se, nw, ne), feet 8 px above the cell bottom, per-canvas finish,
-  `_n` normal sheet, `<stem>_frames.json`, `.import` sidecars, contact sheet in `source_art/`, record in
-  `data/art/pixellab_assets.json`; flags a direction that came back facing the wrong way.
-- Engine: `SpriteLibrary.resolve/apply(sprite, id, fps, tier, variant)` with fallbacks, `has_tier`;
-  `ActorSprite.set_height` (bible metres from drawn pixels), eight-way `face_vector`, `set_tier`, `set_variant`;
-  fixed: `set_sheet` now always applies the first frame rect. Review scene `scenes/test/lineup.tscn`
-  (`--ids=`, `--anim=`, `--tier=`, `--variant=`).
-- Imported: `crono_field` (idle, walk, run, hurt, ready, ko), `crono_action` (idle; the realistic base),
-  `sera_field` (idle, walk, run), `krona_field` (idle, walk), `marle_field` (idle; realistic proportions, Nich to
-  decide). On the account, not yet imported: `villager_m` (`feef7cc5…`, zip locked by its animation jobs), the
-  bot's alternative Krona (`364e2216…`), and realistic Sera/Crono tests by the studio assistant.
-- Screenshots: `docs/screenshots/07–10`.
+### What landed and is verified
+Verified on the branch head: `bash tools/check.sh` passes in full (import, parse, 3,494 unit checks in 17 suites, data lint, 20
+Python tool tests, `prologue_probe`, `ch1_probe` and `battle_probe` each `PROBE_END ok=true`, the smoke boot and the
+lineup and arena captures, which were looked at).
+- **Text layer** (Linear TRI-80): `data/text/` loaded and validated by `Data`; ambient lines for unscripted NPCs.
+- **Props** (TRI-31..TRI-78): the object import route, `PropBillboard` + `Location.add_prop`, `data/props/props.json`,
+  47 props dressing the kitchen, courtyard and Atrium (screenshots 11-14).
+- **PixelLab by the build lead** (~60 generations): twelve U0 textures at 32 px/m, the Phase-1 style kit (anchor
+  candidates, Wang test tilesets, a 9-slice frame, an impact burst; screenshot 20), the 64 px Crono anchor as the
+  `px64` variant (screenshots 22-23); `tools/art/pixellab_mcp.py`, `tools/art/import_texture.py`,
+  `source_art/MANIFEST.csv`.
+- **Workspace audit**: two verified audits (docs: 140 confirmed; code: 199 confirmed or plausible). The docs fixes
+  landed first (prototype snapshot removed, bibles reconciled with the data, README/CLAUDE/ART_PIPELINE/
+  ASSET_REQUESTS/BOT_REVIEW rewritten); then fifteen code clusters, each reviewed, 168 of the 199 fixed, 23 partly, 8 left with a recorded reason, and a
+  final integration review (two rounds over six angles: 41 findings, 39 confirmed by an independent refuter and all fixed, among them two critical defects older than this run: battle input was ignored in every story battle, and the party could be placed past the kitchen floor after a zone battle). What changed for a player: Withdraw works and is not a
+  defeat; the fallen stand up after a win; spared and broken enemies are settled; story-battle retries no longer stack
+  bodies; a Break plays out before a boss changes phase; the final Break pays the boss's XP and drops; Ruin lowers
+  Crono's ceiling; DoTs, regen and BLIND work; 57 technique effects moved from silent plain damage into a data
+  table; kit unlocks by level, flag and drop are learned; enemies drop items and scale by Effective Rank Level; the
+  gate toll is charged; saves are atomic and settings have their own file; the Chapter 1 save points resume
+  somewhere playable; the Fair call stops with a caption instead of a dead end; ghosts and a fading Sera are drawn
+  translucent. Every call is in DECISIONS "Code-audit fixes, second pass"; 56 calls to confirm are in
+  QUESTIONS_FOR_NICH.
+- **Tests and gate**: `tests/` is one suite per area on a shared base (`suite_base.gd`); `tools/check.sh` now runs the
+  probes and the Python tool tests and fails on import errors; `Saves.suspended` keeps headless runs off the
+  player's saves.
 
 ### How to run and check
-- `source tools/setup_godot.sh`; `bash tools/check.sh` (import, parse-all, 435 unit checks, data lint, visual
-  smoke) or `--no-visual`.
-- Boot args: `--scene=<id>`, `--spawn=<marker>`, `--checkpoint=<id>`, `--party=a,b,c`, `--chapter=<n>`,
-  `--integrity=<n>`, `--level=<n>`, `--flag=Name:State`, `--say=text`, `--autobattle`.
-- Probes: `tools/build/prologue_probe.gd -- --autobattle` (whole Prologue, passes), `ch1_probe.gd -- --autobattle`
-  (Chapter 1, passes since run 3), `battle_probe.gd -- --scene=test_arena --autobattle --boss=<id>
-  --party=crono,sera,marle --chapter=1 --level=4` (pass `--chapter` so the kits are unlocked).
-- Captures: `bash tools/capture/render.sh <scene_id> <prefix> [frames] [-- args]` → `/tmp/captures/`.
-
-### What exists and is verified (unchanged from run 1 unless noted)
-- Project, eight autoloads, Combat Laws core (435 checks), boss framework with directors, Atrium Cradle,
-  data for 123 techs / 82 enemies / 31 bosses / 71 encounters / 80 flags, field layer, Prologue scenes
-  (kitchen, courtyard, Atrium hub), Chapter 1 hub beats, audio toolchain and vertical-slice music.
-- `PortraitCache` looks in `assets/portraits/<id>/<id>_<expr>.png` first; `SceneKit.named("<material>")` looks in
-  `assets/textures/generated/` first (import targets for Nich's portraits and textures).
-
-## Lead hand-off (2026-10-29 09:50 EDT)
-
-The Console build agent ran out of credit at 09:46 after pushing everything. **The build lead is now the Claude
-Code session Nich runs on his machine** (same working agreement, `CLAUDE.md`). The studio assistant keeps its
-lanes: bot audits (`docs/BOT_REVIEW.md`), `docs/ASSET_REQUESTS.md`, and Chapter 3+ dialogue. Nich's bot
-delivers art per `docs/BOT_REVIEW.md`; ChatGPT writes the text layer per `docs/JOB_CHATGPT.md` into
-`data/text/`.
+- `source tools/setup_godot.sh`; `bash tools/check.sh` (the full gate, about five minutes in a cloud container with a warm
+  import cache), `--no-visual` (no boot or captures), `--quick` (import, parse and the suites only).
+- Boot and battle arguments, probes and captures: README "Run and check".
+- Hourly art check: `python3 tools/art/import_incoming.py --dry-run`; listings
+  `python3 tools/art/pixellab_mcp.py list_characters '{"limit": 50}'`.
 
 ## Next steps (start here)
-1. **Hourly: check the PixelLab library / `data/art/incoming.json` and import** (see the plan). Import
-   `villager_m` when its jobs finish. Read Slack `#all-trigger` first.
-2. **Finish the complete `docs/ASSET_REQUESTS.md`** (Batches 10+, in progress in run 3) and post it in Slack.
-3. **Leene Square and the Fair** (`scenes/u0/leene_square.tscn`, Story Bible Ch1 beat 10): crowds, Bekkler's
-   tent, Lucca's Telepod pavilion, the chase, the rift-spawn battle (`fair_rift_spawn` encounter), Vaelos's
-   descent (action tier A7 when it arrives; placeholder until then), the leap → `bamboo_grove`.
-4. **Chapter 2 opening** scenes wired to the studio assistant's `chapter2.json` ids: `bamboo_grove`, Krona duel
-   director (`data/bosses/krona_duel.json`), Pagoda fracture, Kuro-Truce, Krona joins, Eclipse X-Strike cut-in
-   (action tier: `ActorSprite.set_tier(&"action")` with clips A2 + A5 composited).
-5. Menus (party, techs, items, relics, settings, save slots), save/load screen, title Options.
-6. Music hooks (`Audio.set_rtpc` consumers), boss phase stems, Fair chase stem.
-7. Keep `docs/DECISIONS.md`, `docs/QUESTIONS_FOR_NICH.md`, `docs/ASSET_REQUESTS.md`, `docs/screenshots/` current.
+1. **Close the style gate with Nich**: anchor candidate and palette (screenshots 20 and 22), window frame A or B;
+   then Crono's 64 px clips (run, hurt, ready, attack, ko, revive) and promote `px64` to the base `field` sheet
+   (ART_PIPELINE 1b). Tell the asset team to stop at 128/256 px until then (QUESTIONS_FOR_NICH).
+2. **The slice at 64 px** (ASSET_REQUESTS "Style gate"): Sera and Krona anchors and clips, six Prologue/Chapter 1
+   NPCs, the four U0 enemies and the Atrium Cradle, two 48 px portraits, one exterior Wang set and the kitchen kit.
+3. **Leene Square and the Fair** (Story Bible Chapter 1 beat 10): the scene, its first checkpoint writes the arrival
+   autosave and sets Sera's state; then Chapter 2's `bamboo_grove` against `data/dialogue/chapter2.json` (the
+   markers, actors and Router ids it needs are listed in the audit report, STORY-10).
+4. **Boss directors as their chapters arrive**: the director-only gates (scripted, threads_cut, honest_lines,
+   sera_voluntary_phase_out, stand_still_12s, ending) of nine bosses (lint warns per boss), the Krona duel's
+   `duel_overcharge` call, the Atrium Siege's three waves.
+5. **Menus and Options**: party, techs, items, relics, settings, save slots; the breakdown's Options rows.
+6. **Audio**: 20 music ids without a track (lint lists them; all are Reference Bible 8.5 rows), three sfx ids
+   (`combat/phase_shift`, `time/amber_chime`, `weapons/parry_don`) and the run-time ids lint cannot see
+   (`time/gate_open_u2..u8`, `magic/<element>_contact` for most elements); the RTPC names nothing consumes.
+7. **Open engine items** from the audit: the perfect-frame input, a HOLD step picker, Confuse, the Lichen Colony's
+   shared damage, New Game+ and the ending flow, save on quit and a Robo "Save" that does not rest. Bring
+   `battle_coordinator.gd` (815 lines after the split into rule classes) under 600, and the test suites over it.
+8. **A by-hand battle in the gate.** Every probe runs `--autobattle`; the input tests now drive the deck with synthetic
+   input events, but a probe that plays the Cradle through the deck would have caught the story-battle input bug
+   long before the audit.
+9. Keep `docs/DECISIONS.md`, `docs/QUESTIONS_FOR_NICH.md`, `docs/ASSET_REQUESTS.md`, `docs/screenshots/` current.
 
 ## Known issues
-- **The autobattle still needs eight rebuilds on the Shard Doll's split** (~3.5 min headless since
-  `BattleScene._auto_pick_tech()` prefers the multi-target tech that hits the most weaknesses; it was ~5 min):
-  it never breaks all three within one 3 s window because it aims at one doll's position rather than lining
-  them up. Aiming to maximise coverage (the line through two dolls) is the next AI step.
-- Rooms, textures, props and enemies are placeholders until Nich's assets land (ASSET_REQUESTS batches 2–9).
-- Marle's imported sprite is realistic-proportioned beside a chibi cast (Nich to decide).
-- Autobattle AI never heals, so probe losses overstate difficulty; defeat costs −5 integrity each retry.
-- Kitchen lights are flat; hearth has no fire; a faint rectangle shows inside the dialogue box bottom-right.
-- Title backdrop uses design plate-00 (temporary).
-- U1 ink grade does not exempt Crono's watercolour. Pierrot-Glenn portrait crop is wrong.
-- Audio: tracks composed blind; listening pass needed; fair chase stem, boss phase clips not rendered.
-- Boss JSON mechanics marked notes-only in `docs/reports/enemy_codex_report.md` need code with their chapters.
-- `ObjectDB instances leaked` warnings at the end of probe scripts; harmless.
+- Chapter 2's 28 scripts cannot be reached until the U1 scenes exist; Chapter 1 ends at the Fair call with a caption.
+- Lint warnings, all tracked: 12 boss phases whose gate needs a director that comes with its chapter, 20 music ids
+  without a track, 3 sfx ids without a file, 5 ambient-chatter locations with no scene yet, 3 Duals with no learner
+  (`origami_requiem`, `time_debt_paid`, `fake_family_photo`), `atropos_ribbon` taught by no script yet, the
+  scheduled `ossuary_arrival` scene, the `duel_overcharge` call, and `assets/enemies/citizen_husk` matching no key.
+- Mid Tonic, Revive and Cobalt Wash have no source (TRI-79, QUESTIONS_FOR_NICH); Tungsten Scrap drops but waits
+  for crafting.
+- Three authored boss phases cannot be reached by HP (azar `red_moon`, guardian_triad `dance_not_curse`, r66y
+  `mother_brain_unmasked`); a director or new windows decide (QUESTIONS_FOR_NICH).
+- The renders are verified only under software Vulkan: the HDR bloom on emissives and the fade pass's missing shadow
+  need a look on a GPU. The Chronoslip is staged but has no capture yet.
+- Marle's only sheet is the one-frame realistic `marle_field`, so she glides when a script walks her.
+- The dialogue box and HUD are still code-drawn; the delivered UI panels wait for Nich's frame choice.
+- Scripts over the ~600-line guideline: `battle_coordinator.gd` (815), `tools/art/spritegen.py`, `tools/audio/synth.py`,
+  `tools/build/write_chapter2_dialogue.py`; seven test suites are over it too.
+- Audio tracks were composed blind; a listening pass is needed.
+- U1 ink grade does not exempt Crono's watercolour. Pierrot-Glenn's portrait crop is wrong. The title backdrop is
+  plate 00.
+- Software-Vulkan captures draw the dust-mote particles as a white square (a lavapipe artefact, not in-game).
+- The battle HUD at 720p: the third party card runs off the bottom edge, and the plates of enemies standing close
+  together overlap (screenshot 24).
+- A Router fade now hides a dialogue line already on screen the moment it starts (the lines draw above the fade so
+  the New Game wake reads over the held black); a debug start at chapter 0 after the Cradle gives Sera no Fall Break.
 
 ## The plan (whole game, in priority order)
 A. Foundation ✅ project, autoloads, combat core, tests, check.sh, HD-2D proof, field layer, battle scene,
-   audio toolchain, boss framework, Prologue, **art pipeline (PixelLab import, tiers, normal maps)**.
-B. Vertical slice ▶ Chapter 1 hub beats + Fair, Chapter 2 opening through Krona joining, with Nich's assets
-   imported as they arrive.
-C. Chapters 2–9 in order, each with its bosses (directors), side content, Sera interludes, music per universe.
-D. Endings 1–8, New Game+, Possibility Codex (Ch14), side quests (Ch15), Director Commentary (Ch16).
-E. Polish, balance, accessibility (reduced flicker, captions, auto Sync Hold), performance; exports for Linux,
-   Windows and web into `/mnt/session/outputs/`.
+   audio toolchain, boss framework, Prologue, art pipeline (characters, props, textures, UI; the manifest), the
+   2026-11-02 audit and its fixes.
+B. Style gate ▶ the 64 px anchor approved, the palette locked, the slice assets remade at the new scale.
+C. Vertical slice: Chapter 1 hub beats and the Fair, Chapter 2 opening through Krona joining.
+D. Chapters 2-9 in order, each with its bosses (directors), side content, Sera interludes, music per universe.
+E. Endings 1-8, New Game+, Possibility Codex (Ch14), side quests (Ch15), Director Commentary (Ch16).
+F. Polish, balance, accessibility, performance; exports for Linux, Windows and web.
+
+## Earlier runs
+- **Run 3 (2026-10-29, Nich's Windows PC; the build lead is Claude Code):** Godot and python shims in
+  `.tools/bin`; the Chapter 1 Shard Doll fixed (a broken doll's Break held for the director, undamageable split
+  dolls, the integrity bleed capped); `--chapter` at boot unlocks kits; the autobattle's tech pick; the Slack
+  `#all-trigger` hub and its `[BUILD]` threads.
+- **Run 2 (2026-10-29):** the PixelLab character import route (`import_pixellab.py`, eight-row sheets, normal maps,
+  frames json, contact sheets, `data/art/pixellab_assets.json`); `SpriteLibrary` tiers and variants;
+  `crono_field`, `crono_action`, `sera_field`, `krona_field`, `marle_field` imported; screenshots 07-10.
+- **Run 1 and the lead hand-off (to 2026-10-29 09:50 EDT):** the project, eight autoloads, the Combat Laws core,
+  the boss framework with directors, the Atrium Cradle, the data for every tech, enemy, boss, encounter and flag,
+  the field layer, the Prologue scenes and the Chapter 1 hub beats, the audio toolchain and the vertical-slice
+  music. The Console build agent handed the lead to the Claude Code session Nich runs.

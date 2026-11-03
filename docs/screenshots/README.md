@@ -7,6 +7,7 @@ sprites (see `docs/ART_PIPELINE.md`).
 
 | File | What it shows | Date |
 |---|---|---|
+| `24_arena_battle_hud.jpg` | The test arena one second after `battle_started`, the frame the gate now captures on every check (`tools/check.sh`, `smoke.gd --capture_after`): the turn bar with each battler's initials, the enemy plates (`[SHIELD n]`, weakness hints, HP), the party cards and the Boost gauge, the party fanned out on the floor. Software Vulkan. Two things to fix: the plates of enemies standing close together overlap, and the third party card runs off the bottom of the 720p frame. | 2026-11-03 |
 | `23_cast_px128_lineup.jpg` | For comparison: the 128 px chibi Crono and Sera the game still ships, same stage, same metres. Nich picks the anchor candidate and the palette; then the cast is remade at 64 px. | 2026-11-02 |
 | `22_anchor_crono_px64_lineup.jpg` | The 64 px hero anchor (style-kit candidate 0 rotated to eight directions, PixelLab "TRIGGER Anchor Crono 64 v1", imported as the `px64` variant: 61 px = 1.78 m, idle and walk) on the lineup stage, mid walk. The Nov 1 recipe in the engine: three heads, selective outline, Resurrect 64 palette. | 2026-11-02 |
 | `21_kitchen_snes_density.jpg` | The kitchen at the new 32 px/m density (DECISIONS "Direction"): the twelve generated U0 textures (flagstone floor, wall blocks, oak, slate, brass, cobbles, grass, earth, canvas, steps, plaster) palette-budgeted to 15 colours each, under the 47 imported props. Software Vulkan capture; the white square is the dust-mote particle as lavapipe draws it. | 2026-11-02 |

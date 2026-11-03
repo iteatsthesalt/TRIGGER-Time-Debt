@@ -256,6 +256,75 @@ other way and the build lead changes the data or the rule.
   hits 1. Their previews are now empty because their handlers strike nothing, but should their rows say
   `is_attack: false` explicitly?
 
+### From the final integration review
+- Should a boss director's on_defeat also wait for the victory? It currently runs when the boss falls, which is
+  right for presentation (the Cradle's message and canvas). But if a future director grants flags or counters in
+  on_defeat, they would stick after a loss in which the adds won after the boss fell. Today only the Shard Doll
+  does that, and its fight cannot be lost.
+- A zone enemy keeps the Effective Rank level it spawned at, while its mid-battle summons use the party average at
+  the time of the summon. If the party levels between battles, a re-fought summoner and its new adds can differ by
+  a level or two. Should zone survivors be re-ranked when the zone re-arms?
+- Guilt Halo now steals 1 BP per cast however many bodies Break, following §7.5 'one steal per Glenn action'. Did
+  you mean 1 BP per Broken body, capped at 3 per action? Say if you want it per body and it becomes a one-line
+  change.
+- The bible gives three self-silences on Break with no implementation yet: the Gene Scribe (E42), Azar phase 1,
+  and Azar phase 4 ('every time she is Broken she silences herself for 15 s'). With this fix they would now seal
+  the enemy's techniques. Should they be wired as an enemy behaviour key (e.g. silence_on_break_s)?
+- The preview still does not forecast the mercury pool's +20% on the first FERRO hit, or the damage change when a
+  Break lands mid-action. Is that close enough for the aim line, or should the estimate simulate the strike
+  sequence?
+- Rewind and Ruin: I made Sera's Rewind take back Ruin gained since the target's turn start, for Crono and every
+  ally alike, following the bible's 'statuses gained since'. Would you rather Ruin survive a Rewind because it
+  'only thaws' (it is on the cleanse keep-list)? That is a one-line change in rewind_unit.
+- Bekkler's Guilt now follows the §11 table: it no longer pulls every attack onto Crono. Only hits aimed at allies
+  inside his 4 m ring are turned onto him, at 75% damage and +1 BP each (2 at most). Is that the intended feel for
+  the Prologue reward?
+- Ruin-infused (the Shogun's Command payoff) is read as 'the next landed strike ignores DEF', a single strike.
+  Should it instead cover the whole next action, so every hit of a multi-hit tech ignores DEF?
+- Battle placement: where the near side meets a wall or the void, the party fan now turns about the centre,
+  sometimes to the far side of the enemies. Example: kitchen_spoons, with the hall's south wall 1.8 m away. After
+  that fight the party is handed back near the neighbouring shardlings zone, so a second fight can start right
+  after the first. Should the hall zones be spread further from the south wall and from each other, or is a
+  chained encounter acceptable?
+- Time Debt Seal is now learned silently at breakfast's 'TIME DEBT' beat, with no caption. Should the studio
+  assistant write an announcement for it, as the Cradle does for Fall Break?
+- Debug starts (--scene, --checkpoint and so on) now keep their saves in scratch unless you pass --save. Is that
+  how you want hand-testing from the command line to work?
+- Opening and time-skip captions now show over black at the top centre of the screen, where the in-scene caption
+  label already sits. Do you want a centred title-card look for captions shown on black instead?
+- Note: while checking that the tests catch the bugs, a temporary revert made one test run remove this container's
+  shared user://scratch directory. That directory holds only probe and test scratch files, never player saves. If
+  an older build's probe in another worktree on this machine failed around 03:22 UTC, re-run it.
+- Should a KO end Sera's phase? Right now a DoT that kills a phased Sera leaves the phase running. A revive brings
+  her back still phased and untargetable, and she now looks phased to match. The alternative is to clear the phase
+  on a KO, so she revives targetable at her Debt opacity.
+- README 'Boot arguments' needs a line for the new --debt=<n> (it sets Sera's Translucency Debt and counts as a
+  debug start). README and the capture docs should also mention smoke.gd's --capture_after=<signal>:<seconds> and
+  --max_frames=<n>. The gate's battle shot is now /tmp/captures/check_test_arena_battle_started.png, not
+  check_test_arena_0120.png.
+- Ens Parry tuning: a press is spent for 0.5 s of battle time, and a press arms only the guards a wind-up is aimed
+  at (all guards when none is, or for an area attack). Should the recovery be shorter or longer, and should a
+  perfect parry clear it at once so a quick follow-up can be parried too?
+- There is no on-screen hint for the parry key (G / joypad L1) yet, and the bible's 'closing sumi-e circle' window
+  art is not drawn. Should the Guard command's deck line show 'G: parry', and should the circle go on the asset
+  request list?
+- The headless probes still print exit leaks (about 46 ObjectDB / 22 resources, probably the same audio playbacks
+  still mixing at quit). The gate does not fail on probe leaks yet. Should the probes drain audio the same way and
+  fail on leaks too?
+- H7 is pinned by a test that checks the text of check.sh and smoke.gd (--no-save on every smoke.gd call, and the
+  reset_settings call), not by a run that proves a capture ignores a planted settings.cfg. Is that enough, or do
+  you want a Linux-only behaviour test that runs smoke.gd against a fake user folder?
+- Balloon Escape now foils one BP theft per cast (the next theft against the party), and every [FIRE] hit on the
+  inflated body is a 'miss' for 2 s. Is that the reading you want?
+- Should Sunlight Stacks, Static's Tune and Xyloph's tether nodes reset each battle, as built? Sunlight is also
+  gained in U3 light shafts, which could be meant to carry over from the field.
+- Miura Fold is now pending and not offered until there is a damage hook for its shared HP pool and the split on
+  the snap. Is that acceptable for Omega-Spekkio (Chapter 8), or should it be built sooner?
+- Oil-Drinker+ (Geothermal): which beat and flag earn it on the U2 ruthless road? Its +25% crit was dead code and
+  is now listed as unbuilt.
+- battle_coordinator.gd is now 815 lines, still above the ~600 rule. Should the timeline (advance, gauges,
+  windows) be split into its own class next?
+
 ## Title, cast and the audit (2026-11-02)
 
 1. **Release title and cast names.** The Nov 1 breakdown's section 14 says a release title must not contain 
